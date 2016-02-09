@@ -1,0 +1,106 @@
+{
+   "behavior" : {
+      "service-mapping" : {
+         "input_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "workspace"
+            },
+            {
+               "input_parameter" : "fbamodel_id_list",
+               "target_property" : "fbamodel_id_list"
+            },
+            {
+               "input_parameter" : "fbamodel_output_id",
+               "target_property" : "fbamodel_output_id"
+            },
+            {
+               "input_parameter" : "mixed_bag_model",
+               "target_property" : "mixed_bag_model"
+            }
+         ],
+         "name" : "fba_tools",
+         "output_mapping" : [
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "target_property" : "type",
+               "constant_value" : "KBaseFBA.FBAModel"
+            },
+            {
+               "target_property" : "obj",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ],
+         "method" : "merge_metabolic_models_into_community_model",
+         "url" : ""
+      }
+   },
+   "categories" : [
+      "active"
+   ],
+   "ver" : "1.0.0",
+   "contact" : "help@kbase.us",
+   "authors" : [
+      "chenry"
+   ],
+   "visible" : true,
+   "job_id_output_field" : "docker",
+   "widgets" : {
+      "input" : null,
+      "output" : "kbaseTabTable"
+   },
+   "name" : "merge_metabolic_models_into_community_model",
+   "parameters" : [
+      {
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "id" : "fbamodel_id_list",
+         "field_type" : "text",
+         "allow_multiple" : true,
+         "optional" : false
+      },
+      {
+         "id" : "fbamodel_output_id",
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ],
+            "is_output_name" : true
+         },
+         "default_values" : [
+            ""
+         ]
+      },
+      {
+         "default_values" : [
+            "0"
+         ],
+         "field_type" : "checkbox",
+         "optional" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : false,
+         "allow_multiple" : false,
+         "id" : "mixed_bag_model",
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         }
+      }
+   ]
+}

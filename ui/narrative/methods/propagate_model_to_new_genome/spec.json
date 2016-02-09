@@ -1,0 +1,360 @@
+{
+   "authors" : [
+      "chenry"
+   ],
+   "visible" : true,
+   "categories" : [
+      "active"
+   ],
+   "behavior" : {
+      "service-mapping" : {
+         "output_mapping" : [
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
+            },
+            {
+               "target_property" : "obj",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ],
+         "name" : "fba_tools",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id"
+            },
+            {
+               "target_property" : "proteincomparison_id",
+               "input_parameter" : "proteincomparison_id"
+            },
+            {
+               "target_property" : "fbamodel_output_id",
+               "input_parameter" : "fbamodel_output_id"
+            },
+            {
+               "input_parameter" : "keep_nogene_rxn",
+               "target_property" : "keep_nogene_rxn"
+            },
+            {
+               "input_parameter" : "gapfill_model",
+               "target_property" : "gapfill_model"
+            },
+            {
+               "input_parameter" : "thermodynamic_constraints",
+               "target_property" : "thermodynamic_constraints"
+            },
+            {
+               "target_property" : "comprehensive_gapfill",
+               "input_parameter" : "comprehensive_gapfill"
+            },
+            {
+               "input_parameter" : "custom_bound_list",
+               "target_property" : "custom_bound_list"
+            },
+            {
+               "target_property" : "media_supplement_list",
+               "input_parameter" : "media_supplement_list"
+            },
+            {
+               "input_parameter" : "expseries_id",
+               "target_property" : "expseries_id"
+            },
+            {
+               "target_property" : "expression_condition",
+               "input_parameter" : "expression_condition"
+            },
+            {
+               "target_property" : "exp_threshold_percentile",
+               "input_parameter" : "exp_threshold_percentile"
+            },
+            {
+               "target_property" : "exp_threshold_margin",
+               "input_parameter" : "exp_threshold_margin"
+            },
+            {
+               "input_parameter" : "activation_coefficient",
+               "target_property" : "activation_coefficient"
+            },
+            {
+               "input_parameter" : "objective_fraction",
+               "target_property" : "objective_fraction"
+            },
+            {
+               "input_parameter" : "minimum_target_flux",
+               "target_property" : "minimum_target_flux"
+            },
+            {
+               "target_property" : "number_of_solutions",
+               "input_parameter" : "number_of_solutions"
+            }
+         ],
+         "method" : "propagate_model_to_new_genome",
+         "url" : ""
+      }
+   },
+   "ver" : "1.0.0",
+   "contact" : "help@kbase.us",
+   "parameters" : [
+      {
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "id" : "fbamodel_id"
+      },
+      {
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false,
+         "id" : "proteincomparison_id",
+         "text_options" : {
+            "valid_ws_types" : [
+               "GenomeComparison.ProteomeComparison"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false
+      },
+      {
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ],
+            "is_output_name" : true
+         },
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "fbamodel_output_id"
+      },
+      {
+         "optional" : false,
+         "field_type" : "checkbox",
+         "default_values" : [
+            "0"
+         ],
+         "allow_multiple" : false,
+         "id" : "keep_nogene_rxn",
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : false
+      },
+      {
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "allow_multiple" : false,
+         "id" : "gapfill_model",
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "checkbox",
+         "optional" : false,
+         "default_values" : [
+            "1"
+         ]
+      },
+      {
+         "default_values" : [
+            "0"
+         ],
+         "field_type" : "checkbox",
+         "optional" : false,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true,
+         "id" : "thermodynamic_constraints",
+         "allow_multiple" : false,
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         }
+      },
+      {
+         "optional" : false,
+         "field_type" : "checkbox",
+         "default_values" : [
+            "0"
+         ],
+         "allow_multiple" : false,
+         "id" : "comprehensive_gapfill",
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true
+      },
+      {
+         "field_type" : "text",
+         "allow_multiple" : true,
+         "optional" : true,
+         "id" : "custom_bound_list",
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ]
+      },
+      {
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : true,
+         "id" : "media_supplement_list",
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ]
+      },
+      {
+         "advanced" : true,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFeatureValues.ExpressionMatrix"
+            ]
+         },
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "expseries_id"
+      },
+      {
+         "id" : "expression_condition",
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true
+      },
+      {
+         "id" : "exp_threshold_percentile",
+         "optional" : false,
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "advanced" : true,
+         "default_values" : [
+            "0.5"
+         ],
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "id" : "exp_threshold_margin",
+         "advanced" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "default_values" : [
+            "0.1"
+         ]
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "default_values" : [
+            "0.5"
+         ],
+         "advanced" : true,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "id" : "activation_coefficient"
+      },
+      {
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "id" : "objective_fraction",
+         "advanced" : true,
+         "default_values" : [
+            "0.1"
+         ],
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "id" : "minimum_target_flux",
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false,
+         "default_values" : [
+            "0.01"
+         ],
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "advanced" : true
+      },
+      {
+         "optional" : false,
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "id" : "number_of_solutions",
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "validate_as" : "int"
+         },
+         "advanced" : true
+      }
+   ],
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "job_id_output_field" : "docker",
+   "name" : "propagate_model_to_new_genome"
+}

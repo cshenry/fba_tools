@@ -1,0 +1,144 @@
+#
+# Define basic display information
+#
+name     : Simulate Growth on Phenotype Data
+subtitle : |
+    Use Flux Balance Analysis (FBA) to simulate multiple growth phenotypes.
+tooltip  : |
+    Use Flux Balance Analysis (FBA) to simulate multiple growth phenotypes.
+
+screenshots :
+    - simulate_growth_on_a_phenotype_data_input.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    custom_bound_list :
+        ui-name : |
+            Custom flux bounds
+        short-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        long-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+
+
+    all_reversible :
+        ui-name : |
+            Make all reactions reversible?
+        short-hint : |
+            Check this box to ignore the reversibility rules in the model and make every reaction reversible
+        long-hint : |
+            Check this box to ignore the reversibility rules in the model and make every reaction reversible
+
+
+    fbamodel_id :
+        ui-name : |
+            FBA Model
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+
+
+    phenotypesim_output_id :
+        ui-name : |
+            Phenotype Simulation Result
+        short-hint : |
+            Name the Phenotype Simulation Result data
+        long-hint : |
+            Name the Phenotype Simulation Result data
+
+
+    phenotypeset_id :
+        ui-name : |
+            Phenotype Set
+        short-hint : |
+            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+        long-hint : |
+            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+
+
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+
+
+    feature_ko_list :
+        ui-name : |
+            Gene Knockouts
+        short-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+        long-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+
+
+    objective_fraction :
+        ui-name : |
+            Objective constraint
+        short-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+        long-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+
+
+description : |
+    <p>This method uses an input metabolic model to simulate growth in a set of media conditions, with a specified set of gene knockouts, and with specified media supplements. A metabolic model can be curated using phenotypic data such as Biolog growth data or gene essentiality data generated on a specific set of media conditions. The method reports differences between growth predictions and experimentally measured growth rates. This method can be applied to test the accuracy of a model in replicating experimental observations, as well as exploring the set of metabolites that an organism can utilize as nutrient sources.  The Simulate Growth on Phenotype Data  method carries out flux balance analysis (FBA) for each medium and knockout in the phenotype dataset and displays the output (growth/no growth) as a side-by-side comparison of model predictions and experimental results. To begin, the user uploads a table of phenotype data (e.g., Biolog or gene essentiality data) into the app. The user also either uploads a metabolic model or selects a model already present in KBase. KBase uses the selected model to simulate the uploaded phenotypes, presenting simulation results in a detailed exportable report. This method also conducts some reconciliation of models with phenotype data.</p>
+    
+    <p>Numerous Biolog and gene essentiality datasets are available for analysis through the KBase public data sets. These “PhenotypeSet” data can be imported to your narrative by the following steps: (1) click the right arrow of the “DATA” tab in the upper right corner of teh Narrative Interface, (2) navigate to the “Public” tab, (3)select the “PhenotypeSet” in the dropdown list and search for a specific dataset (4) click the “Add” button that appears on the left of each PhenotypeSet.</p>
+    
+    <p>In the near future you will be able to upload your own phenotype datasets to your Narrative from an input file.  Example data input files can be <a href="http://bioseed.mcs.anl.gov/~janakae/Phenosim/">downloaded here.</a></p>
+    
+    <p>The columns in the phenotype files are as follows:</p>   
+    <ul>
+    <li>media — ID of the media condition loaded in KBase where the phenotype was observed.</li>
+    <li>mediaws — Workspace where the media for the phenotype data was loaded into KBase.</li>
+    <li>growth — Indication of whether or not the organism grew in the specified media with the specified knockouts. “1” means growth; “0” means no growth.</li>
+    <li>geneko — List of genes knocked out in the phenotype; use “none” for wild-type phenotypes.</li>
+    <li>addtlCpd — Additional media components added along with the primary media formulation.</li>
+    </ul>
+    </p>
+    
+    <p><a href="http://kbase.us/simulate-growth-on-phenotype-data-method/" target="_blank">Tutorial for Simulate Growth on Phenotype Data Method</a></p>
+    
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
+
+publications :
+    -
+        pmid: 20802497
+        display-text: |
+            Henry CS, DeJongh M, Best AA, Frybarger PM, Linsay B, et al. (2010) High-throughput generation, optimization and analysis of genome-scale metabolic models. Nat Biotechnol 28: 977-982. doi:10.1038/nbt.1672.
+        link: http://www.ncbi.nlm.nih.gov/pubmed/20802497
+    -
+        display-text: |
+            Orth JD, Thiele I, Palsson BØ (2010) What is flux balance analysis? Nature Biotechnology 28: 245–248. doi:10.1038/nbt.1614.
+        link: http://www.nature.com/nbt/journal/v28/n3/abs/nbt.1614.html

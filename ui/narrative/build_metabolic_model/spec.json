@@ -1,0 +1,19 @@
+{
+   "parameters" : [],
+   "job_id_output_field" : "docker",
+   "name" : "build_metabolic_model",
+   "visible" : true,
+   "authors" : ["chenry"],
+   "contact" : "help@kbase.us",
+   "ver" : "1.0.0",
+   "behavior" : {
+      "service-mapping" : {
+         "output_mapping" : [],
+         "name" : "fba_tools",
+         "input_mapping" : [],
+         "url" : "",
+         "method" : "build_metabolic_model"
+      }
+   },
+   "categories" : ["active"]
+}

@@ -1,0 +1,58 @@
+#
+# Define basic display information
+#
+name     : Compare FBA solutions
+
+tooltip  : |
+    Compare the solutions from multiple FBA simulations
+
+screenshots :
+
+    - compare_fba_input.png
+    - compare_fba_output1.png
+
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    fba_id_list :
+        ui-name : |
+            FBA(s)
+        short-hint : |
+            Select FBA solutions one at a time to compare one at a time; solutions must be created or copied into your narrative to be compared
+        long-hint : |
+            Select FBA solutions one at a time to compare one at a time; solutions must be created or copied into your narrative to be compared
+
+
+    fbacomparison_output_id :
+        ui-name : |
+            FBA comparison ID
+        short-hint : |
+            Name of the object where FBA comparison data will be stored in your narrative
+        long-hint : |
+            Name of the object where FBA comparison data will be stored in your narrative
+
+
+description : |
+
+    <p>KBase permits the use of flux balance analysis to predict how an organism will behave metabolically in a wide range of growth conditions. With this capability, it quickly becomes important to be able to compare the flux profiles predicted by FBA side-by-side, so as to understand how an organism's behavior changes from one condition to the next, or how the behavior of two different organisms vary with in a single condition. The Compare FBA Solutions method enables this comparison. FBA solutions are compared on three levels: (i) the objective value for each FBA solution is compared; (ii) the flux through each reaction in each FBA solution is compared; and (iii) the uptake and excretion of metabolites in each FBA solution is compared. In this comparison, reaction fluxes are categorized into four possible states: not in model; no flux; forward flux; and reverse flux. Metabolite fluxes are categorized into similar states: not in model; no flux; uptake; and excretion. FBA solutions are compared based on these states, and solutions with similar states are compared based on magnitude of flux.</p>
+
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Chris Henry, Matt DeJongh, Jose Faria, Janaka Edirisinghe, Sam Seaver, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>

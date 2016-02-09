@@ -1,0 +1,85 @@
+{
+   "visible" : true,
+   "authors" : [
+      "chenry"
+   ],
+   "categories" : [
+      "active"
+   ],
+   "behavior" : {
+      "service-mapping" : {
+         "output_mapping" : [
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "target_property" : "type",
+               "constant_value" : "KBaseFBA.FBAComparison"
+            },
+            {
+               "input_parameter" : "fbacomparison_output_id",
+               "target_property" : "obj"
+            }
+         ],
+         "name" : "fba_tools",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "input_parameter" : "fba_id_list",
+               "target_property" : "fba_id_list"
+            },
+            {
+               "input_parameter" : "fbacomparison_output_id",
+               "target_property" : "fbacomparison_output_id"
+            }
+         ],
+         "url" : "",
+         "method" : "compare_fba_solutions"
+      }
+   },
+   "ver" : "1.0.0",
+   "contact" : "help@kbase.us",
+   "parameters" : [
+      {
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBA"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : true,
+         "field_type" : "text",
+         "optional" : false,
+         "id" : "fba_id_list"
+      },
+      {
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "fbacomparison_output_id",
+         "advanced" : false,
+         "text_options" : {
+            "is_output_name" : true,
+            "valid_ws_types" : [
+               "KBaseFBA.FBAComparison"
+            ]
+         },
+         "default_values" : [
+            ""
+         ]
+      }
+   ],
+   "job_id_output_field" : "docker",
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "name" : "compare_fba_solutions"
+}

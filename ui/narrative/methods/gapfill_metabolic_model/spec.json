@@ -1,0 +1,388 @@
+{
+   "authors" : [
+      "chenry"
+   ],
+   "visible" : true,
+   "ver" : "1.0.0",
+   "contact" : "help@kbase.us",
+   "categories" : [
+      "active"
+   ],
+   "behavior" : {
+      "service-mapping" : {
+         "method" : "gapfill_metabolic_model",
+         "url" : "",
+         "name" : "fba_tools",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id"
+            },
+            {
+               "target_property" : "media_id",
+               "input_parameter" : "media_id"
+            },
+            {
+               "input_parameter" : "target_reaction",
+               "target_property" : "target_reaction"
+            },
+            {
+               "target_property" : "fbamodel_output_id",
+               "input_parameter" : "fbamodel_output_id"
+            },
+            {
+               "input_parameter" : "thermodynamic_constraints",
+               "target_property" : "thermodynamic_constraints"
+            },
+            {
+               "input_parameter" : "comprehensive_gapfill",
+               "target_property" : "comprehensive_gapfill"
+            },
+            {
+               "target_property" : "source_fbamodel_id",
+               "input_parameter" : "source_fbamodel_id"
+            },
+            {
+               "target_property" : "feature_ko_list",
+               "input_parameter" : "feature_ko_list"
+            },
+            {
+               "target_property" : "reaction_ko_list",
+               "input_parameter" : "reaction_ko_list"
+            },
+            {
+               "target_property" : "custom_bound_list",
+               "input_parameter" : "custom_bound_list"
+            },
+            {
+               "target_property" : "media_supplement_list",
+               "input_parameter" : "media_supplement_list"
+            },
+            {
+               "input_parameter" : "expseries_id",
+               "target_property" : "expseries_id"
+            },
+            {
+               "target_property" : "expression_condition",
+               "input_parameter" : "expression_condition"
+            },
+            {
+               "target_property" : "exp_threshold_percentile",
+               "input_parameter" : "exp_threshold_percentile"
+            },
+            {
+               "input_parameter" : "exp_threshold_margin",
+               "target_property" : "exp_threshold_margin"
+            },
+            {
+               "input_parameter" : "activation_coefficient",
+               "target_property" : "activation_coefficient"
+            },
+            {
+               "input_parameter" : "objective_fraction",
+               "target_property" : "objective_fraction"
+            },
+            {
+               "input_parameter" : "minimum_target_flux",
+               "target_property" : "minimum_target_flux"
+            },
+            {
+               "input_parameter" : "number_of_solutions",
+               "target_property" : "number_of_solutions"
+            }
+         ],
+         "output_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
+            },
+            {
+               "target_property" : "obj",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ]
+      }
+   },
+   "parameters" : [
+      {
+         "id" : "fbamodel_id",
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "advanced" : false
+      },
+      {
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseBiochem.Media"
+            ]
+         },
+         "id" : "media_id",
+         "optional" : false,
+         "field_type" : "text",
+         "allow_multiple" : false
+      },
+      {
+         "id" : "target_reaction",
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false,
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "id" : "fbamodel_output_id",
+         "optional" : false,
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "text_options" : {
+            "is_output_name" : true,
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false
+      },
+      {
+         "optional" : false,
+         "field_type" : "checkbox",
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "allow_multiple" : false,
+         "id" : "thermodynamic_constraints",
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "optional" : false,
+         "default_values" : [
+            "0"
+         ],
+         "allow_multiple" : false,
+         "id" : "comprehensive_gapfill",
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true
+      },
+      {
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false,
+         "id" : "source_fbamodel_id"
+      },
+      {
+         "advanced" : true,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "allow_multiple" : true,
+         "field_type" : "text",
+         "optional" : true,
+         "id" : "feature_ko_list"
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "field_type" : "text",
+         "allow_multiple" : true,
+         "optional" : true,
+         "id" : "reaction_ko_list"
+      },
+      {
+         "allow_multiple" : true,
+         "field_type" : "text",
+         "optional" : true,
+         "id" : "custom_bound_list",
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "allow_multiple" : true,
+         "field_type" : "text",
+         "optional" : true,
+         "id" : "media_supplement_list"
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFeatureValues.ExpressionMatrix"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false,
+         "id" : "expseries_id"
+      },
+      {
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "expression_condition",
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true
+      },
+      {
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "id" : "exp_threshold_percentile",
+         "advanced" : true,
+         "default_values" : [
+            "0.5"
+         ],
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "id" : "exp_threshold_margin",
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "default_values" : [
+            "0.1"
+         ],
+         "advanced" : true
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "default_values" : [
+            "0.5"
+         ],
+         "advanced" : true,
+         "id" : "activation_coefficient",
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false
+      },
+      {
+         "id" : "objective_fraction",
+         "optional" : false,
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "default_values" : [
+            "0.1"
+         ],
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "advanced" : true
+      },
+      {
+         "default_values" : [
+            "0.01"
+         ],
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "advanced" : true,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "id" : "minimum_target_flux"
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "validate_as" : "int"
+         },
+         "advanced" : true,
+         "id" : "number_of_solutions",
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "optional" : false
+      }
+   ],
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "job_id_output_field" : "docker",
+   "name" : "gapfill_metabolic_model"
+}
