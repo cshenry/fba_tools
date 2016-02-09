@@ -1,0 +1,258 @@
+NAME	SMALL_MOLECULE	ENERGY	CHARGE	ERROR	FORMULA	DATFILE	STRUCTURAL_CUES
+acetone	1	-38.52	0	0.5	C3O1H6	acetone.gds	
+acetate	1	-88.29	-1	0.5	C2H3O2	acetate.gds	
+acetaldehyde	1	-33.4	0	0.5	C2H4O	acetaldehyde.gds	
+methylamine	1	-9.55	1	0.5	CNH6	methylamine.gds	
+ethane	1	-4.065	0	0.5	C2H6	ethane.gds	
+ethanol	1	-43.44	0	0.5	C2H6O1	ethanol.gds	
+NH4plus	1	-18.97	1	0.5	N1H4	NH4plus.gds	
+NitrousOx	1	18.2552	1	1.5241	O2N1	NitrousOx.gds	
+FeS	1	-10000	0	0	Fe1S1	FeS.gds	
+ferricy	1	-10000	0	0	Fe1C1N1	ferricy.gds	
+cmonox|CO	1	-28.6568	0	0.5	CO	cmonox.gds	
+hydroxylamine	1	-38.8954	0	0.79702	H1O1N1H2	hydroxylamine.gds	
+carbamate	1	-95.7	-1	0.5	C1H2N1O2	carbamate.gds	
+triS	1	-229	-2	0.5	S3O6	triS.gds	
+S2O4	1	-143.5	0	0.5	S2O4	S2O4.gds	
+N2H4	1	30.6	0	0.5	N2H4	N2H4.gds	
+urea	1	-48.7	0	0.5	C1H4N2O1	urea.gds	
+SO2	1	-71.9	0	0.5	SO2	SO2.gds	
+ClO3	1	-0.8	-1	0.5	ClO3	ClO3.gds	
+ClO2	1	4.1	-1	0.5	ClO2	ClO2.gds	
+HNO	1	11.8205	0	0.71845	HNO	HNO.gds	
+CH4	1	-8.2051	0	0.5	CH4	CH4.gds	
+chloromethane	1	-12.6	0	1.9008	CH3Cl	chloromethane.gds	
+dichloromethane	1	-15.8	0	1.9008	CH2Cl2	dichloromethane.gds	
+trichloromethane	1	-15.9	0	1.9008	CHCl3	trichloromethane.gds	
+tetrachloromethane	1	-10.8	0	1.9008	CCl4	tetrachloromethane.gds	
+S2O3H	1	-122.7	-2	0.5	O3S2	S2O3H.gds	
+CO2	1	-92.26	0	0.5	C1O2	CO2.gds	
+H2	1	4.2065	0	0.5	H2	H2.gds	
+H2O|OH-|HO-	1	-56.687	0	0.5	H2O	H2O.gds	
+H2O2	1	-32.05	0	0.5	H2O2	H2O2.gds	
+H2S|HS-	1	-6.66	0	0.5	H2S1	H2S.gds	
+H2Se	1	-10000	0	0	Se1H2	H2Se.gds	
+cyanicacid	1	-10000	0	0	C1N1O1	cyanicacid.gds	WtrpCW:1|WtrpN:1|PrimOH:1
+selenophos	1	-10000	0	0	Se1P1O3H2	selenophos.gds	
+sulfate	1	-177.97	-2	0.5	S1O4	sulfate.gds	
+sulfite	1	-126.15	-1	0.5	O3S1H1	sulfite.gds	
+oxalate	1	-161	-2	0.5	C2H2O4	oxalate.gds	
+nitrite	1	-8.9	-1	0.5	NO2	nitrite.gds	
+MeOH	1	-41.9	0	0.5	C1H4O1	MeOH.gds	
+formate	1	-83.9	-1	0.5	C1H1O2	formate.gds	
+formaldehyde	1	-31.2	0	0.5	C1H2O1	formaldehyde.gds	
+formylphosphate	1	-302.5648	-1	1.9265	CH2O5P	formylphosphate.gds	
+HCO3	1	-140.26	-1	0.5	C1H1O3	HCO3.gds	
+Itriphos	1	-10000	-4	0	H1O10P3	Itriphos.gds	
+thiopyrophos	1	-10000	-2	0	H1O5S2P2	thiopyrophos.gds	
+pyrophos	1	-480.93	-2	0.5	H1O7P2	pyrophos.gds	
+orthophosphate	1	-261.974	-2	0.5	H1O4P1	orthophosphate.gds	
+PO3	1	-10000	-1	0	O3P	PO3.gds	
+nitricacid	1	-26.61	-1	0.5	HNO3	nitricacid.gds	
+WSOH	0	32.4	-1	3.42	SO	WSOH.gds	
+WCl3	0	-5.55	0	0.293	Cl3	WCl3.gds	
+WCl2Prim	0	-8.54	0	0.397	Cl2	WCl2Prim.gds	
+WCl2Sec	0	-7.18	0	0.448	Cl2	WCl2Sec.gds	
+WCl2SecTwo	0	-10000	0	0	Cl2	WCl2SecTwo.gds	WCl2Sec:1
+WClPrim	0	-11.7	0	0.481	Cl	WClPrim.gds	
+WClSec	0	-10.2	0	0.600	Cl	WClSec.gds	
+WClSecTwo	0	-10000	0	0	Cl	WClSecTwo.gds	WClSec:1
+WClTert	0	-7.38	0	0.422	Cl	WClTert.gds	
+WClTertTwo	0	-10000	0	0	Cl	WClTertTwo.gds	WClTert:1
+TWdNpWW	0	3.77	1	1.27	N	TWdNpWW.gds	
+RW	0	-10000	0	0	R1	RW.gds	
+Ramide_NHW	0	-10000	0	0		Ramide_NHW.gds	amide:1|RWNHW:1
+Ramide_NWW	0	-10000	0	0		Ramide_NWW.gds	amide:1|RWWNW:1
+amide_NH2	0	-10000	0	0		amide_NH2.gds	amide:1|WNH2:1
+amide_NWW	0	-10000	0	0		amide_NWW.gds	amide:1|WWNW:1
+amide_NHW	0	-10000	0	0		amide_NHW.gds	amide:1|WNHW:1
+WCOOPO3	0	-298	-1	0.239	C1O5P1	WCOOPO3.gds	
+WCOOPO2	0	-10000	0	0	PO3	WCOOPO2.gds	
+WCOOPO2H	0	-10000	0	0	HPO3	WCOOPO2H.gds	
+WOCOW	0	-75.3	0	0.422	C1O2	WOCOW.gds	
+RWOCOW	0	-71.0	0	0.787	C1O2	RWOCOW.gds	
+RWWCdblO	0	-30.1	0	0.292	C1O1	RWWCdblO.gds	
+WCOOn	0	-83.1	-1	0.111	C1O2	WCOOn.gds	
+WCHdblO	0	-30.4	0	0.164	C1H1O1	WCHdblO.gds	
+WketoneW	0	-28.4	0	0.180	C1O1	WketoneW.gds	
+WSWform	0	-10000	0	0	S	WSWform.gds	WSW:1|smide:1
+WSWmide	0	-10000	0	0	S	WSWmide.gds	WSW:1|smide:1
+WSHmide	0	-10000	0	0	SH	WSHmide.gds	WSH:1|smide:1
+RWSW	0	0.720	0	0.706	S1	RWSW.gds	
+WSWW	0	21.9	1	2.05	S1	WSWW.gds	
+RWOPO2W	0	-190	-1	0.957	O3P1	RWOPO2W.gds	
+WP3O10	0	-10000	0	0	O10P3	WP3O10.gds	mid_phos:2|prim_phos:1
+WP2O7	0	-10000	0	0	O7P2	WP2O7.gds	mid_phos:1|prim_phos:1
+WP2O6	0	-10000	0	0	O7P2	WP2O6.gds	mid_phos:1|WPO3:1
+WP5O16W	0	-10000	0	0	O16P5	WP5O16W.gds	mid_phos:4|WPO4nW:1
+WP4O13W	0	-10000	0	0	O13P4	WP4O13W.gds	mid_phos:3|WPO4nW:1
+WP3O10W	0	-10000	0	0	O10P3	WP3O10W.gds	mid_phos:2|WPO4nW:1
+WP2O7W	0	-10000	0	0	O7P2	WP2O7W.gds	mid_phos:1|WPO4nW:1
+prim_phos	0	-254	-1	0.159	O4P0	prim_phos.gds	
+thioprim_phos	0	-10000	-1	0	O3SP0	thioprim_phos.gds	
+WSO4	0	-156	-1	0.698	SO4	WSO4.gds	
+thiomid_phos	0	-10000	-1	0	O2SP1	thiomid_phos.gds	
+mid_sulph2	0	-10000	0	0	SO3	mid_sulph2.gds	mid_sulph:1
+mid_sulph	0	-10000	0	0	SO3	mid_sulph.gds	
+WSO3	0	-123.7525	-1	0.73735	O3S1	WSO3.gds	
+WPO3	0	-205	-2	0.440	O3P1	WPO3.gds	
+WPO4nW	0	-234	-1	0.438	O4P1	WPO4nW.gds	
+mid_phos	0	-208	-1	0.122	O3P1	mid_phos.gds	
+TWNWW	0	12.4	0	1.10	N1	TWNWW.gds	
+RWWNdblO	0	-10000	0	0	C1	RWWNdblO.gds	
+WRdNWRW	0	13.5	1	0.672	N1	WRdNWRW.gds	
+WSH	0	-0.744	0	0.636	H1S1	WSH.gds	
+WSNeg	0	12.7	-1	2.85	S	WSNeg.gds	
+WSSW	0	5.69	0	1.20	S2	WSSW.gds	
+WSW	0	8.77	0	0.740	S1	WSW.gds	
+WtrpCW	0	41.6	0	2.32	C1	WtrpCW.gds	
+WCN3H	0	-10000	1	0	CN3H4	WCN3H.gds	
+WCN3W	0	-10000	1	0	CN3H3	WCN3W.gds	
+WNH2W	0	5.95	1	0.900	H2N1	WNH2W.gds	
+WNHW	0	10.5	0	0.515	H1N1	WNHW.gds	
+RWNHW	0	6.18	0	0.532	H1N1	RWNHW.gds	
+RWWNW	0	22.1	0	0.617	N1	RWWNW.gds	
+RWdblNHpW	0	4.37	1	1.04	N1H1	RWdblNHpW.gds	
+RWdblNW	0	4.17	0	0.572	N1	RWdblNW.gds	
+WdblNH2	0	-22.6	1	1.33	H2N1	WdblNH2.gds	
+WdblNH	0	-21.7	0	1.52	H1N1	WdblNH.gds	
+WdblS	0	-10000	0	0	S	WdblS.gds	
+WNH3	0	-6.25	1	0.196	H3N1	WNH3.gds	
+WNH2	0	2.04	0	0.331	H2N1	WNH2.gds	
+WtrpN	0	-32.1	0	4.34	N1	WtrpN.gds	
+WNHWW	0	15.5	1	1.17	H1N1	WNHWW.gds	
+WWNW	0	24.4	0	1.14	N1	WWNW.gds	
+RWOW	0	-36.6	0	0.902	O1	RWOW.gds	
+BWdOW	0	-10000	0	0			
+BenzClONegCl	0	-10000	-1	0	O	BenzClONegCl.gds	WOneg:1
+BenzBr	0	2.50	0	1.26	Br	BenzBr.gds	
+BenzI	0	16.6	0	1.26	I	BenzI.gds	
+BenzF	0	-43.0	0	1.26	F	BenzF.gds	
+PrimOH	0	-41.5	0	0.126	H1O1	PrimOH.gds	
+WOneg	0	-32.8	-1	0.934	O1	WOneg.gds	
+WOWRingLink	0	-10000	0	0	O1	WOWRingLink.gds	
+WOW	0	-23.2	0	0.408	O1	WOW.gds	
+BBTCdblW	0	-0.0245	0	0.927	C1	BBTCdblW.gds	
+TWWCdblW	0	16.7	0	0.891	C1	TWWCdblW.gds	
+BTWWCdblW	0	6.77	0	0.607	C1	BTWWCdblW.gds	
+BWCHdblW	0	4.93	0	0.142	C1H1	BWCHdblW.gds	
+BWWCdblW	0	6.95	0	0.313	C1	BWWCdblW.gds	
+RdblWCWW	0	32.1	0	2.14	C1	RdblWCWW.gds	
+RWCHdblW	0	8.46	0	0.293	C1H1	RWCHdblW.gds	
+RWCdblWW	0	11.7	0	0.362	C1	RWCdblWW.gds	
+WtrpCH	0	60.7	0	4.74	C1H1	WtrpCH.gds	
+WCHdblW	0	12.8	0	0.242	C1H1	WCHdblW.gds	
+WdblCH2	0	6.87	0	0.312	C1H2	WdblCH2.gds	
+WdblCWW	0	15.7	0	0.394	C1	WdblCWW.gds	
+TWWCHW	0	2.60	0	0.779	C1H1	TWWCHW.gds	
+TWWCWW	0	-3.89	0	3.03	C1	TWWCWW.gds	
+RWCH2W	0	3.18	0	0.247	C1H2	RWCH2W.gds	
+RWCHWW	0	4.84	0	0.216	C1H1	RWCHWW.gds	
+RWWCWW	0	7.17	0	0.420	C1	RWWCWW.gds	
+WCH3	0	-3.65	0	0.109	C1H3	WCH3.gds	
+WCH2W	0	1.62	0	0.0878	C1H2	WCH2W.gds	
+WWCHW	0	5.08	0	0.153	C1H1	WWCHW.gds	
+WWCWW	0	7.12	0	0.298	C1	WWCWW.gds	
+WNdblW	0	16.1	0	3.16	N1	WNdblW.gds	
+WWNpWW	0	61.4	1	1.93	N1	WWNpWW.gds	
+RWWSdblO	0	-10000	0	0	O1S1	RWWSdblO.gds	
+WWSdblO	0	-10000	0	0	O1S1	WWSdblO.gds	
+WNdblOdblO	0	-10000	0	0	NO2	WNdblOdblO.gds	
+RWWdblNdblO	0	-10000	0	0	NO	RWWdblNdblO.gds	
+WI	0	-10000	0	0	I	WI.gds	
+WF	0	-10000	0	0	F	WF.gds	
+WCl	0	-10000	0	0	Cl	WCl.gds	
+WCoa	0	-10000	0	0	Coa	WCoa.gds	RWWNW:1|RWCHWW:4|TWWCdblW:2|RWCHdblW:2|RWOW:1|RWdblNW:3|PrimOH:2|RWCdblWW:1|WCH2W:6|prim_phos:1|WNH2:1|WPO4nW:1|mid_phos:1|WWCWW:1|WWCHW:1|WCH3:2|WketoneW:2|amide:2|WNHW:2|HeteroAromatic:2|COA:1
+T3WWCWW	0	-10000	0	0	C1	T3WWCWW.gds	
+T3WWCHW	0	-10000	0	0	C1	T3WWCHW.gds	
+T34WWCWW	0	-10000	0	0	C1	T34WWCWW.gds	
+T34WWCHW	0	-10000	0	0	C1	T34WWCHW.gds	
+T35WWCWW	0	-10000	0	0	C1	T35WWCWW.gds	
+T35WWCHW	0	-10000	0	0	C1	T35WWCHW.gds	
+T36WWCWW	0	-10000	0	0	C1	T36WWCWW.gds	
+T36WWCHW	0	-10000	0	0	C1	T36WWCHW.gds	
+T4WWCWW	0	-10000	0	0	C1	T4WWCWW.gds	
+T45WWCWW	0	-10000	0	0	C1	T45WWCWW.gds	
+T46WWCWW	0	-10000	0	0	C1	T46WWCWW.gds	
+T47WWCWW	0	-10000	0	0	C1	T47WWCWW.gds	
+T48WWCWW	0	-10000	0	0	C1	T48WWCWW.gds	
+T3BWCWW	0	-10000	0	0	C1	T3BWCWW.gds	
+T34BWCWW	0	-10000	0	0	C1	T34BWCWW.gds	
+T35BWCWW	0	-10000	0	0	C1	T35BWCWW.gds	
+T36BWCWW	0	-10000	0	0	C1	T36BWCWW.gds	
+T3BBWCWW	0	-10000	0	0	C1	T3BBWCWW.gds	
+T34BBWCWW	0	-10000	0	0	C1	T34BBWCWW.gds	
+T35BBWCWW	0	-10000	0	0	C1	T35BBWCWW.gds	
+T36BBWCWW	0	-10000	0	0	C1	T36BBWCWW.gds	
+TRWCH2RW	0	-10000	0	0	C1	TRWCH2RW.gds	
+TRWCHRWW	0	-10000	0	0	C1	TRWCHRWW.gds	
+TRWCRWWW	0	-10000	0	0	C1	TRWCRWWW.gds	
+T3WWCdblW	0	-10000	0	0	C1	T3WWCdblW.gds	
+T34WWCdblW	0	-10000	0	0	C1	T34WWCdblW.gds	
+T35WWCdblW	0	-10000	0	0	C1	T35WWCdblW.gds	
+T36WWCdblW	0	-10000	0	0	C1	T36WWCdblW.gds	
+TRWCHdblRW	0	-10000	0	0	C1	TRWCHdblRW.gds	
+TRWCdblRWW	0	-10000	0	0	C1	TRWCdblRWW.gds	
+TRWCRWdblW	0	-10000	0	0	C1	TRWCRWdblW.gds	
+WdblCdblW	0	-10000	0	0	C1	WdblCdblW.gds	
+T24RWNRWW	0	-10000	0	0	C1	T24RWNRWW.gds	
+T24RWNRWH	0	-10000	0	0	C1	T24RWNRWH.gds	
+RWdblORW	0	-10000	0	0	C1	RWdblORW.gds	
+T24RWORW	0	-10000	0	0	C1	T24RWORW.gds	
+T24RWCdblORW	0	-10000	0	0	C1	T24RWCdblORW.gds	
+WPO3H	0	-10000	0	0	HPO3		
+Origin	0	0	0	0			
+Hydrocarbon	0	3.68	0	0.865			
+HeteroAromatic	0	-1.95	0	0.339			
+threemember	0	14.4	0	1.56			
+COA	0	0	0	0			
+ACP	0	-10000	0	0			
+NADH	0	0	0	0			
+OCCC	0	-1.55	0	0.240			
+OCCN	0	-3.02	0	0.582			
+OCCO	0	2.46	0	0.183			
+OCNC	0	0	0	0			
+CNNC	0	0	0	0			
+CCNC	0	0	0	0			
+CCCC	0	-4.82	0	0.419			
+CCCN	0	-5.29	0	0.717			
+DistinctVicinalCl	0	1.92	0	0.356			
+BinaryVicinalCl	0	0	0	0			
+H|H+	1	-9.53	1	0	H		
+O2	1	3.9197	0	0.5	O2	O2.gds	
+Ag|Ag+|Ag1+	1	-10000	1	0	Ag		
+Ca|Ca2+	1	-10000	2	0	Ca		
+Cd|Cd2+	1	-10000	2	0	Cd		
+Cl|Cl-|Cl1-	1	-10000	-1	0	Cl		
+Co|Co2+	1	-10000	2	0	Co		
+Cu|Cu+|Cu1+	1	-10000	1	0	Cu		
+Cu2|Cu2+	1	-10000	2	0	Cu		
+E|E-	1	0	-1	0	E		
+Fe2|Fe2+	1	-18.85	2	0.5	Fe		
+Fe3|Fe3+	1	-1.1	3	0.5	Fe		
+Hg|Hg2+	1	-10000	2	0	Hg		
+K|K+|K1+	1	-10000	1	0	K		
+Mg|Mg2+	1	-10000	2	0	Mg		
+Mn|Mn2+	1	-10000	2	0	Mn		
+Nap|Na+|Na1+	1	-10000	1	0	Na		
+Ni|Ni2+	1	-10000	2	0	Ni		
+X	1	-10000	0	0	X		
+Zn|Zn2+	1	-10000	2	0	Zn		
+S	1	0	0	0.5	S		
+H2S|HS-	1	-6.66	0	0.5	H2S1	H2S.gds	
+F|F-	1	-10000	-1	0	F		
+I|I-	1	-10000	-1	0	I		
+I2	1	-10000	0	0	I2		
+Br|Br-	1	-10000	-1	0	Br		
+Se	1	-10000	0	0	Se		
+CaO+	1	-10000	1	0	CaO		
+W	1	-10000	0	0	W		
+Fe	1	0	0	0.5	Fe		
+Mo	1	0	0	0.5	Mo		
+N2	1	4.4694	0	0.5	N2		
+O2s	1	6.9	-1	0.5	O2		
+Pb2|Pb2+	1	-10000	2	0.5	Pb		
+smide	0	-11.3	0	0.459	S		
+amide	0	-14.3	0	0.348			
+NoGroup	0	-10000	0	0			
+cyanide|CN-	1	-10000	0	0	HCN	cyanide.gds	
