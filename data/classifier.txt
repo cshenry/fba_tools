@@ -1,0 +1,1459 @@
+Bayesian	Gram negative	Gram positive
+BaseProbabilities	194	82
+Copper-sensing two-component system response regulator CpxR	-6.90775527898214	-0.837041360220015
+Probable two-component sensor	-6.90775527898214	-1.6569402464191
+Chromosome partition protein MukB	-6.90775527898214	-1.41771055735327
+GTP-binding protein	-6.90775527898214	-1.74149763444717
+Transcriptional regulatory protein RtcR	-6.90775527898214	-1.86666077740117
+Protein SseB	-6.90775527898214	-1.90056232907685
+FIG000906: Predicted Permease	-6.90775527898214	-0.642885345779057
+Nitrogen regulatory protein P-II, glnK	-6.90775527898214	-1.71251009757391
+Lipoprotein nlpI precursor	-6.90775527898214	-1.27887411249905
+FIG009095: D,D-carboxypeptidase family protein	-6.90775527898214	-1.60429651293368
+GTP-sensing transcriptional pleiotropic repressor codY	-0.279584862219162	-6.90775527898214
+Mediator of hyperadherence YidE	-6.90775527898214	-1.71251009757391
+Lysine-arginine-ornithine-binding periplasmic protein precursor (TC 3.A.1.3.1)	-6.90775527898214	-0.768048488733063
+Flavodoxin 1	-6.90775527898214	-0.873409004390889
+Phage baseplate assembly protein	-6.90775527898214	-1.20741514851691
+Modification methylase	-6.90775527898214	-1.57897870494939
+Periplasmic aromatic aldehyde oxidoreductase, molybdenum binding subunit YagR	-6.90775527898214	-1.53018854077996
+Protein YbgE	-6.90775527898214	-1.71251009757391
+FIG027190: Putative transmembrane protein	-6.90775527898214	-0.362583380624899
+Hydrolase, alpha/beta fold family functionally coupled to Phosphoribulokinase	-6.90775527898214	-0.991192040047273
+Manganese uptake regulation protein MUR	-6.90775527898214	-1.8021222562636
+Uncharacterized protein ImpC	-6.90775527898214	-0.108802859848799
+General secretion pathway protein G	-6.90775527898214	-0.43157625211185
+Regulator of sigma D	-6.90775527898214	-1.29756624551121
+FIG004016: Uncharacterized protein YggN	-6.90775527898214	-1.57897870494939
+Aconitate hydratase 2 (EC 4.2.1.3) @ 2-methylisocitrate dehydratase (EC 4.2.1.99)	-6.90775527898214	-1.24250646832818
+MFS family multidrug transport protein, bicyclomycin resistance protein	-6.90775527898214	-1.57897870494939
+Membrane protein YciC, linked to IspA	-6.90775527898214	-1.90056232907685
+invasion plasmid antigen / internalin, putative	-6.90775527898214	-1.50665804336977
+ABC transporter, ATP-binding protein EcsA	-0.312374685042152	-6.90775527898214
+Nucleoprotein/polynucleotide-associated enzyme	-6.90775527898214	-1.50665804336977
+Type cbb3 cytochrome oxidase biogenesis protein CcoH	-6.90775527898214	-1.90056232907685
+Phosphoethanolamine transferase EptA specific for the 1 phosphate group of core-lipid A	-6.90775527898214	-1.53018854077996
+Phage minor tail protein #Phage minor tail protein T	-6.90775527898214	-1.63027199933694
+Transcription repressor of multidrug efflux pump acrAB operon, TetR (AcrR) family	-6.90775527898214	-0.873409004390889
+Phage shock protein C	-6.90775527898214	-1.20741514851691
+Cytochrome c-type heme lyase subunit nrfE, nitrite reductase complex assembly	-6.90775527898214	-1.63027199933694
+Protein YcgL	-6.90775527898214	-1.09347088916769
+Autotransporter adhesin	-6.90775527898214	-0.576510276834184
+Adenosine (5')-pentaphospho-(5'')-adenosine pyrophosphohydrolase (EC 3.6.1.-)	-6.90775527898214	-0.305013528803421
+FKBP-type peptidyl-prolyl cis-trans isomerase FkpA precursor (EC 5.2.1.8)	-6.90775527898214	-0.81351086280982
+Doubtful CDS. No strong consensus RBS usptream. No significant database matches	-1.07451473708905	-6.90775527898214
+Phage integrase, Phage P4-associated	-6.90775527898214	-1.57897870494939
+Sensor histidine kinase PrrB (RegB) (EC 2.7.3.-)	-6.90775527898214	-1.17351359684123
+Putative RNA 2'-O-ribose methyltransferase mtfA (EC 2.1.1.-)	-6.90775527898214	-1.00517828202201
+Stringent starvation protein B	-6.90775527898214	-1.04835045388722
+Putative ECA polymerase	-6.90775527898214	-1.8021222562636
+FIG136845: Rhodanese-related sulfurtransferase	-6.90775527898214	-0.703509967595492
+Inner membrane protein forms channel for type IV secretion of T-DNA complex (VirB10)	-6.90775527898214	-1.22480689122878
+Probable component of the lipoprotein assembly complex (forms a complex with YaeT, YfgL, and NlpB)	-6.90775527898214	-0.613897808905805
+Protein YigP (COG3165) clustered with ubiquinone biosynthetic genes	-6.90775527898214	-0.713981267462787
+UPF0235 protein VC0458	-6.90775527898214	-1.29756624551121
+Flagellar P-ring protein FlgI	-6.90775527898214	-0.250578322248404
+ABC transporter, ATP-binding protein YnjD	-6.90775527898214	-1.6569402464191
+LysR family transcriptional regulator YcjZ	-6.90775527898214	-1.93565364888812
+Transcriptional repressor protein TrpR # regulates the trp, aroA I (aroH, aroL) and the mtr operons and auto-regulates TrpR.	-6.90775527898214	-1.3166144404819
+Integral inner membrane protein of type IV secretion complex (VirB6)	-6.90775527898214	-1.50665804336977
+YihE protein, a ser/thr kinase implicated in LPS synthesis and Cpx signalling	-6.90775527898214	-1.35583515363518
+FIG041266: ATP-dependent nuclease subunit B	-6.90775527898214	-1.77135059759685
+Curlin genes transcriptional activator	-6.90775527898214	-1.83387095457818
+probable membrane protein yjeI	-6.90775527898214	-1.90056232907685
+Serine protease, subtilase family	-6.90775527898214	-1.60429651293368
+Protein export cytoplasm chaperone protein (SecB, maintains protein to be exported in unfolded state)	-6.90775527898214	-0.237420237670893
+Thiol:disulfide oxidoreductase TlpA	-6.90775527898214	-1.60429651293368
+Maltoporin (maltose/maltodextrin high-affinity receptor, phage lambda receptor protein)	-6.90775527898214	-0.595029324601422
+Pectinesterase (EC 3.1.1.11)	-6.90775527898214	-1.74149763444717
+ATP-DEPENDENT DNA HELICASE	-6.90775527898214	-1.93565364888812
+Cysteine desulfurase CsdA-CsdE, sulfur acceptor protein CsdE	-6.90775527898214	-1.0782034170369
+Glutathione S-transferase family protein	-6.90775527898214	-0.415827895143711
+IncF plasmid conjugative transfer pilus assembly protein TraE	-6.90775527898214	-1.74149763444717
+Chemotaxis signal transduction protein	-6.90775527898214	-1.3166144404819
+elements of external origin; transposon-related functions	-6.90775527898214	-1.50665804336977
+Ceramide glucosyltransferase (EC 2.4.1.80)	-6.90775527898214	-1.90056232907685
+Histidine ABC transporter, permease protein HisQ (TC 3.A.1.3.1)	-6.90775527898214	-0.84901755126673
+DNA helicase IV	-6.90775527898214	-1.336032526339
+SAM-dependent methyltransferase, BioC-like	-6.90775527898214	-1.15698429489002
+Lipid A acylation protein PagP, palmitoyltransferase	-6.90775527898214	-1.8021222562636
+peptidase, U32 family small subunit [C1]	-0.669049628980885	-6.90775527898214
+Two-component system response regulator OmpR	-6.90775527898214	-0.633129170833692
+Uncharacterized protein ImpH/VasB	-6.90775527898214	-0.224433042144081
+DNA mismatch repair endonuclease MutH	-6.90775527898214	-1.20741514851691
+FIG003737: Predicted deacylase	-6.90775527898214	-1.86666077740117
+Dihydroneopterin triphosphate epimerase	-6.90775527898214	-1.77135059759685
+Type III secretion bridge between inner and outermembrane lipoprotein (YscJ,HrcJ,EscJ, PscJ)	-6.90775527898214	-0.950370045527018
+Uncharacterized protein, homolog of B.subtilis yhgC	-0.880358722648092	-6.90775527898214
+Outer membrane porin, OprD family	-6.90775527898214	-1.24250646832818
+Polysaccharide biosynthesis protein WlaX	-6.90775527898214	-1.50665804336977
+Baseplate assembly protein V	-6.90775527898214	-1.53018854077996
+Oar protein	-6.90775527898214	-1.46119566929301
+2-aminoethylphosphonate uptake and metabolism regulator	-6.90775527898214	-1.74149763444717
+Putative GTP-binding protein YdgA	-6.90775527898214	-1.77135059759685
+Ortholog of S. aureus MRSA252 (BX571856) SAR1694	-0.514898949153627	-6.90775527898214
+Lipopolysaccharide heptosyltransferase I (EC 2.4.1.-)	-6.90775527898214	-0.613897808905805
+Competence protein CoiA	-0.279584862219162	-6.90775527898214
+Homolog of E. coli HemY protein	-6.90775527898214	-0.633129170833692
+Exodeoxyribonuclease VIII (EC 3.1.11.-)	-6.90775527898214	-1.68433922060722
+Chaperone-modulator protein CbpM	-6.90775527898214	-1.86666077740117
+Cation transport protein chaC	-6.90775527898214	-1.24250646832818
+Octaheme tetrathionate reductase	-6.90775527898214	-1.93565364888812
+Beta-1,3-galactosyltransferase / Beta-1,4-galactosyltransferase	-6.90775527898214	-1.3760378609527
+DNA-binding capsular synthesis response regulator RcsB	-6.90775527898214	-1.90056232907685
+Peptidyl-prolyl cis-trans isomerase PpiC (EC 5.2.1.8)	-6.90775527898214	-0.885831524389447
+DNA polymerase II (EC 2.7.7.7)	-6.90775527898214	-0.937124818776997
+3-oxoacyl-[acyl-carrier protein] reductase paralog (EC 1.1.1.100)	-0.823200308808143	-6.90775527898214
+Fructose repressor FruR, LacI family	-6.90775527898214	-1.336032526339
+Transcriptional regulator YbiH, TetR family	-6.90775527898214	-1.63027199933694
+Putative cytoplasmic protein ,probably associated with Glutathione-regulated potassium-efflux	-6.90775527898214	-1.46119566929301
+Peptidase T (EC 3.4.11.4)	-0.769133087537867	-6.90775527898214
+Believed to be involved in assembly of Fe-S clusters	-6.90775527898214	-0.735258665910072
+DNA replication terminus site-binding protein	-6.90775527898214	-1.86666077740117
+Fumarate reductase subunit C	-6.90775527898214	-1.39665714815544
+Excinuclease ABC, C subunit-like	-6.90775527898214	-1.3760378609527
+Protein ytfJ precursor	-6.90775527898214	-1.48366852514507
+Lipopolysaccharide biosynthesis protein RffC	-6.90775527898214	-1.71251009757391
+DedD protein	-6.90775527898214	-0.672738308928738
+ComK regulator	-0.85137118577484	-6.90775527898214
+Inner membrane protein CreD	-6.90775527898214	-1.55428609235902
+IncF plasmid conjugative transfer pilus assembly protein TraW	-6.90775527898214	-1.77135059759685
+Smr domain protein	-6.90775527898214	-1.90056232907685
+Putative large exoprotein involved in heme utilization or adhesion of ShlA/HecA/FhaA family	-6.90775527898214	-0.531659710668833
+Molybdopterin biosynthesis Mog protein, molybdochelatase	-6.90775527898214	-1.04835045388722
+Firmicutes ribosomal L7Ae family protein	-0.972732042779107	-6.90775527898214
+DNA ligase (EC 6.5.1.2) ## LigA	-6.90775527898214	-1.41771055735327
+LppC putative lipoprotein	-6.90775527898214	-0.885831524389447
+Cytochrome c-type heme lyase subunit nrfF, nitrite reductase complex assembly	-6.90775527898214	-1.86666077740117
+Putative dihydroxyacetone kinase (EC 2.7.1.29), ADP-binding subunit	-6.90775527898214	-1.90056232907685
+Stage II sporulation protein P	-0.693147180559945	-6.90775527898214
+Probable type IV pilus assembly FimV-related transmembrane protein	-6.90775527898214	-1.86666077740117
+Na(+)-translocating NADH-quinone reductase subunit B (EC 1.6.5.-)	-6.90775527898214	-0.977398717914937
+FIG004684: SpoVR-like protein	-6.90775527898214	-1.26052497383086
+Osmolarity sensory histidine kinase EnvZ	-6.90775527898214	-0.693147180559945
+Two-component response regulator colocalized with HrtAB transporter	-0.823200308808143	-6.90775527898214
+SECRETION ACTIVATOR PROTEIN	-6.90775527898214	-1.63027199933694
+Acyl carrier protein (ACP2)	-6.90775527898214	-1.68433922060722
+Response regulatory protein	-6.90775527898214	-1.71251009757391
+CRISPR-associated protein, CT1976	-6.90775527898214	-1.86666077740117
+Putative periplasmic cytochrome type-C oxidoreductase signal peptide protein (EC 1.-.-.-)	-6.90775527898214	-1.83387095457818
+FIG042801: CBS domain containing protein	-0.556571645554195	-6.90775527898214
+Uncharacterized protein YfiR precursor	-6.90775527898214	-1.68433922060722
+Transcriptional activator RfaH	-6.90775527898214	-1.00517828202201
+PTS system, lactose-specific IIA component (EC 2.7.1.69)	-0.940983344464527	-6.90775527898214
+Sarcosine dehydrogenase (EC 1.5.99.1)	-6.90775527898214	-1.68433922060722
+RNA polymerase sporulation specific sigma factor SigK	-0.972732042779107	-6.90775527898214
+Cell division protein ZipA	-6.90775527898214	-0.885831524389447
+L-serine dehydratase, beta subunit (EC 4.3.1.17)	-0.116259806115862	-6.90775527898214
+Hemolysin activation/secretion protein	-6.90775527898214	-1.74149763444717
+Formate dehydrogenase related protein	-0.556571645554195	-6.90775527898214
+response regulator aspartate phosphatase	-0.363667979429703	-6.90775527898214
+Membrane protein, suppressor for copper-sensitivity ScsD	-6.90775527898214	-1.93565364888812
+Cytochrome c-type heme lyase subunit nrfG, nitrite reductase complex assembly	-6.90775527898214	-1.6569402464191
+Putative ABC transporter ATP-binding protein	-6.90775527898214	-1.6569402464191
+Hydrogenase maturation factor HoxQ	-6.90775527898214	-1.93565364888812
+IgaA: a membrane protein that prevents overactivation of the Rcs regulatory system	-6.90775527898214	-1.86666077740117
+Osmoprotectant ABC transporter permease protein YehY	-6.90775527898214	-1.93565364888812
+Periplasmic nitrate reductase component NapD	-6.90775527898214	-1.09347088916769
+FIG138576: 3-oxoacyl-[ACP] synthase (EC 2.3.1.41)	-6.90775527898214	-1.71251009757391
+Transmembrane component YkoC of energizing module of thiamin-regulated ECF transporter for HydroxyMethylPyrimidine	-0.910211685797773	-6.90775527898214
+Sensory box/GGDEF domain/EAL domain protein	-6.90775527898214	-1.90056232907685
+ABC transporter, permease protein YnjC	-6.90775527898214	-1.55428609235902
+Anaerobic nitric oxide reductase transcription regulator NorR	-6.90775527898214	-1.39665714815544
+Cell division protein FtsJ / Ribosomal RNA large subunit methyltransferase E (EC 2.1.1.-)	-6.90775527898214	-0.81351086280982
+protein from nitrogen regulatory protein P-II (GLNB) family, ortholog YAAQ B. subtilis	-1.0055218656021	-6.90775527898214
+Regulatory protein SoxS	-6.90775527898214	-1.86666077740117
+Multidrug transporter MdtA	-6.90775527898214	-1.90056232907685
+Acyl-CoA thioesterase YciA, involved in membrane biogenesis	-6.90775527898214	-1.43921676257423
+3-hydroxydecanoyl-[ACP] dehydratase (EC 4.2.1.60)	-6.90775527898214	-1.29756624551121
+Putative TEGT family carrier/transport protein	-6.90775527898214	-0.991192040047273
+Mannitol operon repressor	-6.90775527898214	-1.50665804336977
+MCE-family protein Mce1A	-1.0055218656021	-6.90775527898214
+Cysteine desulfurase CsdA-CsdE (EC 2.8.1.7), main protein CsdA	-6.90775527898214	-1.0782034170369
+Lmo0066 homolog within ESAT-6 gene cluster, similarity to ADP-ribosylating toxins	-0.669049628980885	-6.90775527898214
+Probable lipoprotein transmembrane	-6.90775527898214	-1.14072377401824
+Tetratricopeptide repeat (TPR) family protein	-0.910211685797773	-6.90775527898214
+FIG005548: transport protein	-6.90775527898214	-1.6569402464191
+Homoprotocatechuate degradative operon repressor	-6.90775527898214	-1.46119566929301
+PTS IIA-like nitrogen-regulatory protein PtsN	-6.90775527898214	-1.20741514851691
+Type III secretion inner membrane channel protein (LcrD,HrcV,EscV,SsaV)	-6.90775527898214	-1.04835045388722
+D-cysteine desulfhydrase (EC 4.4.1.15)	-6.90775527898214	-1.8021222562636
+DedA family inner membrane protein YabI	-6.90775527898214	-1.90056232907685
+Nitrogen regulation protein NtrY (EC 2.7.3.-)	-6.90775527898214	-1.77135059759685
+Fe-bacillibactin uptake system FeuA, Fe-bacillibactin binding	-1.0055218656021	-6.90775527898214
+NPQTN cell wall anchored protein IsdC	-1.03942341727778	-6.90775527898214
+Methylglyoxal reductase, acetol producing (EC 1.1.1.-) / 2,5-diketo-D-gluconate reductase A (EC 1.1.1.274)	-6.90775527898214	-1.74149763444717
+Nitric oxide reductase FlRd-NAD(+) reductase (EC 1.18.1.-)	-6.90775527898214	-1.8021222562636
+Heme transporter IsdDEF, lipoprotein IsdE	-0.880358722648092	-6.90775527898214
+Type IV pilus biogenesis protein PilF	-6.90775527898214	-1.35583515363518
+Putative analog of CcoH, COG3198	-6.90775527898214	-1.6569402464191
+cell processes; transport of small molecules; amino acids, amines, peptides	-6.90775527898214	-1.77135059759685
+Type I secretion target repeat protein	-6.90775527898214	-1.74149763444717
+Probable 3-phenylpropionic acid transporter ## PnuD	-6.90775527898214	-1.93565364888812
+Type III secretion inner membrane protein (YscU,SpaS,EscU,HrcU,SsaU, homologous to flagellar export components)	-6.90775527898214	-1.00517828202201
+Cytochrome O ubiquinol oxidase subunit II (EC 1.10.3.-)	-6.90775527898214	-0.713981267462787
+Phage integrase: site-specific recombinase	-0.85137118577484	-6.90775527898214
+Two component, Sigma-54 Specific, central transcriptional regulator of acidic amino acid uptake	-6.90775527898214	-1.15698429489002
+Transition state regulatory protein AbrB	-0.880358722648092	-6.90775527898214
+Methionine biosynthesis protein MetW	-6.90775527898214	-1.50665804336977
+Outer membrane lipoprotein Blc	-6.90775527898214	-1.39665714815544
+Periplasmic protein torT precursor	-6.90775527898214	-1.55428609235902
+FIG061771: ATP-dependent nuclease subunit A	-6.90775527898214	-1.48366852514507
+FIG003620: Proteophosphoglycan precursor (Fragment)	-6.90775527898214	-1.35583515363518
+Nitrogen regulation protein NtrX	-6.90775527898214	-1.8021222562636
+Histidine ABC transporter, ATP-binding protein HisP (TC 3.A.1.3.1)	-6.90775527898214	-0.567377793270912
+Putative cell division protein precursor	-6.90775527898214	-1.68433922060722
+FIG065221: Holliday junction DNA helicase	-6.90775527898214	-0.447576593458291
+Two component response regulator	-6.90775527898214	-1.55428609235902
+Mlr7403 protein @ FIG001046: putative membrane protein	-6.90775527898214	-1.90056232907685
+YjfP protein	-6.90775527898214	-1.93565364888812
+Z-ring-associated protein ZapA	-6.90775527898214	-1.27887411249905
+Outer membrane protein F precursor	-6.90775527898214	-1.90056232907685
+FIG009688: Thioredoxin	-0.399386062031782	-6.90775527898214
+Glutamate Aspartate transport system permease protein GltJ (TC 3.A.1.3.4)	-6.90775527898214	-0.362583380624899
+Spore coat protein S	-0.795801334620029	-6.90775527898214
+4-oxalocrotonate tautomerase (EC 5.3.2.-); Xylose transport system permease protein xylH	-0.795801334620029	-6.90775527898214
+Cytochrome c-type protein TorC	-6.90775527898214	-1.8021222562636
+Two component system sensor histidine kinase CiaH (EC 2.7.3.-)	-1.03942341727778	-6.90775527898214
+Multidrug translocase MdfA	-6.90775527898214	-1.74149763444717
+Uncharacterized acetyltransferase YjgM (EC 2.3.1.-)	-6.90775527898214	-1.71251009757391
+Uncharacterized ATPase (AAA family) associated with cysteine desulfurase	-0.823200308808143	-6.90775527898214
+Protein yciN	-6.90775527898214	-1.90056232907685
+membrane spanning protein	-1.03942341727778	-6.90775527898214
+NrfC protein	-6.90775527898214	-1.24250646832818
+Putative regulator protein	-6.90775527898214	-1.46119566929301
+Phage tail length tape-measure protein 1	-6.90775527898214	-1.14072377401824
+Lysyl-lysine 2,3-aminomutase	-6.90775527898214	-0.682890680392756
+FIG145533: Methyltransferase (EC 2.1.1.-)	-0.346276236717834	-6.90775527898214
+Purine nucleoside phosphorylase (EC 2.4.2.1); N-Ribosylnicotinamide phosphorylase (EC 2.4.2.1) ## possible	-0.972732042779107	-6.90775527898214
+tRNA dihydrouridine synthase A (EC 1.-.-.-)	-6.90775527898214	-1.336032526339
+immunity protein, probable	-0.823200308808143	-6.90775527898214
+IncF plasmid conjugative transfer protein TraG	-6.90775527898214	-1.6569402464191
+RND efflux transporter	-6.90775527898214	-1.71251009757391
+Frataxin homolog CyaY, facilitates iron supply for heme A synthesis or Fe-S cluster assembly	-6.90775527898214	-0.735258665910072
+FIG002577: Putative lipoprotein precursor	-6.90775527898214	-1.39665714815544
+N-methyl-L-amino-acid oxidase (EC 1.5.3.2); N-methyl-L-tryptophan oxidase (EC 1.5.3.-)	-6.90775527898214	-1.93565364888812
+Exported zinc metalloprotease YfgC precursor	-6.90775527898214	-0.801950040408744
+tRNA 2-thiouridine synthesizing protein E (EC 2.8.1.-)	-6.90775527898214	-0.950370045527018
+5'-nucleotidase family protein in cluster with NagD-like phosphatase	-0.669049628980885	-6.90775527898214
+Two-component sensor histidine kinase, controling glutamine utilization	-1.03942341727778	-6.90775527898214
+DNA-binding response regulator PetR	-6.90775527898214	-1.90056232907685
+2-hydroxychromene-2-carboxylate isomerase	-6.90775527898214	-1.3166144404819
+FIG002082: Protein SirB2	-6.90775527898214	-1.35583515363518
+DNA transformation protein TfoX	-6.90775527898214	-1.6569402464191
+RND efflux system, outer membrane lipoprotein CmeC	-6.90775527898214	-0.020834086902842
+Phosphoglycerate mutase family 1	-0.795801334620029	-6.90775527898214
+Putative nitroreductase family protein SACOL0874	-0.880358722648092	-6.90775527898214
+Hydrolase in polyol utilization gene cluster, haloacid dehalogenase-like family	-6.90775527898214	-1.27887411249905
+Putative ATP:guanido phosphotransferase YacI (EC 2.7.3.-)	-0.645519131570691	-6.90775527898214
+Translation elongation factor P-related protein	-6.90775527898214	-1.26052497383086
+Phosphatidylglycerophosphatase A (EC 3.1.3.27)	-6.90775527898214	-0.284251537354992
+Phosphoethanolamine transferase specific for the outer Kdo residue of lipopolysaccharide	-6.90775527898214	-1.83387095457818
+Virulence factor VirK	-6.90775527898214	-1.60429651293368
+Putative fimbrial-like protein	-6.90775527898214	-1.46119566929301
+Polysaccharide export lipoprotein Wza	-6.90775527898214	-1.00517828202201
+Putative mannosyl-3-phosphoglycerate phosphatase (EC 3.1.3.70)	-6.90775527898214	-1.83387095457818
+Cyanate transport protein CynX	-6.90775527898214	-1.63027199933694
+Putative ACR protein	-6.90775527898214	-1.77135059759685
+Probable zinc protease pqqL (EC 3.4.99.-)	-6.90775527898214	-1.77135059759685
+Heme transporter IsdDEF, permease component IsdF	-0.880358722648092	-6.90775527898214
+3-oxoacyl-[acyl-carrier-protein] synthase, KASI (EC 2.3.1.41)	-6.90775527898214	-0.567377793270912
+(3R)-hydroxymyristoyl-[ACP] dehydratase (EC 4.2.1.-)	-6.90775527898214	-1.77135059759685
+FIG139928: Putative protease	-6.90775527898214	-1.60429651293368
+COG2833: uncharacterized protein	-6.90775527898214	-1.35583515363518
+Inner membrane protein YfiN	-6.90775527898214	-1.63027199933694
+S-(hydroxymethyl)glutathione dehydrogenase (EC 1.1.1.284)	-6.90775527898214	-0.392660835862177
+cytochrome c family protein, putative	-6.90775527898214	-1.86666077740117
+Two component transcriptional regulator VraR	-0.717839793150317	-6.90775527898214
+phage infection protein	-1.07451473708905	-6.90775527898214
+Murein-DD-endopeptidase (EC 3.4.99.-)	-6.90775527898214	-0.873409004390889
+Biofilm PGA synthesis N-glycosyltransferase PgaC (EC 2.4.-.-)	-6.90775527898214	-1.74149763444717
+Maltose operon periplasmic protein MalM	-6.90775527898214	-1.55428609235902
+4-hydroxyphenylacetate 3-monooxygenase, reductase component (EC 1.6.8.-)	-6.90775527898214	-1.26052497383086
+TerC-like integral membrane protein	-0.645519131570691	-6.90775527898214
+Two-component system sensor protein	-6.90775527898214	-1.6569402464191
+Phosphate starvation-inducible protein PsiF	-6.90775527898214	-1.74149763444717
+Exoribonuclease II (EC 3.1.13.1)	-6.90775527898214	-0.991192040047273
+Type III secretion inner membrane protein (YscS,homologous to flagellar export components)	-6.90775527898214	-1.3760378609527
+RNA polymerase sigma-70 factor, ECF family	-6.90775527898214	-1.71251009757391
+Outer membrane lipoprotein carrier protein LolA	-6.90775527898214	-0.423671072604737
+General secretion pathway protein L	-6.90775527898214	-0.682890680392756
+FOG: TPR repeat, SEL1 subfamily	-6.90775527898214	-0.825206902573012
+Baseplate assembly protein J	-6.90775527898214	-1.26052497383086
+Iron-sulfur cluster assembly scaffold protein IscU	-6.90775527898214	-0.549359287768234
+Conjugative transfer protein TrbJ	-6.90775527898214	-1.90056232907685
+FIG001592: Phosphocarrier protein kinase/phosphorylase, nitrogen regulation associated	-6.90775527898214	-1.27887411249905
+COG2041: Sulfite oxidase and related enzymes	-6.90775527898214	-1.68433922060722
+Autolysin sensor kinase (EC 2.7.3.-)	-6.90775527898214	-0.585726931939108
+Polymyxin resistance protein PmrM	-6.90775527898214	-1.77135059759685
+Cystine ABC transporter, ATP-binding protein	-6.90775527898214	-1.63027199933694
+Glycoprotein-polysaccharide metabolism	-6.90775527898214	-1.93565364888812
+Chaperone protein HscB	-6.90775527898214	-0.595029324601422
+Predicted ATP-dependent endonuclease of the OLD family, YbjD subgroup	-6.90775527898214	-1.48366852514507
+Transcriptional regulator SlmA, TetR family	-6.90775527898214	-1.17351359684123
+Arginine ABC transporter, permease protein ArtM	-6.90775527898214	-1.50665804336977
+AA3-600 quinol oxidase subunit II	-1.07451473708905	-6.90775527898214
+FIG003492: Threonine dehydrogenase and related Zn-dependent dehydrogenases	-6.90775527898214	-1.93565364888812
+ESAT-6/Esx family secreted protein EsxA/YukE	-0.717839793150317	-6.90775527898214
+DNA polymerase III chi subunit (EC 2.7.7.7)	-6.90775527898214	-0.385056236476957
+Uncharacterized protein ImpJ/VasE	-6.90775527898214	-0.237420237670893
+Cysteine desulfurase (EC 2.8.1.7), IscS subfamily	-6.90775527898214	-0.613897808905805
+FIG001826: putative inner membrane protein	-6.90775527898214	-1.43921676257423
+COG1939: Ribonuclease III family protein	-0.232331977368616	-6.90775527898214
+High-affinity leucine-specific transport system, periplasmic binding protein LivK (TC 3.A.1.4.1)	-6.90775527898214	-0.825206902573012
+Outer membrane porin protein 32 precursor	-6.90775527898214	-0.585726931939108
+Pirin-related protein	-6.90775527898214	-1.03375165446607
+Sigma-fimbriae usher protein	-6.90775527898214	-1.19032071515761
+ADP-heptose:LPS heptosyltransferase	-6.90775527898214	-1.90056232907685
+Glycolate utilization operon transcriptional activator GlcC	-6.90775527898214	-1.68433922060722
+Multidrug resistance protein D	-6.90775527898214	-0.898410306596307
+Chromosome partition protein MukE	-6.90775527898214	-1.41771055735327
+Competence transcription factor	-0.717839793150317	-6.90775527898214
+FIG000988: Predicted permease	-6.90775527898214	-0.567377793270912
+MSHA biogenesis protein MshI	-6.90775527898214	-1.60429651293368
+Pole remodelling regulatory diguanylate cyclase	-6.90775527898214	-1.03375165446607
+Nickel responsive regulator NikR	-6.90775527898214	-1.3760378609527
+Spore cortex-lytic enzyme CwlJ	-1.03942341727778	-6.90775527898214
+YcfP protein: probably an esterase that is part of a salvage cluster	-6.90775527898214	-1.50665804336977
+Two-component sensor protein RcsC (EC 2.7.3.-)	-6.90775527898214	-1.86666077740117
+Ribonuclease T (EC 3.1.13.-)	-6.90775527898214	-0.885831524389447
+Na(+)-translocating NADH-quinone reductase subunit C (EC 1.6.5.-)	-6.90775527898214	-1.00517828202201
+FIG139552: Putative protease	-6.90775527898214	-1.60429651293368
+Uncharacterized membrane protein YqjD	-6.90775527898214	-1.90056232907685
+Phage tail assembly protein #Phage tail assembly protein K	-6.90775527898214	-0.977398717914937
+Membrane Protein Functionally coupled to the MukBEF Chromosome Partitioning Mechanism	-6.90775527898214	-1.60429651293368
+Bmp family protein	-6.90775527898214	-1.39665714815544
+Exodeoxyribonuclease I (EC 3.1.11.1)	-6.90775527898214	-0.825206902573012
+Major surface protein 2	-6.90775527898214	-1.17351359684123
+Putative pertactin family virulence factor/autotransporter precursor	-6.90775527898214	-1.57897870494939
+Inner membrane protein YqjF	-6.90775527898214	-1.8021222562636
+Negative regulator of genetic competence MecA	-0.075985906977922	-6.90775527898214
+Proposed lipoate regulatory protein YbeD	-6.90775527898214	-0.623467259921956
+Multidrug resistance protein B (ErmB)	-6.90775527898214	-1.77135059759685
+Tagatose-6-phosphate kinase (EC 2.7.1.144)	-0.880358722648092	-6.90775527898214
+Protein-N(5)-glutamine methyltransferase PrmB, methylates LSU ribosomal protein L3p	-6.90775527898214	-0.567377793270912
+Paraquat-inducible protein B	-6.90775527898214	-0.21161235371502
+FIG018329: 1-acyl-sn-glycerol-3-phosphate acyltransferase	-6.90775527898214	-1.09347088916769
+Putative acetyl esterase YjcH (EC 3.1.1.-)	-0.85137118577484	-6.90775527898214
+Uncharacterized protein YrbK clustered with lipopolysaccharide transporters	-6.90775527898214	-0.746069582014288
+Primosomal replication protein N prime prime	-6.90775527898214	-1.43921676257423
+Glutathione-regulated potassium-efflux system ATP-binding protein	-6.90775527898214	-0.595029324601422
+Flavodoxin 2	-6.90775527898214	-1.48366852514507
+N-acetylgalactosamine 6-sulfate sulfatase (GALNS)	-6.90775527898214	-1.86666077740117
+Peptide transport system permease protein SapC	-6.90775527898214	-1.27887411249905
+FIG002337: predicted inner membrane protein	-6.90775527898214	-1.60429651293368
+DNA recombination-dependent growth factor C	-6.90775527898214	-0.682890680392756
+FIG001960: FtsZ-interacting protein related to cell division	-0.217064505237827	-6.90775527898214
+Uridine kinase family protein YggC homolog	-6.90775527898214	-1.77135059759685
+Osmoprotectant ABC transporter inner membrane protein YehW	-6.90775527898214	-1.83387095457818
+Peptidyl-prolyl cis-trans isomerase PpiB (EC 5.2.1.8)	-6.90775527898214	-0.505684224265572
+General secretion pathway protein K	-6.90775527898214	-0.604419064951261
+Flavoprotein MioC	-6.90775527898214	-1.26052497383086
+FIG094199: Fumarylacetoacetate hydrolase	-6.90775527898214	-1.93565364888812
+Flagellar regulatory protein FleQ	-6.90775527898214	-0.724563376793324
+Multidrug transporter MdtC	-6.90775527898214	-1.86666077740117
+Universal stress protein B	-6.90775527898214	-1.63027199933694
+ABC-type Fe3+ transport system, periplasmic component	-6.90775527898214	-1.01936291701397
+ATPase provides energy for both assembly of type IV secretion complex and secretion of T-DNA complex (VirB4)	-6.90775527898214	-1.01936291701397
+Transcriptional regulatory protein zraR	-6.90775527898214	-1.68433922060722
+Transcriptional regulator for fatty acid degradation FadR, GntR family	-6.90775527898214	-1.24250646832818
+2-keto-3-deoxy-D-arabino-heptulosonate-7-phosphate synthase I alpha (EC 2.5.1.54) ## AroA I alpha	-6.90775527898214	-1.17351359684123
+NADH-ubiquinone oxidoreductase chain C (EC 1.6.5.3) / NADH-ubiquinone oxidoreductase chain D (EC 1.6.5.3)	-6.90775527898214	-1.35583515363518
+NnrU family protein, required for expression of nitric oxide and nitrite reductases (Nir and Nor)	-6.90775527898214	-1.83387095457818
+Uncharacterized hydroxylase PA0655	-6.90775527898214	-1.8021222562636
+Fumarate and nitrate reduction regulatory protein	-6.90775527898214	-1.09347088916769
+FIG001154: CcsA-related protein	-6.90775527898214	-0.873409004390889
+COG3536: Uncharacterized protein conserved in bacteria	-6.90775527898214	-1.41771055735327
+Transcriptional regulatory protein basR/pmrA	-6.90775527898214	-1.71251009757391
+Arginine N-succinyltransferase (EC 2.3.1.109)	-6.90775527898214	-0.885831524389447
+Glutamyl-tRNA synthetase (EC 6.1.1.17) ## unambiguous	-6.90775527898214	-1.17351359684123
+Putative 2-octaprenyl-3-methyl-6-methoxy-1,4-benzoquinol hydroxylase	-6.90775527898214	-1.86666077740117
+Penicillin-binding protein 2B	-0.769133087537867	-6.90775527898214
+aminoglycoside phosphotransferase family protein	-0.247836163904581	-6.90775527898214
+Substrate-specific component QueT (COG4708) of predicted queuosine-regulated ECF transporter	-0.494696241836107	-6.90775527898214
+Protein ImpG/VasA	-6.90775527898214	-0.0973741640251764
+Putative translation initiation inhibitor YoaB	-6.90775527898214	-1.90056232907685
+Putative hydrolase YcdX (EC 3.1.-.-)	-6.90775527898214	-1.93565364888812
+Beta-ketoadipyl CoA thiolase (EC 2.3.1.-)	-6.90775527898214	-1.8021222562636
+Soluble aldose sugar dehydrogenase, PQQ-dependent (EC 1.1.5.-)	-6.90775527898214	-1.93565364888812
+Transcriptional activator protein LysR	-6.90775527898214	-1.53018854077996
+Glutamate Aspartate transport system permease protein GltK (TC 3.A.1.3.4)	-6.90775527898214	-0.439544421761027
+Sarcosine oxidase delta subunit (EC 1.5.3.1)	-6.90775527898214	-1.22480689122878
+Thiopurine S-methyltransferase (EC 2.1.1.67)	-6.90775527898214	-1.77135059759685
+Uncharacterized protein ImpF	-6.90775527898214	-0.991192040047273
+Cysteine ABC transporter, substrate-binding protein	-0.600056757493933	-6.90775527898214
+Integration host factor beta subunit	-6.90775527898214	-0.192684343829501
+Uncharacterized protein UPF0344	-0.823200308808143	-6.90775527898214
+rRNA small subunit methyltransferase J # 16S rRNA m(2) G1516 methyltransferase	-6.90775527898214	-1.74149763444717
+FOG: EAL domain	-6.90775527898214	-1.06316553967236
+Prophage tail fiber protein	-6.90775527898214	-1.77135059759685
+cell surface hydrolase (putative)	-0.972732042779107	-6.90775527898214
+Acriflavin resistance plasma membrane protein	-6.90775527898214	-1.8021222562636
+Integral membrane protein YggT, involved in response to extracytoplasmic stress (osmotic shock)	-6.90775527898214	-0.277425572284592
+FIG011501: YycH protein	-0.717839793150317	-6.90775527898214
+Cytochrome c-type protein NrfB precursor	-6.90775527898214	-1.60429651293368
+Putative cysteine desulfurase, associated with tRNA 4-thiouridine synthase	-0.346276236717834	-6.90775527898214
+Cellulose synthase operon protein C	-6.90775527898214	-1.29756624551121
+Membrane-bound lytic murein transglycosylase E (EC 3.2.1.-)	-6.90775527898214	-1.74149763444717
+Murein endopeptidase	-6.90775527898214	-1.1247234326718
+Phage tail sheath monomer	-6.90775527898214	-1.00517828202201
+Undecaprenol kinase (EC 2.7.1.66)	-0.972732042779107	-6.90775527898214
+Putative sugar ABC transport system, periplasmic binding protein YtfQ precursor	-6.90775527898214	-1.8021222562636
+Tetrathionate reductase sensory transduction histidine kinase	-6.90775527898214	-1.90056232907685
+Radical SAM family enzyme, similar to coproporphyrinogen III oxidase, oxygen-independent, clustered with nucleoside-triphosphatase RdgB	-6.90775527898214	-0.326215736454024
+Succinylglutamic semialdehyde dehydrogenase (EC 1.2.1.71)	-6.90775527898214	-0.825206902573012
+FIG121501: Prophage tail protein	-6.90775527898214	-1.57897870494939
+LysR-family transcriptional regulator clustered with PA0057	-6.90775527898214	-1.53018854077996
+2-octaprenyl-3-methyl-6-methoxy-1,4-benzoquinol hydroxylase (EC 1.14.13.-)	-6.90775527898214	-0.120363682249875
+2-methylaconitate isomerase	-6.90775527898214	-1.20741514851691
+Predicted transcriptional regulator for fatty acid degradation FadQ, TetR family	-6.90775527898214	-1.46119566929301
+Membrane-bound lysozyme inhibitor of c-type lysozyme	-6.90775527898214	-1.60429651293368
+16 kDa heat shock protein A	-6.90775527898214	-0.623467259921956
+Chemotaxis response - phosphatase CheZ	-6.90775527898214	-0.873409004390889
+Transcriptional regulator, PBSX family	-0.910211685797773	-6.90775527898214
+TrkA, Potassium channel-family protein	-6.90775527898214	-1.60429651293368
+Putrescine/proton symporter, putrescine/ornithine antiporter PotE	-6.90775527898214	-1.8021222562636
+N-formylglutamate deformylase (EC 3.5.1.68)	-6.90775527898214	-1.03375165446607
+FIG009210: peptidase, M16 family	-0.329181803358534	-6.90775527898214
+Rhodanese-related sulfurtransferases	-6.90775527898214	-1.8021222562636
+PutR, transcriptional activator of PutA and PutP	-6.90775527898214	-1.93565364888812
+PsiE protein	-6.90775527898214	-1.93565364888812
+Phage shock protein B	-6.90775527898214	-1.3166144404819
+Transcriptional activator MetR	-6.90775527898214	-0.633129170833692
+Phosphoglycerol transferase I (EC 2.7.8.20)	-6.90775527898214	-1.19032071515761
+FIG007303: uncharacterized protein	-1.03942341727778	-6.90775527898214
+Lysophospholipase L2 (EC 3.1.1.5)	-6.90775527898214	-0.963793065859158
+P pilus assembly/Cpx signaling pathway, periplasmic inhibitor/zinc-resistance associated protein	-6.90775527898214	-1.90056232907685
+Propionyl-CoA carboxylase biotin-containing subunit (EC 6.4.1.3)	-6.90775527898214	-1.86666077740117
+BarA sensory histidine kinase (= VarS = GacS)	-6.90775527898214	-0.873409004390889
+HTH-type transcriptional regulator hdfR	-6.90775527898214	-1.90056232907685
+Flagellar L-ring protein FlgH	-6.90775527898214	-0.263911853117869
+LysR-family transcriptional regulator YdhB	-6.90775527898214	-1.71251009757391
+Thiamin ABC transporter, ATPase component / Thiamine transport ATP-binding protein thiQ	-6.90775527898214	-1.41771055735327
+Cell wall-binding protein	-0.172612742666994	-6.90775527898214
+Paraquat-inducible protein A # parolog	-6.90775527898214	-1.74149763444717
+UPF0304 protein yfbU	-6.90775527898214	-1.86666077740117
+tRNA 5-methylaminomethyl-2-thiouridine synthase TusB	-6.90775527898214	-1.22480689122878
+Iron-uptake factor PiuC	-6.90775527898214	-1.19032071515761
+NHL repeat domain protein	-6.90775527898214	-1.77135059759685
+23S rRNA (Uracil-5-) -methyltransferase rumB (EC 2.1.1.-)	-6.90775527898214	-1.55428609235902
+putative 2-pyrone-4,6-dicarboxylic acid hydrolase	-6.90775527898214	-1.57897870494939
+Aromatic ring-cleaving dioxygenase	-6.90775527898214	-1.86666077740117
+Flagellar transcriptional activator FlhC	-6.90775527898214	-1.43921676257423
+Cell division protein GpsB, coordinates the switch between cylindrical and septal cell wall synthesis by re-localization of PBP1	-0.329181803358534	-6.90775527898214
+LysR family transcriptional regulator lrhA	-6.90775527898214	-1.63027199933694
+cell surface protein precursor	-0.0892311337279426	-6.90775527898214
+Forms the bulk of type IV secretion complex that spans outer membrane and periplasm (VirB9)	-6.90775527898214	-1.1247234326718
+Rtn protein	-6.90775527898214	-0.837041360220015
+Arginine decarboxylase (EC 4.1.1.19) / Lysine decarboxylase (EC 4.1.1.18)	-0.645519131570691	-6.90775527898214
+3-oxoacyl-[ACP] synthase	-6.90775527898214	-1.22480689122878
+Universal stress protein E	-6.90775527898214	-1.26052497383086
+Chromosome partition protein MukF	-6.90775527898214	-1.41771055735327
+3-oxoacyl-[ACP] synthase (EC 2.3.1.41) FabV like	-6.90775527898214	-1.39665714815544
+Aldose 1-epimerase family protein YeaD	-6.90775527898214	-1.71251009757391
+Ribosomal RNA small subunit methyltransferase F (EC 2.1.1.-)	-6.90775527898214	-1.93565364888812
+Glutaredoxin 1	-6.90775527898214	-1.3166144404819
+YjbG polysaccharide synthesis-related protein	-6.90775527898214	-1.63027199933694
+ABC transporter permease protein YvcS	-0.279584862219162	-6.90775527898214
+Putative inner membrane protein YjeT (clustered with HflC)	-6.90775527898214	-0.898410306596307
+Putative capsular polysaccharide transport protein YegH	-6.90775527898214	-1.8021222562636
+Inner membrane protein forms channel for type IV secretion of T-DNA complex (VirB3)	-6.90775527898214	-1.46119566929301
+PTS system nitrogen-specific IIA component, PtsN	-6.90775527898214	-1.09347088916769
+Outer membrane lipoprotein OmlA	-6.90775527898214	-1.55428609235902
+Twin-arginine translocation protein TatCd	-0.972732042779107	-6.90775527898214
+Similarity with glutathionylspermidine synthase (EC 6.3.1.8), group 1	-6.90775527898214	-1.10897507570366
+Serine/threonine protein phosphatase 1 (EC 3.1.3.16)	-6.90775527898214	-1.8021222562636
+Outer membrane protein C precursor	-6.90775527898214	-0.924052737209644
+Inner membrane protein YccF	-6.90775527898214	-1.8021222562636
+NAD-dependent formate dehydrogenase delta subunit	-6.90775527898214	-1.86666077740117
+Qercetin 2,3-dioxygenase	-6.90775527898214	-1.90056232907685
+putative arylalkylamine n-acetyltransferase	-1.07451473708905	-6.90775527898214
+Citrate-proton symporter	-6.90775527898214	-1.71251009757391
+Shikimate kinase III (EC 2.7.1.71)	-6.90775527898214	-1.90056232907685
+Medium to long chain fatty acid-CoA thioesterase FadM	-6.90775527898214	-1.93565364888812
+response regulator DrrA	-0.346276236717834	-6.90775527898214
+TonB-dependent receptor; Outer membrane receptor for ferrienterochelin and colicins	-6.90775527898214	-0.243977638217052
+Addiction module antidote protein	-6.90775527898214	-1.90056232907685
+Uncharacterized protein similar to VCA0109	-6.90775527898214	-1.19032071515761
+Putative cell envelope opacity-associated protein A	-6.90775527898214	-1.86666077740117
+CheW domain protein	-6.90775527898214	-1.86666077740117
+Plasmid replication protein RepC	-6.90775527898214	-1.55428609235902
+Putative deoxyribonuclease YjjV	-6.90775527898214	-0.585726931939108
+N-ethylmaleimide reductase (EC 1.-.-.-)	-6.90775527898214	-1.09347088916769
+General secretion pathway protein C	-6.90775527898214	-0.746069582014288
+Transcriptional regulator SlyA	-6.90775527898214	-1.39665714815544
+Choline-glycine betaine transporter	-6.90775527898214	-1.86666077740117
+Spore germination protein GerKB	-0.972732042779107	-6.90775527898214
+Type III secretion cytoplasmic ATP synthase (EC 3.6.3.14, YscN,SpaL,MxiB,HrcN,EscN)	-6.90775527898214	-1.68433922060722
+Lysine decarboxylase, inducible (EC 4.1.1.18)	-6.90775527898214	-1.55428609235902
+Nitrous oxide reductase maturation protein NosR	-6.90775527898214	-1.86666077740117
+Putative metallopeptidase (Zinc) SprT family	-0.436427333712131	-6.90775527898214
+Possible protease sohB (EC 3.4.21.-)	-6.90775527898214	-1.17351359684123
+Cobalt/zinc/cadmium efflux RND transporter, membrane fusion protein, CzcB family	-6.90775527898214	-0.604419064951261
+Ribosome hibernation protein YfiA	-6.90775527898214	-1.29756624551121
+Translation elongation factor P Lys34:lysine transferase	-6.90775527898214	-0.724563376793324
+Putative OMR family iron-siderophore receptor precursor	-6.90775527898214	-1.74149763444717
+Probable outer membrane protein	-6.90775527898214	-1.74149763444717
+Methyl-accepting chemotaxis signal transduction protein	-6.90775527898214	-1.71251009757391
+Probable vanillate O-demethylase oxygenase subunit oxidoreductase protein (EC 1.14.13.-)	-6.90775527898214	-1.90056232907685
+Microbial collagenase, secreted (EC 3.4.24.3)	-6.90775527898214	-1.53018854077996
+Late competence protein ComGA, access of DNA to ComEA	-0.295845383090942	-6.90775527898214
+Putative NAD(P)-dependent oxidoreductase EC-YbbO	-6.90775527898214	-1.10897507570366
+N-acetylmuramoyl-L-alanine amidase (EC 3.5.1.28) AmpD	-6.90775527898214	-0.801950040408744
+3-ketoacyl-CoA thiolase (EC 2.3.1.16) ## anaerobic beta-oxidation pathway	-6.90775527898214	-1.77135059759685
+Beta-1,4-galactosyltransferase	-6.90775527898214	-1.8021222562636
+IncF plasmid conjugative transfer protein TraN	-6.90775527898214	-1.83387095457818
+Uncharacterized PLP-dependent aminotransferase YfdZ	-6.90775527898214	-1.74149763444717
+FIG004136: Prepilin peptidase dependent protein C precursor	-6.90775527898214	-1.86666077740117
+RND efflux system, membrane fusion protein CmeA	-6.90775527898214	-0.415827895143711
+Arginine ABC transporter, periplasmic arginine-binding protein ArtJ	-6.90775527898214	-1.90056232907685
+Channel-forming transporter/cytolysins activator of TpsB family	-6.90775527898214	-0.873409004390889
+Protein involved in meta-pathway of phenol degradation	-6.90775527898214	-1.41771055735327
+Putative metalloprotease yggG (EC 3.4.24.-)	-6.90775527898214	-1.50665804336977
+Predicted membrane fusion protein (MFP) component of efflux pump, membrane anchor protein YbhG	-6.90775527898214	-0.790521344585122
+/ Glutamine transport system permease protein GlnP (TC 3.A.1.3.2)	-1.07451473708905	-6.90775527898214
+Late competence protein ComGF, access of DNA to ComEA, FIG012620	-0.622529613345992	-6.90775527898214
+NADPH-dependent broad range aldehyde dehydrogenase YqhD	-6.90775527898214	-1.93565364888812
+rickettsial conserved	-6.90775527898214	-0.724563376793324
+Flagellar biosynthesis protein FliT	-6.90775527898214	-1.43921676257423
+Lipoprotein NlpD	-6.90775527898214	-0.576510276834184
+DnaK-related protein	-6.90775527898214	-1.90056232907685
+Putative bacteriophage-related protein	-6.90775527898214	-1.6569402464191
+core protein	-6.90775527898214	-0.613897808905805
+SgrR, sugar-phosphate stress, transcriptional activator of SgrS small RNA	-6.90775527898214	-1.55428609235902
+FIG002649: ydiI hotdog fold superfamily	-6.90775527898214	-1.93565364888812
+Protein yifE	-6.90775527898214	-1.57897870494939
+glucose uptake protein	-0.769133087537867	-6.90775527898214
+Nitrogen regulation protein NtrC	-6.90775527898214	-0.861138911799075
+Cytochrome c oxidase subunit CcoQ (EC 1.9.3.1)	-6.90775527898214	-0.937124818776997
+FIGfam138462: Acyl-CoA synthetase, AMP-(fatty) acid ligase	-6.90775527898214	-1.8021222562636
+Outer membrane lipoprotein pcp precursor	-6.90775527898214	-1.86666077740117
+Polymyxin resistance protein ArnC, glycosyl transferase (EC 2.4.-.-)	-6.90775527898214	-0.746069582014288
+Periplasmic Murein Peptide-Binding Protein MppA	-6.90775527898214	-1.90056232907685
+FIG001881: hydrolase of alkaline phosphatase superfamily	-6.90775527898214	-1.336032526339
+Cell division protein FtsN	-6.90775527898214	-1.22480689122878
+Stage 0 sporulation two-component response regulator (Spo0A)	-1.07451473708905	-6.90775527898214
+FIG001587: exported protein	-6.90775527898214	-1.0782034170369
+33 kDa chaperonin (Heat shock protein 33) (HSP33)	-6.90775527898214	-0.682890680392756
+Guanosine-5'-triphosphate,3'-diphosphate pyrophosphatase (EC 3.6.1.40) @ Exopolyphosphatase (EC 3.6.1.11)	-6.90775527898214	-1.60429651293368
+PTS system, lactose-specific IIB component (EC 2.7.1.69) / PTS system, lactose-specific IIC component (EC 2.7.1.69)	-0.823200308808143	-6.90775527898214
+Dipeptidyl peptidase IV	-6.90775527898214	-1.27887411249905
+Cell processes; Transport of small molecules	-6.90775527898214	-1.93565364888812
+Extracellular deoxyribonuclease Dns (EC 3.1.21.-)	-6.90775527898214	-1.53018854077996
+DNA primase (EC 2.7.7.-), phage-associated	-6.90775527898214	-1.39665714815544
+Succinylglutamate desuccinylase/aspartoacylase	-6.90775527898214	-1.48366852514507
+Shufflon-specific DNA recombinase	-6.90775527898214	-1.93565364888812
+Outer membrane receptor for ferric coprogen and ferric-rhodotorulic acid	-6.90775527898214	-1.3760378609527
+Transcriptional repressor for NAD biosynthesis in gram-positives	-0.455475528682826	-6.90775527898214
+IncF plasmid conjugative transfer pilus assembly protein TraC	-6.90775527898214	-1.71251009757391
+FIGfam010717	-6.90775527898214	-1.63027199933694
+Outer membrane stress sensor protease DegS	-6.90775527898214	-0.911149332373736
+Acetylpolyamine aminohydrolase	-6.90775527898214	-1.74149763444717
+Phosphocarrier protein, nitrogen regulation associated	-6.90775527898214	-0.531659710668833
+16S rRNA (cytosine(967)-C(5))-methyltransferase (EC 2.1.1.176) ## SSU rRNA m5C967	-6.90775527898214	-0.801950040408744
+Phage FluMu protein gp47	-6.90775527898214	-1.60429651293368
+Dna binding response regulator PrrA (RegA)	-6.90775527898214	-1.01936291701397
+Novel pyridoxal kinase, thiD family (EC 2.7.1.35)	-0.381367556529104	-6.90775527898214
+General secretion pathway protein H	-6.90775527898214	-0.652737642222069
+DNA-entry nuclease (Competence-specific nuclease) (EC 3.1.30.-)	-0.880358722648092	-6.90775527898214
+Putative pheromone cAM373 precursor lipoprotein CamS	-0.693147180559945	-6.90775527898214
+Phage tail assembly protein I	-6.90775527898214	-0.963793065859158
+Histidine kinase of the competence regulon ComD	-0.494696241836107	-6.90775527898214
+possible tetrapyrrole methyltransferase domain / Nucleoside triphosphate pyrophosphohydrolase MazG (EC 3.6.1.8)	-0.972732042779107	-6.90775527898214
+Thiol:disulfide interchange protein DsbC	-6.90775527898214	-0.505684224265572
+Diacylglycerol kinase, Bacillus type (EC 2.7.1.107)	-0.535518236356362	-6.90775527898214
+IS, phage, Tn; Transposon-related functions	-6.90775527898214	-1.01936291701397
+Fosfomycin resistance protein FosB	-1.03942341727778	-6.90775527898214
+Stage V sporulation protein AD (SpoVAD)	-0.769133087537867	-6.90775527898214
+Protease III precursor (EC 3.4.24.55)	-6.90775527898214	-1.1247234326718
+Sensor histidine kinase colocalized with HrtAB transporter	-0.795801334620029	-6.90775527898214
+Sodium:dicarboxylate symporter	-6.90775527898214	-1.74149763444717
+N-acetylglucosamine-regulated outer membrane porin	-6.90775527898214	-1.71251009757391
+FIG002465: BNR repeat protein	-6.90775527898214	-1.71251009757391
+Putative resistance protein	-6.90775527898214	-1.93565364888812
+FIG137864: putative endonuclease containing a URI domain	-6.90775527898214	-1.90056232907685
+Uncharacterized metabolite ABC transporter in Enterobacteriaceae, permease protein EC-YbbP	-6.90775527898214	-1.86666077740117
+Periplasmic thiol:disulfide oxidoreductase DsbB, required for DsbA reoxidation	-6.90775527898214	-0.230905556649699
+Copper sensory histidine kinase CpxA	-6.90775527898214	-1.1247234326718
+Primosomal protein I	-6.90775527898214	-1.01936291701397
+tRNA (5-methoxyuridine) 34 synthase	-6.90775527898214	-0.735258665910072
+Transcriptional repressor of PutA and PutP / Proline dehydrogenase (EC 1.5.99.8) (Proline oxidase) / Delta-1-pyrroline-5-carboxylate dehydrogenase (EC 1.5.1.12)	-6.90775527898214	-1.35583515363518
+Sigma factor RpoE negative regulatory protein RseB precursor	-6.90775527898214	-0.84901755126673
+Phospholipase C	-6.90775527898214	-1.57897870494939
+Predicted P-loop ATPase fused to an acetyltransferase COG1444	-6.90775527898214	-1.27887411249905
+Uncharacterized protein YqjB	-6.90775527898214	-1.93565364888812
+Modulator of drug activity B	-6.90775527898214	-1.24250646832818
+Transcriptional regulator, ArsR family / Methyltransferase fusion	-6.90775527898214	-1.6569402464191
+Deoxyribonucleoside regulator DeoR (transcriptional repressor)	-0.769133087537867	-6.90775527898214
+Erythronate-4-phosphate dehydrogenase (EC 1.1.1.290)	-6.90775527898214	-1.06316553967236
+Poly(A) polymerase (EC 2.7.7.19)	-6.90775527898214	-0.531659710668833
+Chloride channel protein EriC	-6.90775527898214	-1.86666077740117
+ABC transporter, permease protein EscB	-0.312374685042152	-6.90775527898214
+DNA-damage-inducible protein I	-6.90775527898214	-1.55428609235902
+Transcriptional (co)regulator CytR	-6.90775527898214	-1.39665714815544
+Putative esterase, FIGfam005057	-6.90775527898214	-0.861138911799075
+ABC-type transport system involved in resistance to organic solvents, periplasmic component	-6.90775527898214	-1.74149763444717
+StbD replicon stabilization protein (antitoxin to StbE)	-6.90775527898214	-1.60429651293368
+Spore coat protein F	-0.880358722648092	-6.90775527898214
+Chorismate mutase I (EC 5.4.99.5) / Cyclohexadienyl dehydrogenase (EC 1.3.1.12)(EC 1.3.1.43) # NAD-specific	-6.90775527898214	-1.41771055735327
+Carboxypeptidase C (cathepsin A)	-6.90775527898214	-1.48366852514507
+Membrane component of multidrug resistance system	-0.85137118577484	-6.90775527898214
+Late competence protein ComC, processing protease	-0.85137118577484	-6.90775527898214
+Methyl-accepting chemotaxis protein III (ribose and galactose chemoreceptor protein)	-6.90775527898214	-1.71251009757391
+Transporter associated with VraSR	-0.823200308808143	-6.90775527898214
+Cellulose synthase, putative	-6.90775527898214	-1.48366852514507
+Transcription elongation factor GreB	-6.90775527898214	-0.43157625211185
+proline/betaine transporter	-6.90775527898214	-1.60429651293368
+Hydrolase, alpha/beta fold family protein	-0.823200308808143	-6.90775527898214
+Type III secretion inner membrane protein (YscQ,homologous to flagellar export components)	-6.90775527898214	-1.09347088916769
+Uncharacterized protein ynbE; probable lipoprotein STY1424	-6.90775527898214	-1.3760378609527
+HYPOTHETICAL/UNKNOWN PROTEIN	-6.90775527898214	-1.53018854077996
+Na+/H+ antiporter NhaB	-6.90775527898214	-1.09347088916769
+ABC-type anion transport system, duplicated permease component	-6.90775527898214	-1.68433922060722
+Xylitol dehydrogenase	-0.769133087537867	-6.90775527898214
+Predicted pyridoxine biosynthesis protein (probably from glycolaldehide)	-6.90775527898214	-1.1247234326718
+ATP-dependent helicase DinG/Rad3	-6.90775527898214	-1.04835045388722
+Phosphate starvation-inducible ATPase PhoH with RNA binding motif	-6.90775527898214	-0.447576593458291
+Spore cortex-lytic enzyme, lytic transglycosylase SleB	-0.880358722648092	-6.90775527898214
+HTH-type transcriptional regulator zntR	-6.90775527898214	-1.83387095457818
+Chaperone protein fimC precursor	-6.90775527898214	-1.8021222562636
+FIG138928: iron-regulated membrane protein	-6.90775527898214	-1.93565364888812
+Nitrogen regulation protein NtrB (EC 2.7.13.3)	-6.90775527898214	-0.950370045527018
+Putative ATPase component of ABC transporter with duplicated ATPase domain	-6.90775527898214	-1.77135059759685
+Secreted protein Hcp	-6.90775527898214	-1.27887411249905
+Type I secretion outer membrane protein, TolC precursor	-6.90775527898214	-0.270645885299213
+Cytochrome c-type protein TorY	-6.90775527898214	-1.55428609235902
+Flagellar basal-body P-ring formation protein FlgA	-6.90775527898214	-0.347877233235203
+Malonate decarboxylase gamma subunit	-6.90775527898214	-1.83387095457818
+Outer membrane lipoprotein YidQ	-6.90775527898214	-1.90056232907685
+Putative lipid carrier protein	-6.90775527898214	-1.93565364888812
+Iron binding protein IscA for iron-sulfur cluster assembly	-6.90775527898214	-0.531659710668833
+Prephenate dehydrogenase (EC 1.3.1.12) # TyrAp/ACT domain, NAD-specific	-0.795801334620029	-6.90775527898214
+Outer membrane lipoprotein LolB	-6.90775527898214	-0.672738308928738
+miscellaneous; not classified regulator	-6.90775527898214	-1.90056232907685
+COG1451: Predicted metal-dependent hydrolase	-6.90775527898214	-1.0782034170369
+probable ribonuclease inhibitor YPO3690	-6.90775527898214	-1.93565364888812
+Ferredoxin--NADP(+) reductase (EC 1.18.1.2)	-6.90775527898214	-0.455673803690911
+RNA polymerase sporulation specific sigma factor SigH	-0.743157601134607	-6.90775527898214
+DNA-binding response regulator ChvI	-6.90775527898214	-1.77135059759685
+ATP-dependent RNA helicase SrmB	-6.90775527898214	-1.06316553967236
+Ferrous iron-sensisng transcriptional regulator FeoC	-6.90775527898214	-1.90056232907685
+Aerobic cobaltochelatase CobS subunit (EC 6.6.1.2)	-6.90775527898214	-1.57897870494939
+Multimodular transpeptidase-transglycosylase (EC 2.4.1.129) (EC 3.4.-.-) / Penicillin-binding protein 1A/1B (PBP1)	-0.247836163904581	-6.90775527898214
+Type IV fimbrial biogenesis protein PilV	-6.90775527898214	-1.19032071515761
+23S rRNA (guanine-N-2-) -methyltransferase rlmG (EC 2.1.1.-)	-6.90775527898214	-1.71251009757391
+Similar to C-terminal Zn-finger domain of DNA topoisomerase I	-6.90775527898214	-1.35583515363518
+Flp pilus assembly protein TadD, contains TPR repeat	-6.90775527898214	-1.04835045388722
+Transcriptional activator of cad operon	-6.90775527898214	-1.86666077740117
+ClpXP protease specificity-enhancing factor / Stringent starvation protein B	-6.90775527898214	-1.74149763444717
+Galactose-binding protein regulator	-6.90775527898214	-1.83387095457818
+Acyl-coenzyme A synthetases/AMP-(fatty) acid ligases, YtcI homolog	-0.823200308808143	-6.90775527898214
+Putative cytochrome d ubiquinol oxidase subunit III (EC 1.10.3.-) (Cytochrome bd-I oxidase subunit III)	-6.90775527898214	-1.43921676257423
+MCE-family lipoprotein LprK (MCE-family lipoprotein Mce1e)	-1.03942341727778	-6.90775527898214
+TsgA protein homolog	-6.90775527898214	-1.63027199933694
+Putative lipoprotein yceB precursor	-6.90775527898214	-1.8021222562636
+Low temperature requirement C protein	-0.717839793150317	-6.90775527898214
+Stringent starvation protein A	-6.90775527898214	-0.613897808905805
+CBS domain protein, lmo1865 homolog	-0.622529613345992	-6.90775527898214
+Protoporphyrinogen IX oxidase, novel form, HemJ (EC 1.3.-.-)	-6.90775527898214	-0.576510276834184
+SapC-like S-layer protein	-6.90775527898214	-1.63027199933694
+YciL protein	-6.90775527898214	-0.585726931939108
+Mitochondrial processing peptidase-like protein (EC 3.4.24.64)	-6.90775527898214	-1.63027199933694
+Regulatory protein AsnC	-6.90775527898214	-1.24250646832818
+YcfL protein: an outer membrane lipoprotein that is part of a salvage cluster	-6.90775527898214	-1.53018854077996
+D-ribulokinase (EC 2.7.1.47)	-6.90775527898214	-1.90056232907685
+Starvation lipoprotein Slp paralog	-6.90775527898214	-1.24250646832818
+Succinylglutamate desuccinylase (EC 3.5.1.96)	-6.90775527898214	-0.911149332373736
+FIG006045: Sigma factor, ECF subfamily	-6.90775527898214	-1.35583515363518
+Plasmid replication protein RepA	-6.90775527898214	-1.19032071515761
+Oxaloacetate decarboxylase gamma chain (EC 4.1.1.3)	-6.90775527898214	-1.35583515363518
+Aminotransferase class-III	-6.90775527898214	-1.22480689122878
+D-erythrose-4-phosphate dehydrogenase (EC 1.2.1.72)	-6.90775527898214	-1.3166144404819
+Tandem lipoprotein within Pathogenicity island	-0.474893614539927	-6.90775527898214
+Phage (Mu-like) virion morphogenesis protein	-6.90775527898214	-1.90056232907685
+Dihydroneopterin triphosphate pyrophosphohydolase type 2	-6.90775527898214	-1.26052497383086
+bacterial seryl-tRNA synthetase related	-0.910211685797773	-6.90775527898214
+InsA protein (Fragment)	-6.90775527898214	-0.735258665910072
+Sigma-fimbriae tip adhesin	-6.90775527898214	-1.01936291701397
+NADH:ubiquinone oxidoreductase 17.2 kD subunit	-6.90775527898214	-1.57897870494939
+Zinc-regulated outer membrane receptor	-6.90775527898214	-1.57897870494939
+macromolecule metabolism; macromolecule degradation; degradation of proteins, peptides, glycopeptides	-6.90775527898214	-1.04835045388722
+Holliday junction resolvase / Crossover junction endodeoxyribonuclease rusA (EC 3.1.22.-)	-6.90775527898214	-1.46119566929301
+Protein SlyX	-6.90775527898214	-1.86666077740117
+NhaP-type Na+/H+ and K+/H+ antiporters	-6.90775527898214	-1.83387095457818
+Fatty acid desaturase	-6.90775527898214	-1.19032071515761
+DamX, an inner membrane protein involved in bile resistance	-6.90775527898214	-1.24250646832818
+SAM-dependent methyltransferase 2, in cluster with Hydroxyacylglutathione hydrolase (EC 3.1.2.6)	-6.90775527898214	-1.93565364888812
+Aerobic respiration control protein arcA	-6.90775527898214	-1.24250646832818
+2-octaprenyl-6-methoxyphenol hydroxylase (EC 1.14.13.-)	-6.90775527898214	-0.305013528803421
+Phage tail completion protein	-6.90775527898214	-1.68433922060722
+Nucleotide excision repair protein, with UvrB/UvrC motif	-0.645519131570691	-6.90775527898214
+Enoyl-CoA hydratase (EC 4.2.1.17) / 3,2-trans-enoyl-CoA isomerase (EC 5.3.3.8) / 3-hydroxyacyl-CoA dehydrogenase (EC 1.1.1.35)	-6.90775527898214	-1.55428609235902
+Putative cytoplasmic protein USSDB7A	-6.90775527898214	-1.43921676257423
+ECF-type sigma factor negative effector	-0.455475528682826	-6.90775527898214
+Hemin ABC transporter, permease protein	-6.90775527898214	-0.963793065859158
+Peptide transport system ATP-binding protein SapF	-6.90775527898214	-1.26052497383086
+tRNA-dihydrouridine synthase C (EC 1.-.-.-)	-6.90775527898214	-0.937124818776997
+tRNA (5-methylaminomethyl-2-thiouridylate)-methyltransferase (EC 2.1.1.61) / FAD-dependent cmnm(5)s(2)U34 oxidoreductase	-6.90775527898214	-0.652737642222069
+Glutaredoxin 2	-6.90775527898214	-1.55428609235902
+Bis(5'-nucleosyl)-tetraphosphatase, symmetrical (EC 3.6.1.41)	-6.90775527898214	-0.576510276834184
+High-affinity gluconate transporter GntT	-6.90775527898214	-1.93565364888812
+DNA-binding protein HU-alpha	-6.90775527898214	-1.06316553967236
+Fe(2+)/alpha-ketoglutarate-dependent dioxygenase LpxO	-6.90775527898214	-1.46119566929301
+Putative molybdenum transport ATP-binding protein modF	-6.90775527898214	-1.71251009757391
+Copper resistance protein B	-6.90775527898214	-1.39665714815544
+BarA-associated response regulator UvrY (= GacA = SirA)	-6.90775527898214	-1.06316553967236
+Streptococcal histidine triad protein	-0.295845383090942	-6.90775527898214
+Peroxiredoxin family protein/glutaredoxin	-6.90775527898214	-1.90056232907685
+Transcriptional regulator ArcR essential for anaerobic expression of the ADI pathway, Crp/Fnr family	-1.0055218656021	-6.90775527898214
+Heavy metal sensor histidine kinase	-6.90775527898214	-1.39665714815544
+Probable lipoprotein nlpC precursor	-6.90775527898214	-1.71251009757391
+DNA ligase (ATP) (EC 6.5.1.1) ## Haemophilus influenzae type	-6.90775527898214	-1.55428609235902
+UPF0337 protein yjbJ	-6.90775527898214	-1.8021222562636
+UPF0441 protein ygiB	-6.90775527898214	-1.86666077740117
+Putative formate dehydrogenase-specific chaperone	-6.90775527898214	-1.55428609235902
+Minor pilin of type IV secretion complex (VirB5)	-6.90775527898214	-1.60429651293368
+Phage-related tail protein	-6.90775527898214	-1.19032071515761
+Outer membrane protein W precursor	-6.90775527898214	-0.192684343829501
+Putative Heme-regulated two-component response regulator	-6.90775527898214	-1.83387095457818
+ATP-dependent DNA helicase Rep	-6.90775527898214	-0.514267967956964
+Ner-like regulatory protein	-6.90775527898214	-1.71251009757391
+Sensor histidine kinase/response regulator	-6.90775527898214	-1.50665804336977
+DNA polymerase III theta subunit (EC 2.7.7.7)	-6.90775527898214	-1.77135059759685
+UPF0265 protein YeeX	-6.90775527898214	-1.41771055735327
+Predicted outer membrane lipoprotein YfeY	-6.90775527898214	-1.93565364888812
+Probable exported or periplasmic protein in ApbE locus	-6.90775527898214	-1.68433922060722
+Phosphoglycerate mutase family 2	-0.717839793150317	-6.90775527898214
+Aminotransferase, DegT/DnrJ/EryC1/StrS family	-6.90775527898214	-1.90056232907685
+Phage minor tail protein #tail protein M	-6.90775527898214	-1.39665714815544
+TPR repeat containing exported protein; Putative periplasmic protein contains a protein prenylyltransferase domain	-6.90775527898214	-0.192684343829501
+MreB-like protein (Mbl protein)	-0.940983344464527	-6.90775527898214
+Lon-like protease with PDZ domain	-0.346276236717834	-6.90775527898214
+General secretion pathway protein N	-6.90775527898214	-1.03375165446607
+Cell division protein FtsI [Peptidoglycan synthetase] (EC 2.4.1.129) / Transpeptidase, Penicillin binding protein transpeptidase domain	-0.645519131570691	-6.90775527898214
+AsmA protein	-6.90775527898214	-1.336032526339
+FIG002571: 4-hydroxybenzoyl-CoA thioesterase domain protein	-6.90775527898214	-1.3760378609527
+Copper homeostasis protein CutF precursor / Lipoprotein NlpE involeved in surface adhesion	-6.90775527898214	-1.86666077740117
+Nitric oxide synthase oxygenase (EC 1.-.-.-)	-1.07451473708905	-6.90775527898214
+Ferric enterobactin-binding periplasmic protein FepB (TC 3.A.1.14.2)	-6.90775527898214	-1.77135059759685
+4-hydroxybenzoate polyprenyltransferase (EC 2.5.1.39)	-6.90775527898214	-0.263911853117869
+Copper-sensing two-component system response regulator CusR	-6.90775527898214	-1.50665804336977
+General stress protein, Gls24 family	-1.07451473708905	-6.90775527898214
+transposase, IS605 family	-0.795801334620029	-6.90775527898214
+Phage minor tail protein #Phage minor tail protein L	-6.90775527898214	-1.15698429489002
+C-terminal domain of CinA type S; Protein Implicated in DNA repair function with RecA and MutS	-6.90775527898214	-0.837041360220015
+TonB-dependent hemin , ferrichrome receptor	-6.90775527898214	-1.24250646832818
+Diacyglycerol O-acyltransferase (EC 2.3.1.20)	-0.693147180559945	-6.90775527898214
+Type IV secretion system protein VirD4	-6.90775527898214	-1.14072377401824
+L-serine dehydratase, alpha subunit (EC 4.3.1.17)	-0.102654154060083	-6.90775527898214
+RNA-binding domain protein	-6.90775527898214	-1.35583515363518
+RNA binding protein, contains ribosomal protein S1 domain	-0.600056757493933	-6.90775527898214
+Response regulator NasT	-6.90775527898214	-1.29756624551121
+FIG002994: Putative transcriptional regulator	-6.90775527898214	-1.86666077740117
+Inner membrane protein translocase component YidC, OxaA protein	-0.514898949153627	-6.90775527898214
+Late competence protein ComGC, access of DNA to ComEA, FIG007487	-0.363667979429703	-6.90775527898214
+putative outer membrane protein, probably involved in nutrient binding	-6.90775527898214	-0.377509030841574
+Gamma-glutamyl-GABA hydrolase (EC 3.5.1.94)	-6.90775527898214	-1.77135059759685
+ABC transporter, substrate binding protein	-6.90775527898214	-1.77135059759685
+2-hydroxymuconic semialdehyde hydrolase (EC 3.1.1.-)	-6.90775527898214	-1.48366852514507
+Thiosulfate reductase cytochrome B subunit (membrane anchoring protein)	-6.90775527898214	-1.71251009757391
+Transcriptional regulator in cluster with unspecified monosaccharide ABC transport system	-0.556571645554195	-6.90775527898214
+Twin-arginine translocation protein TatAd	-0.880358722648092	-6.90775527898214
+IcmF-related protein	-6.90775527898214	-0.455673803690911
+Prespore specific transcriptional activator RsfA	-0.622529613345992	-6.90775527898214
+Transcriptional regulatory protein RstA	-6.90775527898214	-0.642885345779057
+Outer membrane lipoprotein	-6.90775527898214	-0.911149332373736
+Uncharacterized protein YidR	-6.90775527898214	-1.8021222562636
+Arginine ABC transporter, ATP-binding protein ArtP	-6.90775527898214	-1.46119566929301
+Cytochrome O ubiquinol oxidase subunit IV (EC 1.10.3.-)	-6.90775527898214	-0.801950040408744
+Putative uncharacterized protein ydbL, may be related to amine metabolism	-6.90775527898214	-1.41771055735327
+Uncharacterized protein ImpA	-6.90775527898214	-0.180261823830944
+ATP-dependent RNA helicase Atu1833	-6.90775527898214	-1.90056232907685
+Pirin-like protein YhaK	-6.90775527898214	-1.86666077740117
+Type VI secretion lipoprotein/VasD	-6.90775527898214	-0.81351086280982
+Uncharacterized ABC transporter, auxiliary component YrbC	-6.90775527898214	-0.585726931939108
+Glutamate Aspartate periplasmic binding protein precursor GltI (TC 3.A.1.3.4)	-6.90775527898214	-0.16799173123913
+Glutathione synthetase (EC 6.3.2.3)	-6.90775527898214	-0.31909826868516
+Membrane-bound protease, CAAX family	-0.823200308808143	-6.90775527898214
+MSHA biogenesis protein MshL	-6.90775527898214	-1.86666077740117
+Protein erfK/srfK	-1.03942341727778	-6.90775527898214
+RNA signal recognition particle 4.5S RNA	-6.90775527898214	-1.77135059759685
+Glutathione S-transferase, unnamed subgroup (EC 2.5.1.18)	-6.90775527898214	-1.03375165446607
+Cytochrome c peroxidase	-6.90775527898214	-1.8021222562636
+Conserved uncharacterized protein CreA	-6.90775527898214	-0.746069582014288
+Membrane fusion protein of RND family multidrug efflux pump	-6.90775527898214	-0.218002151813791
+Transcriptional regulatory protein PhoP	-6.90775527898214	-1.46119566929301
+COG2740: Predicted nucleic-acid-binding protein implicated in transcription termination / ribosomal protein L7Ae family protein	-6.90775527898214	-1.6569402464191
+Trehalase (EC 3.2.1.28); Periplasmic trehalase precursor (EC 3.2.1.28)	-6.90775527898214	-1.68433922060722
+Phage tail fiber assembly protein	-6.90775527898214	-1.39665714815544
+Cyclic di-GMP binding protein precursor	-6.90775527898214	-1.35583515363518
+Rhodanese domain protein UPF0176	-6.90775527898214	-1.74149763444717
+Protoporphyrinogen IX oxidase, oxygen-independent, HemG (EC 1.3.-.-)	-6.90775527898214	-1.09347088916769
+6-hexanolactone hydrolase	-6.90775527898214	-1.8021222562636
+FIG138056: a glutathione-dependent thiol reductase	-6.90775527898214	-0.633129170833692
+N-acetylglucosamine-6P-responsive transcriptional repressor NagC, ROK family	-6.90775527898214	-1.55428609235902
+Multidrug resistance protein A	-6.90775527898214	-1.68433922060722
+Chromosome replication initiation protein dnaD	-0.329181803358534	-6.90775527898214
+glycosyl hydrolase, family 31	-1.07451473708905	-6.90775527898214
+Tail fiber assembly protein	-6.90775527898214	-1.26052497383086
+Rhodanese domain protein, Enterobacterial subgroup, YceA homolog	-6.90775527898214	-1.6569402464191
+Head-tail preconnector protein GP5	-6.90775527898214	-1.60429651293368
+L,D-transpeptidase YcbB	-6.90775527898214	-1.10897507570366
+Methionine aminotransferase, PLP-dependent	-6.90775527898214	-1.93565364888812
+HYPOTHETICAL SIGNAL PEPTIDE PROTEIN	-6.90775527898214	-1.39665714815544
+Type III secretion inner membrane protein (YscR,SpaR,HrcR,EscR,homologous to flagellar export components)	-6.90775527898214	-1.0782034170369
+Putative heme iron utilization protein	-6.90775527898214	-1.14072377401824
+Phospholipase C 4 precursor (EC 3.1.4.3)	-6.90775527898214	-1.68433922060722
+Low-affinity inorganic phosphate transporter	-6.90775527898214	-0.937124818776997
+4-alpha-L-fucosyltransferase (EC 2.4.1.-)	-6.90775527898214	-1.68433922060722
+Ribosomal large subunit pseudouridine synthase E (EC 4.2.1.70) ## LSU Psi2457	-6.90775527898214	-0.756998652546478
+GDP-mannose pyrophosphatase YffH	-6.90775527898214	-1.68433922060722
+6-phospho-beta-galactosidase (EC 3.2.1.85)	-0.880358722648092	-6.90775527898214
+Fimbriae usher protein StfC	-6.90775527898214	-1.6569402464191
+Cyclic AMP receptor protein	-6.90775527898214	-1.04835045388722
+ADP compounds hydrolase NudE (EC 3.6.1.-)	-6.90775527898214	-1.00517828202201
+Paraquat-inducible protein A	-6.90775527898214	-0.21161235371502
+Alkanesulfonate utilization operon LysR-family regulator CbI	-6.90775527898214	-1.71251009757391
+Xanthomonapepsin precursor (EC 3.4.21.101)	-6.90775527898214	-1.90056232907685
+Phage tail fiber protein #Phage host specificity protein J	-6.90775527898214	-0.790521344585122
+putative patatin-like phospholipase	-6.90775527898214	-1.41771055735327
+Uncharacterized protein ygiV	-6.90775527898214	-1.83387095457818
+type 1 fimbriae anchoring protein FimD	-6.90775527898214	-0.768048488733063
+Phage minor tail protein #Phage minor tail protein U	-6.90775527898214	-1.63027199933694
+Glycosyltransferase LafB, responsible for the formation of Gal-Glc-DAG	-0.972732042779107	-6.90775527898214
+Sensory transduction histidine kinases	-6.90775527898214	-1.90056232907685
+Arabinose efflux permease	-6.90775527898214	-1.10897507570366
+Formate dehydrogenase subunit or accessory protein	-6.90775527898214	-1.39665714815544
+Oxidoreductase probably involved in sulfite reduction	-6.90775527898214	-0.963793065859158
+Glycine betaine ABC transport system, permease protein OpuAB / Glycine betaine ABC transport system, glycine betaine-binding protein OpuAC	-1.0055218656021	-6.90775527898214
+Putative lipase	-6.90775527898214	-1.60429651293368
+FIG005590: DegV family protein	-0.769133087537867	-6.90775527898214
+Uncharacterized protein ImpD	-6.90775527898214	-0.558327957750994
+Nitrogen regulation protein ntrY (EC 2.7.3.-)	-6.90775527898214	-1.8021222562636
+FIG001341: Probable Fe(2+)-trafficking protein YggX	-6.90775527898214	-0.604419064951261
+Agglutination protein	-6.90775527898214	-1.3166144404819
+Sensor protein PhoQ (EC 2.7.13.3)	-6.90775527898214	-0.898410306596307
+Phage major capsid protein #Fam0006	-6.90775527898214	-1.6569402464191
+Probable monothiol glutaredoxin GrlA	-6.90775527898214	-1.57897870494939
+N-terminal domain of CinA protein, COG1058 / C-terminal domain of CinA type E	-6.90775527898214	-1.71251009757391
+CopG protein	-6.90775527898214	-1.01936291701397
+Cell envelope-associated transcriptional attenuator LytR-CpsA-Psr, subfamily A1 (as in PMID19099556)	-0.910211685797773	-6.90775527898214
+Inner membrane protein yciS	-6.90775527898214	-1.90056232907685
+Similar to ribosomal large subunit pseudouridine synthase D, Bacillus subtilis YjbO type	-0.346276236717834	-6.90775527898214
+PUTATIVE TRANSMEMBRANE PROTEIN	-6.90775527898214	-1.48366852514507
+Uncharacterized metabolite ABC transporter in Enterobacteriaceae, ATP-binding protein EC-YbbA	-6.90775527898214	-1.93565364888812
+Thioredoxin 2 (EC 1.8.1.8)	-6.90775527898214	-1.63027199933694
+Malonate decarboxylase beta subunit	-6.90775527898214	-1.93565364888812
+Capsular polysaccharide export system inner membrane protein KpsE	-6.90775527898214	-1.77135059759685
+Phospholipase/lecithinase/hemolysin	-6.90775527898214	-1.46119566929301
+Putative virulence factor	-6.90775527898214	-1.71251009757391
+Multidrug and toxin extrusion (MATE) family efflux pump YdhE/NorM	-6.90775527898214	-1.41771055735327
+Hemolysin	-6.90775527898214	-1.77135059759685
+Negative regulator of flagellin synthesis FlgM	-6.90775527898214	-1.17351359684123
+Type III secretion cytoplasmic protein (YscL)	-6.90775527898214	-1.83387095457818
+competence lipoprotein ComL, putative	-6.90775527898214	-1.90056232907685
+Foldase protein PrsA precursor (EC 5.2.1.8) @ Foldase clustered with pyrimidine conversion	-0.693147180559945	-6.90775527898214
+Pyridoxal-5'-phosphate phosphatase (EC 3.1.3.74), Alphaproteobacterial type	-6.90775527898214	-1.43921676257423
+PTS system permease (IIAMan), nitrogen regulatory IIA protein	-6.90775527898214	-1.93565364888812
+FIG009439: Cytosolic protein containing multiple CBS domains	-0.535518236356362	-6.90775527898214
+Thiamine kinase (EC 2.7.1.89) @ Adenosylcobinamide kinase (EC 2.7.1.156)	-6.90775527898214	-1.60429651293368
+Peptide transport system ATP-binding protein SapD	-6.90775527898214	-1.26052497383086
+Outer membrane protein Imp, required for envelope biogenesis / Organic solvent tolerance protein precursor	-6.90775527898214	-0.120363682249875
+FIG011945: O-methyltransferase family protein	-0.600056757493933	-6.90775527898214
+Protein yecM	-6.90775527898214	-1.35583515363518
+Uncharacterized monothiol glutaredoxin ycf64-like	-6.90775527898214	-1.6569402464191
+S-adenosylmethionine-dependent methyltransferase Functionally Coupled to the MukBEF Chromosome Partitioning Mechanism	-6.90775527898214	-1.22480689122878
+Stage V sporulation protein AE (SpoVAE)	-0.363667979429703	-6.90775527898214
+YaaH protein	-6.90775527898214	-1.86666077740117
+Nitrate reductase cytochrome c550-type subunit	-6.90775527898214	-0.991192040047273
+2,3-diketo-5-methylthiopentyl-1-phosphate enolase-phosphatase (EC 3.1.3.77)	-6.90775527898214	-1.90056232907685
+Nucleoside-diphosphate sugar epimerase/dehydratase	-6.90775527898214	-1.336032526339
+Heat shock (predicted periplasmic) protein YciM, precursor	-6.90775527898214	-0.724563376793324
+Polymyxin resistance protein ArnA_DH, UDP-glucuronic acid decarboxylase (EC 4.1.1.-) / Polymyxin resistance protein ArnA_FT, UDP-4-amino-4-deoxy-L-arabinose formylase (EC 2.1.2.-)	-6.90775527898214	-1.6569402464191
+Duplicated ATPase component YkoD of energizing module of thiamin-regulated ECF transporter for HydroxyMethylPyrimidine	-0.910211685797773	-6.90775527898214
+Gene D protein	-6.90775527898214	-1.27887411249905
+Lysophospholipid transporter LplT	-6.90775527898214	-1.90056232907685
+hemimethylated DNA binding protein YccV	-6.90775527898214	-1.90056232907685
+Putative phosphatase YigL, haloacid dehalogenase-like phosphatase family	-6.90775527898214	-1.15698429489002
+Mu-like prophage FluMu protein gp29	-6.90775527898214	-1.77135059759685
+Cytochrome c5	-6.90775527898214	-1.29756624551121
+putative virulence protein	-6.90775527898214	-1.53018854077996
+Glucans biosynthesis protein G precursor	-6.90775527898214	-1.01936291701397
+putative outer membrane lipoprotein	-6.90775527898214	-1.57897870494939
+Conserved protein YcjX with nucleoside triphosphate hydrolase domain	-6.90775527898214	-1.17351359684123
+GTP pyrophosphokinase (EC 2.7.6.5) ## Bsu YjbM	-0.312374685042152	-6.90775527898214
+Putative periplasmic or exported protein	-6.90775527898214	-1.41771055735327
+Putative permease PerM (= YfgO)	-6.90775527898214	-0.937124818776997
+General secretion pathway protein F	-6.90775527898214	-0.604419064951261
+Sensory histidine kinase in two-component regulatory system with RstA	-6.90775527898214	-0.924052737209644
+Histidine ABC transporter, histidine-binding periplasmic protein precursor HisJ (TC 3.A.1.3.1)	-6.90775527898214	-1.19032071515761
+Putative ABC transporter of substrate X, ATP-binding subunit; interrupted	-6.90775527898214	-1.50665804336977
+Uxu operon transcriptional regulator	-6.90775527898214	-1.77135059759685
+UDP-3-O-[3-hydroxymyristoyl] N-acetylglucosamine deacetylase (EC 3.5.1.108)	-6.90775527898214	-0.0529224014543426
+Glutathione S-transferase	-6.90775527898214	-1.19032071515761
+Dihydrolipoamide dehydrogenase of pyruvate dehydrogenase complex (EC 1.8.1.4) @ Dihydrolipoamide dehydrogenase (EC 1.8.1.4)	-6.90775527898214	-1.86666077740117
+Ascorbate utilization transcriptional regulator UlaR, HTH-type	-6.90775527898214	-1.74149763444717
+Succinylarginine dihydrolase (EC 3.5.3.23)	-6.90775527898214	-0.937124818776997
+Lipopolysaccharide biosynthesis protein WzxC	-6.90775527898214	-1.8021222562636
+FIG023911: putative membrane protein	-6.90775527898214	-1.46119566929301
+Putative carboxymethylenebutenolidase (EC 3.1.1.45)	-6.90775527898214	-1.90056232907685
+NADPH-dependent glyceraldehyde-3-phosphate dehydrogenase (EC 1.2.1.13) / NAD-dependent glyceraldehyde-3-phosphate dehydrogenase (EC 1.2.1.12)	-6.90775527898214	-1.63027199933694
+Outer membrane protein and related peptidoglycan-associated (lipo)proteins	-6.90775527898214	-1.8021222562636
+Putative S-transferase	-6.90775527898214	-1.86666077740117
+Iron binding protein SufA for iron-sulfur cluster assembly	-6.90775527898214	-0.991192040047273
+FOG: Ankyrin repeat	-6.90775527898214	-1.1247234326718
+ATP-dependent Zn proteases	-6.90775527898214	-1.93565364888812
+Putative outer membrane protein	-6.90775527898214	-0.408045754701656
+Zn-dependent hydrolase YycJ/WalJ, required for cell wall metabolism and coordination of cell division with DNA replication	-0.669049628980885	-6.90775527898214
+extracellular protein	-0.669049628980885	-6.90775527898214
+Bacterioferritin-associated ferredoxin	-6.90775527898214	-0.963793065859158
+Predicted galactitol operon regulator (Transcriptional antiterminator), BglG family / PTS system, mannitol/fructose-specific IIA component (EC 2.7.1.69)	-0.669049628980885	-6.90775527898214
+Glycosyltransferase LafA, responsible for the formation of Glc-DAG	-0.85137118577484	-6.90775527898214
+4Fe-4S ferredoxin, nitrogenase-associated	-6.90775527898214	-1.55428609235902
+Sensor protein torS (EC 2.7.3.-)	-6.90775527898214	-1.35583515363518
+GNAT family acetyltransferase YiiD potentially involved in tRNA processing	-6.90775527898214	-1.71251009757391
+Putative transporting ATPase	-6.90775527898214	-1.26052497383086
+Inosine-guanosine kinase (EC 2.7.1.73)	-6.90775527898214	-1.22480689122878
+Na(+)-translocating NADH-quinone reductase subunit A (EC 1.6.5.-)	-6.90775527898214	-1.03375165446607
+Type III secretion chaperone protein for YopD (SycD)	-6.90775527898214	-1.93565364888812
+NADH oxidoreductase hcr (EC 1.-.-.-)	-6.90775527898214	-1.60429651293368
+Flp pilus assembly protein TadG	-6.90775527898214	-1.77135059759685
+Glycine cleavage system transcriptional activator GcvA	-6.90775527898214	-0.662687973075237
+Na(+)-translocating NADH-quinone reductase subunit E (EC 1.6.5.-)	-6.90775527898214	-0.977398717914937
+NfuA Fe-S protein maturation	-6.90775527898214	-0.937124818776997
+Uncharacterized SAV1743 homolog	-0.85137118577484	-6.90775527898214
+Beta-fimbriae probable major subunit	-6.90775527898214	-1.86666077740117
+DNA replication intiation control protein YabA	-0.295845383090942	-6.90775527898214
+Substrate-specific component YkoE of thiamin-regulated ECF transporter for HydroxyMethylPyrimidine	-0.940983344464527	-6.90775527898214
+Putative sugar isomerase involved in processing of exogenous sialic acid ## in nan gene cluster	-6.90775527898214	-1.83387095457818
+Plasmid replication protein RepB	-6.90775527898214	-1.27887411249905
+Protein ydgH precursor	-6.90775527898214	-1.90056232907685
+Uncharacterized protein ImpB	-6.90775527898214	-0.192684343829501
+Aldehyde dehydrogenase (EC 1.2.1.3); Probable coniferyl aldehyde dehydrogenase (EC 1.2.1.68)	-6.90775527898214	-1.90056232907685
+General secretion pathway protein M	-6.90775527898214	-0.682890680392756
+Uncharacterized protein ylaB	-6.90775527898214	-1.93565364888812
+Transcriptional regulator CtsR	-0.26358452087272	-6.90775527898214
+Protein GerPF, required for proper assembly of spore coat, mutations lead to super-dormant spore	-1.03942341727778	-6.90775527898214
+Alanine racemase (EC 5.1.1.1) ## catabolic	-6.90775527898214	-1.1247234326718
+Cyclase	-6.90775527898214	-1.71251009757391
+FUPA27 P-type ATPase #(EC 3.6.3.4);(TC# 3.A.3.27.1)	-6.90775527898214	-1.50665804336977
+tRNA (uracil(54)-C5)-methyltransferase (EC 2.1.1.35)	-6.90775527898214	-0.825206902573012
+Periplasmic protein p19 involved in high-affinity Fe2+ transport	-6.90775527898214	-1.71251009757391
+IncF plasmid conjugative transfer pilus assembly protein TraB	-6.90775527898214	-1.8021222562636
+Arsenic resistance protein ArsH	-6.90775527898214	-1.77135059759685
+Outer membrane protein NlpB, lipoprotein component of the protein assembly complex (forms a complex with YaeT, YfiO, and YfgL); Lipoprotein-34 precursor	-6.90775527898214	-1.35583515363518
+Transcriptional regulator CsgD for 2nd curli operon	-6.90775527898214	-1.93565364888812
+WzxE protein	-6.90775527898214	-1.77135059759685
+Histidine utilization repressor	-6.90775527898214	-0.652737642222069
+Mlr7403 protein	-6.90775527898214	-0.633129170833692
+Glucans biosynthesis glucosyltransferase H (EC 2.4.1.-)	-6.90775527898214	-0.991192040047273
+Transcriptional regulator of glmS gene, DeoR family	-6.90775527898214	-1.86666077740117
+Phosphomannomutase (EC 5.4.2.8) / Phosphoglucomutase (EC 5.4.2.2) / Phosphoglucosamine mutase (EC 5.4.2.10)	-6.90775527898214	-1.74149763444717
+Substrate-specific component ThiT of thiamin ECF transporter	-0.743157601134607	-6.90775527898214
+Bacitracin export permease protein BceB	-0.0372713947972317	-6.90775527898214
+Nudix-like NDP and NTP phosphohydrolase YmfB	-6.90775527898214	-1.22480689122878
+Predicted glutamine amidotransferase	-6.90775527898214	-1.39665714815544
+FOG: CheY-like receiver	-6.90775527898214	-1.24250646832818
+Ribulose-phosphate 3-epimerase (EC 5.1.3.1) # in galactitol utilization cluster	-0.910211685797773	-6.90775527898214
+FIG002060: uncharacterized protein YggL	-6.90775527898214	-1.336032526339
+FIG138315: Putative alpha helix protein	-6.90775527898214	-0.713981267462787
+General secretion pathway protein D	-6.90775527898214	-0.472067613466587
+FIG002207: Probable transmembrane protein	-6.90775527898214	-1.90056232907685
+2-keto-3-deoxy-L-fuconate dehydrogenase	-6.90775527898214	-1.29756624551121
+Chromosome initiation inhibitor	-6.90775527898214	-0.963793065859158
+5-methyl-dCTP pyrophosphohydrolase (EC 3.6.1.-)	-6.90775527898214	-1.1247234326718
+Heme efflux system permease HrtB	-0.85137118577484	-6.90775527898214
+ABC-type amino acid transport, signal transduction systems, periplasmic component/domain	-6.90775527898214	-1.8021222562636
+DNA polymerase III psi subunit (EC 2.7.7.7)	-6.90775527898214	-1.50665804336977
+Acetyl-CoA hydrolase	-6.90775527898214	-1.60429651293368
+Type III secretion inner membrane protein (YscT,HrcT,SpaR,EscT,EpaR1,homologous to flagellar export components)	-6.90775527898214	-1.19032071515761
+Phosphotransferase involved in threonylcarbamoyladenosine t(6)A37 formation in tRNA	-6.90775527898214	-0.924052737209644
+ATP-dependent RNA helicase RhlB	-6.90775527898214	-0.81351086280982
+membrane c-type cytochrome cy	-6.90775527898214	-1.74149763444717
+Thiosulfate sulfurtransferase GlpE (EC 2.8.1.1)	-6.90775527898214	-1.06316553967236
+Transport ATP-binding protein CydCD	-6.90775527898214	-1.41771055735327
+Spermidine/putrescine-binding periplasmic protein	-6.90775527898214	-1.48366852514507
+Transcriptional repressor protein TyrR # regulates the aroA I (aroF)-tyrA, aroA I (aroL and aroG) and aroP operons.	-6.90775527898214	-1.39665714815544
+Sigma factor RpoE negative regulatory protein RseA	-6.90775527898214	-0.779221789331188
+YrbA protein	-6.90775527898214	-0.263911853117869
+putative dioxygenase	-6.90775527898214	-1.77135059759685
+Competence-specific sigma factor ComX	-0.910211685797773	-6.90775527898214
+Two-component system regulatory protein	-6.90775527898214	-1.06316553967236
+Type IV pilus biogenesis protein PilP	-6.90775527898214	-0.693147180559945
+type 1 fimbriae major subunit FimA	-6.90775527898214	-1.46119566929301
+Biofilm PGA synthesis auxiliary protein PgaD	-6.90775527898214	-1.93565364888812
+N-acetylmuramoyl-L-alanine amidase, family 4	-0.217064505237827	-6.90775527898214
+Predicted thioesterase	-6.90775527898214	-1.93565364888812
+Competence-stimulating peptide ABC transporter ATP-binding protein ComA	-0.795801334620029	-6.90775527898214
+sugar-binding transcriptional regulator, LacI family	-0.85137118577484	-6.90775527898214
+IncF plasmid conjugative transfer pilus assembly protein TraH	-6.90775527898214	-1.8021222562636
+FolM Alternative dihydrofolate reductase 1	-6.90775527898214	-0.633129170833692
+COG1399 protein in cluster with ribosomal protein L32p, Firmicutes subfamily	-0.346276236717834	-6.90775527898214
+Cystine ABC transporter, permease protein	-6.90775527898214	-1.43921676257423
+GGDEF domain/EAL domain protein	-6.90775527898214	-1.83387095457818
+Predicted ATPase with chaperone activity, associated with Flp pilus assembly	-6.90775527898214	-1.8021222562636
+Tyrosine-specific transport protein	-6.90775527898214	-0.713981267462787
+Type IV pilus biogenesis protein PilZ	-6.90775527898214	-1.77135059759685
+Lipid A biosynthesis (KDO) 2-(lauroyl)-lipid IVA acyltransferase (EC 2.3.1.-)	-6.90775527898214	-1.00517828202201
+ROK family Glucokinase with ambiguous substrate specificity	-6.90775527898214	-1.68433922060722
+S-formylglutathione hydrolase (EC 3.1.2.12)	-6.90775527898214	-0.531659710668833
+ProQ: influences osmotic activation of compatible solute ProP	-6.90775527898214	-1.24250646832818
+BatD	-6.90775527898214	-1.04835045388722
+Purine nucleotide synthesis repressor	-6.90775527898214	-1.3760378609527
+Ureidoglycolate hydrolase (EC 3.5.3.19)	-6.90775527898214	-0.977398717914937
+Protein involved in catabolism of external DNA	-6.90775527898214	-0.377509030841574
+Uncharacterized protein ybfE	-6.90775527898214	-1.77135059759685
+Methionine repressor MetJ	-6.90775527898214	-1.22480689122878
+Uncharacterized protein YeaC	-6.90775527898214	-1.50665804336977
+Protein of avirulence locus ImpE	-6.90775527898214	-1.71251009757391
+Ferric reductase (1.6.99.14)	-6.90775527898214	-1.39665714815544
+Cytochrome O ubiquinol oxidase subunit I (EC 1.10.3.-)	-6.90775527898214	-0.693147180559945
+Fructose-specific phosphocarrier protein HPr (EC 2.7.1.69) / PTS system, fructose-specific IIA component (EC 2.7.1.69)	-6.90775527898214	-1.46119566929301
+Osmotically inducible lipoprotein E precursor	-6.90775527898214	-1.93565364888812
+Response regulator BaeR	-6.90775527898214	-1.48366852514507
+NadR transcriptional regulator / Nicotinamide-nucleotide adenylyltransferase, NadR family (EC 2.7.7.1) / Ribosylnicotinamide kinase (EC 2.7.1.22)	-6.90775527898214	-1.83387095457818
+DedA family inner membrane protein YqjA	-6.90775527898214	-1.90056232907685
+Uncharacterized protein YhjG	-6.90775527898214	-1.63027199933694
+Putrescine utilization regulator	-6.90775527898214	-1.53018854077996
+DNA damage-inducible gene in SOS regulon, dependent on cyclic AMP and H-NS	-6.90775527898214	-1.83387095457818
+FIG006988: Lipase/Acylhydrolase with GDSL-like motif	-0.494696241836107	-6.90775527898214
+MCE-family protein Mce1B	-1.07451473708905	-6.90775527898214
+ATPase, AFG1 family	-6.90775527898214	-0.790521344585122
+Putative arylsulfate sulfotransferase (EC 2.8.2.22)	-6.90775527898214	-1.8021222562636
+MFS family multidrug efflux protein, similarity to bicyclomycin resistance protein Bcr	-6.90775527898214	-1.74149763444717
+Methylglyoxal reductase, acetol producing (EC 1.1.1.-) / 2,5-diketo-D-gluconic acid reductase B (EC 1.1.1.274)	-6.90775527898214	-1.35583515363518
+Uncharacterized ABC transporter, ATP-binding protein YrbF	-6.90775527898214	-0.703509967595492
+Copper-containing nitrite reductase (EC 1.7.2.1)	-6.90775527898214	-1.50665804336977
+Transcription elongation factor	-6.90775527898214	-1.6569402464191
+FIG002379: metal-dependent hydrolase	-0.823200308808143	-6.90775527898214
+Membrane protein YcjF	-6.90775527898214	-1.35583515363518
+Acetyltransferase YpeA	-6.90775527898214	-1.83387095457818
+Cytoplasmic protein YaiE	-6.90775527898214	-1.93565364888812
+Putative major teichoic acid biosynthesis protein C	-1.0055218656021	-6.90775527898214
+Hnr protein	-6.90775527898214	-1.90056232907685
+Universal stress protein A	-6.90775527898214	-1.336032526339
+Osmotically activated L-carnitine/choline ABC transporter, ATP-binding protein OpuCA	-1.0055218656021	-6.90775527898214
+Membrane-bound lytic murein transglycosylase C precursor (EC 3.2.1.-)	-6.90775527898214	-1.26052497383086
+TrkA domain protein	-6.90775527898214	-1.86666077740117
+Uncharacterized protein with LysM domain, COG1652	-6.90775527898214	-1.3760378609527
+Unsaturated fatty acid biosythesis repressor FabR, TetR family	-6.90775527898214	-1.14072377401824
+Possible exported protein	-6.90775527898214	-1.57897870494939
+PurR: transcription regulator associated with purine metabolism	-0.312374685042152	-6.90775527898214
+Putative DMT superfamily metabolite efflux protein precursor	-6.90775527898214	-1.63027199933694
+L-rhamnose-proton symporter	-6.90775527898214	-1.6569402464191
+Putative efflux (PET) family inner membrane protein YccS	-6.90775527898214	-1.68433922060722
+StbE replicon stabilization toxin	-6.90775527898214	-1.74149763444717
+Dioxygenases related to 2-nitropropane dioxygenase	-6.90775527898214	-1.09347088916769
+Cytochrome c-type protein NapC	-6.90775527898214	-0.898410306596307
+Exodeoxyribonuclease IX (EC 3.1.11.-)	-6.90775527898214	-1.90056232907685
+Major pilus subunit of type IV secretion complex (VirB2)	-6.90775527898214	-1.39665714815544
+putative protein PaaI, possibly involved in aromatic compounds catabolism	-6.90775527898214	-1.53018854077996
+Cytochrome c-type biogenesis protein CcmD, interacts with CcmCE	-6.90775527898214	-0.672738308928738
+Type III secretion outermembrane pore forming protein (YscC,MxiD,HrcC, InvG)	-6.90775527898214	-1.20741514851691
+Curli production assembly/transport component CsgF	-6.90775527898214	-1.83387095457818
+TPR domain protein in aerotolerance operon	-6.90775527898214	-1.15698429489002
+ABC transporter, transmembrane region:ABC transporter:Peptidase C39, bacteriocin processing	-6.90775527898214	-1.57897870494939
+DcrB protein precursor	-6.90775527898214	-1.93565364888812
+FIG021952: putative membrane protein	-6.90775527898214	-0.84901755126673
+Aminobutyraldehyde dehydrogenase (EC 1.2.1.19)	-6.90775527898214	-1.86666077740117
+VapC toxin protein	-6.90775527898214	-0.724563376793324
+Ubiquinone biosynthesis monooxygenase UbiB	-6.90775527898214	-0.284251537354992
+Putative permease	-6.90775527898214	-0.768048488733063
+Histidine ABC transporter, permease protein HisM (TC 3.A.1.3.1)	-6.90775527898214	-0.662687973075237
+Galactose-6-phosphate isomerase, LacA subunit (EC 5.3.1.26)	-0.85137118577484	-6.90775527898214
+Decarboxylase family protein	-6.90775527898214	-0.540470340350988
+GALNS arylsulfatase regulator (Fe-S oxidoreductase)	-6.90775527898214	-1.71251009757391
+FIG004819: Prepilin peptidase dependent protein B precursor	-6.90775527898214	-1.90056232907685
+YcgN (Fragment)	-6.90775527898214	-1.22480689122878
+FUSARIC ACID RESISTANCE PROTEIN FUSB / FUSARIC ACID RESISTANCE PROTEIN FUSC	-6.90775527898214	-1.74149763444717
+Fimbrial protein precursor	-6.90775527898214	-1.20741514851691
+Lipopolysaccharide heptosyltransferase III (EC 2.4.1.-)	-6.90775527898214	-1.29756624551121
+Transporter, putative	-6.90775527898214	-1.03375165446607
+Peptidase B (EC 3.4.11.23)	-6.90775527898214	-0.652737642222069
+Capsular polysaccharide export system protein KpsS	-6.90775527898214	-1.8021222562636
+Septation ring formation regulator EzrA	-0.295845383090942	-6.90775527898214
+no significant database match found	-6.90775527898214	-1.3760378609527
+Iron siderophore sensor protein	-6.90775527898214	-1.39665714815544
+Putative uncharacterized protein ydbH	-6.90775527898214	-1.29756624551121
+Protein:protein lipoyl transferase	-0.600056757493933	-6.90775527898214
+L-serine dehydratase 1 (EC 4.3.1.17)	-6.90775527898214	-1.77135059759685
+LptA, protein essential for LPS transport across the periplasm	-6.90775527898214	-0.662687973075237
+Type IV pilus biogenesis protein PilE	-6.90775527898214	-0.911149332373736
+Cytochrome oxidase biogenesis protein Cox11-CtaG, copper delivery to Cox1	-6.90775527898214	-0.790521344585122
+Flagellar sensor histidine kinase FleS	-6.90775527898214	-1.336032526339
+Glutamyl-tRNA(Gln) synthetase (EC 6.1.1.24)	-6.90775527898214	-1.24250646832818
+FIG021862: membrane protein, exporter	-6.90775527898214	-1.39665714815544
+tRNA pseudouridine synthase C (EC 4.2.1.70) ## tRNA Psi65	-6.90775527898214	-1.04835045388722
+FIG138517: Putative lipid carrier protein	-6.90775527898214	-1.90056232907685
+Putative lipase in cluster with Phosphatidate cytidylyltransferase	-6.90775527898214	-1.86666077740117
+Hcp	-6.90775527898214	-1.53018854077996
+Response regulator containing CheY-like receiver, AAA-type ATPase, and DNA-binding domains	-6.90775527898214	-1.41771055735327
+Signal transduction histidine kinase regulating C4-dicarboxylate transport system	-6.90775527898214	-1.48366852514507
+Positive regulator of Tartrate dehydrogenase/decarboxylase/D-malic enzyme	-6.90775527898214	-1.14072377401824
+Putative TolA protein	-6.90775527898214	-1.86666077740117
+Branched-chain acyl-CoA dehydrogenase (EC 1.3.99.12)	-6.90775527898214	-1.35583515363518
+probable exported protein STY0357	-6.90775527898214	-1.48366852514507
+Ribosome modulation factor	-6.90775527898214	-1.24250646832818
+Alcohol dehydrogenase (EC 1.1.1.1) @ Acetaldehyde dehydrogenase (EC 1.2.1.10) @ Pyruvate-formate-lyase deactivase	-6.90775527898214	-1.41771055735327
+Transcriptional regulator containing an amidase domain and an AraC-type DNA-binding HTH domain	-6.90775527898214	-0.174107958256566
+Phospholipid-lipopolysaccharide ABC transporter	-6.90775527898214	-1.63027199933694
+Capsular polysaccharide ABC transporter, ATP-binding protein KpsT	-6.90775527898214	-1.68433922060722
+Late competence protein ComGB, access of DNA to ComEA	-0.329181803358534	-6.90775527898214
+Gamma-glutamyl-putrescine synthetase (EC 6.3.1.11)	-6.90775527898214	-1.48366852514507
+Hyaluronate lyase precursor (EC 4.2.2.1)	-1.07451473708905	-6.90775527898214
+Transcriptional regulator, MutR family	-0.972732042779107	-6.90775527898214
+Uncharacterized protein ImpI/VasC	-6.90775527898214	-1.14072377401824
+21 kDa hemolysin precursor	-6.90775527898214	-0.613897808905805
+Deoxyribonuclease TatD	-6.90775527898214	-1.15698429489002
+MCE-family protein Mce1D	-1.0055218656021	-6.90775527898214
+Ribonuclease I precursor (EC 3.1.27.6)	-6.90775527898214	-1.43921676257423
+ABC-type branched-chain amino acid transport systems, periplasmic component	-6.90775527898214	-1.8021222562636
+Attachment invasion locus protein precursor	-6.90775527898214	-0.682890680392756
+STRUCTURAL ELEMENTS; Cell Exterior; surface polysaccharides/antigens	-6.90775527898214	-0.779221789331188
+3-oxoacyl-[ACP] reductase (EC 1.1.1.100)	-6.90775527898214	-1.336032526339
+Deoxyribose operon repressor, DeoR family	-6.90775527898214	-1.39665714815544
+autotransporter	-6.90775527898214	-1.93565364888812
+RNA polymerase associated protein RapA (EC 3.6.1.-)	-6.90775527898214	-0.84901755126673
+Heme efflux system ATPase HrtA	-0.910211685797773	-6.90775527898214
+Two-component sensor kinase YvcQ	-0.669049628980885	-6.90775527898214
+Osmotically inducible protein OsmY	-6.90775527898214	-1.77135059759685
+ATPase provides energy for both assembly of type IV secretion complex and secretion of T-DNA complex (VirB11)	-6.90775527898214	-1.10897507570366
+Macrophage infectivity potentiator-related protein	-6.90775527898214	-1.55428609235902
+Cyclohexadienyl dehydratase (EC 4.2.1.51)(EC 4.2.1.91) # Periplasmic precursor	-6.90775527898214	-1.68433922060722
+Probable Fe-S oxidoreductase family 2	-6.90775527898214	-1.90056232907685
+UDP-N-acetylmuramoylalanyl-D-glutamate--L-lysine ligase (EC 6.3.2.7)	-0.972732042779107	-6.90775527898214
+Putative Na(+)/H(+) exchanger protein, CPA1 family precursor	-6.90775527898214	-1.74149763444717
+LysR-family transcriptional regulator YhaJ	-6.90775527898214	-1.8021222562636
+Arginine/agmatine antiporter	-6.90775527898214	-1.83387095457818
+Protein yihD	-6.90775527898214	-1.43921676257423
+Opine oxidase subunit B	-6.90775527898214	-1.90056232907685
+Periplasmic/membrane protein associated with DUF414	-6.90775527898214	-1.8021222562636
+Formate dehydrogenase-O, iron-sulfur subunit (EC 1.2.1.2); Putative formate dehydrogenase iron-sulfur subunit (EC 1.2.1.2)	-6.90775527898214	-1.3166144404819
+Transcriptional activator NhaR	-6.90775527898214	-1.46119566929301
+PROBABLE CONSERVED MEMBRANE PROTEIN	-0.535518236356362	-6.90775527898214
+Polymyxin resistance protein PmrL, sucrose-6 phosphate hydrolase	-6.90775527898214	-1.71251009757391
+Alpha-ketoglutarate permease	-6.90775527898214	-1.55428609235902
+Two-component response regulator YvcP	-0.187211542088146	-6.90775527898214
+probable enzyme yhhN	-6.90775527898214	-1.93565364888812
+3-dehydroquinate dehydratase II (EC 4.2.1.10) ## AroCII	-6.90775527898214	-1.19032071515761
+General secretion pathway protein I	-6.90775527898214	-0.623467259921956
+Inner membrane protein forms channel for type IV secretion of T-DNA complex (VirB8)	-6.90775527898214	-1.17351359684123
+Tol biopolymer transport system, TolR protein	-6.90775527898214	-0.455673803690911
+NPQTN specific sortase B	-0.743157601134607	-6.90775527898214
+Minor curlin subunit CsgB, nucleation component of curlin monomers	-6.90775527898214	-1.71251009757391
+Citrate Succinate antiporter (TC 2.A.47.3.2)	-6.90775527898214	-1.6569402464191
+FIG001590: Putative conserved exported protein precursor	-6.90775527898214	-1.10897507570366
+Sensor histidine kinase ResE (EC 2.7.3.-)	-0.940983344464527	-6.90775527898214
+Electron transport protein HydN	-6.90775527898214	-1.63027199933694
+UDP-2,3-diacylglucosamine pyrophosphatase	-6.90775527898214	-1.63027199933694
+Propionyl-CoA carboxylase carboxyl transferase subunit (EC 6.4.1.3)	-6.90775527898214	-1.90056232907685
+2-methylcitrate dehydratase FeS dependent (EC 4.2.1.79)	-6.90775527898214	-1.26052497383086
+putative transport	-6.90775527898214	-1.83387095457818
+Phage antitermination protein Q	-6.90775527898214	-1.27887411249905
+Non-ribosomal peptide synthetase modules and related proteins	-6.90775527898214	-1.90056232907685
+Proteinase inhibitor I11, ecotin precursor	-6.90775527898214	-1.20741514851691
+ParD protein (antitoxin to ParE)	-6.90775527898214	-1.60429651293368
+FIG003269: Prophage tail protein	-6.90775527898214	-1.74149763444717
+Gamma-D-Glutamyl-meso-Diaminopimelate Amidase	-6.90775527898214	-1.77135059759685
+Putative ligase	-6.90775527898214	-1.90056232907685
+FIG002781: Alpha-L-glutamate ligase family protein	-6.90775527898214	-1.83387095457818
+Ribosomal small subunit pseudouridine synthase A (EC 4.2.1.70) ## SSU Psi516	-6.90775527898214	-1.3760378609527
+IroE protein	-6.90775527898214	-1.93565364888812
+Ribonuclease E inhibitor RraB	-6.90775527898214	-1.24250646832818
+Endonuclease/exonuclease/phosphatase family protein	-6.90775527898214	-1.3760378609527
+Various polyols ABC transporter, ATP-binding component	-6.90775527898214	-1.0782034170369
+Extracellular protein	-0.769133087537867	-6.90775527898214
+Two-component sensor PilS	-6.90775527898214	-1.8021222562636
+NnrS protein involved in response to NO	-6.90775527898214	-0.735258665910072
+FIG001721: Predicted N6-adenine-specific DNA methylase	-0.232331977368616	-6.90775527898214
+Biofilm PGA outer membrane secretin PgaA	-6.90775527898214	-1.77135059759685
+Peptidyl-prolyl cis-trans isomerase PpiA precursor (EC 5.2.1.8)	-6.90775527898214	-0.633129170833692
+; Probable coniferyl aldehyde dehydrogenase (EC 1.2.1.68)	-6.90775527898214	-1.6569402464191
+Xaa-Pro dipeptidase PepQ (EC 3.4.13.9)	-6.90775527898214	-1.39665714815544
+Cytochrome c2	-6.90775527898214	-1.22480689122878
+Glutaredoxin 3 (Grx3)	-6.90775527898214	-1.06316553967236
+FIG003276: zinc-binding protein	-6.90775527898214	-0.911149332373736
+Glyoxylate reductase (EC 1.1.1.79) / Glyoxylate reductase (EC 1.1.1.26) / Hydroxypyruvate reductase (EC 1.1.1.81); 2-ketoaldonate reductase, broad specificity (EC 1.1.1.215) (EC 1.1.1.-)	-6.90775527898214	-1.60429651293368
+FIG137887: membrane protein related to purine degradation	-6.90775527898214	-1.68433922060722
+Choline binding protein A	-0.556571645554195	-6.90775527898214
+FIG005121: SAM-dependent methyltransferase (EC 2.1.1.-)	-6.90775527898214	-0.768048488733063
+IncF plasmid conjugative transfer protein TraD	-6.90775527898214	-1.71251009757391
+UDP-N-acetylglucosamine 4-epimerase (EC 5.1.3.7) / UDP-glucose 4-epimerase (EC 5.1.3.2)	-6.90775527898214	-1.93565364888812
+Protein ygiW precursor	-6.90775527898214	-1.48366852514507
+FIG001353: Acetyltransferase	-6.90775527898214	-0.991192040047273
+23S rRNA (guanine-N-2-) -methyltransferase rlmL EC 2.1.1.-)	-6.90775527898214	-0.613897808905805
+4'-phosphopantetheinyl transferase (EC 2.7.8.-) [enterobactin] siderophore	-6.90775527898214	-1.93565364888812
+Twin-arginine translocation protein TatE	-6.90775527898214	-1.83387095457818
+Response regulator of the competence regulon ComE	-0.329181803358534	-6.90775527898214
+IncF plasmid conjugative transfer pilus assembly protein TraF	-6.90775527898214	-1.83387095457818
+N-acetyl-D-glucosamine kinase (EC 2.7.1.59)	-6.90775527898214	-1.53018854077996
+COG4478, integral membrane protein	-1.0055218656021	-6.90775527898214
+Glucose dehydrogenase, PQQ-dependent (EC 1.1.5.2)	-6.90775527898214	-1.15698429489002
+DNA-binding protein H-NS	-6.90775527898214	-0.0638514719865328
+Aerobic cobaltochelatase CobT subunit (EC 6.6.1.2)	-6.90775527898214	-1.46119566929301
+Cytochrome C553 (soluble cytochrome f)	-6.90775527898214	-1.93565364888812
+Putative sensor-like histidine kinase YfhK	-6.90775527898214	-1.63027199933694
+ParE toxin protein	-6.90775527898214	-1.74149763444717
+SM-20-related protein	-6.90775527898214	-1.8021222562636
+FIG016425: Soluble lytic murein transglycosylase and related regulatory proteins (some contain LysM/invasin domains)	-6.90775527898214	-1.01936291701397
+Bacteriophage protein GP46	-6.90775527898214	-1.77135059759685
+FIG013761: LmbE family protein	-0.910211685797773	-6.90775527898214
+Transthyretin family protein	-6.90775527898214	-1.86666077740117
+FIG002208: Acetyltransferase (EC 2.3.1.-)	-6.90775527898214	-1.63027199933694
+Sarcosine oxidase beta subunit (EC 1.5.3.1)	-6.90775527898214	-1.01936291701397
+Biofilm PGA synthesis deacetylase PgaB (EC 3.-)	-6.90775527898214	-1.71251009757391
+Arginine ABC transporter, periplasmic arginine-binding protein ArtI	-6.90775527898214	-1.27887411249905
+Succinyl-CoA synthetase, alpha subunit	-6.90775527898214	-1.93565364888812
+Outer membrane protein V	-6.90775527898214	-1.83387095457818
+Outer membrane efflux protein	-6.90775527898214	-1.27887411249905
+HTH-type transcriptional regulator PetP	-6.90775527898214	-1.90056232907685
+Type IV fimbrial biogenesis protein PilW	-6.90775527898214	-0.84901755126673
+Flavoprotein wrbA	-6.90775527898214	-1.3760378609527
+MSHA biogenesis protein MshM	-6.90775527898214	-1.71251009757391
+Putative outer membrane lipoprotein	-6.90775527898214	-0.31909826868516
+ComF operon protein A, DNA transporter ATPase	-0.217064505237827	-6.90775527898214
+Fucose permease	-6.90775527898214	-1.50665804336977
+Probable VANILLIN dehydrogenase oxidoreductase protein (EC 1.-.-.-)	-6.90775527898214	-1.74149763444717
+Positive transcriptional regulator, MutR family	-0.116259806115862	-6.90775527898214
+Succinylornithine transaminase (EC 2.6.1.81)	-6.90775527898214	-1.43921676257423
+Possible hypoxanthine oxidase XdhD (EC 1.-.-.-)	-6.90775527898214	-1.90056232907685
+RND efflux membrane fusion protein	-6.90775527898214	-1.68433922060722
+Peptide transport system permease protein SapB	-6.90775527898214	-1.26052497383086
+ATP synthase B' chain (EC 3.6.3.14)	-6.90775527898214	-1.19032071515761
+FAD pyrophosphatase (EC 3.6.1.18), projected from PMID:18815383	-6.90775527898214	-1.57897870494939
+Spore germination protein GerKA	-0.556571645554195	-6.90775527898214
+Rho-specific inhibitor of transcription termination (YaeO)	-6.90775527898214	-1.53018854077996
+Inner membrane protein of type IV secretion of T-DNA complex, VirB6	-6.90775527898214	-1.55428609235902
+PTS system, mannose-specific IIA component (EC 2.7.1.69) / PTS system, mannose-specific IIB component (EC 2.7.1.69)	-6.90775527898214	-1.57897870494939
+Tryptophan halogenase	-6.90775527898214	-1.8021222562636
+Two-component sensor protein RcsD (EC 2.7.3.-)	-6.90775527898214	-1.74149763444717
+Cu(I)-responsive transcriptional regulator	-6.90775527898214	-1.35583515363518
+3-deoxy-D-manno-octulosonic acid kinase (EC 2.7.1.-)	-6.90775527898214	-1.77135059759685
+DNA-binding protein Fis	-6.90775527898214	-0.652737642222069
+Cell division protein FtsJ / Ribosomal RNA large subunit methyltransferase J (EC 2.1.1.-)	-6.90775527898214	-1.19032071515761
+Phage hyaluronidase	-0.743157601134607	-6.90775527898214
+Phage tail/DNA circulation protein	-6.90775527898214	-1.68433922060722
+Cytochrome c oxidase subunit CcoO (EC 1.9.3.1)	-6.90775527898214	-0.604419064951261
+Lipoprotein spr precursor	-6.90775527898214	-1.8021222562636
+Cell surface protein IsdA, transfers heme from hemoglobin to apo-IsdC	-0.940983344464527	-6.90775527898214
+DUF1694 domain-containing protein	-1.07451473708905	-6.90775527898214
+Periplasmic protein YqjC	-6.90775527898214	-1.93565364888812
+3-oxoacyl-[acyl-carrier protein] reductase paralog (EC 1.1.1.100) in cluster with unspecified monosaccharide transporter	-0.880358722648092	-6.90775527898214
+AmpE protein	-6.90775527898214	-1.39665714815544
+YgfY COG2938	-6.90775527898214	-0.333384225932636
+TonB system biopolymer transport component; Chromosome segregation ATPase	-6.90775527898214	-1.6569402464191
+PTS system, chitobiose-specific IIA component (EC 2.7.1.69)	-6.90775527898214	-1.90056232907685
+Multidrug transporter MdtB	-6.90775527898214	-1.90056232907685
+Universal stress protein family 3	-6.90775527898214	-1.93565364888812
+expression not validated	-6.90775527898214	-1.86666077740117
+Type II/IV secretion system secretin RcpA/CpaC, associated with Flp pilus assembly	-6.90775527898214	-0.652737642222069
+Periplasmic protein TonB, links inner and outer membranes	-6.90775527898214	-1.57897870494939
+Secretion monitor precursor	-6.90775527898214	-1.90056232907685
+Type III secretion thermoregulatory protein (LcrF,VirF,transcription regulation of virulence plasmid)	-6.90775527898214	-1.53018854077996
+Cytochrome c oxidase subunit CcoN (EC 1.9.3.1)	-6.90775527898214	-0.540470340350988
+GGDEF and EAL domain proteins	-6.90775527898214	-1.55428609235902
+Outer membrane stress sensor protease DegQ, serine protease	-6.90775527898214	-1.1247234326718
+Polymyxin resistance protein PmrJ, predicted deacetylase	-6.90775527898214	-1.35583515363518
+SeqA protein, negative modulator of initiation of replication	-6.90775527898214	-1.27887411249905
+Inner membrane protein YqjK	-6.90775527898214	-1.90056232907685
+Outer membrane protein/protective antigen OMA87	-6.90775527898214	-1.8021222562636
+Psp operon transcriptional activator	-6.90775527898214	-1.14072377401824
+type 1 fimbrae adaptor subunit FimF	-6.90775527898214	-1.57897870494939
+FIG146278: Maf/YceF/YhdE family protein	-6.90775527898214	-0.977398717914937
+Flagellar transcriptional activator FlhD	-6.90775527898214	-1.48366852514507
+YuzD-like protein	-0.85137118577484	-6.90775527898214
+Nitrogen regulation protein NR(II) (EC 2.7.3.-)	-6.90775527898214	-1.46119566929301
+D-serine dehydratase transcriptional activator	-6.90775527898214	-1.1247234326718
+FIG139438: lipoprotein B	-6.90775527898214	-1.41771055735327
+major outer membrane lipoprotein	-6.90775527898214	-1.77135059759685
+drug resistance transporter, Bcr/CflA family	-0.717839793150317	-6.90775527898214
+Putative oligoketide cyclase/lipid transport protein, similarity with yeast ubiquinone-binding protein YOL008W	-6.90775527898214	-0.298044859487327
+Na(+)-translocating NADH-quinone reductase subunit F (EC 1.6.5.-)	-6.90775527898214	-0.963793065859158
+probable membrane protein YPO3302	-6.90775527898214	-1.86666077740117
+Glucans biosynthesis protein D precursor	-6.90775527898214	-1.60429651293368
+Protease VII (Omptin) precursor (EC 3.4.23.49)	-6.90775527898214	-1.90056232907685
+Secretory antigen precursor SsaA	-0.910211685797773	-6.90775527898214
+PTS system, galactose-specific IIA component (EC 2.7.1.69)	-0.940983344464527	-6.90775527898214
+Protein sprT	-6.90775527898214	-1.27887411249905
+Cytochrome O ubiquinol oxidase subunit III (EC 1.10.3.-)	-6.90775527898214	-0.713981267462787
+Putative signal peptide protein	-6.90775527898214	-1.68433922060722
+ABC transporter, binding protein	-6.90775527898214	-1.86666077740117
+ABC-type transport system involved in resistance to organic solvents, permease component USSDB6A	-6.90775527898214	-1.46119566929301
+Putative multidrug resistance protein	-6.90775527898214	-1.93565364888812
+Arginine ABC transporter, permease protein ArtQ	-6.90775527898214	-1.29756624551121
+Inner membrane protein YqjE	-6.90775527898214	-1.86666077740117
+Membrane-attached cytochrome c550	-1.03942341727778	-6.90775527898214
+Curli production assembly/transport component CsgG	-6.90775527898214	-1.77135059759685
+Na(+)-translocating NADH-quinone reductase subunit D (EC 1.6.5.-)	-6.90775527898214	-1.03375165446607
+Bacitracin transport permease protein BCRB	-0.85137118577484	-6.90775527898214
+Membrane-bound lytic murein transglycosylase A precursor (EC 3.2.1.-)	-6.90775527898214	-0.43157625211185
+FIG005080: Possible exported protein	-6.90775527898214	-0.735258665910072
+Intracellular septation protein IspA	-6.90775527898214	-0.735258665910072
+Cytochrome c heme lyase subunit CcmH	-6.90775527898214	-0.724563376793324
+Phage minor tail protein #Phage minor tail component	-6.90775527898214	-1.63027199933694
+Late competence protein ComGD, access of DNA to ComEA, FIG012777	-0.85137118577484	-6.90775527898214
+DnaA regulatory inactivator Hda (Homologous to DnaA)	-6.90775527898214	-0.370018359112417
+D-2-hydroxyglutarate dehydrogenase	-6.90775527898214	-0.595029324601422
+Inhibitor of vertebrate lysozyme precursor	-6.90775527898214	-1.57897870494939
+Chaperone protein HscA	-6.90775527898214	-0.558327957750994
+UPF0319 protein YccT precursor	-6.90775527898214	-1.90056232907685
+Uncharacterized protein YrbB	-6.90775527898214	-1.04835045388722
+5-nucleotidase SurE (EC 3.1.3.5) @ Exopolyphosphatase (EC 3.6.1.11)	-6.90775527898214	-0.950370045527018
+Hexose phosphate uptake regulatory protein UhpC	-6.90775527898214	-1.29756624551121
+Multidrug resistance protein A (ErmA)	-6.90775527898214	-1.86666077740117
+Fumarate reductase, flavoprotein subunit precursor (EC 1.3.99.1)	-0.769133087537867	-6.90775527898214
+LysR family transcriptional regulator YneJ	-6.90775527898214	-1.77135059759685
+Outer membrane protein ImpK/VasF, OmpA/MotB domain	-6.90775527898214	-0.924052737209644
+Predicted oxidoreductase, Fe-S subunit	-6.90775527898214	-1.93565364888812
+Ornithine decarboxylase (EC 4.1.1.17) / Arginine decarboxylase (EC 4.1.1.19)	-6.90775527898214	-1.48366852514507
+Putative membrane protein, clustering with ActP	-6.90775527898214	-0.873409004390889
+Similar to phosphoglycolate phosphatase, clustered with ubiquinone biosynthesis SAM-dependent O-methyltransferase	-6.90775527898214	-1.41771055735327
+Fe2+-dicitrate sensor, membrane component	-6.90775527898214	-1.74149763444717
+Uncharacterized ABC transporter, periplasmic component YrbD	-6.90775527898214	-0.652737642222069
+Probable transport protein yifK	-6.90775527898214	-1.93565364888812
+Inner membrane protein YrbG, predicted calcium/sodium:proton antiporter	-6.90775527898214	-0.873409004390889
+Conidiation-specific protein 10	-6.90775527898214	-1.57897870494939
+Fusaric acid resistance protein fusE	-6.90775527898214	-1.06316553967236
+Group-specific protein	-0.940983344464527	-6.90775527898214
+BclA protein	-0.910211685797773	-6.90775527898214
+FKBP-type peptidyl-prolyl cis-trans isomerase SlpA (EC 5.2.1.8)	-6.90775527898214	-0.825206902573012
+Colicin I receptor precursor	-6.90775527898214	-1.55428609235902
+GAF domain protein; CDS_ID OB2202	-0.880358722648092	-6.90775527898214
+Sigma-fimbriae uncharacterized paralogous subunit	-6.90775527898214	-1.3760378609527
+AA3-600 quinol oxidase subunit I	-0.910211685797773	-6.90775527898214
+PhbF	-6.90775527898214	-1.20741514851691
+Sensor histidine kinase ChvG (EC 2.7.3.-)	-6.90775527898214	-1.74149763444717
+Putative HTH-type transcriptional regulator ybaO	-6.90775527898214	-1.60429651293368
+Primosomal replication protein N	-6.90775527898214	-1.26052497383086
+Outer membrane lipoprotein SmpA, a component of the essential YaeT outer-membrane protein assembly complex	-6.90775527898214	-0.735258665910072
+Isocitrate dehydrogenase phosphatase (EC 2.7.11.5)/kinase (EC 3.1.3.-)	-6.90775527898214	-1.22480689122878
+Bacteriophage tail sheath protein	-6.90775527898214	-1.8021222562636
+Probable transcriptional activator for leuABCD operon	-6.90775527898214	-1.27887411249905
+cell processes; transport of small molecules	-6.90775527898214	-1.43921676257423
+Bacitracin export ATP-binding protein BceA	-0.494696241836107	-6.90775527898214
+Sigma cross-reacting protein 27A	-6.90775527898214	-0.937124818776997
+MazG nucleotide pyrophosphohydrolase	-1.03942341727778	-6.90775527898214
+Outer membrane vitamin B12 receptor BtuB	-6.90775527898214	-0.531659710668833
+Transcriptional regulator, LysR family, in formaldehyde detoxification operon	-6.90775527898214	-1.83387095457818
+Two-component response regulator CreC	-6.90775527898214	-1.55428609235902
+Galactose-6-phosphate isomerase, LacB subunit (EC 5.3.1.26)	-0.823200308808143	-6.90775527898214
+Glutamine amidotransferases class-II	-6.90775527898214	-1.77135059759685
+Putative cytochrome C-type biogenesis protein	-6.90775527898214	-1.336032526339
+Stage V sporulation protein B	-1.0055218656021	-6.90775527898214
+Hemolysin-type calcium-binding region	-6.90775527898214	-1.90056232907685
+Periplasmic serine proteases (ClpP class)	-6.90775527898214	-1.6569402464191
+18K peptidoglycan-associated outer membrane lipoprotein; Peptidoglycan-associated lipoprotein precursor; Outer membrane protein P6; OmpA/MotB precursor	-6.90775527898214	-0.312031101462067
+PRD/PTS system IIA 2 domain protein	-0.940983344464527	-6.90775527898214
+Copper tolerance protein	-6.90775527898214	-1.6569402464191
+Regulator of competence-specific genes	-6.90775527898214	-1.57897870494939
+UDP-N-acetylmuramate:L-alanyl-gamma-D-glutamyl-meso-diaminopimelate ligase (EC 6.3.2.-)	-6.90775527898214	-0.567377793270912
+RNA polymerase sigma factor RpoS	-6.90775527898214	-0.735258665910072
+FIG001957: putative hydrolase	-6.90775527898214	-1.336032526339
+D-alanine--poly(phosphoribitol) ligase subunit 2 (EC 6.1.1.13)	-0.295845383090942	-6.90775527898214
+Cell division topological determinant MinJ	-1.03942341727778	-6.90775527898214
+Maleylacetoacetate isomerase (EC 5.2.1.2) @ Glutathione S-transferase, zeta (EC 2.5.1.18)	-6.90775527898214	-0.735258665910072
+UDP-sugar hydrolase (EC 3.6.1.45); 5'-nucleotidase (EC 3.1.3.5)	-6.90775527898214	-1.06316553967236
+Putative ATP-binding component of a transport system	-6.90775527898214	-1.24250646832818
+Aconitate hydratase 2 (EC 4.2.1.3)	-6.90775527898214	-1.17351359684123
+Uncharacterized protein YtfN	-6.90775527898214	-1.41771055735327
+putative dehydrogenase	-6.90775527898214	-1.27887411249905
+CBSS-272943.3.peg.263: thioredoxin	-6.90775527898214	-1.90056232907685
+HYPOTHETICAL TRANSMEMBRANE PROTEIN	-6.90775527898214	-1.6569402464191
+L-rhamnose operon regulatory protein RhaS	-6.90775527898214	-1.86666077740117
+Central glycolytic genes regulator	-0.743157601134607	-6.90775527898214
+ATP-dependent RNA helicase YejH	-6.90775527898214	-1.63027199933694
+Minor fimbrial subunit StfF	-6.90775527898214	-1.8021222562636
+FIG002708: Protein SirB1	-6.90775527898214	-1.26052497383086
+Putative lipoprotein SAV1865	-0.823200308808143	-6.90775527898214
+alternative bacteriophage tail fiber C-terminus	-6.90775527898214	-1.6569402464191
+HTH-type transcriptional regulator IlvY	-6.90775527898214	-1.20741514851691
+LPS-assembly lipoprotein RlpB precursor (Rare lipoprotein B)	-6.90775527898214	-0.682890680392756
+NAD(P)H-flavin reductase (EC 1.5.1.29) (EC 1.16.1.3)	-6.90775527898214	-1.336032526339
+Phenylalanine-specific permease	-6.90775527898214	-1.43921676257423
+Predicted hydrolase of the metallo-beta-lactamase superfamily, clustered with KDO2-Lipid A biosynthesis genes	-6.90775527898214	-1.86666077740117
+outer membrane porin, putative	-6.90775527898214	-1.6569402464191
+Arginine-tRNA-protein transferase (EC 2.3.2.8)	-6.90775527898214	-0.768048488733063
+Esterase ybfF (EC 3.1.-.-)	-6.90775527898214	-1.27887411249905
+Type III secretion spans bacterial envelope protein (YscO)	-6.90775527898214	-1.90056232907685
+Sensory histidine kinase BaeS	-6.90775527898214	-1.43921676257423
+Cell division protein BolA	-6.90775527898214	-0.31909826868516
+Anthranilate phosphoribosyltransferase like (EC 2.4.2.18)	-6.90775527898214	-1.06316553967236
+GntR family transcriptional regulator YdcR @ Transcriptional regulator, GntR family domain	-6.90775527898214	-1.29756624551121
+Glutaredoxin 3 (Grx2)	-6.90775527898214	-1.83387095457818
+Outer membrane component of tripartite multidrug resistance system	-6.90775527898214	-0.132059722013066
+Penicillin-binding protein AmpH	-6.90775527898214	-1.90056232907685
+Beta-mannosidase (EC 3.2.1.25)	-6.90775527898214	-1.68433922060722
+Osmotically inducible protein Y precursor	-6.90775527898214	-1.77135059759685
+Iron-sulfur cluster assembly scaffold protein NifU	-6.90775527898214	-1.93565364888812
+TorCAD operon transcriptional regulatory protein TorR	-6.90775527898214	-1.48366852514507
+Homolog of E. coli HemX protein	-6.90775527898214	-0.924052737209644
+3-hydroxydecanoyl-[acyl-carrier-protein] dehydratase (EC 4.2.1.60)	-6.90775527898214	-0.693147180559945
+membrane protein, MmpL family	-1.07451473708905	-6.90775527898214
+UDP-glucose:(heptosyl) LPS alpha1,3-glucosyltransferase WaaG (EC 2.4.1.-)	-6.90775527898214	-1.53018854077996
+FIG140336: TPR domain protein	-6.90775527898214	-1.8021222562636
+Uncharacterized ABC transporter, permease component YrbE	-6.90775527898214	-0.623467259921956
+Uncharacterized oxidoreductase ydgJ (EC 1.-.-.-)	-6.90775527898214	-1.63027199933694
+putative sensory transduction regulator	-6.90775527898214	-1.77135059759685
+Zinc transporter ZupT	-6.90775527898214	-1.90056232907685
+Fumarate reductase cytochrome b subunit	-6.90775527898214	-1.77135059759685
+Stage V sporulation protein AC (SpoVAC)	-0.769133087537867	-6.90775527898214
+Acetate operon repressor	-6.90775527898214	-1.90056232907685
+Putative uncharacterized protein YiiQ	-6.90775527898214	-1.90056232907685
+Glutamate Aspartate transport ATP-binding protein GltL (TC 3.A.1.3.4)	-6.90775527898214	-0.898410306596307
+Soluble cytochrome b562	-6.90775527898214	-1.41771055735327
+T1SS secreted agglutinin (RTX)	-6.90775527898214	-1.63027199933694
+UPF0301 protein YqgE	-6.90775527898214	-0.415827895143711
+Histidine kinase/response regulator hybrid protein	-6.90775527898214	-1.8021222562636
+Gluconate 5-dehydrogenase (EC 1.1.1.69)	-6.90775527898214	-1.60429651293368
+IncF plasmid conjugative transfer pilus assembly protein TraU	-6.90775527898214	-1.8021222562636
+Osmotically inducible lipoprotein B precursor	-6.90775527898214	-1.60429651293368
+COG0398: uncharacterized membrane protein	-6.90775527898214	-1.90056232907685
+Prepilin peptidase dependent protein A precursor	-6.90775527898214	-1.90056232907685
+Membrane protein, suppressor for copper-sensitivity ScsB	-6.90775527898214	-1.90056232907685
+FIG003603: membrane protein, putative	-6.90775527898214	-1.93565364888812
+Electron transfer flavoprotein-ubiquinone oxidoreductase (EC 1.5.5.1)	-6.90775527898214	-0.558327957750994
+UPF0125 protein yfjF	-6.90775527898214	-0.642885345779057
+Ferric siderophore transport system, biopolymer transport protein ExbB	-6.90775527898214	-0.455673803690911
+Phage terminase, ATPase subunit	-6.90775527898214	-1.46119566929301
+BAX protein	-6.90775527898214	-1.74149763444717
+Phage transcriptional regulator, Cro/CI family	-0.910211685797773	-6.90775527898214
+Veg protein	-0.669049628980885	-6.90775527898214
+Peptide transport periplasmic protein SapA	-6.90775527898214	-1.26052497383086
+Uncharacterized protein YtfM precursor	-6.90775527898214	-1.39665714815544
+Thiol:disulfide interchange protein DsbG precursor	-6.90775527898214	-1.50665804336977
+Nucleoid-associated protein NdpA	-6.90775527898214	-1.29756624551121
+MSHA pilin protein MshA	-6.90775527898214	-1.26052497383086
+Putative regulator of the mannose operon, ManO	-0.880358722648092	-6.90775527898214
+regulator of length of O-antigen component of lipopolysaccharide chains	-6.90775527898214	-1.06316553967236
+ATPases of the AAA+ class	-6.90775527898214	-1.53018854077996
+Uncharacterized transporter YebQ	-6.90775527898214	-1.8021222562636
+AmpG permease	-6.90775527898214	-0.250578322248404
+Phage major tail tube protein	-6.90775527898214	-1.43921676257423
+FIG017823: ATPase, MoxR family	-6.90775527898214	-1.86666077740117
+Gluconate utilization system Gnt-I transcriptional repressor	-6.90775527898214	-1.22480689122878
+Gamma-glutamyl-aminobutyraldehyde dehydrogenase (EC 1.2.1.-)	-6.90775527898214	-1.86666077740117
+Tryptophan-specific transport protein	-6.90775527898214	-1.27887411249905
+Putative sugar ABC transport system, ATP-binding protein YtfR (EC 3.6.3.17)	-6.90775527898214	-1.8021222562636
+NgrB	-6.90775527898214	-1.90056232907685
+Lipopolysaccharide core biosynthesis protein WaaP (EC 2.7.-.-), heptosyl-I-kinase	-6.90775527898214	-1.90056232907685
+C4-dicarboxylate transporter DcuB	-6.90775527898214	-1.55428609235902
+Flagellar biosynthesis protein FlgN	-6.90775527898214	-1.00517828202201
+Aerotaxis sensor receptor protein	-6.90775527898214	-0.756998652546478
+Alanine racemase (EC 5.1.1.1) ## biosynthetic	-6.90775527898214	-1.06316553967236
+Carbon starvation protein A paralog	-6.90775527898214	-1.8021222562636
+Chorismate mutase I (EC 5.4.99.5) / 2-keto-3-deoxy-D-arabino-heptulosonate-7-phosphate synthase I beta (EC 2.5.1.54)	-1.0055218656021	-6.90775527898214
+Iron-responsive regulator Irr	-6.90775527898214	-1.8021222562636
+VapB protein (antitoxin to VapC)	-6.90775527898214	-0.911149332373736
+UPF0325 protein yaeH	-6.90775527898214	-1.74149763444717
+macromolecule metabolism; macromolecule synthesis, modification; dna - replication, repair, restr./modif.	-6.90775527898214	-1.68433922060722
+GTP pyrophosphokinase (EC 2.7.6.5) ## Bsu YwaC	-0.535518236356362	-6.90775527898214
+Hypoxanthine/guanine permease PbuG	-0.940983344464527	-6.90775527898214
+TETRATRICOPEPTIDE REPEAT FAMILY PROTEIN	-6.90775527898214	-0.885831524389447
+Sensory histidine kinase QseC	-6.90775527898214	-1.00517828202201
+16 kDa heat shock protein B	-6.90775527898214	-1.90056232907685
+Putative oxidoreductase component of anaerobic dehydrogenases; Functional role page for Chaperone protein TorD	-6.90775527898214	-1.86666077740117
+Spore germination protein GerKC	-0.880358722648092	-6.90775527898214
+FIG001621: Zinc protease	-0.312374685042152	-6.90775527898214
+Protein YhjJ, putative peptidase	-6.90775527898214	-1.90056232907685
+Mlc, transcriptional repressor of MalT (the transcriptional activator of maltose regulon) and manXYZ operon	-6.90775527898214	-1.57897870494939
+Probable protease HtpX (EC 3.4.24.-)	-6.90775527898214	-1.77135059759685

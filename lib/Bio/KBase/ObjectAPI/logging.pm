@@ -47,7 +47,13 @@ sub log {
     if (!defined($type)) {
     	$type = "info";
     }
-    Bio::KBase::ObjectAPI::logging::logger()->$type('<msg type="'.$type.'" time="'.DateTime->now()->datetime().'" pid="'.$processid.'" user="'.Bio::KBase::ObjectAPI::config::username().'">'."\n".$msg."\n</msg>\n");
+    if ($type eq "stdout") {
+    	print $msg."\n";
+    } elsif ($type eq "stderr") {
+    	print STDERR $msg."\n";
+    } else {
+    	Bio::KBase::ObjectAPI::logging::logger()->$type('<msg type="'.$type.'" time="'.DateTime->now()->datetime().'" pid="'.$processid.'" user="'.Bio::KBase::ObjectAPI::config::username().'">'."\n".$msg."\n</msg>\n");
+    }
 }
 
 1;

@@ -30,7 +30,17 @@ sub _build_compartment {
 	 my $array = [split(/\//,$self->compartment_ref())];
 	 my $compid = pop(@{$array});
 	 $self->compartment_ref($self->parent()->template()->_reference()."/compartments/id/".$compid);
-	 return $self->getLinkedObject($self->compartment_ref());
+	 my $obj = $self->getLinkedObject($self->compartment_ref());
+	 if (!defined($obj)) {
+	 	$obj = $self->parent()->template()->add("compartments",{
+	 		id => $compid,
+    		name => $compid,
+    		aliases => [],
+    		hierarchy => 1,
+    		pH => 7
+	 	});
+	 }
+	 return $obj;
 }
 
 #***********************************************************************************************************

@@ -19,7 +19,7 @@ has _reference => (is => 'rw', lazy => 1, isa => 'Str', type => 'msdata', metacl
 has type => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has templaterole_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has confidence => (is => 'rw', isa => 'Num', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
-has optional => (is => 'rw', isa => 'Int', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has optional_role => (is => 'rw', isa => 'Int', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has triggering => (is => 'rw', isa => 'Int', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 
 
@@ -64,7 +64,7 @@ my $attributes = [
           },
           {
             'req' => 0,
-            'name' => 'optional',
+            'name' => 'optional_role',
             'printOrder' => -1,
             'perm' => 'rw',
             'type' => 'Int'
@@ -78,7 +78,7 @@ my $attributes = [
           }
         ];
 
-my $attribute_map = {type => 0, templaterole_ref => 1, confidence => 2, optional => 3, triggering => 4};
+my $attribute_map = {type => 0, templaterole_ref => 1, confidence => 2, optional_role => 3, triggering => 4};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

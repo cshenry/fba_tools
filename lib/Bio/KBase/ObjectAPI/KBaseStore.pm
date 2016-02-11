@@ -56,6 +56,7 @@ use Class::Autouse qw(
     Bio::KBase::ObjectAPI::KBaseGenomes::ContigSet
     Bio::KBase::ObjectAPI::KBaseBiochem::Media
     Bio::KBase::ObjectAPI::KBaseFBA::ModelTemplate
+    Bio::KBase::ObjectAPI::KBaseFBA::FBAComparison
     Bio::KBase::ObjectAPI::KBaseOntology::Mapping
     Bio::KBase::ObjectAPI::KBaseFBA::FBAModel
     Bio::KBase::ObjectAPI::KBaseBiochem::BiochemistryStructures
@@ -130,12 +131,30 @@ sub get_objects {
 			if ($info->[2] =~ m/^(.+)\.(.+)-/) {
 				my $module = $1;
 				my $type = $2;
+				$type =~ s/^New//;
 				my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
-				$self->cache()->{$newrefs->[$i]} = $class->new($objdatas->[$i]->{data});
+				if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison") {
+					$self->cache()->{$newrefs->[$i]} = $objdatas->[$i]->{data};
+				} else {
+					$self->cache()->{$newrefs->[$i]} = $class->new($objdatas->[$i]->{data});
+					$self->cache()->{$newrefs->[$i]}->parent($self);
+					$self->cache()->{$newrefs->[$i]}->_wsobjid($info->[0]);
+					$self->cache()->{$newrefs->[$i]}->_wsname($info->[1]);
+					$self->cache()->{$newrefs->[$i]}->_wstype($info->[2]);
+					$self->cache()->{$newrefs->[$i]}->_wssave_date($info->[3]);
+					$self->cache()->{$newrefs->[$i]}->_wsversion($info->[4]);
+					$self->cache()->{$newrefs->[$i]}->_wssaved_by($info->[5]);
+					$self->cache()->{$newrefs->[$i]}->_wswsid($info->[6]);
+					$self->cache()->{$newrefs->[$i]}->_wsworkspace($info->[7]);
+					$self->cache()->{$newrefs->[$i]}->_wschsum($info->[8]);
+					$self->cache()->{$newrefs->[$i]}->_wssize($info->[9]);
+					$self->cache()->{$newrefs->[$i]}->_wsmeta($info->[10]);
+					$self->cache()->{$newrefs->[$i]}->_reference($info->[6]."/".$info->[0]."/".$info->[4]);
+					$self->uuid_refs()->{$self->cache()->{$newrefs->[$i]}->uuid()} = $info->[6]."/".$info->[0]."/".$info->[4];
+				}
 				if (!defined($self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]})) {
 					$self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]} = $self->cache()->{$newrefs->[$i]};
 				}
-				$self->cache()->{$newrefs->[$i]}->parent($self);
 				if ($type eq "Biochemistry") {
 					$self->cache()->{$newrefs->[$i]}->add("compounds",{
 						id => "cpd00000",
@@ -184,19 +203,6 @@ sub get_objects {
 						}
 					}
 				}
-				$self->cache()->{$newrefs->[$i]}->_wsobjid($info->[0]);
-				$self->cache()->{$newrefs->[$i]}->_wsname($info->[1]);
-				$self->cache()->{$newrefs->[$i]}->_wstype($info->[2]);
-				$self->cache()->{$newrefs->[$i]}->_wssave_date($info->[3]);
-				$self->cache()->{$newrefs->[$i]}->_wsversion($info->[4]);
-				$self->cache()->{$newrefs->[$i]}->_wssaved_by($info->[5]);
-				$self->cache()->{$newrefs->[$i]}->_wswsid($info->[6]);
-				$self->cache()->{$newrefs->[$i]}->_wsworkspace($info->[7]);
-				$self->cache()->{$newrefs->[$i]}->_wschsum($info->[8]);
-				$self->cache()->{$newrefs->[$i]}->_wssize($info->[9]);
-				$self->cache()->{$newrefs->[$i]}->_wsmeta($info->[10]);
-				$self->cache()->{$newrefs->[$i]}->_reference($info->[6]."/".$info->[0]."/".$info->[4]);
-				$self->uuid_refs()->{$self->cache()->{$newrefs->[$i]}->uuid()} = $info->[6]."/".$info->[0]."/".$info->[4];
 			}
 		}
 	}
@@ -216,6 +222,7 @@ sub get_object {
 sub get_object_by_handle {
     my ($self,$handle,$type,$options) = @_;
     my $typehandle = [split(/\./,$type)];
+    $typehandle->[1] =~ s/^New//;
     my $class = "Bio::KBase::ObjectAPI::".$typehandle->[0]."::".$typehandle->[1];
     my $data;
     if ($handle->{type} eq "data") {

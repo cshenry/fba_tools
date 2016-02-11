@@ -30,15 +30,6 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    mixed_bag_model :
-        ui-name : |
-            
-        short-hint : |
-            
-        long-hint : |
-            
-
-
     fbamodel_output_id :
         ui-name : |
             Gapfilled Model
@@ -55,6 +46,15 @@ parameters :
             A list of metabolic models consisting of stoichiometric reactions, compounds, and the weighted components of  the biomass. Either one model set (see next input) or at least two individual models must be provided. Both inputs can be provided and will be merged into a single set of models.
         long-hint : |
             A list of metabolic models consisting of stoichiometric reactions, compounds, and the weighted components of  the biomass. Either one model set (see next input) or at least two individual models must be provided. Both inputs can be provided and will be merged into a single set of models.
+
+
+    mixed_bag_model :
+        ui-name : |
+            
+        short-hint : |
+            
+        long-hint : |
+            
 
 
 fixed-parameters :

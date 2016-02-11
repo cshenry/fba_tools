@@ -60,12 +60,14 @@ build-test-script:
 	chmod +x $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 
 deploy-mfatoolkit:
+	cp MFAToolkit/bin/libglpk.a $(TARGET)/bin/
 	$(MAKE) -C MFAToolkit
 	cp MFAToolkit/bin/mfatoolkit $(TARGET)/bin/
 	if [ ! -e $(TARGET)/bin/scip ] ; then wget http://bioseed.mcs.anl.gov/~chenry/KbaseFiles/scip ; mv scip $(TARGET)/bin/ ; fi
 	if [ ! -d $(TARGET)/etc ] ; then mkdir $(TARGET)/etc ; fi
 	if [ ! -d $(TARGET)/etc/MFAToolkit ] ; then mkdir $(TARGET)/etc/MFAToolkit ; fi
 	cp MFAToolkit/etc/MFAToolkit/* $(TARGET)/etc/MFAToolkit/
+	cp data/classifier.txt $(TARGET)/etc/
 	chmod +x $(TARGET)/bin/scip
 	chmod +x $(TARGET)/bin/mfatoolkit
 

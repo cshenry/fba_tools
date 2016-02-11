@@ -36,7 +36,22 @@ sub _build_compound {
 	 $self->compound_ref("~/template/compounds/id/".$compoundid);
 	 my $obj = $self->getLinkedObject($self->compound_ref());
 	 if (!defined($obj)) {
-	 	$obj = $self->getLinkedObject("~/template/compounds/id/cpd00000");
+		$obj = $self->getLinkedObject("~/template/compounds/id/cpd00000");
+		if (!defined($obj)) {
+		 	$obj = $self->parent()->template()->add("compounds",{
+		 		id => "cpd00000",
+		 		compound_ref => "~/biochemistry/compounds/id/cpd00000",
+		    	isCofactor => 0,
+		    	name => "CustomCompound",
+		    	abbreviation => "CustomCompound",
+		    	md5 => "",
+		    	formula => "",
+		    	mass => 0,
+		    	defaultCharge => 0,
+		    	deltaG => 0,
+		    	deltaGErr => 0
+		 	});
+		 }
 	 }
 	 return $obj;
 }

@@ -453,6 +453,7 @@ Description:
 sub PrepareForGapfilling {
 	my ($self,$args) = @_;
 	$args = Bio::KBase::ObjectAPI::utilities::args([],{
+		minimum_target_flux => 1,
 		booleanexp => "absolute",
 		expsample => undef,
 		expression_threshold_percentile => 0.5,
@@ -489,6 +490,7 @@ sub PrepareForGapfilling {
 	}, $args);
 	push(@{$self->gauranteedrxns()},@{$args->{gauranteedrxns}});
 	push(@{$self->blacklistedrxns()},@{$args->{blacklistedrxns}});
+	$self->parameters()->{minimum_target_flux} = $args->{minimum_target_flux};
 	$self->parameters()->{"scale penalty by flux"} = 0;#I think this may be sufficiently flawed we might consider removing altogether
 	$self->parameters()->{add_external_rxns} = $args->{add_external_rxns};
 	$self->parameters()->{make_model_rxns_reversible} = $args->{make_model_rxns_reversible};
@@ -1457,22 +1459,6 @@ sub createJobDirectory {
 		$parameters->{"PROM Kappa"} = $self->PROMKappa();
 		$parameters->{"prom constraints"} = 1;
 	}
-	if (defined($self->tintlesample_ref()) && length($self->tintlesample_ref()) > 0) {		
-		my @exchange_array = ($self->tintleW());		
-		my $penalty = $self->tintlePenalty();
-		foreach my $feature_id (keys %$penalty) {
-		my $escaped_id = $feature_id;
-		$escaped_id =~ s/\|/___/g;
-		push(@exchange_array, join(":", ($escaped_id, $penalty->{$feature_id}->{"penalty_score"}, $penalty->{$feature_id}->{"case"})));
-		}
-		$parameters->{"Gene Activity State"} = join(";",@exchange_array);
-		$parameters->{"Add positive use variable constraints"} = 1;
-		$parameters->{"Minimum flux for use variable positive constraint"} = 0.000001;
-		# Not required if the too long name problem is solved
-		$parameters->{"use simple variable and constraint names"} = 1;		
-		# Might be too specific
-		$parameters->{"MFASolver"} = "CPLEX";
-	}
 	if ($solver eq "SCIP") {
 		$parameters->{"use simple variable and constraint names"} = 1;
 	}
@@ -2403,10 +2389,10 @@ sub parseFluxFiles {
 												class => "unknown"
 											});
 										} else {
-											print STDERR "Could not find flux reaction ".$row->[$reactionColumn]."\n";
+											#print STDERR "Could not find flux reaction ".$row->[$reactionColumn]."\n";
 										}
 									} else {
-										print STDERR "Could not find flux reaction ".$row->[$reactionColumn]."\n";
+										#print STDERR "Could not find flux reaction ".$row->[$reactionColumn]."\n";
 									}
 								}
 							}
@@ -3091,23 +3077,23 @@ sub parseGapfillingOutput {
 		my $round = 0;
 		my $temparray = [split(/\//,$tbl->{data}->[0]->[3])];
 		push(@{$self->{outputfiles}->{gapfillstats}},"Gapfilled:".$temparray->[1]);
-		print "Number of gapfilled reactions [includes low expression reactions that must carry flux] (lower better): ".$temparray->[1]."\n";
+		#print "Number of gapfilled reactions [includes low expression reactions that must carry flux] (lower better): ".$temparray->[1]."\n";
 		for my $rxn (split ";", $tbl->{data}->[0]->[7]) {
 			if ($rxn =~ /^(.)(.+)/) {
 				if (defined($rxnhash->{$2})) {
-					print "\t", $rxn, "\t", $rxnhash->{$2}->name(), "\t", fluxForRxn($self, $rxnhash->{$2}), "\t", $rxnhash->{$2}->gprString(), "\n";
+					#print "\t", $rxn, "\t", $rxnhash->{$2}->name(), "\t", fluxForRxn($self, $rxnhash->{$2}), "\t", $rxnhash->{$2}->gprString(), "\n";
 				}
 			}
 		}
 		$temparray = [split(/\//,$tbl->{data}->[0]->[4])];
 		push(@{$self->{outputfiles}->{gapfillstats}},"Active on:".$temparray->[1]);
-		print "Activated high expression reactions [do carry flux] (higher better): ".$temparray->[1]."\n";
+		#print "Activated high expression reactions [do carry flux] (higher better): ".$temparray->[1]."\n";
 		$temparray = [split(/\//,$tbl->{data}->[0]->[5])];
 		push(@{$self->{outputfiles}->{gapfillstats}},"Inactive on:".$temparray->[1]);
-		print "High expression reactions that were not activated [do not carry flux] (lower better): ".$temparray->[1]."\n";
+		#print "High expression reactions that were not activated [do not carry flux] (lower better): ".$temparray->[1]."\n";
 		for my $rxn (split ";", $tbl->{data}->[0]->[9]) {
 			if (defined($rxnhash->{$rxn})) {
-				print "\t", $rxn, "\t", $rxnhash->{$rxn}->name(), "\t", $rxnhash->{$rxn}->gprString(), "\n";
+				#print "\t", $rxn, "\t", $rxnhash->{$rxn}->name(), "\t", $rxnhash->{$rxn}->gprString(), "\n";
 			}
 		}
 		my $currrxns = [split(/;/,$tbl->{data}->[0]->[7])];
@@ -3134,7 +3120,7 @@ sub parseGapfillingOutput {
 			}
 		}
 		push(@{$self->{outputfiles}->{gapfillstats}},"Active off:".$count->[0]);
-		print "Activated low expression reactions [must carry flux] (lower better): ".$count->[0]."\n";
+		#print "Activated low expression reactions [must carry flux] (lower better): ".$count->[0]."\n";
 		foreach my $row (@{$tbl->{data}}) {
 			if (!defined($solution)) {
 				$solution = {

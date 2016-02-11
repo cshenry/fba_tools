@@ -30,31 +30,13 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    custom_bound_list :
+    feature_ko_list :
         ui-name : |
-            Custom flux bounds
+            Gene Knockouts
         short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
         long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-
-
-    all_reversible :
-        ui-name : |
-            Make all reactions reversible?
-        short-hint : |
-            Check this box to ignore the reversibility rules in the model and make every reaction reversible
-        long-hint : |
-            Check this box to ignore the reversibility rules in the model and make every reaction reversible
-
-
-    fbamodel_id :
-        ui-name : |
-            FBA Model
-        short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
 
 
     phenotypesim_output_id :
@@ -66,31 +48,22 @@ parameters :
             Name the Phenotype Simulation Result data
 
 
-    phenotypeset_id :
+    all_reversible :
         ui-name : |
-            Phenotype Set
+            Make all reactions reversible?
         short-hint : |
-            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+            Check this box to ignore the reversibility rules in the model and make every reaction reversible
         long-hint : |
-            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+            Check this box to ignore the reversibility rules in the model and make every reaction reversible
 
 
-    reaction_ko_list :
+    media_supplement_list :
         ui-name : |
-            Reaction Knockouts
+            Media supplement
         short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
         long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-
-
-    feature_ko_list :
-        ui-name : |
-            Gene Knockouts
-        short-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-        long-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
 
 
     objective_fraction :
@@ -102,13 +75,40 @@ parameters :
             What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
 
 
-    media_supplement_list :
+    custom_bound_list :
         ui-name : |
-            Media supplement
+            Custom flux bounds
         short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
         long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+
+
+    phenotypeset_id :
+        ui-name : |
+            Phenotype Set
+        short-hint : |
+            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+        long-hint : |
+            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+
+
+    fbamodel_id :
+        ui-name : |
+            FBA Model
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+
+
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
 
 
 description : |

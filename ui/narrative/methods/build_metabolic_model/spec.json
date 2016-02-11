@@ -1,0 +1,55 @@
+{
+   "name" : "build_metabolic_model",
+   "visible" : true,
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "parameters" : [
+      {
+         "text_options" : {
+            "validate_as" : "int"
+         },
+         "advanced" : true,
+         "id" : "number_of_solutions",
+         "allow_multiple" : false,
+         "optional" : false,
+         "default_values" : [
+            ""
+         ],
+         "field_type" : "text"
+      }
+   ],
+   "job_id_output_field" : "docker",
+   "contact" : "help@kbase.us",
+   "categories" : [
+      "active"
+   ],
+   "authors" : [
+      "chenry"
+   ],
+   "ver" : "1.0.0",
+   "behavior" : {
+      "service-mapping" : {
+         "method" : "build_metabolic_model",
+         "url" : "",
+         "input_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "workspace"
+            },
+            {
+               "input_parameter" : "number_of_solutions",
+               "target_property" : "number_of_solutions"
+            }
+         ],
+         "name" : "fba_tools",
+         "output_mapping" : [
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            }
+         ]
+      }
+   }
+}

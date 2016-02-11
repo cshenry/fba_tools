@@ -13,7 +13,7 @@ CC = g++
 GLPKLIB = -lpthread -lglpk
 LIBS = -lz ${GLPKLIB}
 # INCS
-MFATK_INC = -I${CWD}/include -L/kb/runtime/lib -I/kb/runtime/include
+MFATK_INC = -I${CWD}/include -L/kb/deployment/bin -I/kb/runtime/include
 INCS = ${MFATK_INC}
 # FLAGS
 OFLAGS = -DLINUX -DNDEBUG -DIL_STD -DILOSTRICTPOD -DNOSAFEMEM -DNOBLOCKMEM -O3

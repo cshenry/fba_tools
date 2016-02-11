@@ -1074,134 +1074,148 @@ sub unintegrateGapfillSolution {
 	return $gfmeta;
 }
 
-=head3 integrateGapfillSolution
+=head3 add_gapfilling
 
 Definition:
-	void Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->integrateGapfillSolution({
-		gapfll => string
+	void Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->add_gapfilling({
+		object => Bio::KBase::ObjectAPI::KBaseFBA::FBA,
+		solution_to_integrate => int
 	});
 Description:
-	Integrates a gapfilling solution into the model
+	Adds a gapfilling object
 	
 =cut
 
-sub integrateGapfillSolution {
+sub add_gapfilling {
     my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args(["gapfill"], { solution => undef,rxnProbGpr => undef }, @_);
-	Bio::KBase::ObjectAPI::utilities::verbose("Now integrating gapfill solution into model");
-	my $gfmeta = $self->getObject("gapfillings",$args->{gapfill});
-	if (!defined($gfmeta)) {
-		Bio::KBase::ObjectAPI::utilities::error("Gapfill ".$args->{gapfill}." not found!");
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["object","id"], {solution_to_integrate => undef}, @_);
+	Bio::KBase::ObjectAPI::logging::log("Integrating gapfill solution into model","stdout");
+	#Adding gapfill object to model
+	my $gfobj = {
+		id => $args->{id},
+		gapfill_id => $args->{object}->id(),
+		integrated => 0,
+		media_ref => $args->{object}->media()->_reference()
+	};
+	$self->add("gapfillings",$gfobj);
+	if (defined($args->{solution_to_integrate})) {
+		$gfobj->{integrated} = 1;
+		$gfobj->{integrated_solution} = $args->{solution_to_integrate};
 	}
-	if ($gfmeta->integrated() == 1) {
-		Bio::KBase::ObjectAPI::utilities::error("Gapfill ".$args->{gapfill}." already integrated!");
-	}
-	$self->_clearIndex();
-	my $gf;
-	if (defined($gfmeta->fba_ref())) {
-		$gf = $gfmeta->fba();
-	} else {
-		$gf = $gfmeta->gapfill();
-	}
-	if (!defined($args->{solution})) {
-		$args->{solution} = $gf->gapfillingSolutions()->[0]->id();
-	}
-	$gfmeta->integrated(1);
-	$gfmeta->integrated_solution($args->{solution});
-	$args->{gapfill} = $gf;
-	return $self->integrateGapfillSolutionFromObject($args);
-}
-
-sub integrateGapfillSolutionFromObject {
-	my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args(["gapfill"], { solution => undef,rxnProbGpr => undef }, @_);
-	my $gf = $args->{gapfill};
-	my $sol;
-	if (!defined($args->{solution})) {
-		$args->{solution} = $gf->gapfillingSolutions()->[0]->id();
-	}
-	$sol = $gf->getObject("gapfillingSolutions",$args->{solution});
-	if (!defined($sol)) {
-		Bio::KBase::ObjectAPI::utilities::error("Solution ".$args->{solution}." not found in gapfill ".$args->{gapfill}."!");
-	}
-	#Integrating biomass removals into model
-	if (defined($sol->biomassRemovals()) && @{$sol->biomassRemovals()} > 0) {
-		my $removals = $sol->biomassRemovals();
-		foreach my $rem (@{$removals}) {
-            my $biomass = $self->biomasses()->[0];
-			my $biocpds = $biomass->biomasscompounds();
-			foreach my $biocpd (@{$biocpds}) {
-				if ($biocpd->modelcompound()->_reference() eq $rem) {
-					Bio::KBase::ObjectAPI::logging::log(
-						"Removing ".$biocpd->modelcompound()->id()." from model biomass."
-					);
-					$biomass->remove("biomasscompounds",$biocpd);
+	#Integrating biomass removal information into biomass compounds
+	my $biomass_removals = $args->{object}->biomassRemovals();
+	my $brkeys = [keys(%{$biomass_removals})];
+	if (@{$brkeys} > 0) {
+		my $biomass = "bio1";
+		if (!defined($biomass_removals->{bio1})) {
+			$biomass = $brkeys->[0];
+		}
+		$biomass_removals = $biomass_removals->{$biomass};
+		my $bioobj = $self->getObject("biomasses",$biomass);
+		for (my $i=0; $i < @{$biomass_removals}; $i++) {
+			my $biocpds = $bioobj->biomasscompounds();
+			my $selectedcpd;
+			for (my $j=0; $j < @{$biocpds}; $j++) {
+				if ($biocpds->[$j]->modelcompound()->id() eq $biomass_removals->[$i]) {
+					$selectedcpd = $biocpds->[$j];
 					last;
 				}
 			}
-		}
-	}	
-	#Integrating new reactions into model
-	my $rxns = $sol->gapfillingSolutionReactions();
-	for (my $i=0; $i < @{$rxns}; $i++) {
-		my $rxn = $rxns->[$i];
-		my $rxnid = $rxn->reaction()->id();
-		my $mdlrxn;
-		my $ismdlrxn = 0;
-		if ($rxnid =~ m/.+_[a-zA-Z]\d+$/) {
-			$ismdlrxn = 1;
-			$mdlrxn = $self->getObject("modelreactions",$rxnid);
-		} else {
-			$mdlrxn = $self->getObject("modelreactions",$rxnid.$rxn->compartmentIndex());
-		}
-		if (defined($mdlrxn) && $rxn->direction() ne $mdlrxn->direction()) {
-			Bio::KBase::ObjectAPI::logging::log(
-				"Making ".$mdlrxn->id()." reversible."
-			);
-			$mdlrxn->gapfill_data()->{$gf->id()} = "reversed:".$rxn->direction();
-			$mdlrxn->direction("=");
-		} else {
-			Bio::KBase::ObjectAPI::logging::log(
-				"Adding ".$rxnid.$rxn->compartmentIndex()." to model in ".$rxn->direction()." direction."
-			);
-			if ($ismdlrxn == 1) {
-				if (!defined($self->getObject("modelcompartments",$rxn->reaction()->modelcompartment()->id()))) {
-					$self->add("modelcompartments",$rxn->reaction()->modelcompartment()->cloneObject());
-				}
-				$mdlrxn = $self->add("modelreactions",$rxn->reaction()->cloneObject());
-				$mdlrxn->gapfill_data()->{$gf->id()} = "added:".$rxn->direction();
-				$mdlrxn->parent($rxn->reaction()->parent());
-				my $prots = $mdlrxn->modelReactionProteins();
-				for (my $m=0; $m < @{$prots}; $m++) {
-					$mdlrxn->remove("modelReactionProteins",$prots->[$m]);
-				}
-				my $rgts = $mdlrxn->modelReactionReagents();
-				for (my $m=0; $m < @{$rgts}; $m++) {
-					if (!defined($self->getObject("modelcompounds",$rgts->[$m]->modelcompound()->id()))) {
-						$self->add("modelcompounds",$rgts->[$m]->modelcompound()->cloneObject());		
-						if (!defined($self->getObject("modelcompartments",$rgts->[$m]->modelcompound()->modelcompartment()->id()))) {
-							$self->add("modelcompartments",$rgts->[$m]->modelcompound()->modelcompartment()->cloneObject());
-						}
-					}
-				}
-				$mdlrxn->parent($self);
+			if (defined($args->{solution_to_integrate})) {
+				$selectedcpd->gapfill_data()->{$args->{id}} = 1;
+				$bioobj->add("removedcompounds",$selectedcpd);
+				$bioobj->remove("biomasscompounds",$selectedcpd);
 			} else {
-				$mdlrxn = $self->addModelReaction({
-					reaction => $rxn->reaction()->msid(),
-					compartment => $rxn->reaction()->templatecompartment()->id(),
-					compartmentIndex => $rxn->compartmentIndex(),
-					direction => $rxn->direction()
-				});
-				$mdlrxn->gapfill_data()->{$gf->id()} = "added:".$rxn->direction();
-			}
-			# If RxnProbs object is defined, use it to assign GPRs to the integrated reactions.
-			if (defined($args->{rxnProbGpr}) && defined($args->{rxnProbGpr}->{$rxnid})) {
-			    $mdlrxn->loadGPRFromString($args->{rxnProbGpr}->{$rxnid});
+				$selectedcpd->gapfill_data()->{$args->{id}} = 0;
 			}
 		}
 	}
-	#Checking if gapfilling formulation is in the unintegrated list 
-	return {};
+	#Integrating reaction addition information into model
+	my $solutions = $args->{object}->gapfillingSolutions();
+	for (my $i=0; $i < @{$solutions}; $i++) {
+		my $solution = $solutions->[$i];
+		my $integrated = 0;
+		if (defined($args->{solution_to_integrate}) && $args->{solution_to_integrate} eq $i) {
+			$integrated = 1;
+		}
+		my $rxns = $solution->gapfillingSolutionReactions();
+		for (my $j=0; $j < @{$rxns}; $j++) {
+			my $rxn = $rxns->[$j];
+			my $rxnid = $rxn->reaction()->id();
+			my $mdlrxn;
+			my $ismdlrxn = 0;
+			if ($rxnid =~ m/.+_[a-zA-Z]\d+$/) {
+				$ismdlrxn = 1;
+				$mdlrxn = $self->getObject("modelreactions",$rxnid);
+			} else {
+				$mdlrxn = $self->getObject("modelreactions",$rxnid.$rxn->compartmentIndex());
+			}
+			if (defined($mdlrxn)) {
+				$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
+				if ($rxn->direction() ne $mdlrxn->direction() && $integrated == 1) {
+					$mdlrxn->direction("=");
+				}
+			} else {
+				if ($rxnid =~ m/.+_[a-zA-Z]\d+$/) {
+					$ismdlrxn = 1;
+					$mdlrxn = $self->getObject("gapfilledcandidates",$rxnid);
+				} else {
+					$mdlrxn = $self->getObject("gapfilledcandidates",$rxnid.$rxn->compartmentIndex());
+				}
+				if (defined($mdlrxn)) {
+					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
+					if ($integrated == 1) {
+						$self->add("modelreactions",$mdlrxn);
+						$mdlrxn->direction() = $rxn->direction();
+						$self->removed("gapfilledcandidates",$mdlrxn);
+					}
+				}
+			}
+			if (!defined($mdlrxn)) {
+				if ($ismdlrxn == 1) {
+					if (!defined($self->getObject("modelcompartments",$rxn->reaction()->modelcompartment()->id()))) {
+						$self->add("modelcompartments",$rxn->reaction()->modelcompartment()->cloneObject());
+					}
+					$mdlrxn = $rxn->reaction()->cloneObject();
+					$mdlrxn->parent($rxn->reaction()->parent());
+					$mdlrxn->gapfill_data({});
+					my $prots = $mdlrxn->modelReactionProteins();
+					for (my $m=0; $m < @{$prots}; $m++) {
+						$mdlrxn->remove("modelReactionProteins",$prots->[$m]);
+					}
+					$mdlrxn->direction() = $rxn->direction();
+					my $rgts = $mdlrxn->modelReactionReagents();
+					for (my $m=0; $m < @{$rgts}; $m++) {
+						if (!defined($self->getObject("modelcompounds",$rgts->[$m]->modelcompound()->id()))) {
+							$self->add("modelcompounds",$rgts->[$m]->modelcompound()->cloneObject());		
+							if (!defined($self->getObject("modelcompartments",$rgts->[$m]->modelcompound()->modelcompartment()->id()))) {
+								$self->add("modelcompartments",$rgts->[$m]->modelcompound()->modelcompartment()->cloneObject());
+							}
+						}
+					}
+					$mdlrxn->parent($self);
+					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
+					if ($integrated == 1) {
+						$mdlrxn = $self->add("modelreactions",$mdlrxn);
+					} else {
+						$mdlrxn = $self->add("gapfilledcandidates",$mdlrxn);
+					}
+				} else {
+					$mdlrxn = $self->addModelReaction({
+						reaction => $rxn->reaction()->msid(),
+						compartment => $rxn->reaction()->templatecompartment()->id(),
+						compartmentIndex => $rxn->compartmentIndex(),
+						direction => $rxn->direction()
+					});
+					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
+					if ($integrated == 0) {
+						$self->add("gapfilledcandidates",$mdlrxn);
+						$self->removed("modelreactions",$mdlrxn);
+					}
+				}
+			}
+		}	
+	}
 }
 
 =head3 searchForCompound
@@ -1521,6 +1535,115 @@ sub merge_models {
 		return $genomeObj;
 	}
 	Bio::KBase::ObjectAPI::logging::log("Merge complete!");	
+}
+
+=head3 translate_model
+
+Definition:
+    $self->translate_model(ProteomeComparison:comparison);
+Description:
+    Translates model to new genome based on proteome comparison
+
+=cut
+sub translate_model {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["proteome_comparison"], {
+		keep_nogene_rxn => 1
+	}, @_);
+	my $protcomp = $args->{proteome_comparison};
+	my $genome = $self->genome();
+	my $ftrs = $genome->features();
+	my $numftrs = @{$ftrs};
+	my $ftrhash;
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		$ftrhash->{$ftrs->[$i]->id()} = 1;
+	}
+	my $onewgenome = $self->getLinkedObject($protcomp->{genome1ref});
+	$ftrs = $onewgenome->features();
+	my $matchcount = 0;
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		if (defined($ftrhash->{$ftrs->[$i]->id()})) {
+			$matchcount++;
+		}
+	}
+	my $newgenome = $self->getLinkedObject($protcomp->{genome2ref});
+	$ftrs = $newgenome->features();
+	my $omatchcount = 0;
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		if (defined($ftrhash->{$ftrs->[$i]->id()})) {
+			$omatchcount++;
+		}
+	}
+	my $ref = $protcomp->{genome2ref};
+	my $map = $protcomp->{proteome1map};
+	my $list = $protcomp->{proteome1names};
+	my $data = $protcomp->{data1};
+	my $omap = $protcomp->{proteome2map};
+	my $olist = $protcomp->{proteome2names};
+	my $odata = $protcomp->{data2};
+	if ($omatchcount >  $matchcount) {
+		$newgenome = $onewgenome;
+		$matchcount = $omatchcount;
+		$ref = $protcomp->{genome1ref};
+		$map = $protcomp->{proteome2map};
+		$list = $protcomp->{proteome2names};
+		$data = $protcomp->{data2};
+		$omap = $protcomp->{proteome1map};
+		$olist = $protcomp->{proteome1names};
+		$odata = $protcomp->{data1};
+	}
+	print "Fraction of matching features between model genomes and proteome comparison:".$matchcount/$numftrs."\n";
+	if ($matchcount/$numftrs < 0.8) {
+		Bio::KBase::ObjectAPI::utilities::error("Proteome comparison does not involve genome used in model!");
+	}
+	my $translate;
+	for(my $i=0; $i < @{$data}; $i++) {
+		for (my $j=0; $j < @{$data->[$i]}; $j++) {
+			if ($data->[$i]->[$j]->[2] == 100) {
+				push(@{$translate->{$list->[$i]}},$olist->[$data->[$i]->[$j]->[0]]);
+			}
+		}
+	}
+	my $reactions = $self->modelreactions();
+	for (my $i=0; $i < @{$reactions}; $i++) {
+		my $rxn = $reactions->[$i];
+		my $prots = $rxn->modelReactionProteins();
+		my $keeprxn = 0;
+		my $rxnftrs = 0;
+		for (my $j=0; $j < @{$prots}; $j++) {
+			my $sus = $prots->[$j]->modelReactionProteinSubunits();
+			my $keep = 0;
+			for (my $k=0; $k < @{$sus}; $k++) {
+				my $ftrs = $sus->[$k]->features();
+				my $newftrs = [];
+				for (my $m=0; $m < @{$ftrs}; $m++) {
+					$rxnftrs = 1;
+					if (defined($translate->{$ftrs->[$m]->id()})) {
+						foreach my $gene (@{$translate->{$ftrs->[$m]->id()}}) {
+							my $newftr = $newgenome->getObject("features",$gene);
+							push(@{$newftrs},$newftr->_reference());
+						}
+					}
+				}
+				if (@{$newftrs} > 0) {
+					$keep = 1;
+					$keeprxn = 1;
+				}
+				$sus->[$k]->feature_refs($newftrs);
+			}
+			if ($keep == 0) {
+				$rxn->removeLinkArrayItem("modelReactionProteins",$prots->[$j]);
+			}
+		}
+		if (@{$rxn->modelReactionProteins()} == 0 || $keeprxn == 0) {
+			if ($rxnftrs == 1 || $args->{keep_nogene_rxn} == 0) {
+				$self->remove("modelreactions",$rxn);
+			}
+		}
+	}
+	$self->genome_ref($ref);
+	$self->genome($newgenome);
+	return {};
 }
 
 sub translate_to_localrefs {

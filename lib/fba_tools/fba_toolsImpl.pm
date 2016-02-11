@@ -24,6 +24,7 @@ use Data::Dumper;
 use Bio::KBase::ObjectAPI::config;
 use Bio::KBase::ObjectAPI::utilities;
 use Bio::KBase::ObjectAPI::KBaseStore;
+use Bio::KBase::ObjectAPI::logging;
 
 #Initialization function for call
 sub util_initialize_call {
@@ -55,7 +56,7 @@ sub util_kbase_store {
 }
 
 sub util_build_fba {
-	my ($self,$params,$model,$media,$id,$add_external_reactions,$make_model_reactions_reversible,$source_model) = @_;
+	my ($self,$params,$model,$media,$id,$add_external_reactions,$make_model_reactions_reversible,$source_model,$gapfilling) = @_;
 	my $uptakelimits = {};
     if (defined($params->{max_c_uptake})) {
     	$uptakelimits->{C} = $params->{max_c_uptake}
@@ -120,7 +121,9 @@ sub util_build_fba {
 		decomposeReversibleDrainFlux => 0,
 		fluxUseVariables => 0,
 		drainfluxUseVariables => 0,
+		fbamodel => $model,
 		fbamodel_ref => $model->_reference(),
+		media => $media,
 		media_ref => $media->_reference(),
 		geneKO_refs => [],
 		reactionKO_refs => [],
@@ -188,14 +191,15 @@ sub util_build_fba {
 			}
 		}
 	}
-	my $exp_matrix;
-    if ($exp_matrix) {
-		$fbaobj->expression_matrix_ref($exp_matrix->_reference());
-		$fbaobj->expression_matrix_column($params->{exp_condition});
+    if (defined($exp_matrix) || (defined($gapfilling) && $gapfilling == 1)) {
+		if ($params->{minimum_target_flux} < 0.1) {
+			$params->{minimum_target_flux} = 0.1;
+		}
+		if (!defined($exp_matrix) && $params->{comprehensive_gapfill} == 0) {
+			$params->{activation_coefficient} = 0;
+		}
 		my $input = {
-			expsample => $exphash,
-			expression_threshold_percentile => $params->{exp_threshold_percentile},
-			kappa => $params->{exp_threshold_margin},
+			minimum_target_flux => $params->{minimum_target_flux},
 			target_reactions => [],#?
 			completeGapfill => 0,#?
 			fastgapfill => 1,
@@ -206,11 +210,19 @@ sub util_build_fba {
 			make_model_rxns_reversible => $make_model_reactions_reversible,
 			activate_all_model_reactions => 0,
 		};
+		if (defined($exp_matrix)) {
+			$input->{expsample} = $exphash;
+			$input->{expression_threshold_percentile} = $params->{exp_threshold_percentile};
+			$input->{kappa} = $params->{exp_threshold_margin};
+			$fbaobj->expression_matrix_ref($params->{expseries_workspace}."/".$params->{expseries_id});
+			$fbaobj->expression_matrix_column($params->{exp_condition});	
+		}
 		if (defined($source_model)) {
     		$input->{source_model} = $source_model;
     	}
 		$fbaobj->PrepareForGapfilling($input);
     }
+    return $fbaobj;
 }
 
 sub func_build_metabolic_model {
@@ -236,7 +248,7 @@ sub func_build_metabolic_model {
 		activation_coefficient => 0.5,
 		omega => 0,
 		objective_fraction => 0.1,
-		minimum_target_flux => 0.01,
+		minimum_target_flux => 0.1,
 		number_of_solutions => 1
     });
 	#Getting genome
@@ -299,7 +311,7 @@ sub func_build_metabolic_model {
 
 sub func_gapfill_metabolic_model {
 	my ($self,$params,$model) = @_;
-	$params = $self->validate_args($params,["workspace","fbamodel_id"],{
+	$params = $self->util_validate_args($params,["workspace","fbamodel_id"],{
     	fbamodel_workspace => $params->{workspace},
     	media_id => undef,
     	media_workspace => $params->{workspace},
@@ -321,7 +333,7 @@ sub func_gapfill_metabolic_model {
     	activation_coefficient => 0.5,
     	omega => 0,
     	objective_fraction => 0,
-    	minimum_target_flux => 0.01,
+    	minimum_target_flux => 0.1,
 		number_of_solutions => 1
     });
     if (!defined($model)) {
@@ -349,7 +361,7 @@ sub func_gapfill_metabolic_model {
 		}
 	}
 	my $gfid = "gf.".$currentid;
-    my $fba = $self->util_build_fba($params,$model,$media,$params->{fbamodel_output_id}.".".$gfid,1,1,$source_model);
+    my $fba = $self->util_build_fba($params,$model,$media,$params->{fbamodel_output_id}.".".$gfid,1,1,$source_model,1);
     print "Running flux balance analysis problem.\n";
 	$fba->runFBA();
 	#Error checking the FBA and gapfilling solution
@@ -357,15 +369,10 @@ sub func_gapfill_metabolic_model {
 	if (!defined($fba->gapfillingSolutions()->[0])) {
 		Bio::KBase::ObjectAPI::utilities::error("Analysis completed, but no valid solutions found!");
 	}
-	$model->add("gapfillings",{
+	$model->add_gapfilling({
+		object => $fba,
 		id => $gfid,
-		gapfill_id => $fba->id(),
-		fba => $fba,
-		integrated => 0,
-		media_ref => $fba->media()->_reference(),
-	});
-	my $report = $model->integrateGapfillSolution({
-		gapfill => $gfid
+		solution_to_integrate => "0"
 	});
     print "Saving gapfilled model.\n";
     my $wsmeta = $self->util_kbase_store()->save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id});
@@ -382,7 +389,7 @@ sub func_gapfill_metabolic_model {
 
 sub func_run_flux_balance_analysis {
 	my ($self,$params,$model) = @_;
-	$params = $self->validate_args($params,["workspace","fbamodel_id","fba_output_id"],{
+	$params = $self->util_validate_args($params,["workspace","fbamodel_id","fba_output_id"],{
 		fbamodel_workspace => $params->{workspace},
 		media_id => undef,
 		media_workspace => $params->{workspace},
@@ -452,7 +459,7 @@ sub func_run_flux_balance_analysis {
 
 sub func_compare_fba_solutions {
 	my ($self,$params) = @_;
-	$params = $self->validate_args($params,["workspace","fba_id_list","fbacomparison_output_id"],{
+	$params = $self->util_validate_args($params,["workspace","fba_id_list","fbacomparison_output_id"],{
 		fba_workspace => $params->{workspace},
     });
     my $fbacomp = Bio::KBase::ObjectAPI::KBaseFBA::FBAComparison->new({
@@ -707,7 +714,7 @@ sub func_propagate_model_to_new_genome {
 		activation_coefficient => 0.5,
 		omega => 0,
 		objective_fraction => 0.1,
-		minimum_target_flux => 0.01,
+		minimum_target_flux => 0.1,
 		number_of_solutions => 1
     });
 	#Getting genome
@@ -756,7 +763,7 @@ sub func_propagate_model_to_new_genome {
 
 sub func_simulate_growth_on_phenotype_data {
 	my ($self,$params,$model) = @_;
-	$params = $self->validate_args($params,["workspace","fbamodel_id","phenotypeset_id","phenotypesim_output_id"],{
+	$params = $self->util_validate_args($params,["workspace","fbamodel_id","phenotypeset_id","phenotypesim_output_id"],{
 		fbamodel_workspace => $params->{workspace},
 		phenotypeset_workspace => $params->{workspace},
 		thermodynamic_constraints => 0,

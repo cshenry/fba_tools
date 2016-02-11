@@ -8,6 +8,10 @@ use Bio::KBase::workspace::Client;
 use fba_tools::fba_toolsImpl;
 
 local $| = 1;
+if (!defined($ENV{'KB_AUTH_TOKEN'})) {
+	require "Bio/KBase/fbaModelServices/ScriptHelpers.pm";
+	$ENV{'KB_AUTH_TOKEN'} = Bio::KBase::fbaModelServices::ScriptHelpers::getToken();
+}
 my $tester = LocalTester->new($ENV{'KB_AUTH_TOKEN'},$ENV{'KB_DEPLOYMENT_CONFIG'},undef);
 $tester->run_tests();
 $tester->delete_test_workspace();
@@ -37,6 +41,7 @@ $tester->delete_test_workspace();
         };
         my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
         $self->{user_id} = $auth_token->user_id();
+        print "Workspace:".$self->{config}->{"workspace-url"}."\n";
         $self->{ws_client} = new Bio::KBase::workspace::Client($self->{config}->{"workspace-url"},token => $self->{token});
         if (!defined($self->{ws_name})) {
 	        my $suffix = int(time * 1000);
@@ -136,14 +141,20 @@ $tester->delete_test_workspace();
 		},"initial draft model reconstruction",[],0,undef);
 		
 		$output = $self->test_harness("build_metabolic_model",{
-			genome_id => "Shewanella_amazonensis_SB2B",
+			genome_id => "Shewanella_oneidensus_MR1_NCBI.kbase",
 			genome_workspace => "chenry:1454960620516",
 			fbamodel_output_id => "draft_complete_gapfill",
 			workspace => $self->{ws_name},
 			gapfill_model => 1,
 			thermodynamic_constraints => 0,
 			comprehensive_gapfill => 0,
-			number_of_solutions => 1
+			number_of_solutions => 1,
+			expseries_id => "shewanella_expression_data",
+			expseries_workspace => "chenry:1454960620516",
+			exp_condition => "BU21_8.CEL.gz",
+			exp_threshold_percentile => 0.5,
+			exp_threshold_margin => 0.1,
+			activation_coefficient => 0.1
 		},"initial draft model reconstruction with built-in expression-based gapfilling in complete media",[],0,undef);
 		
 		$output = $self->test_harness("run_flux_balance_analysis",{
@@ -177,7 +188,7 @@ $tester->delete_test_workspace();
 		},"expression-based flux balance analysis in complete media",[],0,"initial draft model reconstruction with built-in expression-based gapfilling in complete media");
 		
 		$output = $self->test_harness("propagate_model_to_new_genome",{
-			fbamodel_id => "iMR1799",
+			fbamodel_id => "iMR1_799",
 			fbamodel_workspace => "chenry:1454960620516",
 			proteincomparison_id => "MR1_SB2B_comparison",
 			proteincomparison_workspace => "chenry:1454960620516",
@@ -190,7 +201,7 @@ $tester->delete_test_workspace();
 		},"propagating published shewanella model to new genome with built in minimal media gapfilling",[],0,undef);
 		
 		$output = $self->test_harness("gapfill_metabolic_model",{
-			fbamodel_id => "iMR1799",
+			fbamodel_id => "iMR1_799",
 			fbamodel_workspace => "chenry:1454960620516",
 			target_reaction => "bio1",
 			fbamodel_output_id => "expression_gapfilled_published_model",
@@ -204,7 +215,7 @@ $tester->delete_test_workspace();
 		},"expression-based gapfilling of published model in complete media",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");
 		
 		$output = $self->test_harness("run_flux_balance_analysis",{
-			fbamodel_id => "iMR1799",
+			fbamodel_id => "iMR1_799",
 			fbamodel_workspace => "chenry:1454960620516",
 			target_reaction => "bio1",
 			fba_output_id => "iMR1799_exp_fba",

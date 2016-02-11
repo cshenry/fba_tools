@@ -152,31 +152,41 @@ description : |
         <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
 {build_metabolic_model}
 #
-# define display information
+# Define basic display information
 #
-name: Build Metabolic Model
-tooltip: |
-    Generate a draft metabolic model based on an annotated genome. 
-screenshots: [build_metabolic_model_input.png,build_metabolic_model_output.png]
+name     : Build metabolic model
 
-icon: icon.png
+tooltip  : |
+    Generate a draft metabolic model based on an annotated genome.
+
+screenshots :
+
+    - build_metabolic_model_input.png
+    - build_metabolic_model_output.png
+
 
 #
-# define a set of similar methods that might be useful to the user
+# Define the set of other narrative methods that should be suggested to the user.
 #
-suggestions:
+suggestions :
     apps:
-        related: []
-        next: []
+        related :
+            []
+        next :
+            []
     methods:
-        related: []
-        next: [gapfill_metabolic_model,run_flux_balance_analysis]
+        related :
+            []
+        next :
+            [gapfill_metabolic_model,run_flux_balance_analysis]
+
 
 #
-# Configure the display and description of parameters
+# Configure the display and description of the parameters
 #
 ---
 description : |
+
     <p>A draft metabolic model serves as an advanced starting point for subsequent curation and gapfilling.</p> 
     
     <p>A genome-scale metabolic network of chemical reactions occurring within a living organism is primarily reconstructed from protein functional annotations originally derived from literature and subsequently propagated from genome to genome by sequence similarity. When a genome is functionally annotated, its metabolic genes are mapped onto biochemical reactions. This information is integrated with data on reaction stoichiometry, subcellular localization, biomass composition, estimation of energy requirements (directionality of reactions), and other constraints into a detailed stoichiometric model of metabolism. This model can be subsequently used for detailed analysis of the metabolic potential of the organism using constraint-based modeling approaches such as Flux Balance Analysis (FBA).</p>
@@ -188,7 +198,7 @@ description : |
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Chris Henry, Janaka Edirisinghe, Sam Seaver, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
 
-publications : |
+publications :
     -
         pmid: 20802497
         display-text: |
@@ -198,11 +208,12 @@ publications : |
         display-text: |
             Overbeek R, Olson R, Pusch GD, Olsen GJ, Davis JJ, et al. (2014) The SEED and the Rapid Annotation of microbial genomes using Subsystems Technology (RAST). Nucleic Acids Res 42: D206-D214. doi:10.1093/nar/gkt1226.
         link: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3965101/
-    -    
+    -
         pmid: 21993642
         display-text: |
             Baart GJ and Martens DE (2012) Genome-scale metabolic models: reconstruction and analysis. Methods Mol Biol. 799: 107-26. doi:10.1007/978-1-61779-346-2_7.
         link: http://www.ncbi.nlm.nih.gov/pubmed/21993642
+
 {compare_fba_solutions}
 #
 # Define basic display information

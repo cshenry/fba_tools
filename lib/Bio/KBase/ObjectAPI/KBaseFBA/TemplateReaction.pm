@@ -362,7 +362,7 @@ sub addRxnToModel {
 						}
 					}
 					$subunits->{$cpxrole->templaterole()->name()}->{triggering} = $cpxrole->triggering();
-					$subunits->{$cpxrole->templaterole()->name()}->{optional} = $cpxrole->optional();
+					$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
 					if (!defined($roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0])) {
 						$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
 					} else {
@@ -376,9 +376,9 @@ sub addRxnToModel {
 		if ($present == 1) {
 			for (my $j=0; $j < @{$complexroles}; $j++) {
 				my $cpxrole = $complexroles->[$j];
-				if ($cpxrole->optional() == 0 && !defined($subunits->{$cpxrole->templaterole()->name()})) {
+				if ($cpxrole->optional_role() == 0 && !defined($subunits->{$cpxrole->templaterole()->name()})) {
 					$subunits->{$cpxrole->templaterole()->name()}->{triggering} = $cpxrole->triggering();
-					$subunits->{$cpxrole->templaterole()->name()}->{optional} = $cpxrole->optional();
+					$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
 					$subunits->{$cpxrole->templaterole()->name()}->{note} = "Complex-based-gapfilling";
 				}
 			}

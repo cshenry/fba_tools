@@ -18,7 +18,7 @@ extends 'Bio::KBase::ObjectAPI::KBaseGenomes::DB::Genome';
 has geneAliasHash => ( is => 'rw',printOrder => -1, isa => 'HashRef', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildgeneAliasHash' );
 has rolehash => ( is => 'rw',printOrder => -1, isa => 'HashRef', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildrolehash' );
 has gene_subsystem_hash => ( is => 'rw',printOrder => -1, isa => 'HashRef', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildgene_subsystem_hash' );
-has template_classification => ( is => 'rw',printOrder => -1, isa => 'String', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildtemplate_classification' );
+has template_classification => ( is => 'rw',printOrder => -1, isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildtemplate_classification' );
 
 #***********************************************************************************************************
 # BUILDERS:

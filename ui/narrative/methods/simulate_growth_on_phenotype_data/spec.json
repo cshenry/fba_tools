@@ -1,210 +1,210 @@
 {
-   "authors" : [
-      "chenry"
-   ],
-   "visible" : true,
+   "contact" : "help@kbase.us",
    "categories" : [
       "active"
    ],
+   "authors" : [
+      "chenry"
+   ],
+   "ver" : "1.0.0",
    "behavior" : {
       "service-mapping" : {
-         "url" : "",
-         "method" : "simulate_growth_on_phenotype_data",
-         "input_mapping" : [
-            {
-               "target_property" : "workspace",
-               "narrative_system_variable" : "workspace"
-            },
-            {
-               "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
-            },
-            {
-               "target_property" : "phenotypeset_id",
-               "input_parameter" : "phenotypeset_id"
-            },
-            {
-               "target_property" : "phenotypesim_output_id",
-               "input_parameter" : "phenotypesim_output_id"
-            },
-            {
-               "target_property" : "all_reversible",
-               "input_parameter" : "all_reversible"
-            },
-            {
-               "target_property" : "feature_ko_list",
-               "input_parameter" : "feature_ko_list"
-            },
-            {
-               "target_property" : "reaction_ko_list",
-               "input_parameter" : "reaction_ko_list"
-            },
-            {
-               "input_parameter" : "custom_bound_list",
-               "target_property" : "custom_bound_list"
-            },
-            {
-               "input_parameter" : "media_supplement_list",
-               "target_property" : "media_supplement_list"
-            },
-            {
-               "input_parameter" : "objective_fraction",
-               "target_property" : "objective_fraction"
-            }
-         ],
          "name" : "fba_tools",
          "output_mapping" : [
             {
-               "target_property" : "ws",
-               "narrative_system_variable" : "workspace"
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
             },
             {
                "target_property" : "type",
                "constant_value" : "KBasePhenotypes.PhenotypeSimulationSet"
             },
             {
-               "input_parameter" : "phenotypesim_output_id",
-               "target_property" : "obj"
+               "target_property" : "obj",
+               "input_parameter" : "phenotypesim_output_id"
             }
-         ]
+         ],
+         "input_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "workspace"
+            },
+            {
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id"
+            },
+            {
+               "input_parameter" : "phenotypeset_id",
+               "target_property" : "phenotypeset_id"
+            },
+            {
+               "input_parameter" : "phenotypesim_output_id",
+               "target_property" : "phenotypesim_output_id"
+            },
+            {
+               "input_parameter" : "all_reversible",
+               "target_property" : "all_reversible"
+            },
+            {
+               "target_property" : "feature_ko_list",
+               "input_parameter" : "feature_ko_list"
+            },
+            {
+               "input_parameter" : "reaction_ko_list",
+               "target_property" : "reaction_ko_list"
+            },
+            {
+               "target_property" : "custom_bound_list",
+               "input_parameter" : "custom_bound_list"
+            },
+            {
+               "target_property" : "media_supplement_list",
+               "input_parameter" : "media_supplement_list"
+            },
+            {
+               "target_property" : "objective_fraction",
+               "input_parameter" : "objective_fraction"
+            }
+         ],
+         "method" : "simulate_growth_on_phenotype_data",
+         "url" : ""
       }
    },
-   "ver" : "1.0.0",
-   "contact" : "help@kbase.us",
+   "name" : "simulate_growth_on_phenotype_data",
+   "visible" : true,
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
    "parameters" : [
       {
-         "id" : "fbamodel_id",
-         "field_type" : "text",
          "allow_multiple" : false,
          "optional" : false,
+         "default_values" : [
+            ""
+         ],
+         "field_type" : "text",
+         "advanced" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ]
          },
+         "id" : "fbamodel_id"
+      },
+      {
+         "allow_multiple" : false,
+         "optional" : false,
          "default_values" : [
             ""
          ],
-         "advanced" : false
-      },
-      {
-         "id" : "phenotypeset_id",
          "field_type" : "text",
-         "optional" : false,
-         "allow_multiple" : false,
          "advanced" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBasePhenotypes.PhenotypeSet"
             ]
          },
-         "default_values" : [
-            ""
-         ]
+         "id" : "phenotypeset_id"
       },
       {
-         "advanced" : false,
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBasePhenotypes.PhenotypeSimulationSet"
-            ],
-            "is_output_name" : true
-         },
          "default_values" : [
             ""
          ],
-         "optional" : false,
          "field_type" : "text",
          "allow_multiple" : false,
-         "id" : "phenotypesim_output_id"
+         "optional" : false,
+         "id" : "phenotypesim_output_id",
+         "advanced" : false,
+         "text_options" : {
+            "is_output_name" : true,
+            "valid_ws_types" : [
+               "KBasePhenotypes.PhenotypeSimulationSet"
+            ]
+         }
       },
       {
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "advanced" : true,
-         "allow_multiple" : false,
          "id" : "all_reversible",
-         "checkbox_options" : {
-            "unchecked_value" : 0,
-            "checked_value" : 1
-         },
+         "field_type" : "checkbox",
          "default_values" : [
             "0"
          ],
-         "field_type" : "checkbox",
-         "optional" : false
+         "optional" : false,
+         "allow_multiple" : false,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true,
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         }
       },
       {
-         "allow_multiple" : true,
+         "default_values" : [
+            ""
+         ],
          "field_type" : "text",
+         "allow_multiple" : true,
          "optional" : true,
          "id" : "feature_ko_list",
-         "default_values" : [
-            ""
-         ],
+         "advanced" : true,
          "text_options" : {
             "valid_ws_types" : []
-         },
-         "advanced" : true
+         }
       },
       {
-         "advanced" : true,
-         "default_values" : [
-            ""
-         ],
-         "text_options" : {
-            "valid_ws_types" : []
-         },
          "id" : "reaction_ko_list",
-         "field_type" : "text",
-         "allow_multiple" : true,
-         "optional" : true
-      },
-      {
-         "id" : "custom_bound_list",
-         "field_type" : "text",
-         "optional" : true,
-         "allow_multiple" : true,
+         "advanced" : true,
          "text_options" : {
             "valid_ws_types" : []
          },
+         "field_type" : "text",
          "default_values" : [
             ""
          ],
-         "advanced" : true
+         "optional" : true,
+         "allow_multiple" : true
       },
       {
+         "allow_multiple" : true,
+         "optional" : true,
          "default_values" : [
             ""
          ],
+         "field_type" : "text",
          "text_options" : {
             "valid_ws_types" : []
          },
          "advanced" : true,
-         "field_type" : "text",
-         "optional" : true,
-         "allow_multiple" : true,
-         "id" : "media_supplement_list"
+         "id" : "custom_bound_list"
       },
       {
+         "field_type" : "text",
+         "default_values" : [
+            ""
+         ],
+         "optional" : true,
+         "allow_multiple" : true,
+         "id" : "media_supplement_list",
          "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text",
          "default_values" : [
             "0.1"
          ],
          "text_options" : {
             "validate_as" : "float"
          },
-         "optional" : false,
-         "field_type" : "text",
-         "allow_multiple" : false,
+         "advanced" : true,
          "id" : "objective_fraction"
       }
    ],
-   "widgets" : {
-      "output" : "kbaseTabTable",
-      "input" : null
-   },
-   "job_id_output_field" : "docker",
-   "name" : "simulate_growth_on_phenotype_data"
+   "job_id_output_field" : "docker"
 }
