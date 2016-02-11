@@ -39,13 +39,13 @@ parameters :
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
 
 
-    phenotypesim_output_id :
+    fbamodel_id :
         ui-name : |
-            Phenotype Simulation Result
+            FBA Model
         short-hint : |
-            Name the Phenotype Simulation Result data
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
         long-hint : |
-            Name the Phenotype Simulation Result data
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
 
 
     all_reversible :
@@ -66,15 +66,6 @@ parameters :
             Specify additional compounds to add to media one at a time by using “add another media supplement” button
 
 
-    objective_fraction :
-        ui-name : |
-            Objective constraint
-        short-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
-        long-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
-
-
     custom_bound_list :
         ui-name : |
             Custom flux bounds
@@ -84,22 +75,22 @@ parameters :
             Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
 
 
-    phenotypeset_id :
+    objective_fraction :
         ui-name : |
-            Phenotype Set
+            Objective constraint
         short-hint : |
-            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
         long-hint : |
-            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
 
 
-    fbamodel_id :
+    phenotypesim_output_id :
         ui-name : |
-            FBA Model
+            Phenotype Simulation Result
         short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            Name the Phenotype Simulation Result data
         long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            Name the Phenotype Simulation Result data
 
 
     reaction_ko_list :
@@ -109,6 +100,15 @@ parameters :
             User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
         long-hint : |
             User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+
+
+    phenotypeset_id :
+        ui-name : |
+            Phenotype Set
+        short-hint : |
+            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+        long-hint : |
+            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
 
 
 description : |
