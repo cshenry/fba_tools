@@ -32,15 +32,6 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    fbacomparison_output_id :
-        ui-name : |
-            FBA comparison ID
-        short-hint : |
-            Name of the object where FBA comparison data will be stored in your narrative
-        long-hint : |
-            Name of the object where FBA comparison data will be stored in your narrative
-
-
     fba_id_list :
         ui-name : |
             FBA(s)
@@ -48,6 +39,15 @@ parameters :
             Select FBA solutions one at a time to compare one at a time; solutions must be created or copied into your narrative to be compared
         long-hint : |
             Select FBA solutions one at a time to compare one at a time; solutions must be created or copied into your narrative to be compared
+
+
+    fbacomparison_output_id :
+        ui-name : |
+            FBA comparison ID
+        short-hint : |
+            Name of the object where FBA comparison data will be stored in your narrative
+        long-hint : |
+            Name of the object where FBA comparison data will be stored in your narrative
 
 
 description : |

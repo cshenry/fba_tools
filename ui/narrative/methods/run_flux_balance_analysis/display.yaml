@@ -29,103 +29,13 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    thermodynamic_constraints :
+    exp_threshold_percentile :
         ui-name : |
-            Thermodynamic constraints?
+            Expression threshold
         short-hint : |
-            Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
+            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
         long-hint : |
-            Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
-
-
-    fva :
-        ui-name : |
-            Flux Variability Analysis?
-        short-hint : |
-            Check this box to minimize and maximize all reaction fluxes, enabling reaction classification
-        long-hint : |
-            Check this box to minimize and maximize all reaction fluxes, enabling reaction classification
-
-
-    find_min_media :
-        ui-name : |
-            Find minimal media?
-        short-hint : |
-            Check this box to identify the minimal subset of nutrients from the specified media condition that would still permit a nonzero objective value 
-        long-hint : |
-            Check this box to identify the minimal subset of nutrients from the specified media condition that would still permit a nonzero objective value 
-
-
-    fbamodel_id :
-        ui-name : |
-            FBA Model
-        short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-
-
-    all_reversible :
-        ui-name : |
-            Make all reactions reversible?
-        short-hint : |
-            Check this box to ignore the reversibility rules in the model and make every reaction reversible
-        long-hint : |
-            Check this box to ignore the reversibility rules in the model and make every reaction reversible
-
-
-    fba_output_id :
-        ui-name : |
-            Output FBA Result
-        short-hint : |
-            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
-        long-hint : |
-            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
-
-
-    max_p_uptake :
-        ui-name : |
-            Max phosphate uptake
-        short-hint : |
-            Maximum number of moles of phosphate permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-        long-hint : |
-            Maximum number of moles of phosphate permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-
-
-    max_o_uptake :
-        ui-name : |
-            Max oxygen uptake
-        short-hint : |
-            Maximum number of moles of oxygen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-        long-hint : |
-            Maximum number of moles of oxygen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-
-
-    activation_coefficient :
-        ui-name : |
-            Activation coefficient
-        short-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
-        long-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
-
-
-    media_supplement_list :
-        ui-name : |
-            Media supplement
-        short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-
-
-    custom_bound_list :
-        ui-name : |
-            Custom flux bounds
-        short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
 
 
     feature_ko_list :
@@ -137,103 +47,13 @@ parameters :
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
 
 
-    max_c_uptake :
+    activation_coefficient :
         ui-name : |
-            Max carbon uptake
-        short-hint : |
-            Maximum number of moles of carbon permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-        long-hint : |
-            Maximum number of moles of carbon permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-
-
-    expseries_id :
-        ui-name : |
-            Expression matrix
-        short-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
-        long-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
-
-
-    media_id :
-        ui-name : |
-            Media
-        short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth
-        long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth
-
-
-    max_s_uptake :
-        ui-name : |
-            Max sulfur uptake
-        short-hint : |
-            Maximum number of moles of sulfur permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-        long-hint : |
-            Maximum number of moles of sulfur permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-
-
-    exp_threshold_percentile :
-        ui-name : |
-            Expression threshold
-        short-hint : |
-            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-        long-hint : |
-            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-
-
-    reaction_ko_list :
-        ui-name : |
-            Reaction Knockouts
-        short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-        long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-
-
-    simulate_ko :
-        ui-name : |
-            Simulate All Single KO?
-        short-hint : |
-            Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
-        long-hint : |
-            Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
-
-
-    max_n_uptake :
-        ui-name : |
-            Max nitrogen uptake
-        short-hint : |
-            Maximum number of moles of nitrogen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-        long-hint : |
-            Maximum number of moles of nitrogen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-
-
-    minimize_flux :
-        ui-name : |
-            Minimize Flux?
-        short-hint : |
-            Check this box to minize the sum of all fluxes *after* the primary objective function has been optimized.
-        long-hint : |
-            Check this box to minize the sum of all fluxes *after* the primary objective function has been optimized.
-
-
-    objective_fraction :
-        ui-name : |
-            Objective constraint
+            Activation coefficient
         short-hint : |
             What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
         long-hint : |
             What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
-
-
-    exp_threshold_margin :
-        ui-name : |
-            Expression uncertainty
-        short-hint : |
-            Range of uncertainty for classification of reaction activity based on expression threshold
-        long-hint : |
-            Range of uncertainty for classification of reaction activity based on expression threshold
 
 
     expression_condition :
@@ -245,6 +65,114 @@ parameters :
             Specific condition in expression matrix to which reaction activity in FBA should be fit
 
 
+    all_reversible :
+        ui-name : |
+            Make all reactions reversible?
+        short-hint : |
+            Check this box to ignore the reversibility rules in the model and make every reaction reversible
+        long-hint : |
+            Check this box to ignore the reversibility rules in the model and make every reaction reversible
+
+
+    fbamodel_id :
+        ui-name : |
+            FBA Model
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+
+
+    custom_bound_list :
+        ui-name : |
+            Custom flux bounds
+        short-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        long-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+
+
+    thermodynamic_constraints :
+        ui-name : |
+            Thermodynamic constraints?
+        short-hint : |
+            Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
+        long-hint : |
+            Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
+
+
+    max_p_uptake :
+        ui-name : |
+            Max phosphate uptake
+        short-hint : |
+            Maximum number of moles of phosphate permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+        long-hint : |
+            Maximum number of moles of phosphate permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+
+
+    fva :
+        ui-name : |
+            Flux Variability Analysis?
+        short-hint : |
+            Check this box to minimize and maximize all reaction fluxes, enabling reaction classification
+        long-hint : |
+            Check this box to minimize and maximize all reaction fluxes, enabling reaction classification
+
+
+    minimize_flux :
+        ui-name : |
+            Minimize Flux?
+        short-hint : |
+            Check this box to minize the sum of all fluxes *after* the primary objective function has been optimized.
+        long-hint : |
+            Check this box to minize the sum of all fluxes *after* the primary objective function has been optimized.
+
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+
+
+    objective_fraction :
+        ui-name : |
+            Objective constraint
+        short-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+        long-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+
+
+    media_id :
+        ui-name : |
+            Media
+        short-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth
+        long-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth
+
+
+    expseries_id :
+        ui-name : |
+            Expression matrix
+        short-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
+        long-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
+
+
+    exp_threshold_margin :
+        ui-name : |
+            Expression uncertainty
+        short-hint : |
+            Range of uncertainty for classification of reaction activity based on expression threshold
+        long-hint : |
+            Range of uncertainty for classification of reaction activity based on expression threshold
+
+
     target_reaction :
         ui-name : |
             Reaction to maximize
@@ -252,6 +180,78 @@ parameters :
             ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, cpd00001_e0, bio1)
         long-hint : |
             ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, cpd00001_e0, bio1)
+
+
+    fba_output_id :
+        ui-name : |
+            Output FBA Result
+        short-hint : |
+            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
+        long-hint : |
+            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
+
+
+    simulate_ko :
+        ui-name : |
+            Simulate All Single KO?
+        short-hint : |
+            Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
+        long-hint : |
+            Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
+
+
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+
+
+    max_s_uptake :
+        ui-name : |
+            Max sulfur uptake
+        short-hint : |
+            Maximum number of moles of sulfur permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+        long-hint : |
+            Maximum number of moles of sulfur permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+
+
+    max_n_uptake :
+        ui-name : |
+            Max nitrogen uptake
+        short-hint : |
+            Maximum number of moles of nitrogen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+        long-hint : |
+            Maximum number of moles of nitrogen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+
+
+    max_c_uptake :
+        ui-name : |
+            Max carbon uptake
+        short-hint : |
+            Maximum number of moles of carbon permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+        long-hint : |
+            Maximum number of moles of carbon permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+
+
+    find_min_media :
+        ui-name : |
+            Find minimal media?
+        short-hint : |
+            Check this box to identify the minimal subset of nutrients from the specified media condition that would still permit a nonzero objective value 
+        long-hint : |
+            Check this box to identify the minimal subset of nutrients from the specified media condition that would still permit a nonzero objective value 
+
+
+    max_o_uptake :
+        ui-name : |
+            Max oxygen uptake
+        short-hint : |
+            Maximum number of moles of oxygen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+        long-hint : |
+            Maximum number of moles of oxygen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
 
 
 description : |

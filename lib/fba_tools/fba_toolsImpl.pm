@@ -463,7 +463,7 @@ sub func_compare_fba_solutions {
 		fba_workspace => $params->{workspace},
     });
     my $fbacomp = Bio::KBase::ObjectAPI::KBaseFBA::FBAComparison->new({
-    	id => $params->{output_id},
+    	id => $params->{fbacomparison_output_id},
     	common_reactions => 0,
     	common_compounds => 0,
     	fbas => [],

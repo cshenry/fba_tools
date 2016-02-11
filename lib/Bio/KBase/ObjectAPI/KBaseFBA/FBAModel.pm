@@ -1399,7 +1399,7 @@ sub merge_models {
 	};
 	my $totalAbundance = 0;
 	for (my $i=0; $i < @{$parameters->{models}}; $i++) {
-		$totalAbundance += $parameters->{models}->[$i]->[1];
+		$totalAbundance += 1;
 	}
 	my $biocount = 1;
 	my $primbio = $self->add("biomasses",{
