@@ -1153,6 +1153,7 @@ sub createJobDirectory {
 					$rxnhash->{$id} = $rxn;
 					my $reactants = "";
 					my $products = "";
+					print "Reaction:".$id."\n";
 					my $rgts = $rxn->modelReactionReagents();
 					for (my $j=0;$j < @{$rgts}; $j++) {
 						my $rgt = $rgts->[$j];

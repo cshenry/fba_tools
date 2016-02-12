@@ -1397,10 +1397,7 @@ sub merge_models {
 			compartmentIndex => 0
 		})
 	};
-	my $totalAbundance = 0;
-	for (my $i=0; $i < @{$parameters->{models}}; $i++) {
-		$totalAbundance += 1;
-	}
+	my $totalAbundance = @{$parameters->{models}};
 	my $biocount = 1;
 	my $primbio = $self->add("biomasses",{
 		id => "bio1",
@@ -1414,20 +1411,23 @@ sub merge_models {
 		cofactor => 0,
 		energy => 0
 	});
-	my $biomassCompound = $self->template()->biochemistry()->getObject("compounds","cpd11416");
-	my $biocpd = $self->add("modelcompounds",{
-		id => $biomassCompound->id()."_".$cmpsHash->{c}->id(),
-		compound_ref => $biomassCompound->_reference(),
-		charge => 0,
-		modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{c}->id()
-	});
-	$primbio->add("biomasscompounds",{
-		modelcompound_ref => "~/modelcompounds/id/".$biocpd->id(),
-		coefficient => 1
-	});
+	my $biomassCompound = $self->template()->getObject("compounds","cpd11416");
+	if ($parameters->{mixed_bag_model} == 0) {
+		my $biocpd = $self->add("modelcompounds",{
+			id => $biomassCompound->id()."_".$cmpsHash->{c}->id(),
+			compound_ref => $biomassCompound->_reference(),
+			charge => 0,
+			modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{c}->id()
+		});
+		$primbio->add("biomasscompounds",{
+			modelcompound_ref => "~/modelcompounds/id/".$biocpd->id(),
+			coefficient => 1
+		});
+	}
+	my $biohash = {};
 	for (my $i=0; $i < @{$parameters->{models}}; $i++) {
-		print "Loading model ".$parameters->{models}->[$i]->[0]."\n";
-		my $model = $self->getLinkedObject($parameters->{models}->[$i]->[0]);
+		print "Loading model ".$parameters->{models}->[$i]."\n";
+		my $model = $self->getLinkedObject($parameters->{models}->[$i]);
 		my $biomassCpd = $self->getObject("modelcompounds","cpd11416_c0");
 		#Adding genome, features, and roles to master mapping and annotation
 		my $mdlgenome = $self->genome();
@@ -1449,17 +1449,21 @@ sub merge_models {
 		print "Loading compartments\n";
 		for (my $j=0; $j < @{$cmps}; $j++) {
 			if ($cmps->[$j]->compartment()->id() ne "e") {
+				my $index = ($i+1);
+				if ($parameters->{mixed_bag_model} == 1) {
+					$index = 0;
+				}
 				$cmpsHash->{$cmps->[$j]->compartment()->id()} = $self->addCompartmentToModel({
 					compartment => $cmps->[$j]->compartment(),
 					pH => 7,
 					potential => 0,
-					compartmentIndex => ($i+1)
+					compartmentIndex => $index
 				});
 			}
 		}
 		#Adding compounds to community model
 		my $translation = {};
-		Bio::KBase::ObjectAPI::logging::log("Loading compounds");
+		print "Loading compounds\n";
 		my $cpds = $model->modelcompounds();
 		for (my $j=0; $j < @{$cpds}; $j++) {
 			my $cpd = $cpds->[$j];
@@ -1474,26 +1478,33 @@ sub merge_models {
 					compound_ref => $cpd->compound_ref(),
 					charge => $cpd->charge(),
 					formula => $cpd->formula(),
-					modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{$cpd->modelcompartment()->compartment()->id()}->id(),
+					modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{$cpd->modelcompartment()->compartment()->id()}->id()
 				});
 			}
 			$translation->{$cpd->id()} = $comcpd->id();
 		}
-		Bio::KBase::ObjectAPI::logging::log("Loading reactions");
+		print "Loading reactions";
 		#Adding reactions to community model
 		my $rxns = $model->modelreactions();
 		for (my $j=0; $j < @{$rxns}; $j++) {
 			my $rxn = $rxns->[$j];
-			my $rootid = $rxn->reaction()->id();
-			if ($rxn->id() =~ m/(.+)_([a-zA-Z]\d+)/) {
-				$rootid = $1;
+			my $rootid = $rxn->reaction()->msid();
+			if ($parameters->{mixed_bag_model} == 1) {
+				if ($rootid eq "rxn00000" && $rxn->id() =~ m/(.+)_([a-zA-Z]\d+)/) {
+					$rootid = $1;
+				}
+			} else {
+				if ($rxn->id() =~ m/(.+)_([a-zA-Z]\d+)/) {
+					$rootid = $1;
+				}
 			}
 			my $originalcmpid = $rxn->modelcompartment()->compartment()->id();
 			if ($originalcmpid eq "e0") {
 				$originalcmpid = "c0";
 			}
-			if (!defined($self->getObject("modelreactions",$rootid."_".$cmpsHash->{$originalcmpid}->id()))) {
-				my $comrxn = $self->add("modelreactions",{
+			my $comrxn = $self->getObject("modelreactions",$rootid."_".$cmpsHash->{$originalcmpid}->id());
+			if (!defined($comrxn)) {
+				$comrxn = $self->add("modelreactions",{
 					id => $rootid."_".$cmpsHash->{$originalcmpid}->id(),
 					reaction_ref => $rxn->reaction_ref(),
 					direction => $rxn->direction(),
@@ -1501,9 +1512,6 @@ sub merge_models {
 					modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{$originalcmpid}->id(),
 					probability => $rxn->probability()
 				});
-				for (my $k=0; $k < @{$rxn->modelReactionProteins()}; $k++) {
-					$comrxn->add("modelReactionProteins",$rxn->modelReactionProteins()->[$k]);
-				}
 				for (my $k=0; $k < @{$rxn->modelReactionReagents()}; $k++) {
 					$comrxn->add("modelReactionReagents",{
 						modelcompound_ref => "~/modelcompounds/id/".$translation->{$rxn->modelReactionReagents()->[$k]->modelcompound()->id()},
@@ -1511,30 +1519,53 @@ sub merge_models {
 					});
 				}
 			}
+			for (my $k=0; $k < @{$rxn->modelReactionProteins()}; $k++) {
+				$comrxn->add("modelReactionProteins",$rxn->modelReactionProteins()->[$k]);
+			}
 		}
-		Bio::KBase::ObjectAPI::logging::log("Loading biomass");
+		print "Loading biomass";
 		#Adding biomass to community model
 		my $bios = $model->biomasses();
 		for (my $j=0; $j < @{$bios}; $j++) {
-			my $bio = $bios->[$j]->cloneObject();
-			$bio->parent($self);
-			for (my $k=0; $k < @{$bio->biomasscompounds()}; $k++) {
-				$bio->biomasscompounds()->[$k]->modelcompound_ref("~/modelcompounds/id/".$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()});
+			if ($parameters->{mixed_bag_model} == 0) {
+				my $bio = $bios->[$j]->cloneObject();
+				$bio->parent($self);
+				for (my $k=0; $k < @{$bio->biomasscompounds()}; $k++) {
+					$bio->biomasscompounds()->[$k]->modelcompound_ref("~/modelcompounds/id/".$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()});
+				}
+				$bio = $self->add("biomasses",$bio);
+				$biocount++;
+				$bio->id("bio".$biocount);
+				$bio->name("bio".$biocount);
+			} elsif ($j == 0) {
+				for (my $k=0; $k < @{$bios->[$j]->biomasscompounds()}; $k++) {	
+					if (defined($biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}})) {
+						$biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}}->coefficient($biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}}->coefficient() + $bios->[$j]->biomasscompounds()->[$k]->coefficient()); 
+					} else {
+						$biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}} = $primbio->add("biomasscompounds",{
+							modelcompound_ref => "~/modelcompounds/id/".$translation->{$bios->[$j]->biomasscompounds()->[$k]->id()},
+							coefficient => $bios->[$j]->biomasscompounds()->[$k]->coefficient()
+						});
+					}
+				}
 			}
-			$bio = $self->add("biomasses",$bio);
-			$biocount++;
-			$bio->id("bio".$biocount);
-			$bio->name("bio".$biocount);
 		}
-		Bio::KBase::ObjectAPI::logging::log("Loading primary biomass");
+		print "Loading primary biomass";
 		#Adding biomass component to primary composite biomass reaction
-		$primbio->add("biomasscompounds",{
-			modelcompound_ref => "~/modelcompounds/id/".$translation->{$biomassCpd->id()},
-			coefficient => -1*$parameters->{models}->[$i]->[1]/$totalAbundance
-		});
-		return $genomeObj;
+		if ($parameters->{mixed_bag_model} == 0) {
+			$primbio->add("biomasscompounds",{
+				modelcompound_ref => "~/modelcompounds/id/".$translation->{$biomassCpd->id()},
+				coefficient => -1*$parameters->{models}->[$i]->[1]/$totalAbundance
+			});
+		}
 	}
-	Bio::KBase::ObjectAPI::logging::log("Merge complete!");	
+	if ($parameters->{mixed_bag_model} == 1) {
+		for (my $k=0; $k < @{$primbio->biomasscompounds()}; $k++) {	
+			$primbio->biomasscompounds()->[$k]->coefficient($primbio->biomasscompounds()->[$k]->coefficient()/$totalAbundance);
+		}
+	}
+	print "Merge complete!";
+	return $genomeObj;
 }
 
 =head3 translate_model

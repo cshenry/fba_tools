@@ -2973,8 +2973,11 @@ void Reaction::CreateMFAVariables(OptimizationParameter* InParameters) {
 				NewVariable->UpperBound = InParameters->MaxFlux;
 				NewVariable->LowerBound = -InParameters->MaxFlux;
 			}
-		} else if (Type == FORWARD || GetData("NAME",STRING).compare("Biomass") == 0) {
+		} else if (Type == FORWARD || GetData("NAME",STRING).compare("Biomass") == 0 || this->GetData("FOREIGN",STRING).compare("biomasssupply") == 0) {
 			NewVariable = InitializeMFAVariable();
+			if (this->GetData("FOREIGN",STRING).compare("biomasssupply") == 0) {
+				NewVariable->Exclude = true;
+			}
 			NewVariable->Name = GetData("DATABASE",STRING);
 			NewVariable->AssociatedReaction = this;
 			NewVariable->Type = FLUX;
@@ -3115,6 +3118,16 @@ void Reaction::BuildReactionConstraints(OptimizationParameter* InParameters,MFAP
 				InProblem->AddConstraint(NewConstraint);
 			}
 		}
+	}
+
+	if (this->GetData("FOREIGN",STRING).compare("biomasssupply") == 0) {
+		LinEquation* NewConstraint = InitializeLinEquation("Biomass component reaction constraint",0,LESS);
+		NewConstraint->Variables.push_back(this->GetMFAVar(FLUX));
+		NewConstraint->Coefficient.push_back(0.0001);
+		Reaction* biomass = this->MainData->FindReaction("DATABASE",this->GetData("NAME",STRING).data());
+		NewConstraint->Variables.push_back(biomass->GetMFAVar(FLUX));
+		NewConstraint->Coefficient.push_back(this->EstDeltaGUncertainty);
+		InProblem->AddConstraint(NewConstraint);
 	}
 
 	if (InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints) {

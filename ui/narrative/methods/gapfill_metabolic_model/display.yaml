@@ -31,6 +31,15 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    source_fbamodel_id :
+        ui-name : |
+            Source Gapfill Model
+        short-hint : |
+            A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
+        long-hint : |
+            A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
+
+
     exp_threshold_percentile :
         ui-name : |
             Expression threshold
@@ -38,6 +47,15 @@ parameters :
             Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
         long-hint : |
             Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
 
 
     feature_ko_list :
@@ -49,31 +67,60 @@ parameters :
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
 
 
-    minimum_target_flux :
+    exp_threshold_margin :
         ui-name : |
-            Minimum reaction flux
+            Expression uncertainty
         short-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
+            Range of uncertainty for classification of reaction activity based on expression threshold
         long-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
+            Range of uncertainty for classification of reaction activity based on expression threshold
 
 
-    activation_coefficient :
+    comprehensive_gapfill :
         ui-name : |
-            Activation coefficient
+            Comprehensive Gapfill
+        short-hint : |
+            Check this box to activate as many reactions as possible, rather than just the biomass objective function
+        long-hint : |
+            Check this box to activate as many reactions as possible, rather than just the biomass objective function
+
+
+    target_reaction :
+        ui-name : |
+            Reaction to maximize
+        short-hint : |
+            ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, cpd00001_e0, bio1)
+        long-hint : |
+            ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, cpd00001_e0, bio1)
+
+
+    objective_fraction :
+        ui-name : |
+            Objective constraint
         short-hint : |
             What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
         long-hint : |
             What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
 
 
-    expression_condition :
+    custom_bound_list :
         ui-name : |
-            Expression condition
+            Custom flux bounds
         short-hint : |
-            Specific condition in expression matrix to which reaction activity in FBA should be fit
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
         long-hint : |
-            Specific condition in expression matrix to which reaction activity in FBA should be fit
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        placeholder : |
+            e.g. 0;rxn00001;5
+
+
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
 
 
     fbamodel_id :
@@ -94,67 +141,51 @@ parameters :
             Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
 
 
-    custom_bound_list :
+    fbamodel_output_id :
         ui-name : |
-            Custom flux bounds
+            Gapfilled Model
         short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            Name of the model produced by the gapfill analysis
         long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            Name of the model produced by the gapfill analysis
 
 
-    number_of_solutions :
+    expression_condition :
         ui-name : |
-            Number of solutions
+            Expression condition
         short-hint : |
-            An integer indicating how many solutions should be generated by the gapfilling
+            Specific condition in expression matrix to which reaction activity in FBA should be fit
         long-hint : |
-            An integer indicating how many solutions should be generated by the gapfilling
-
-
-    media_supplement_list :
-        ui-name : |
-            Media supplement
-        short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-
-
-    source_fbamodel_id :
-        ui-name : |
-            Source Gapfill Model
-        short-hint : |
-            A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
-        long-hint : |
-            A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
-
-
-    objective_fraction :
-        ui-name : |
-            Objective constraint
-        short-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
-        long-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+            Specific condition in expression matrix to which reaction activity in FBA should be fit
 
 
     media_id :
         ui-name : |
             Media
         short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
         long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+        placeholder : |
+            Growth condition for gapfilling
 
 
-    comprehensive_gapfill :
+    minimum_target_flux :
         ui-name : |
-            Comprehensive Gapfill
+            Minimum reaction flux
         short-hint : |
-            Check this box to activate as many reactions as possible, rather than just the biomass objective function
+            The minimum flux that the target reaction will have when the gapfilling is performed
         long-hint : |
-            Check this box to activate as many reactions as possible, rather than just the biomass objective function
+            The minimum flux that the target reaction will have when the gapfilling is performed
+
+
+    activation_coefficient :
+        ui-name : |
+            Activation coefficient
+        short-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+        long-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
 
 
     expseries_id :
@@ -166,40 +197,13 @@ parameters :
             An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
 
 
-    fbamodel_output_id :
+    number_of_solutions :
         ui-name : |
-            Gapfilled Model
+            Number of solutions
         short-hint : |
-            Name of the model produced by the gapfill analysis
+            An integer indicating how many solutions should be generated by the gapfilling
         long-hint : |
-            Name of the model produced by the gapfill analysis
-
-
-    target_reaction :
-        ui-name : |
-            Reaction to maximize
-        short-hint : |
-            ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, cpd00001_e0, bio1)
-        long-hint : |
-            ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, cpd00001_e0, bio1)
-
-
-    exp_threshold_margin :
-        ui-name : |
-            Expression uncertainty
-        short-hint : |
-            Range of uncertainty for classification of reaction activity based on expression threshold
-        long-hint : |
-            Range of uncertainty for classification of reaction activity based on expression threshold
-
-
-    reaction_ko_list :
-        ui-name : |
-            Reaction Knockouts
-        short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-        long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+            An integer indicating how many solutions should be generated by the gapfilling
 
 
 description : |

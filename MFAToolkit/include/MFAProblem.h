@@ -153,6 +153,9 @@ public:
 	int LoadBiomassDrainReactions(Data* InData, OptimizationParameter* InParameters);
 	int LoadGapFillingReactions(Data* InData, OptimizationParameter* InParameters);
 	int GapFilling(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
+	vector<MFAVariable*> BiomassSensitivityAnalysis(OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
+	int ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
+	int RunImplementedGapfillingSolution(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
 	int CompleteGapFilling(Data* InData, OptimizationParameter* InParameters,bool fastgapfill = false);
 	int CalculateGapfillCoefficients(Data* InData,OptimizationParameter* InParameters,map<string,Reaction*,std::less<string> > InactiveVar,map<MFAVariable*,double,std::less<MFAVariable*> >& VariableCoefficients,bool fastgapfill = false);
 	int GapGeneration(Data* InData, OptimizationParameter* InParameters);

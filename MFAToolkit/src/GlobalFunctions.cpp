@@ -830,6 +830,7 @@ LinEquation* InitializeLinEquation(const char* Meaning,double RHS,int Equality, 
 //Allocating MFAVariable and initiallizing all variables to their default values
 MFAVariable* InitializeMFAVariable() {
 	MFAVariable* NewVariable = new MFAVariable;
+	NewVariable->Exclude = false;
 	NewVariable->LoadedLowerBound = FLAG;
 	NewVariable->LoadedUpperBound = FLAG;
 	NewVariable->Loaded = false;
@@ -1233,6 +1234,8 @@ void LoosenBounds(FileBounds* InBounds) {
 OptimizationParameter* ReadParameters() {
 	OptimizationParameter* NewParameters = new OptimizationParameter;
 	//Study parameters
+	NewParameters->MinimumTargetFlux = atof(GetParameter("minimum_target_flux").data());
+	NewParameters->DeltaGSlack = atof(GetParameter("deltagslack").data());
 	NewParameters->omega = atof(GetParameter("omega").data());
 	NewParameters->alpha = atof(GetParameter("alpha").data());
 	NewParameters->ScalePenaltyByFlux = GetParameter("scale penalty by flux").compare("1") == 0;
@@ -1259,6 +1262,9 @@ OptimizationParameter* ReadParameters() {
 	NewParameters->DeletionOptimization = (GetParameter("optimize deletions").compare("1") == 0);
 	NewParameters->MinimizeDeltaGError = (GetParameter("minimize deltaG error").compare("1") == 0);
 	NewParameters->AbundanceConstraint = (GetParameter("add abundance constraint").compare("1") == 0);
+	NewParameters->ReactionKOSensitivityAnalysis = (GetParameter("calculate reaction knockout sensitivity").compare("1") == 0);
+	NewParameters->MaximizeActiveReactions = (GetParameter("maximize active reactions").compare("1") == 0);
+
 
 	//Variable use parameters
 	NewParameters->ReactionsUse = (GetParameter("Reactions use variables").compare("1") == 0);
@@ -1318,7 +1324,7 @@ OptimizationParameter* ReadParameters() {
 	NewParameters->PrintSolutions = true;
 	NewParameters->ClearSolutions = true;
 
-	if (GetParameter("Simultaneous gapfill").compare("1") == 0 || NewParameters->TranscriptomeAnalysis) {
+	if (GetParameter("Simultaneous gapfill").compare("1") == 0 || NewParameters->TranscriptomeAnalysis || NewParameters->ReactionKOSensitivityAnalysis || NewParameters->MaximizeActiveReactions) {
 		if (NewParameters->ReactionsUse) {
 			NewParameters->BinaryReactionSlackVariable = true;
 		} else {
@@ -2325,6 +2331,10 @@ string GetMFAVariableName(MFAVariable* InVariable) {
 	return TypeName;
 }
 
+MFAVariable* GetVariableByName(string name) {
+	return variableNames[name];
+}
+
 string GetConstraintName(LinEquation* InEquation) {
 	string Name;
 	string Compartment;
@@ -2454,6 +2464,8 @@ OptSolutionData* ParseSCIPSolution(string Filename,vector<MFAVariable*> Variable
 				if (VarIndex <= int(NewSolution->SolutionData.size())) {
 					NewSolution->SolutionData[VarIndex-1] = atof((*Strings)[1].data());
 				}
+			} else if (Strings->size() >= 2 && GetVariableByName((*Strings)[0]) != NULL) {
+				NewSolution->SolutionData[GetVariableByName((*Strings)[0])->Index] = atof((*Strings)[1].data());
 			}
 		}
 		delete Strings;

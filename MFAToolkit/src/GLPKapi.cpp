@@ -298,7 +298,11 @@ int GLPKAddConstraint(LinEquation* InEquation) {
 	double* Coeff = new double[int(InEquation->Variables.size())+1];
 	for (int i=0; i < int(InEquation->Variables.size()); i++) {
 		if (InEquation->Variables[i]->Index < NumColumns) {
-			Coeff[i+1] = InEquation->Coefficient[i];
+			if (InEquation->Variables[i]->Exclude) {
+				Coeff[i+1] = 0;
+			} else {
+				Coeff[i+1] = InEquation->Coefficient[i];
+			}
 			Indecies[i+1] = InEquation->Variables[i]->Index+1;
 		} else {
 			FErrorFile() << "Variable index found in constraint is out of the range found in GLPK problem" << endl;

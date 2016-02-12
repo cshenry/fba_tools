@@ -310,7 +310,7 @@ sub func_build_metabolic_model {
 }
 
 sub func_gapfill_metabolic_model {
-	my ($self,$params,$model) = @_;
+	my ($self,$params,$model,$source_model) = @_;
 	$params = $self->util_validate_args($params,["workspace","fbamodel_id"],{
     	fbamodel_workspace => $params->{workspace},
     	media_id => undef,
@@ -347,8 +347,7 @@ sub func_gapfill_metabolic_model {
     print "Retrieving ".$params->{media_id}." media.\n";
     my $media = $self->util_kbase_store()->get_object($params->{media_workspace}."/".$params->{media_id});
     print "Preparing flux balance analysis problem.\n";
-    my $source_model;
-    if (defined($params->{source_fbamodel_id})) {
+    if (defined($params->{source_fbamodel_id}) && !defined($source_model)) {
 		$source_model = $self->util_kbase_store()->get_object($params->{source_fbamodel_workspace}."/".$params->{source_fbamodel_id});
 	}
 	my $gfs = $model->gapfillings();
@@ -451,7 +450,7 @@ sub func_run_flux_balance_analysis {
     	Bio::KBase::ObjectAPI::utilities::error("FBA failed with no solution returned!");
     }    
     print "Saving FBA results.\n";
-    my $wsmeta = $self->util_kbase_store()->save_object($model,$params->{workspace}."/".$params->{fba_output_id});
+    my $wsmeta = $self->util_kbase_store()->save_object($fba,$params->{workspace}."/".$params->{fba_output_id});
 	return {
 		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id}
 	};
@@ -719,7 +718,9 @@ sub func_propagate_model_to_new_genome {
     });
 	#Getting genome
 	print "Retrieving model.\n";
-	my $model = $self->util_kbase_store()->get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+	my $source_model = $self->util_kbase_store()->get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+	my $model = $source_model->cloneObject();
+	$model->parent($source_model->parent());
 	print "Retrieving proteome comparison.\n";
 	my $protcomp = $self->util_kbase_store()->get_object($params->{proteincomparison_workspace}."/".$params->{proteincomparison_id});
 	print "Translating model.\n";
@@ -749,8 +750,10 @@ sub func_propagate_model_to_new_genome {
 			fbamodel_id => $params->{fbamodel_output_id},
 			fbamodel_output_id => $params->{fbamodel_output_id},
 			media_workspace => $params->{media_workspace},
-			media_id => $params->{media_id}
-		},$model);
+			media_id => $params->{media_id},
+			source_fbamodel_id => $params->{fbamodel_id},
+    		source_fbamodel_workspace => $params->{fbamodel_workspace}
+		},$model,$source_model);
 	} else {
 		#If not gapfilling, then we just save the model directly
 		$output->{number_gapfilled_reactions} = 0;
@@ -771,33 +774,45 @@ sub func_simulate_growth_on_phenotype_data {
 		feature_ko_list => [],
 		reaction_ko_list => [],
 		custom_bound_list => [],
-		media_supplement_list => []
+		media_supplement_list => [],
+		all_transporters => 0,
+		positive_transporters => 0,
+		gapfill_phenotypes => 0
     });
     if (!defined($model)) {
     	print "Retrieving model.\n";
 		$model = $self->util_kbase_store()->get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
     }
-    my $expseries;
-    if (defined($params->{expseries_id})) {
-    	print "Retrieving expression matrix.\n";
-    	$expseries = $self->util_kbase_store()->get_object($params->{expseries_workspace}."/".$params->{expseries_id});
-    }
-    if (!defined($params->{media_id})) {
-    	$params->{media_id} = "Complete";
-    	$params->{media_workspace} = "KBaseMedia";
-    }
+    print "Retrieving phenotype set.\n";
+    my $pheno = $self->util_kbase_store()->get_object($params->{phenotypeset_workspace}."/".$params->{phenotypeset_id});
+    if ( $params->{all_transporters} ) {
+		$model->addPhenotypeTransporters({phenotypes => $pheno,positiveonly => 0});
+	} elsif ( $params->{positive_transporters} ) {
+		$model->addPhenotypeTransporters({phenotypes => $pheno,positiveonly => 1});
+	}
     print "Retrieving ".$params->{media_id}." media.\n";
-    my $media = $self->util_kbase_store()->get_object($params->{media_workspace}."/".$params->{media_id});
+    my $media = $self->util_kbase_store()->get_object("KBaseMedia/Complete");
     print "Preparing flux balance analysis problem.\n";
-    
-    
+    my $fba;
+    if ($params->{gapfill_phenotypes} == 0) {
+    	$fba = $self->util_build_fba($params,$model,$media,$params->{phenotypesim_output_id}.".fba",0,0,undef);
+    } else {
+    	$fba = $self->util_build_fba($params,$model,$media,$params->{phenotypesim_output_id}.".fba",1,1,undef,1);
+    }
+    $fba->phenotypeset_ref($pheno->_reference());
+    $fba->phenotypeset($pheno);
     print "Running flux balance analysis problem.\n";
-    
-    
+    $fba->runFBA();
+	if (!defined($fba->{_tempphenosim})) {
+    	Bio::KBase::ObjectAPI::utilities::error("Simulation of phenotypes failed to return results from FBA!");
+	}
     print "Saving FBA object with gapfilling sensitivity analysis and flux.\n";
-    #$wsmeta = $self->util_kbase_store()->save_object($pheno,$params->{workspace}."/".$params->{phenotypesim_output_id}.".".$gfid);
-	#$output->{new_phenotypesim_ref} = $params->{workspace}."/".$params->{phenotypesim_output_id}.".".$gfid;
-	#return $output;
+    my $wsmeta = $self->util_kbase_store()->save_object($fba->phenotypesimulationset(),$params->{workspace}."/".$params->{phenotypesim_output_id});
+    $fba->phenotypesimulationset_ref($fba->phenotypesimulationset()->_reference());
+    $wsmeta = $self->util_kbase_store()->save_object($fba,$params->{workspace}."/".$params->{phenotypesim_output_id}.".fba",{hidden => 1});
+    return {
+		new_phenotypesim_ref => $params->{workspace}."/".$params->{phenotypesim_output_id}
+	};
 }
 
 sub func_merge_metabolic_models_into_community_model {

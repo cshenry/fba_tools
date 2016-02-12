@@ -3958,8 +3958,13 @@ void Species::CreateMFAVariables(OptimizationParameter* InParameters) {
 				NewVariable->Compartment = MapIT->second->Compartment->Index;
 				NewVariable->Type = POTENTIAL;
 				MapIT->second->MFAVariables[POTENTIAL] = NewVariable;
-				NewVariable->LowerBound = -InParameters->MaxPotential;
-				NewVariable->UpperBound = InParameters->MaxPotential;
+				if (this->FEstDeltaG() != FLAG) {
+					NewVariable->LowerBound = this->FEstDeltaG() - InParameters->DeltaGSlack + -8.180523005;
+					NewVariable->UpperBound = this->FEstDeltaG() + InParameters->DeltaGSlack + -1.363420501;
+				} else {
+					NewVariable->LowerBound = -InParameters->MaxPotential;
+					NewVariable->UpperBound = InParameters->MaxPotential;
+				}
 				if (!InParameters->SimpleThermoConstraints) {
 					if (FFormula().compare("H2O") == 0) {
 						NewVariable->LowerBound = AdjustedDeltaG(GetCompartment(NewVariable->Compartment)->IonicStrength,GetCompartment(NewVariable->Compartment)->pH,InParameters->Temperature);
@@ -4104,6 +4109,9 @@ void Species::BuildSpeciesConstraints(OptimizationParameter* InParameters,MFAPro
 				InProblem->AddConstraint(NewConstraint);
 			}
 		}
+	}
+	if (this->Compartments[GetCompartment("e")->Index] != NULL && this->Compartments[GetCompartment("e")->Index]->MFAVariables[POTENTIAL] != NULL) {
+
 	}
 }
 

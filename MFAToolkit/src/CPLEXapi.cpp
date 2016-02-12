@@ -467,7 +467,11 @@ int CPLEXAddConstraint(LinEquation* InEquation) {
 			RowInd = new int[int(InEquation->Variables.size())];
 			Coeff = new double[int(InEquation->Variables.size())];
 			for (int i=0; i < int(InEquation->Variables.size()); i++) {
-				Coeff[i] = InEquation->Coefficient[i];
+				if (InEquation->Variables[i]->Exclude) {
+					Coeff[i] = 0;
+				} else {
+					Coeff[i] = InEquation->Coefficient[i];
+				}
 				RowInd[i] = 0;
 				ColInd[i] = InEquation->Variables[i]->Index;
 			}
@@ -544,11 +548,13 @@ int CPLEXAddConstraint(LinEquation* InEquation) {
 			}
 			//Next I set all of the nonzero coefficients according to the input equation
 			for (int i=0; i < int(InEquation->Variables.size()); i++) {
-				Status = CPXchgcoef (CPLEXenv, CPLEXModel, InEquation->Index, InEquation->Variables[i]->Index, InEquation->Coefficient[i]);
-				if (Status) {
-					FErrorFile() << "Failed to change constraint: " << InEquation->Index << endl;
-					FlushErrorFile();
-					return FAIL;
+				if (!InEquation->Variables[i]->Exclude) {
+					Status = CPXchgcoef (CPLEXenv, CPLEXModel, InEquation->Index, InEquation->Variables[i]->Index, InEquation->Coefficient[i]);
+					if (Status) {
+						FErrorFile() << "Failed to change constraint: " << InEquation->Index << endl;
+						FlushErrorFile();
+						return FAIL;
+					}
 				}
 			}
 			

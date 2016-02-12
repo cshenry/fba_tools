@@ -191,14 +191,34 @@ sub get_objects {
 				if ($type eq "FBAModel") {
 					if (defined($self->cache()->{$newrefs->[$i]}->template_ref())) {
 						if ($self->cache()->{$newrefs->[$i]}->template_ref() =~ m/(\w+)\/(\w+)\/\d+/) {
-							$self->cache()->{$newrefs->[$i]}->template_ref($1."/".$2);
+							my $output = $self->workspace()->get_object_info([{
+								"ref" => $self->cache()->{$newrefs->[$i]}->template_ref()
+							}],0);
+							if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
+								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramPosModelTemplate");
+							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramNegModelTemplate") {
+								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
+							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "CoreModelTemplate ") {
+								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
+							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
+								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/PlantModelTemplate");
+							}
 						}
 					}
 					if (defined($self->cache()->{$newrefs->[$i]}->template_refs())) {
 						my $temprefs = $self->cache()->{$newrefs->[$i]}->template_refs();
-						for (my $i=0; $i < @{$temprefs}; $i++) {
-							if ($temprefs->[$i] =~ m/(\w+)\/(\w+)\/\d+/) {
-								$temprefs->[$i] = $1."/".$2;
+						for (my $j=0; $j < @{$temprefs}; $j++) {
+							my $output = $self->workspace()->get_object_info([{
+								"ref" => $temprefs->[$j]
+							}],0);
+							if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
+								$temprefs->[$j] = "NewKBaseModelTemplates/GramPosModelTemplate";
+							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramNegModelTemplate") {
+								$temprefs->[$j] = "NewKBaseModelTemplates/GramNegModelTemplate";
+							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "CoreModelTemplate ") {
+								$temprefs->[$j] = "NewKBaseModelTemplates/GramNegModelTemplate";
+							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
+								$temprefs->[$j] = "NewKBaseModelTemplates/PlantModelTemplate";
 							}
 						}
 					}

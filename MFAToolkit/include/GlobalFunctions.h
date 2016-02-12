@@ -148,6 +148,8 @@ string ReverseMapString(string InMap);
 
 string GetMFAVariableName(MFAVariable* InVariable);
 
+MFAVariable* GetVariableByName(string name);
+
 string GetConstraintName(LinEquation* InEquation);
 
 OptSolutionData* ParseSCIPSolution(string Filename,vector<MFAVariable*> Variables);
@@ -205,7 +207,7 @@ struct MFAVariable {
 	bool Loaded;
 	bool Mark;
 	string Name;
-
+	bool Exclude;
 	bool Primal;
 
 	LinEquation* DualConstraint;
@@ -313,6 +315,8 @@ struct OptimizationParameter {
 	bool PerformIntervalKO;
 	bool PerformIntervalStrainExperiments;
 	bool PerformGeneStrainExperiments;
+	bool MaximizeActiveReactions;
+	bool ReactionKOSensitivityAnalysis;
 	bool OptimizeMediaWhenZero;
 	bool DoRecursiveMILPStudy;
 	bool ExcludeCurrentMedia;
@@ -342,6 +346,8 @@ struct OptimizationParameter {
 	//Indicates that a gene minimization study should be performed
 	bool GeneOptimization;
 
+	double MinimumTargetFlux;
+	double DeltaGSlack;
 	double Temperature;
 	double MaxFlux;
 	double MaxPotential;
@@ -408,6 +414,7 @@ struct ProblemState {
 
 	vector<double> LowerBound;
 	vector<double> UpperBound;
+	vector<bool> Exclude;
 	vector<MFAVariable*> Variables;
 	
 	vector<double> RHS;

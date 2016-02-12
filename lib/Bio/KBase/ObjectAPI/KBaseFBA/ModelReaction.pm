@@ -38,7 +38,7 @@ has genEquationCode => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass =
 has revGenEquationCode => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildgenrevequationcode' );
 has equationFormula => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildequationformula' );
 has complexString => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcomplexString' );
-has stoichiometry => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstoichiometry' );
+has stoichiometry => ( is => 'rw', isa => 'ArrayRef', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstoichiometry' );
 
 has reaction => (is => 'rw', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_reaction', clearer => 'clear_reaction', isa => 'Ref', weak_ref => 1);
 
@@ -289,7 +289,11 @@ sub _buildcomplexString {
 }
 sub _buildstoichiometry {
 	my ($self) = @_;
-	return $self->createEquation({format=>"id",stoichiometry=>1});
+	my $stoichiometry = [];
+	foreach my $reagent (@{$self->modelReactionReagents()}) {
+		push(@{$stoichiometry},[$reagent->coefficient(),$reagent->modelcompound()->name(),$reagent->modelcompound()->id()]);
+	}
+	return $stoichiometry;
 }
 
 #***********************************************************************************************************

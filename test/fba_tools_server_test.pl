@@ -172,7 +172,7 @@ $tester->delete_test_workspace();
 		$output = $self->test_harness("run_flux_balance_analysis",{
 			fbamodel_id => "draft_complete_gapfill",
 			target_reaction => "bio1",
-			fba_output_id => "draft_complete_gapfill_fba",
+			fba_output_id => "draft_complete_gapfill_exp_fba",
 			workspace => $self->{ws_name},
 			fva => 1,
 			minimize_flux => 1,
