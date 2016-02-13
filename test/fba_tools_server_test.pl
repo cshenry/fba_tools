@@ -151,7 +151,7 @@ $tester->delete_test_workspace();
 			number_of_solutions => 1,
 			expseries_id => "shewanella_expression_data",
 			expseries_workspace => "chenry:1454960620516",
-			exp_condition => "BU21_8.CEL.gz",
+			expression_condition => "BU21_8.CEL.gz",
 			exp_threshold_percentile => 0.5,
 			exp_threshold_margin => 0.1,
 			activation_coefficient => 0.1
@@ -181,7 +181,7 @@ $tester->delete_test_workspace();
 			all_reversible => 0,
 			expseries_id => "shewanella_expression_data",
 			expseries_workspace => "chenry:1454960620516",
-			exp_condition => "BU21_8.CEL.gz",
+			expression_condition => "BU21_8.CEL.gz",
 			exp_threshold_percentile => 0.5,
 			exp_threshold_margin => 0.1,
 			activation_coefficient => 0.1
@@ -208,7 +208,7 @@ $tester->delete_test_workspace();
 			workspace => $self->{ws_name},
 			expseries_id => "shewanella_expression_data",
 			expseries_workspace => "chenry:1454960620516",
-			exp_condition => "BU21_8.CEL.gz",
+			expression_condition => "BU21_8.CEL.gz",
 			exp_threshold_percentile => 0.5,
 			exp_threshold_margin => 0.1,
 			activation_coefficient => 0.1
@@ -227,7 +227,7 @@ $tester->delete_test_workspace();
 			all_reversible => 0,
 			expseries_id => "shewanella_expression_data",
 			expseries_workspace => "chenry:1454960620516",
-			exp_condition => "BU21_8.CEL.gz",
+			expression_condition => "BU21_8.CEL.gz",
 			exp_threshold_percentile => 0.5,
 			exp_threshold_margin => 0.1,
 			activation_coefficient => 0.1
@@ -245,7 +245,7 @@ $tester->delete_test_workspace();
 			fbamodel_id_list => ["translated_SB2B_gapfilled_model","draft_complete_gapfill"],
 			fbamodel_output_id => "Community_model",
 			workspace => $self->{ws_name},
-			mixed_bag_model => 0
+			mixed_bag_model => 1
 		},"merging draft and propated model into community model",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");
 		
 		$output = $self->test_harness("gapfill_metabolic_model",{

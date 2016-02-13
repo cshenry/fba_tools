@@ -78,20 +78,20 @@ sub util_build_fba {
     if (defined($params->{expseries_id})) {
     	print "Retrieving expression matrix.\n";
     	$exp_matrix = $self->util_kbase_store()->get_object($params->{expseries_workspace}."/".$params->{expseries_id});
-    	if (!defined($params->{exp_condition})) {
+    	if (!defined($params->{expression_condition})) {
 			Bio::KBase::ObjectAPI::utilities::error("Input must specify the column to select from the expression matrix");
 		}
 		
     	my $float_matrix = $exp_matrix->{data};
 	    my $exp_sample_col = -1;
 	    for (my $i=0; $i < @{$float_matrix->{"col_ids"}}; $i++) {
-			if ($float_matrix->{col_ids}->[$i] eq $params->{exp_condition}) {
+			if ($float_matrix->{col_ids}->[$i] eq $params->{expression_condition}) {
 			    $exp_sample_col = $i;
 			    last;
 			}
 	    }
 	    if ($exp_sample_col < 0) {
-			Bio::KBase::ObjectAPI::utilities::error("No column named ".$params->{exp_condition}." in expression matrix.");
+			Bio::KBase::ObjectAPI::utilities::error("No column named ".$params->{expression_condition}." in expression matrix.");
 	    }
 	    for (my $i=0; $i < @{$float_matrix->{row_ids}}; $i++) {
 			$exphash->{$float_matrix->{row_ids}->[$i]} = $float_matrix->{values}->[$i]->[$exp_sample_col];
@@ -215,7 +215,7 @@ sub util_build_fba {
 			$input->{expression_threshold_percentile} = $params->{exp_threshold_percentile};
 			$input->{kappa} = $params->{exp_threshold_margin};
 			$fbaobj->expression_matrix_ref($params->{expseries_workspace}."/".$params->{expseries_id});
-			$fbaobj->expression_matrix_column($params->{exp_condition});	
+			$fbaobj->expression_matrix_column($params->{expression_condition});	
 		}
 		if (defined($source_model)) {
     		$input->{source_model} = $source_model;
@@ -242,7 +242,7 @@ sub func_build_metabolic_model {
 		media_supplement_list => [],
 		expseries_id => undef,
 		expseries_workspace => $params->{workspace},
-		exp_condition => undef,
+		expression_condition => undef,
 		exp_threshold_percentile => 0.5,
 		exp_threshold_margin => 0.1,
 		activation_coefficient => 0.5,
@@ -285,7 +285,7 @@ sub func_build_metabolic_model {
 			media_supplement_list => $params->{media_supplement_list},
 			expseries_id => $params->{expseries_id},
 			expseries_workspace => $params->{expseries_workspace},
-			exp_condition => $params->{exp_condition},
+			expression_condition => $params->{expression_condition},
 			exp_threshold_percentile => $params->{exp_threshold_percentile},
 			exp_threshold_margin => $params->{exp_threshold_margin},
 			activation_coefficient => $params->{activation_coefficient},
@@ -327,7 +327,7 @@ sub func_gapfill_metabolic_model {
 		media_supplement_list => [],
 		expseries_id => undef,
     	expseries_workspace => $params->{workspace},
-    	exp_condition => undef,
+    	expression_condition => undef,
     	exp_threshold_percentile => 0.5,
     	exp_threshold_margin => 0.1,
     	activation_coefficient => 0.5,
@@ -405,7 +405,7 @@ sub func_run_flux_balance_analysis {
 		media_supplement_list => [],
 		expseries_id => undef,
 		expseries_workspace => $params->{workspace},
-		exp_condition => undef,
+		expression_condition => undef,
 		exp_threshold_percentile => 0.5,
 		exp_threshold_margin => 0.1,
 		activation_coefficient => 0.5,
@@ -707,7 +707,7 @@ sub func_propagate_model_to_new_genome {
 		media_supplement_list => [],
 		expseries_id => undef,
 		expseries_workspace => $params->{workspace},
-		exp_condition => undef,
+		expression_condition => undef,
 		exp_threshold_percentile => 0.5,
 		exp_threshold_margin => 0.1,
 		activation_coefficient => 0.5,
@@ -738,7 +738,7 @@ sub func_propagate_model_to_new_genome {
 			media_supplement_list => $params->{media_supplement_list},
 			expseries_id => $params->{expseries_id},
 			expseries_workspace => $params->{expseries_workspace},
-			exp_condition => $params->{exp_condition},
+			expression_condition => $params->{expression_condition},
 			exp_threshold_percentile => $params->{exp_threshold_percentile},
 			exp_threshold_margin => $params->{exp_threshold_margin},
 			activation_coefficient => $params->{activation_coefficient},
@@ -927,7 +927,7 @@ BuildMetabolicModelParams is a reference to a hash where the following keys are 
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -976,7 +976,7 @@ BuildMetabolicModelParams is a reference to a hash where the following keys are 
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1076,7 +1076,7 @@ GapfillMetabolicModelParams is a reference to a hash where the following keys ar
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1126,7 +1126,7 @@ GapfillMetabolicModelParams is a reference to a hash where the following keys ar
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1228,7 +1228,7 @@ RunFluxBalanceAnalysisParams is a reference to a hash where the following keys a
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1284,7 +1284,7 @@ RunFluxBalanceAnalysisParams is a reference to a hash where the following keys a
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1477,7 +1477,7 @@ PropagateModelToNewGenomeParams is a reference to a hash where the following key
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1525,7 +1525,7 @@ PropagateModelToNewGenomeParams is a reference to a hash where the following key
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -2458,7 +2458,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2490,7 +2490,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2571,7 +2571,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2604,7 +2604,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2687,7 +2687,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2728,7 +2728,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2876,7 +2876,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2908,7 +2908,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
