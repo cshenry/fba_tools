@@ -250,7 +250,7 @@ $tester->delete_test_workspace();
 		
 		$output = $self->test_harness("gapfill_metabolic_model",{
 			fbamodel_id => "Community_model",
-			target_reaction => "bo1",
+			target_reaction => "bio1",
 			media_id => "Lactate_minimal_media",
 			media_workspace => "chenry:1454960620516",
 			fbamodel_output_id => "gapfilled_community_model",

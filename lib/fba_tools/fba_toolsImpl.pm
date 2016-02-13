@@ -717,8 +717,8 @@ sub func_propagate_model_to_new_genome {
 		number_of_solutions => 1
     });
 	#Getting genome
-	print "Retrieving model.\n";
 	my $source_model = $self->util_kbase_store()->get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+	my $rxns = $source_model->modelreactions();
 	my $model = $source_model->cloneObject();
 	$model->parent($source_model->parent());
 	print "Retrieving proteome comparison.\n";
@@ -799,6 +799,7 @@ sub func_simulate_growth_on_phenotype_data {
     } else {
     	$fba = $self->util_build_fba($params,$model,$media,$params->{phenotypesim_output_id}.".fba",1,1,undef,1);
     }
+    $fba->{_phenosimid} = $params->{phenotypesim_output_id};
     $fba->phenotypeset_ref($pheno->_reference());
     $fba->phenotypeset($pheno);
     print "Running flux balance analysis problem.\n";
@@ -848,7 +849,8 @@ sub func_merge_metabolic_models_into_community_model {
 	print "Merging models.\n";
 	my $genomeObj = $commdl->merge_models({
 		models => $params->{fbamodel_id_list},
-		mixed_bag_model => $params->{mixed_bag_model}
+		mixed_bag_model => $params->{mixed_bag_model},
+		fbamodel_output_id => $params->{fbamodel_output_id}
 	});
 	print "Saving model and combined genome.\n";
 	my $wsmeta = $self->util_kbase_store()->save_object($genomeObj,$params->{workspace}."/".$params->{fbamodel_output_id}.".genome");

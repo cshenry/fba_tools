@@ -1153,7 +1153,6 @@ sub createJobDirectory {
 					$rxnhash->{$id} = $rxn;
 					my $reactants = "";
 					my $products = "";
-					print "Reaction:".$id."\n";
 					my $rgts = $rxn->modelReactionReagents();
 					for (my $j=0;$j < @{$rgts}; $j++) {
 						my $rgt = $rgts->[$j];
@@ -2430,11 +2429,12 @@ sub parseFBAPhenotypeOutput {
 			return Bio::KBase::ObjectAPI::utilities::ERROR("output file did not contain necessary data");
 		}
 		$self->{_tempphenosim} = Bio::KBase::ObjectAPI::KBasePhenotypes::PhenotypeSimulationSet->new({
-			id => Bio::KBase::ObjectAPI::utilities::get_new_id($self->phenotypeset()->id().".phenosim"),
+			id => $self->{_phenosimid},
 			fbamodel_ref => $self->fbamodel()->_reference(),
 			phenotypeset_ref => $self->phenotypeset_ref(),
 			phenotypeSimulations => []
 		});
+		$self->{_tempphenosim}->parent($self->parent());
 		$self->phenotypesimulationset_ref("");
 		$self->phenotypesimulationset($self->{_tempphenosim});
 		my $phenoOutputHash;
@@ -3079,10 +3079,12 @@ sub parseGapfillingOutput {
 		my $temparray = [split(/\//,$tbl->{data}->[0]->[3])];
 		push(@{$self->{outputfiles}->{gapfillstats}},"Gapfilled:".$temparray->[1]);
 		#print "Number of gapfilled reactions [includes low expression reactions that must carry flux] (lower better): ".$temparray->[1]."\n";
-		for my $rxn (split ";", $tbl->{data}->[0]->[7]) {
-			if ($rxn =~ /^(.)(.+)/) {
-				if (defined($rxnhash->{$2})) {
-					#print "\t", $rxn, "\t", $rxnhash->{$2}->name(), "\t", fluxForRxn($self, $rxnhash->{$2}), "\t", $rxnhash->{$2}->gprString(), "\n";
+		if (defined($tbl->{data}->[0]->[7])) {
+			for my $rxn (split ";", $tbl->{data}->[0]->[7]) {
+				if ($rxn =~ /^(.)(.+)/) {
+					if (defined($rxnhash->{$2})) {
+						#print "\t", $rxn, "\t", $rxnhash->{$2}->name(), "\t", fluxForRxn($self, $rxnhash->{$2}), "\t", $rxnhash->{$2}->gprString(), "\n";
+					}
 				}
 			}
 		}
@@ -3092,29 +3094,33 @@ sub parseGapfillingOutput {
 		$temparray = [split(/\//,$tbl->{data}->[0]->[5])];
 		push(@{$self->{outputfiles}->{gapfillstats}},"Inactive on:".$temparray->[1]);
 		#print "High expression reactions that were not activated [do not carry flux] (lower better): ".$temparray->[1]."\n";
-		for my $rxn (split ";", $tbl->{data}->[0]->[9]) {
-			if (defined($rxnhash->{$rxn})) {
-				#print "\t", $rxn, "\t", $rxnhash->{$rxn}->name(), "\t", $rxnhash->{$rxn}->gprString(), "\n";
+		if (defined($tbl->{data}->[0]->[9])) {
+			for my $rxn (split ";", $tbl->{data}->[0]->[9]) {
+				if (defined($rxnhash->{$rxn})) {
+					#print "\t", $rxn, "\t", $rxnhash->{$rxn}->name(), "\t", $rxnhash->{$rxn}->gprString(), "\n";
+				}
 			}
 		}
-		my $currrxns = [split(/;/,$tbl->{data}->[0]->[7])];
 		push(@{$self->{outputfiles}->{gapfillrxns}},"Active reactions:".$tbl->{data}->[0]->[7]);
 		my $count = [0];
-		for (my $i=0; $i < @{$currrxns}; $i++) {
-			if ($currrxns->[$i] =~ /^(.)(.+)/) {
-				my $rxnid = $2;
-				my $sign = $1;
-				if (defined($rxnhash->{$rxnid})) {
-					if ($rxnhash->{$rxnid}->direction() eq "=") {
-						$count->[0]++;
-					}
-					if ($sign eq "-") {
-						if ($rxnhash->{$rxnid}->direction() eq "<") {
+		if (defined($tbl->{data}->[0]->[7])) {
+			my $currrxns = [split(/;/,$tbl->{data}->[0]->[7])];
+			for (my $i=0; $i < @{$currrxns}; $i++) {
+				if ($currrxns->[$i] =~ /^(.)(.+)/) {
+					my $rxnid = $2;
+					my $sign = $1;
+					if (defined($rxnhash->{$rxnid})) {
+						if ($rxnhash->{$rxnid}->direction() eq "=") {
 							$count->[0]++;
 						}
-					} else {
-						if ($rxnhash->{$rxnid}->direction() eq ">") {
-							$count->[0]++;
+						if ($sign eq "-") {
+							if ($rxnhash->{$rxnid}->direction() eq "<") {
+								$count->[0]++;
+							}
+						} else {
+							if ($rxnhash->{$rxnid}->direction() eq ">") {
+								$count->[0]++;
+							}
 						}
 					}
 				}

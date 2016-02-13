@@ -1183,7 +1183,7 @@ sub add_gapfilling {
 					for (my $m=0; $m < @{$prots}; $m++) {
 						$mdlrxn->remove("modelReactionProteins",$prots->[$m]);
 					}
-					$mdlrxn->direction() = $rxn->direction();
+					$mdlrxn->direction($rxn->direction());
 					my $rgts = $mdlrxn->modelReactionReagents();
 					for (my $m=0; $m < @{$rgts}; $m++) {
 						if (!defined($self->getObject("modelcompounds",$rgts->[$m]->modelcompound()->id()))) {
@@ -1361,10 +1361,10 @@ sub searchForCompartment {
 
 sub merge_models {
 	my $self = shift;
-	my $parameters = Bio::KBase::ObjectAPI::utilities::args(["models"], {}, @_);
+	my $parameters = Bio::KBase::ObjectAPI::utilities::args(["models","fbamodel_output_id"], {mixed_bag_model => 0}, @_);
 	my $genomeObj = Bio::KBase::ObjectAPI::KBaseGenomes::Genome->new({
-		id => $parameters->{output_file}.".genome",
-		scientific_name => $parameters->{output_file}." genome",
+		id => $parameters->{fbamodel_output_id}.".genome",
+		scientific_name => $parameters->{fbamodel_output_id}." genome",
 		domain => "Community",
 		genetic_code => 11,
 		dna_size => 0,
@@ -1372,7 +1372,7 @@ sub merge_models {
 		contig_lengths => [],
 		contig_ids => [],
 		source => Bio::KBase::ObjectAPI::config::source(),
-		source_id => $parameters->{output_file}.".genome",
+		source_id => $parameters->{fbamodel_output_id}.".genome",
 		md5 => "",
 		taxonomy => "Community",
 		gc_content => 0,
@@ -1555,7 +1555,7 @@ sub merge_models {
 		if ($parameters->{mixed_bag_model} == 0) {
 			$primbio->add("biomasscompounds",{
 				modelcompound_ref => "~/modelcompounds/id/".$translation->{$biomassCpd->id()},
-				coefficient => -1*$parameters->{models}->[$i]->[1]/$totalAbundance
+				coefficient => -1/$totalAbundance
 			});
 		}
 	}
