@@ -1,12 +1,74 @@
 {
+   "categories" : [
+      "active"
+   ],
+   "name" : "compare_fba_solutions",
+   "contact" : "help@kbase.us",
+   "parameters" : [
+      {
+         "advanced" : false,
+         "field_type" : "text",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBA"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : true,
+         "optional" : false,
+         "id" : "fba_id_list"
+      },
+      {
+         "advanced" : false,
+         "id" : "fbacomparison_output_id",
+         "optional" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAComparison"
+            ],
+            "is_output_name" : true
+         },
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : false,
+         "field_type" : "text"
+      }
+   ],
+   "visible" : true,
+   "authors" : [
+      "chenry"
+   ],
    "job_id_output_field" : "docker",
+   "widgets" : {
+      "input" : null,
+      "output" : "kbaseTabTable"
+   },
+   "ver" : "1.0.0",
    "behavior" : {
       "service-mapping" : {
+         "input_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "workspace"
+            },
+            {
+               "target_property" : "fba_id_list",
+               "input_parameter" : "fba_id_list"
+            },
+            {
+               "target_property" : "fbacomparison_output_id",
+               "input_parameter" : "fbacomparison_output_id"
+            }
+         ],
+         "name" : "fba_tools",
          "url" : "",
          "output_mapping" : [
             {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "ws"
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
             },
             {
                "constant_value" : "KBaseFBA.FBAComparison",
@@ -17,69 +79,7 @@
                "input_parameter" : "fbacomparison_output_id"
             }
          ],
-         "method" : "compare_fba_solutions",
-         "input_mapping" : [
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "workspace"
-            },
-            {
-               "input_parameter" : "fba_id_list",
-               "target_property" : "fba_id_list"
-            },
-            {
-               "input_parameter" : "fbacomparison_output_id",
-               "target_property" : "fbacomparison_output_id"
-            }
-         ],
-         "name" : "fba_tools"
+         "method" : "compare_fba_solutions"
       }
-   },
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseTabTable"
-   },
-   "authors" : [
-      "chenry"
-   ],
-   "parameters" : [
-      {
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBA"
-            ]
-         },
-         "id" : "fba_id_list",
-         "advanced" : false,
-         "allow_multiple" : true,
-         "optional" : false,
-         "default_values" : [
-            ""
-         ],
-         "field_type" : "text"
-      },
-      {
-         "field_type" : "text",
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : false,
-         "advanced" : false,
-         "optional" : false,
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAComparison"
-            ],
-            "is_output_name" : true
-         },
-         "id" : "fbacomparison_output_id"
-      }
-   ],
-   "contact" : "help@kbase.us",
-   "name" : "compare_fba_solutions",
-   "categories" : [
-      "active"
-   ],
-   "visible" : true,
-   "ver" : "1.0.0"
+   }
 }
