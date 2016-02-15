@@ -1142,7 +1142,7 @@ sub func_compare_flux_with_expression {
 								    		pathwayName => $target_pathways->[$i],
 		    								pathwayId => $pathwayhash->{$target_pathways->[$i]}->id(),
 									    	totalModelReactions => 0,
-									    	totalKEGGRxns => 0,
+									    	totalKEGGRxns => @{$rxns},
 										    totalRxnFlux => 0,
 										    gsrFluxPExpP => 0,
 										    gsrFluxPExpN => 0,
@@ -1154,6 +1154,7 @@ sub func_compare_flux_with_expression {
 								    	push(@{$all_analyses->[$cmpindex]->{pathways}},$allpathhash->{$cmpindex}->{$target_pathways->[$i]});
 				    				}
 				    				push(@{$allpathhash->{$cmpindex}->{$target_pathways->[$i]}->{reaction_list}},$rxnhash->{$modelrxns->[$j]->id()});
+				    				$allpathhash->{$cmpindex}->{$target_pathways->[$i]}->{totalModelReactions}++;
 				    			}
 				    		}
     					}
