@@ -1,0 +1,41 @@
+{
+  "name" : "View FBA Expression Comparison",
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : ["viewers"],
+  "widgets" : {
+    "input" : null,
+    "output" : "kbaseExpressionAnalysis"
+  },
+  "parameters" : [ {
+    "id" : "param0",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseFBA.FBAPathwayAnalysis" ]
+    }
+  } ],
+  "behavior" : {
+    "none" : {
+      "output_mapping" : [
+        {
+          "constant_value": "KBaseFBA.FBAPathwayAnalysis",
+          "target_property": "type"
+        },
+        {
+          "input_parameter": "param0",
+          "target_property": "obj"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "ws"
+        }
+      ]
+    }
+  }
+}

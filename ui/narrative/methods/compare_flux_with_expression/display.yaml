@@ -29,13 +29,13 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    estimate_threshold :
+    maximize_agreement :
         ui-name : |
-            Estimate threshold
+            Maximize agreement
         short-hint : |
-            Estimates threshold for gene expression based on a set of universal genes
+            Set the expression threshold to maximize agreement with flux data
         long-hint : |
-            Estimates threshold for gene expression based on a set of universal genes
+            Set the expression threshold to maximize agreement with flux data
 
 
     fbapathwayanalysis_output_id :
@@ -56,13 +56,13 @@ parameters :
             An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
 
 
-    exp_threshold_percentile :
+    estimate_threshold :
         ui-name : |
-            Expression threshold
+            Estimate threshold
         short-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+            Estimates threshold for gene expression based on a set of universal genes
         long-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+            Estimates threshold for gene expression based on a set of universal genes
 
 
     fba_id :
@@ -74,6 +74,15 @@ parameters :
             Flux balance analysis solution to be compared with expression values
 
 
+    exp_threshold_percentile :
+        ui-name : |
+            Expression threshold
+        short-hint : |
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+        long-hint : |
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+
+
     expression_condition :
         ui-name : |
             Expression condition
@@ -81,15 +90,6 @@ parameters :
             Specific condition in expression matrix that should be compared with reaction flux
         long-hint : |
             Specific condition in expression matrix that should be compared with reaction flux
-
-
-    maximize_agreement :
-        ui-name : |
-            Maximize agreement
-        short-hint : |
-            Set the expression threshold to maximize agreement with flux data
-        long-hint : |
-            Set the expression threshold to maximize agreement with flux data
 
 
 description : |

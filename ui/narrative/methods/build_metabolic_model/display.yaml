@@ -32,13 +32,31 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    expseries_id :
+    expression_condition :
         ui-name : |
-            Expression data set
+            Expression condition
         short-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
+            Specific condition in expression matrix to which reaction activity in FBA should be fit
         long-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
+            Specific condition in expression matrix to which reaction activity in FBA should be fit
+
+
+    comprehensive_gapfill :
+        ui-name : |
+            Comprehensive Gapfill
+        short-hint : |
+            Check this box to activate as many reactions as possible, rather than just the biomass objective function
+        long-hint : |
+            Check this box to activate as many reactions as possible, rather than just the biomass objective function
+
+
+    exp_threshold_percentile :
+        ui-name : |
+            Expression threshold
+        short-hint : |
+            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+        long-hint : |
+            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
 
 
     genome_id :
@@ -52,42 +70,15 @@ parameters :
             Genome ID for modeling
 
 
-    minimum_target_flux :
+    template_id :
         ui-name : |
-            Minimum reaction flux
+            Template model
         short-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
+            Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
         long-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-
-
-    media_supplement_list :
-        ui-name : |
-            Media supplement
-        short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-
-
-    comprehensive_gapfill :
-        ui-name : |
-            Comprehensive Gapfill
-        short-hint : |
-            Check this box to activate as many reactions as possible, rather than just the biomass objective function
-        long-hint : |
-            Check this box to activate as many reactions as possible, rather than just the biomass objective function
-
-
-    custom_bound_list :
-        ui-name : |
-            Custom flux bounds
-        short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
         placeholder : |
-            e.g. 0;rxn00001;5
+            Template model name
 
 
     activation_coefficient :
@@ -99,31 +90,13 @@ parameters :
             What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
 
 
-    exp_threshold_percentile :
+    thermodynamic_constraints :
         ui-name : |
-            Expression threshold
+            Thermodynamic constraints?
         short-hint : |
-            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+            Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
         long-hint : |
-            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-
-
-    number_of_solutions :
-        ui-name : |
-            Number of solutions
-        short-hint : |
-            An integer indicating how many solutions should be generated by the gapfilling
-        long-hint : |
-            An integer indicating how many solutions should be generated by the gapfilling
-
-
-    objective_fraction :
-        ui-name : |
-            Objective constraint
-        short-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
-        long-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+            Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
 
 
     media_id :
@@ -137,22 +110,22 @@ parameters :
             Growth condition for gapfilling
 
 
-    thermodynamic_constraints :
+    media_supplement_list :
         ui-name : |
-            Thermodynamic constraints?
+            Media supplement
         short-hint : |
-            Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
         long-hint : |
-            Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
 
 
-    expression_condition :
+    expseries_id :
         ui-name : |
-            Expression condition
+            Expression data set
         short-hint : |
-            Specific condition in expression matrix to which reaction activity in FBA should be fit
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
         long-hint : |
-            Specific condition in expression matrix to which reaction activity in FBA should be fit
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
 
 
     gapfill_model :
@@ -162,6 +135,15 @@ parameters :
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
         long-hint : |
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
+
+
+    objective_fraction :
+        ui-name : |
+            Objective constraint
+        short-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+        long-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
 
 
     fbamodel_output_id :
@@ -175,17 +157,6 @@ parameters :
             Output metabolic model name
 
 
-    template_id :
-        ui-name : |
-            Template model
-        short-hint : |
-            Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
-        long-hint : |
-            Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
-        placeholder : |
-            Template model name
-
-
     exp_threshold_margin :
         ui-name : |
             Expression uncertainty
@@ -193,6 +164,35 @@ parameters :
             Range of uncertainty for classification of reaction activity based on expression threshold
         long-hint : |
             Range of uncertainty for classification of reaction activity based on expression threshold
+
+
+    minimum_target_flux :
+        ui-name : |
+            Minimum reaction flux
+        short-hint : |
+            The minimum flux that the target reaction will have when the gapfilling is performed
+        long-hint : |
+            The minimum flux that the target reaction will have when the gapfilling is performed
+
+
+    custom_bound_list :
+        ui-name : |
+            Custom flux bounds
+        short-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        long-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        placeholder : |
+            e.g. 0;rxn00001;5
+
+
+    number_of_solutions :
+        ui-name : |
+            Number of solutions
+        short-hint : |
+            An integer indicating how many solutions should be generated by the gapfilling
+        long-hint : |
+            An integer indicating how many solutions should be generated by the gapfilling
 
 
 description : |

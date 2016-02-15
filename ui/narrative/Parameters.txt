@@ -99,6 +99,6 @@ compare_flux_with_expression	fba_id		0	0	0	KBaseFBA.FBA	0	FBA solution		Flux bal
 compare_flux_with_expression	expseries_id		0	0	0	KBaseFeatureValues.ExpressionMatrix	0	Expression data set		An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
 compare_flux_with_expression	expression_condition		0	0	0	text	0	Expression condition		Specific condition in expression matrix that should be compared with reaction flux
 compare_flux_with_expression	exp_threshold_percentile	0.5	0	0	0	float	0	Expression threshold		Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-compare_flux_with_expression	estimate_threshold	0	0	1	0	bool	0	Estimate threshold		Estimates threshold for gene expression based on a set of universal genes
-compare_flux_with_expression	maximize_agreement	0	0	1	0	bool	0	Maximize agreement		Set the expression threshold to maximize agreement with flux data
+compare_flux_with_expression	estimate_threshold	0	0	1	0	checkbox	0	Estimate threshold		Estimates threshold for gene expression based on a set of universal genes
+compare_flux_with_expression	maximize_agreement	0	0	1	0	checkbox	0	Maximize agreement		Set the expression threshold to maximize agreement with flux data
 compare_flux_with_expression	fbapathwayanalysis_output_id		0	0	0	KBaseFBA.FBAPathwayAnalysis	1	Output ID		ID where the results of the comparison will be saved
