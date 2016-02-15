@@ -21,6 +21,7 @@ use Bio::KBase::AuthToken;
 use Bio::KBase::workspace::Client;
 use Config::IniFiles;
 use Data::Dumper;
+use POSIX;
 use Bio::KBase::ObjectAPI::config;
 use Bio::KBase::ObjectAPI::utilities;
 use Bio::KBase::ObjectAPI::KBaseStore;
@@ -55,6 +56,26 @@ sub util_kbase_store {
 	return $self->{_kbase_store};
 }
 
+sub util_build_expression_hash {
+	my ($self,$exp_matrix,$exp_condition) = @_;
+	my $exphash = {};	
+    my $float_matrix = $exp_matrix->{data};
+	my $exp_sample_col = -1;
+	for (my $i=0; $i < @{$float_matrix->{"col_ids"}}; $i++) {
+		if ($float_matrix->{col_ids}->[$i] eq $exp_condition) {
+		    $exp_sample_col = $i;
+		    last;
+		}
+	}
+	if ($exp_sample_col < 0) {
+		Bio::KBase::ObjectAPI::utilities::error("No column named ".$exp_condition." in expression matrix.");
+	}
+	for (my $i=0; $i < @{$float_matrix->{row_ids}}; $i++) {
+		$exphash->{$float_matrix->{row_ids}->[$i]} = $float_matrix->{values}->[$i]->[$exp_sample_col];
+	}
+    return $exphash;
+}
+
 sub util_build_fba {
 	my ($self,$params,$model,$media,$id,$add_external_reactions,$make_model_reactions_reversible,$source_model,$gapfilling) = @_;
 	my $uptakelimits = {};
@@ -81,21 +102,7 @@ sub util_build_fba {
     	if (!defined($params->{expression_condition})) {
 			Bio::KBase::ObjectAPI::utilities::error("Input must specify the column to select from the expression matrix");
 		}
-		
-    	my $float_matrix = $exp_matrix->{data};
-	    my $exp_sample_col = -1;
-	    for (my $i=0; $i < @{$float_matrix->{"col_ids"}}; $i++) {
-			if ($float_matrix->{col_ids}->[$i] eq $params->{expression_condition}) {
-			    $exp_sample_col = $i;
-			    last;
-			}
-	    }
-	    if ($exp_sample_col < 0) {
-			Bio::KBase::ObjectAPI::utilities::error("No column named ".$params->{expression_condition}." in expression matrix.");
-	    }
-	    for (my $i=0; $i < @{$float_matrix->{row_ids}}; $i++) {
-			$exphash->{$float_matrix->{row_ids}->[$i]} = $float_matrix->{values}->[$i]->[$exp_sample_col];
-	    }
+		$exphash = $self->util_build_expression_hash($exp_matrix,$params->{expression_condition});
     }
     my $fbaobj = Bio::KBase::ObjectAPI::KBaseFBA::FBA->new({
 		id => $id,
@@ -858,6 +865,372 @@ sub func_merge_metabolic_models_into_community_model {
 	return {
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id}
 	};
+}
+
+sub func_compare_flux_with_expression {
+	my ($self,$params) = @_;
+    $params = $self->util_validate_args($params,["workspace","fba_id","expseries_id","expression_condition","fbapathwayanalysis_output_id"],{
+    	fba_workspace => $params->{workspace},
+    	expseries_workspace => $params->{workspace},
+    	exp_threshold_percentile => 0.5,
+    	estimate_threshold => 0,
+    	maximize_agreement => 0
+    });
+	print "Retrieving FBA solution.\n";
+	my $fb = $self->util_kbase_store()->get_object($params->{fba_workspace}."/".$params->{fba_id});
+   	print "Retrieving expression matrix.\n";
+   	my $em = $self->util_kbase_store()->get_object($params->{expseries_workspace}."/".$params->{expseries_id});
+	print "Retrieving FBA model.\n";
+	my $fm = $fb->fbamodel();
+	print "Retriveing genome.\n";
+	my $genome = $fm->genome();
+	print "Computing threshold based on always active genes (but will not be used unless requested).\n";
+	my $exphash = $self->util_build_expression_hash($em,$params->{expression_condition});
+	my $output = $genome->compute_gene_activity_threshold_using_faria_method($exphash);
+	if ($output->[2] < 30) {
+		print "Too few always-on genes recognized with nonzero expression for the reliable estimation of threshold.\n";
+		if ($params->{estimate_threshold} == 1) {
+			Bio::KBase::ObjectAPI::utilities::error("Threshold estimation selected, but too few always-active genes recognized to permit estimation.\n");
+		} else {
+			print "This is not a problem because threshold estimation was not explicitly requested in analysis.\n";
+		}
+	}
+	if ($params->{estimate_threshold} == 1) {
+		print "Expression threshold percentile for calling active genes set to:".100*$output->[1]."\n";
+		$params->{exp_threshold_percentile} = $output->[1];	
+	}
+	print "Computing the cutoff expression value to use to call genes active.\n";
+	my $sortedgenes = [sort { $exphash->{$a} <=> $exphash->{$b} } keys(%{$exphash})];
+	my $threshold_gene = @{$sortedgenes};
+	$threshold_gene = floor($params->{exp_threshold_percentile}*$threshold_gene);
+	$threshold_gene =  $sortedgenes->[$threshold_gene];
+	my $threshold_value = $exphash->{$threshold_gene};
+	print "Computing expression values for each reaction.\n";
+	my $modelrxns = $fm->modelreactions();
+	my $rxn_exp_hash = {};
+	my $rxn_flux_hash = {};
+	my $gapfill_hash = {};
+	my $fluxcount = 0;
+	my $gapfillcount = 0;
+	for (my $i=0; $i < @{$modelrxns}; $i++) {
+		$rxn_exp_hash->{$modelrxns->[$i]->id()} = $modelrxns->[$i]->reaction_expression($exphash);
+		if (@{$modelrxns->[$i]->modelReactionProteins()} == 0) {
+			$gapfill_hash->{$modelrxns->[$i]->id()} = 1;
+			$gapfillcount++;
+		}
+	}
+	my $rxnvar = $fb->FBAReactionVariables();
+	for (my $i=0; $i < @{$rxnvar}; $i++) {
+		if ($rxnvar->[$i]->variableType() eq "flux" && abs($rxnvar->[$i]->value()) > 0.000000001) {
+			if ($rxnvar->[$i]->modelreaction_ref() =~ m/\/([^\/]+)$/) {
+				$fluxcount++;
+				$rxn_flux_hash->{$1} = $rxnvar->[$i]->value();
+			}
+		}
+	}
+	my $noflux = @{$modelrxns} - $fluxcount - $gapfillcount;
+	print "Computing the ideal cutoff to maximize agreement with predicted flux.\n";
+	my $sortedrxns = [sort { $rxn_exp_hash->{$a} <=> $rxn_exp_hash->{$b} } keys(%{$rxn_exp_hash})]; 
+	my $bestindex = 0;
+	my $currentscore = 1.5*$fluxcount-$noflux;
+	my $idealcutoff = $currentscore;
+	my $bestpercentile;
+	my $unrealizedscore = $currentscore;
+	for (my $i=0; $i < @{$sortedrxns}; $i++) {
+		if ($currentscore > $idealcutoff) {
+			$bestindex = $i;
+			$idealcutoff = $currentscore;
+		}
+		if (defined($rxn_flux_hash->{$sortedrxns->[$i]})) {
+			$unrealizedscore = $unrealizedscore-1.5;
+		} else {
+			$unrealizedscore++;
+		}
+		if ($i >= 1 && $rxn_exp_hash->{$sortedrxns->[$i]} > $rxn_exp_hash->{$sortedrxns->[$i-1]}) {
+			$currentscore = $unrealizedscore;
+		}
+	}
+	$idealcutoff = $rxn_exp_hash->{$sortedrxns->[$bestindex]};
+	for (my $i=0; $i < @{$sortedgenes}; $i++) {
+		if ($exphash->{$sortedgenes->[$i]} == $idealcutoff) {
+			$bestpercentile = $i/@{$sortedgenes};
+			last;
+		}
+	}
+	$bestpercentile = floor(100*$bestpercentile)/100;
+	print "The threshold that maximizes model agreement is ".$idealcutoff." or ".100*$bestpercentile." percentile.\n";
+	if ($params->{maximize_agreement} == 1) {
+		print "Expression threshold percentile for calling active genes set to:".100*$bestpercentile."\n";
+		$threshold_value = $idealcutoff;
+		$params->{exp_threshold_percentile} = $bestpercentile;	
+	}
+	print "Retrieving biochemistry data.\n";
+	my $bc = $self->util_kbase_store()->get_object("kbase/plantdefault_obs");
+	print "Building expression FBA comparison object.\n";
+	my $all_analyses = [{
+		pathwayType => "KEGG",
+		expression_matrix_ref => $em->{_reference},
+		expression_condition => $params->{expression_condition},
+		fbamodel_ref => $fm->_reference(),
+		fba_ref => $fb->_reference(),
+    	pathways => []
+	}];
+    my $globalpathways = ["Entire model","Best possible"];
+    my $globalids = ["all","ideal"];
+    my $rxnhash = {};
+    my $baserxnhash = {};
+    for (my $i=0; $i < @{$globalpathways}; $i++) {
+    	my $currentpathway = {
+    		pathwayName => $globalpathways->[$i],
+	    	pathwayId => $globalids->[$i],
+	    	totalModelReactions => 0,
+	    	totalKEGGRxns => 0,
+		    totalRxnFlux => 0,
+		    gsrFluxPExpP => 0,
+		    gsrFluxPExpN => 0,
+		    gsrFluxMExpP => 0,
+		    gsrFluxMExpM => 0,
+		    gpRxnsFluxP => 0,
+	    	reaction_list => []
+    	};
+    	push(@{$all_analyses->[0]->{pathways}},$currentpathway);
+    	for (my $j=0; $j < @{$modelrxns}; $j++) {
+    		$currentpathway->{totalModelReactions}++;
+    		if (!defined($rxnhash->{$modelrxns->[$j]->id()})) {
+	    		$rxnhash->{$modelrxns->[$j]->id()} = {
+	    			id => $modelrxns->[$j]->id(),
+	    			name => $modelrxns->[$j]->name(),
+	    			flux => 0,
+	    			gapfill => 0,
+	    			expressed => 0,
+					pegs => []
+	    		};
+	    		my $ftrs = $modelrxns->[$j]->featureIDs();
+	    		for (my $k=0; $k < @{$ftrs}; $k++) {
+	    			push(@{$rxnhash->{$modelrxns->[$j]->id()}->{pegs}},{
+	    				pegId => $ftrs->[$k],
+		    			expression => $exphash->{$ftrs->[$k]}
+	    			});
+	    		}
+    		}
+    		push(@{$currentpathway->{reaction_list}},$rxnhash->{$modelrxns->[$j]->id()});
+    		if ($modelrxns->[$j]->id() =~ m/(.+)_[a-z](\d+)$/) {
+    			my $baseid = $1;
+    			my $cmpindex = $2;
+    			if ($modelrxns->[$j]->reaction_ref() =~ m/(rxn\d+)/) {
+    				if ($1 ne "rxn00000") {
+    					$baseid = $1;
+    				}
+    			}
+    			$baserxnhash->{$baseid}->{$modelrxns->[$j]->id()} = $rxnhash->{$modelrxns->[$j]->id()};
+    			if ($cmpindex != 0) {
+    				if (!defined($all_analyses->[$cmpindex])) {
+	    				$all_analyses->[$cmpindex] = {
+							pathwayType => "KEGG",
+							expression_matrix_ref => $em->{_reference},
+							expression_condition => $params->{expression_condition},
+							fbamodel_ref => $fm->_reference(),
+							fba_ref => $fb->_reference(),
+					    	pathways => []
+						};
+    				}
+    				if (!defined($all_analyses->[$cmpindex]->{pathways}->[$i])) {
+    					$all_analyses->[$cmpindex]->{pathways}->[$i] = {
+				    		pathwayName => $globalpathways->[$i],
+					    	pathwayId => $globalids->[$i],
+					    	totalModelReactions => 0,
+					    	totalKEGGRxns => 0,
+						    totalRxnFlux => 0,
+						    gsrFluxPExpP => 0,
+						    gsrFluxPExpN => 0,
+						    gsrFluxMExpP => 0,
+						    gsrFluxMExpM => 0,
+						    gpRxnsFluxP => 0,
+					    	reaction_list => []
+				    	};
+    				}
+    				push(@{$all_analyses->[$cmpindex]->{pathways}->[$i]->{reaction_list}},$rxnhash->{$modelrxns->[$j]->id()});
+    				$all_analyses->[$cmpindex]->{pathways}->[$i]->{totalModelReactions}++;
+    				$all_analyses->[$cmpindex]->{pathways}->[$i]->{totalKEGGRxns}++;
+    			}
+    		}
+    	}
+    }
+    my $pathwayhash = {};
+    my $rxnDB = $bc->reactionSets();
+	for (my $i =0; $i < @{$rxnDB}; $i++){
+		 if ($rxnDB->[$i]->type() =~ /KEGG/) {
+    		$pathwayhash->{$rxnDB->[$i]->name()} = $rxnDB->[$i];
+		 }
+	}
+	my $target_pathways = [
+	    "Glycolysis / Gluconeogenesis",
+		"Pentose phosphate pathway",
+		"Citrate cycle (TCA cycle)",
+		"Pentose and glucuronate interconversions",
+		"Lysine biosynthesis",
+		"Valine, leucine and isoleucine biosynthesis",
+		"Phenylalanine, tyrosine and tryptophan biosynthesis",
+		"Cysteine and methionine metabolism",
+		"Glycine, serine and threonine metabolism",
+		"Alanine, aspartate and glutamate metabolism",
+		"Arginine and proline metabolism",
+		"Histidine metabolism",
+		"Purine metabolism",
+		"Pyrimidine metabolism",
+		"Thiamine metabolism",
+		"Nicotinate and nicotinamide metabolism",
+		"Pantothenate and CoA biosynthesis",
+		"Folate biosynthesis",
+		"Riboflavin metabolism",
+		"Vitamin B6 metabolism",
+		"Ubiquinone and other terpenoid-quinone biosynthesis",
+		"Terpenoid backbone biosynthesis",
+		"Biotin metabolism",
+		"Fatty acid biosynthesis",
+		"Fatty acid elongation",
+		"Peptidoglycan biosynthesis",
+		"Lipopolysaccharide biosynthesis",
+		"Methane metabolism",
+		"Sulfur metabolism",
+		"Nitrogen metabolism",
+		"Glutathione metabolism",
+		"Fatty acid metabolism",
+		"Propanoate metabolism",
+		"Butanoate metabolism",
+		"Pyruvate metabolism",
+		"One carbon pool by folate",
+		"Carbon fixation pathways in prokaryotes",
+		"Carbon fixation in photosynthetic organisms",
+		"Tryptophan metabolism",
+		"Valine, leucine and isoleucine degradation",
+		"Lysine degradation",
+		"Phenylalanine metabolism",
+		"Tyrosine metabolism",
+		"D-Glutamine and D-glutamate metabolism"
+    ];
+    for (my $i=0; $i < @{$target_pathways}; $i++) {
+    	if (defined($pathwayhash->{$target_pathways->[$i]})) {
+	    	my $rxns = $pathwayhash->{$target_pathways->[$i]}->reaction_refs();
+	    	my $currentpathway = {
+		 		pathwayName => $target_pathways->[$i],
+		    	pathwayId => $pathwayhash->{$target_pathways->[$i]}->id(),
+		    	totalModelReactions => 0,
+		    	totalKEGGRxns => @{$rxns},
+			    totalRxnFlux => 0,
+			    gsrFluxPExpP => 0,
+			    gsrFluxPExpN => 0,
+			    gsrFluxMExpP => 0,
+			    gsrFluxMExpM => 0,
+			    gpRxnsFluxP => 0,
+		    	reaction_list => []
+		 	};
+		 	my $allpathhash = {};
+		 	push(@{$all_analyses->[0]->{pathways}},$currentpathway);
+    		for (my $j =0; $j < @{$rxns}; $j++){
+    			if ($rxns->[$j] =~ m/\/([^\/]+)$/) {
+    				my $id = $1;
+    				if (defined($baserxnhash->{$id})) {
+    					foreach my $mdlrxn (keys(%{$baserxnhash->{$id}})) {
+    						$currentpathway->{totalModelReactions}++;
+    						push(@{$currentpathway->{reaction_list}},$baserxnhash->{$id}->{$mdlrxn});
+    						if ($mdlrxn =~ m/(.+)_[a-z](\d+)$/) {
+				    			my $cmpindex = $2;
+				    			if ($cmpindex != 0) {
+				    				if (!defined($allpathhash->{$cmpindex}->{$target_pathways->[$i]})) {
+				    					$allpathhash->{$cmpindex}->{$target_pathways->[$i]} = {
+								    		pathwayName => $target_pathways->[$i],
+		    								pathwayId => $pathwayhash->{$target_pathways->[$i]}->id(),
+									    	totalModelReactions => 0,
+									    	totalKEGGRxns => 0,
+										    totalRxnFlux => 0,
+										    gsrFluxPExpP => 0,
+										    gsrFluxPExpN => 0,
+										    gsrFluxMExpP => 0,
+										    gsrFluxMExpM => 0,
+										    gpRxnsFluxP => 0,
+									    	reaction_list => []
+								    	};
+								    	push(@{$all_analyses->[$cmpindex]->{pathways}},$allpathhash->{$cmpindex}->{$target_pathways->[$i]});
+				    				}
+				    				push(@{$allpathhash->{$cmpindex}->{$target_pathways->[$i]}->{reaction_list}},$rxnhash->{$modelrxns->[$j]->id()});
+				    			}
+				    		}
+    					}
+    				}	
+    			}
+    		}
+    	}
+    }
+	for (my $m=0; $m < @{$all_analyses}; $m++) {
+		my $expAnalysis = $all_analyses->[$m];
+		for (my $i=0; $i < @{$expAnalysis->{pathways}}; $i++) {
+			my $currentcutoff = $threshold_value;;
+			if ($expAnalysis->{pathways}->[$i]->{pathwayId} eq "ideal") {
+				$currentcutoff = $idealcutoff;
+			}
+			for (my $j=0; $j < @{$expAnalysis->{pathways}->[$i]->{reaction_list}}; $j++) {
+				my $id = $expAnalysis->{pathways}->[$i]->{reaction_list}->[$j]->{id};
+				if (defined($rxn_flux_hash->{$id})) {
+					$expAnalysis->{pathways}->[$i]->{reaction_list}->[$j]->{flux} = $rxn_flux_hash->{$id};
+					$expAnalysis->{pathways}->[$i]->{totalRxnFlux}++;
+					if (defined($gapfill_hash->{$id})) {
+						$expAnalysis->{pathways}->[$i]->{reaction_list}->[$j]->{gapfill} = 1;
+						$expAnalysis->{pathways}->[$i]->{gpRxnsFluxP}++;
+					} elsif (defined($rxn_exp_hash->{$id}) && $rxn_exp_hash->{$id} >= $currentcutoff) {
+						$expAnalysis->{pathways}->[$i]->{reaction_list}->[$j]->{expressed} = 1;
+						$expAnalysis->{pathways}->[$i]->{gsrFluxPExpP}++;
+					} else {
+						$expAnalysis->{pathways}->[$i]->{gsrFluxPExpN}++;
+					}
+				} else {
+					$expAnalysis->{pathways}->[$i]->{reaction_list}->[$j]->{flux} = 0;
+					if (defined($rxn_exp_hash->{$id}) && $rxn_exp_hash->{$id} >= $currentcutoff) {
+						$expAnalysis->{pathways}->[$i]->{gsrFluxMExpP}++;
+						$expAnalysis->{pathways}->[$i]->{reaction_list}->[$j]->{expressed} = 1;
+					} else {
+						$expAnalysis->{pathways}->[$i]->{gsrFluxMExpM}++;
+					}
+					if (defined($gapfill_hash->{$id})) {
+						$expAnalysis->{pathways}->[$i]->{reaction_list}->[$j]->{gapfill} = 1;
+					}
+				}
+			}
+			my $intlist = ["totalModelReactions","totalKEGGRxns","totalRxnFlux","gsrFluxPExpP","gsrFluxPExpN","gsrFluxMExpP","gsrFluxMExpM","gpRxnsFluxP"];
+			for (my $j=0; $j < @{$intlist}; $j++) {
+				if (!defined($expAnalysis->{pathways}->[$i]->{$intlist->[$j]})) {
+					$expAnalysis->{pathways}->[$i]->{$intlist->[$j]} = 0;
+				}
+				$expAnalysis->{pathways}->[$i]->{$intlist->[$j]} = $expAnalysis->{pathways}->[$i]->{$intlist->[$j]}+0;
+			}
+		}
+	}
+	print "Saving FBAPathwayAnalysis object.\n";
+    my $meta = $self->util_kbase_store->workspace()->save_objects({
+    	workspace => $params->{workspace},
+    	objects => [{
+    		type => "KBaseFBA.FBAPathwayAnalysis",
+    		data => $all_analyses->[0],
+    		name => $params->{fbapathwayanalysis_output_id}
+    	}]
+    });
+    my $outputobj = {
+		new_fbapathwayanalysis_ref => $params->{workspace}."/".$params->{fbapathwayanalysis_output_id}
+	};
+    if (@{$all_analyses} > 1) {
+    	for (my $m=1; $m < @{$all_analyses}; $m++) {
+	    	$meta = $self->util_kbase_store->workspace()->save_objects({
+		    	workspace => $params->{workspace},
+		    	objects => [{
+		    		type => "KBaseFBA.FBAPathwayAnalysis",
+		    		data => $all_analyses->[$m],
+		    		name => $params->{fbapathwayanalysis_output_id}.".".$m
+		    	}]
+		    });
+		    push(@{$outputobj->{additional_fbapathwayanalysis_ref}},$params->{workspace}."/".$params->{fbapathwayanalysis_output_id}.".".$m);
+    	}
+    }
+	return $outputobj;
 }
 
 #END_HEADER
@@ -1799,6 +2172,104 @@ sub merge_metabolic_models_into_community_model
 
 
 
+=head2 compare_flux_with_expression
+
+  $results = $obj->compare_flux_with_expression($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.CompareFluxWithExpressionParams
+$results is a fba_tools.CompareFluxWithExpressionResults
+CompareFluxWithExpressionParams is a reference to a hash where the following keys are defined:
+	fba_id has a value which is a fba_tools.fba_id
+	expseries_id has a value which is a fba_tools.expseries_id
+	expression_condition has a value which is a string
+	exp_threshold_percentile has a value which is a float
+	estimate_threshold has a value which is a fba_tools.bool
+	maximize_agreement has a value which is a fba_tools.bool
+	fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+fba_id is a string
+expseries_id is a string
+bool is an int
+fbapathwayanalysis_id is a string
+CompareFluxWithExpressionResults is a reference to a hash where the following keys are defined:
+	new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
+ws_fbapathwayanalysis_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.CompareFluxWithExpressionParams
+$results is a fba_tools.CompareFluxWithExpressionResults
+CompareFluxWithExpressionParams is a reference to a hash where the following keys are defined:
+	fba_id has a value which is a fba_tools.fba_id
+	expseries_id has a value which is a fba_tools.expseries_id
+	expression_condition has a value which is a string
+	exp_threshold_percentile has a value which is a float
+	estimate_threshold has a value which is a fba_tools.bool
+	maximize_agreement has a value which is a fba_tools.bool
+	fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+fba_id is a string
+expseries_id is a string
+bool is an int
+fbapathwayanalysis_id is a string
+CompareFluxWithExpressionResults is a reference to a hash where the following keys are defined:
+	new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
+ws_fbapathwayanalysis_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Merge two or more metabolic models into a compartmentalized community model
+
+=back
+
+=cut
+
+sub compare_flux_with_expression
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to compare_flux_with_expression:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'compare_flux_with_expression');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($results);
+    #BEGIN compare_flux_with_expression
+    $self->util_initialize_call($params,$ctx);
+	$results = $self->func_compare_flux_with_expression($params);
+    #END compare_flux_with_expression
+    my @_bad_returns;
+    (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to compare_flux_with_expression:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'compare_flux_with_expression');
+    }
+    return($results);
+}
+
+
+
+
 =head2 version 
 
   $return = $obj->version()
@@ -2032,6 +2503,37 @@ a string
 =item Description
 
 A string representing a FBA id.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 fbapathwayanalysis_id
+
+=over 4
+
+
+
+=item Description
+
+A string representing a FBAPathwayAnalysis id.
 
 
 =item Definition
@@ -2408,6 +2910,38 @@ a string
 
 The workspace ID for a phenotype set simulation object.
 @id ws KBasePhenotypes.PhenotypeSimulationSet
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 ws_fbapathwayanalysis_id
+
+=over 4
+
+
+
+=item Description
+
+The workspace ID for a FBA pathway analysis object
+@id ws KBaseFBA.FBAPathwayAnalysis
 
 
 =item Definition
@@ -3100,6 +3634,78 @@ new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 
 a reference to a hash where the following keys are defined:
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+
+=end text
+
+=back
+
+
+
+=head2 CompareFluxWithExpressionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fba_id has a value which is a fba_tools.fba_id
+expseries_id has a value which is a fba_tools.expseries_id
+expression_condition has a value which is a string
+exp_threshold_percentile has a value which is a float
+estimate_threshold has a value which is a fba_tools.bool
+maximize_agreement has a value which is a fba_tools.bool
+fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fba_id has a value which is a fba_tools.fba_id
+expseries_id has a value which is a fba_tools.expseries_id
+expression_condition has a value which is a string
+exp_threshold_percentile has a value which is a float
+estimate_threshold has a value which is a fba_tools.bool
+maximize_agreement has a value which is a fba_tools.bool
+fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+
+
+=end text
+
+=back
+
+
+
+=head2 CompareFluxWithExpressionResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
 
 
 =end text

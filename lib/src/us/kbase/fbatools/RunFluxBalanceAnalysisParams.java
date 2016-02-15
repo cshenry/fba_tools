@@ -39,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "media_supplement_list",
     "expseries_id",
     "expseries_workspace",
-    "exp_condition",
+    "expression_condition",
     "exp_threshold_percentile",
     "exp_threshold_margin",
     "activation_coefficient",
@@ -94,8 +94,8 @@ public class RunFluxBalanceAnalysisParams {
     private java.lang.String expseriesId;
     @JsonProperty("expseries_workspace")
     private java.lang.String expseriesWorkspace;
-    @JsonProperty("exp_condition")
-    private java.lang.String expCondition;
+    @JsonProperty("expression_condition")
+    private java.lang.String expressionCondition;
     @JsonProperty("exp_threshold_percentile")
     private Double expThresholdPercentile;
     @JsonProperty("exp_threshold_margin")
@@ -409,18 +409,18 @@ public class RunFluxBalanceAnalysisParams {
         return this;
     }
 
-    @JsonProperty("exp_condition")
-    public java.lang.String getExpCondition() {
-        return expCondition;
+    @JsonProperty("expression_condition")
+    public java.lang.String getExpressionCondition() {
+        return expressionCondition;
     }
 
-    @JsonProperty("exp_condition")
-    public void setExpCondition(java.lang.String expCondition) {
-        this.expCondition = expCondition;
+    @JsonProperty("expression_condition")
+    public void setExpressionCondition(java.lang.String expressionCondition) {
+        this.expressionCondition = expressionCondition;
     }
 
-    public RunFluxBalanceAnalysisParams withExpCondition(java.lang.String expCondition) {
-        this.expCondition = expCondition;
+    public RunFluxBalanceAnalysisParams withExpressionCondition(java.lang.String expressionCondition) {
+        this.expressionCondition = expressionCondition;
         return this;
     }
 
@@ -631,7 +631,7 @@ public class RunFluxBalanceAnalysisParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("RunFluxBalanceAnalysisParams"+" [fbamodelId=")+ fbamodelId)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", targetReaction=")+ targetReaction)+", fbaOutputId=")+ fbaOutputId)+", workspace=")+ workspace)+", thermodynamicConstraints=")+ thermodynamicConstraints)+", fva=")+ fva)+", minimizeFlux=")+ minimizeFlux)+", simulateKo=")+ simulateKo)+", findMinMedia=")+ findMinMedia)+", allReversible=")+ allReversible)+", featureKoList=")+ featureKoList)+", reactionKoList=")+ reactionKoList)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expCondition=")+ expCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", expThresholdMargin=")+ expThresholdMargin)+", activationCoefficient=")+ activationCoefficient)+", omega=")+ omega)+", objectiveFraction=")+ objectiveFraction)+", maxCUptake=")+ maxCUptake)+", maxNUptake=")+ maxNUptake)+", maxPUptake=")+ maxPUptake)+", maxSUptake=")+ maxSUptake)+", maxOUptake=")+ maxOUptake)+", defaultMaxUptake=")+ defaultMaxUptake)+", notes=")+ notes)+", massbalance=")+ massbalance)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("RunFluxBalanceAnalysisParams"+" [fbamodelId=")+ fbamodelId)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", targetReaction=")+ targetReaction)+", fbaOutputId=")+ fbaOutputId)+", workspace=")+ workspace)+", thermodynamicConstraints=")+ thermodynamicConstraints)+", fva=")+ fva)+", minimizeFlux=")+ minimizeFlux)+", simulateKo=")+ simulateKo)+", findMinMedia=")+ findMinMedia)+", allReversible=")+ allReversible)+", featureKoList=")+ featureKoList)+", reactionKoList=")+ reactionKoList)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expressionCondition=")+ expressionCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", expThresholdMargin=")+ expThresholdMargin)+", activationCoefficient=")+ activationCoefficient)+", omega=")+ omega)+", objectiveFraction=")+ objectiveFraction)+", maxCUptake=")+ maxCUptake)+", maxNUptake=")+ maxNUptake)+", maxPUptake=")+ maxPUptake)+", maxSUptake=")+ maxSUptake)+", maxOUptake=")+ maxOUptake)+", defaultMaxUptake=")+ defaultMaxUptake)+", notes=")+ notes)+", massbalance=")+ massbalance)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

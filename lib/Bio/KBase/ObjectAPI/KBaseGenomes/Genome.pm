@@ -9,6 +9,7 @@ use strict;
 use Bio::KBase::ObjectAPI::KBaseGenomes::DB::Genome;
 package Bio::KBase::ObjectAPI::KBaseGenomes::Genome;
 use Moose;
+use POSIX;
 use Bio::KBase::ObjectAPI::utilities;
 use namespace::autoclean;
 extends 'Bio::KBase::ObjectAPI::KBaseGenomes::DB::Genome';
@@ -120,6 +121,140 @@ sub _buildtemplate_classification {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub compute_gene_activity_threshold_using_faria_method {
+	my ($self,$exp_hash) = @_;
+	my $always_active_roles = [
+		"Alanyl-tRNA synthetase (EC 6.1.1.7)",
+		"Arginyl-tRNA synthetase (EC 6.1.1.19)",
+		"Asparaginyl-tRNA synthetase (EC 6.1.1.22)",
+		"Aspartyl-tRNA synthetase (EC 6.1.1.12)",
+		"Cysteinyl-tRNA synthetase (EC 6.1.1.16)",
+		"DNA-directed RNA polymerase alpha subunit (EC 2.7.7.6)",
+		"DNA-directed RNA polymerase beta subunit (EC 2.7.7.6)",
+		"DNA-directed RNA polymerase beta' subunit (EC 2.7.7.6)",
+		"DNA-directed RNA polymerase omega subunit (EC 2.7.7.6)",
+		"Glutaminyl-tRNA synthetase (EC 6.1.1.18)",
+		"Glutamyl-tRNA synthetase (EC 6.1.1.17)",
+		"Glycyl-tRNA synthetase alpha chain (EC 6.1.1.14)",
+		"Glycyl-tRNA synthetase beta chain (EC 6.1.1.14)",
+		"Histidyl-tRNA synthetase (EC 6.1.1.21)",
+		"Isoleucyl-tRNA synthetase (EC 6.1.1.5)",
+		"LSU ribosomal protein L10p (P0)",
+		"LSU ribosomal protein L11p (L12e)",
+		"LSU ribosomal protein L13p (L13Ae)",
+		"LSU ribosomal protein L14p (L23e)",
+		"LSU ribosomal protein L15p (L27Ae)",
+		"LSU ribosomal protein L16p (L10e)",
+		"LSU ribosomal protein L17p",
+		"LSU ribosomal protein L18p (L5e)",
+		"LSU ribosomal protein L19p",
+		"LSU ribosomal protein L1p (L10Ae)",
+		"LSU ribosomal protein L20p",
+		"LSU ribosomal protein L21p",
+		"LSU ribosomal protein L22p (L17e)",
+		"LSU ribosomal protein L23p (L23Ae)",
+		"LSU ribosomal protein L24p (L26e)",
+		"LSU ribosomal protein L25p",
+		"LSU ribosomal protein L27p",
+		"LSU ribosomal protein L28p",
+		"LSU ribosomal protein L29p (L35e)",
+		"LSU ribosomal protein L2p (L8e)",
+		"LSU ribosomal protein L30p (L7e)",
+		"LSU ribosomal protein L31p",
+		"LSU ribosomal protein L32p",
+		"LSU ribosomal protein L33p",
+		"LSU ribosomal protein L34p",
+		"LSU ribosomal protein L35p",
+		"LSU ribosomal protein L36p",
+		"LSU ribosomal protein L3p (L3e)",
+		"LSU ribosomal protein L4p (L1e)",
+		"LSU ribosomal protein L5p (L11e)",
+		"LSU ribosomal protein L6p (L9e)",
+		"LSU ribosomal protein L7/L12 (L23e)",
+		"LSU ribosomal protein L9p",
+		"Leucyl-tRNA synthetase (EC 6.1.1.4)",
+		"Lysyl-tRNA synthetase (class II) (EC 6.1.1.6)",
+		"Methionyl-tRNA synthetase (EC 6.1.1.10)",
+		"Phenylalanyl-tRNA synthetase alpha chain (EC 6.1.1.20)",
+		"Phenylalanyl-tRNA synthetase beta chain (EC 6.1.1.20)",
+		"Prolyl-tRNA synthetase (EC 6.1.1.15)",
+		"SSU ribosomal protein S10p (S20e)",
+		"SSU ribosomal protein S11p (S14e)",
+		"SSU ribosomal protein S12p (S23e)",
+		"SSU ribosomal protein S13p (S18e)",
+		"SSU ribosomal protein S14p (S29e)",
+		"SSU ribosomal protein S15p (S13e)",
+		"SSU ribosomal protein S16p",
+		"SSU ribosomal protein S17p (S11e)",
+		"SSU ribosomal protein S18p",
+		"SSU ribosomal protein S19p (S15e)",
+		"SSU ribosomal protein S1p",
+		"SSU ribosomal protein S20p",
+		"SSU ribosomal protein S21p",
+		"SSU ribosomal protein S2p (SAe)",
+		"SSU ribosomal protein S3p (S3e)",
+		"SSU ribosomal protein S4p (S9e)",
+		"SSU ribosomal protein S5p (S2e)",
+		"SSU ribosomal protein S6p",
+		"SSU ribosomal protein S7p (S5e)",
+		"SSU ribosomal protein S8p (S15Ae)",
+		"SSU ribosomal protein S9p (S16e)",
+		"Seryl-tRNA synthetase (EC 6.1.1.11)",
+		"Threonyl-tRNA synthetase (EC 6.1.1.3)",
+		"Tryptophanyl-tRNA synthetase (EC 6.1.1.2)",
+		"Tyrosyl-tRNA synthetase (EC 6.1.1.1)",
+		"Valyl-tRNA synthetase (EC 6.1.1.9)"
+	];
+	my $rolecount = 0;
+	my $nonzerorolecount = 0;
+	my $expvals = [];
+	my $searchrolehash = {};
+	my $ftrs = $self->features();
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		my $roles = $ftrs->[$i]->roles();
+		for (my $j=0; $j < @{$roles}; $j++) {
+			$searchrolehash->{Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($roles->[$j])}->{$ftrs->[$i]->id()} = 1;
+		}
+	}
+	for (my $i=0; $i < @{$always_active_roles}; $i++) {
+		$always_active_roles->[$i] = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($always_active_roles->[$i]);
+		if (defined($searchrolehash->{$always_active_roles->[$i]})) {
+			$rolecount++;
+			my $bestexp = 0;
+			foreach my $id (keys(%{$searchrolehash->{$always_active_roles->[$i]}})) {
+				if (defined($exp_hash->{$id}) && $bestexp < $exp_hash->{$id}) {
+					$bestexp = $exp_hash->{$id};
+				}
+			}
+			if ($bestexp > 0) {
+				$nonzerorolecount++;
+				push(@{$expvals},$bestexp);
+			}
+		}
+	}
+	my $allexpvals = [];
+	foreach my $gene (keys(%{$exp_hash})) {
+		push(@{$allexpvals},$exp_hash->{$gene});
+	}
+	$allexpvals = [sort(@{$allexpvals})];
+	$expvals = [sort(@{$expvals})];
+	my $index = ceil($nonzerorolecount/10);
+	my $cutoff = $expvals->[$index];
+	my $cutoff_percentile = 0;
+	my $totalexpvals = @{$allexpvals};
+	for (my $i=0; $i < @{$allexpvals}; $i++) {
+		if ($allexpvals->[$i] == $cutoff) {
+			$cutoff_percentile = $i/$totalexpvals;
+		}
+	}
+	$cutoff_percentile = floor(100*$cutoff_percentile)/100;
+	print "Genes found for ".$rolecount." of 79 functional roles classified as always active.\n";
+	print $nonzerorolecount." of these genes have nonzero expression values.\n";
+	print "Cutoff value computed at an absolute expression of ".$cutoff.", which is the ".100*$cutoff_percentile." percentile.\n";
+	return [$cutoff,$cutoff_percentile,$nonzerorolecount];
+}
+
+
 sub genome_typed_object {
     my ($self) = @_;
 	my $output = $self->serializeToDB();

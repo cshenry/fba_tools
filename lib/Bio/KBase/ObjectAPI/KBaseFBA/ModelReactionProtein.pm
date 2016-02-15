@@ -68,7 +68,17 @@ sub _buildexchangeGPRString {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
-
+sub protein_expression {
+	my ($self,$expression_hash) = @_;
+	my $highest_expression = 0;
+	foreach my $subunit (@{$self->modelReactionProteinSubunits()}) {
+		my $subunitexp = $subunit->subunit_expression($expression_hash);
+		if ($subunitexp > $highest_expression) {
+			$highest_expression = $subunitexp;
+		}
+	}
+	return $highest_expression;
+}
 
 __PACKAGE__->meta->make_immutable;
 1;

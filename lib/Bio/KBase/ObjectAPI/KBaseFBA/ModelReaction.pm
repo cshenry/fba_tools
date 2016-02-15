@@ -303,6 +303,18 @@ sub _buildstoichiometry {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub reaction_expression {
+	my ($self,$expression_hash) = @_;
+	my $highest_expression = 0;
+	foreach my $protein (@{$self->modelReactionProteins()}) {
+		my $protexp = $protein->protein_expression($expression_hash);
+		if ($protexp > $highest_expression) {
+			$highest_expression = $protexp;
+		}
+	}
+	return $highest_expression;
+}
+
 sub kegg {
     my ($self,$id) = @_;
     if (defined($id)) {

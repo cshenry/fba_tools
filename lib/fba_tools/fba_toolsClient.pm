@@ -140,7 +140,7 @@ BuildMetabolicModelParams is a reference to a hash where the following keys are 
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -189,7 +189,7 @@ BuildMetabolicModelParams is a reference to a hash where the following keys are 
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -302,7 +302,7 @@ GapfillMetabolicModelParams is a reference to a hash where the following keys ar
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -352,7 +352,7 @@ GapfillMetabolicModelParams is a reference to a hash where the following keys ar
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -467,7 +467,7 @@ RunFluxBalanceAnalysisParams is a reference to a hash where the following keys a
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -523,7 +523,7 @@ RunFluxBalanceAnalysisParams is a reference to a hash where the following keys a
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -742,7 +742,7 @@ PropagateModelToNewGenomeParams is a reference to a hash where the following key
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -790,7 +790,7 @@ PropagateModelToNewGenomeParams is a reference to a hash where the following key
 	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
-	exp_condition has a value which is a string
+	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1101,6 +1101,117 @@ Merge two or more metabolic models into a compartmentalized community model
     }
 }
  
+
+
+=head2 compare_flux_with_expression
+
+  $results = $obj->compare_flux_with_expression($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.CompareFluxWithExpressionParams
+$results is a fba_tools.CompareFluxWithExpressionResults
+CompareFluxWithExpressionParams is a reference to a hash where the following keys are defined:
+	fba_id has a value which is a fba_tools.fba_id
+	expseries_id has a value which is a fba_tools.expseries_id
+	expression_condition has a value which is a string
+	exp_threshold_percentile has a value which is a float
+	estimate_threshold has a value which is a fba_tools.bool
+	maximize_agreement has a value which is a fba_tools.bool
+	fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+fba_id is a string
+expseries_id is a string
+bool is an int
+fbapathwayanalysis_id is a string
+CompareFluxWithExpressionResults is a reference to a hash where the following keys are defined:
+	new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
+ws_fbapathwayanalysis_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.CompareFluxWithExpressionParams
+$results is a fba_tools.CompareFluxWithExpressionResults
+CompareFluxWithExpressionParams is a reference to a hash where the following keys are defined:
+	fba_id has a value which is a fba_tools.fba_id
+	expseries_id has a value which is a fba_tools.expseries_id
+	expression_condition has a value which is a string
+	exp_threshold_percentile has a value which is a float
+	estimate_threshold has a value which is a fba_tools.bool
+	maximize_agreement has a value which is a fba_tools.bool
+	fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+fba_id is a string
+expseries_id is a string
+bool is an int
+fbapathwayanalysis_id is a string
+CompareFluxWithExpressionResults is a reference to a hash where the following keys are defined:
+	new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
+ws_fbapathwayanalysis_id is a string
+
+
+=end text
+
+=item Description
+
+Merge two or more metabolic models into a compartmentalized community model
+
+=back
+
+=cut
+
+ sub compare_flux_with_expression
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function compare_flux_with_expression (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to compare_flux_with_expression:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'compare_flux_with_expression');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+	method => "fba_tools.compare_flux_with_expression",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'compare_flux_with_expression',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method compare_flux_with_expression",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'compare_flux_with_expression',
+				       );
+    }
+}
+ 
   
 
 sub version {
@@ -1114,16 +1225,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'merge_metabolic_models_into_community_model',
+                method_name => 'compare_flux_with_expression',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method merge_metabolic_models_into_community_model",
+            error => "Error invoking method compare_flux_with_expression",
             status_line => $self->{client}->status_line,
-            method_name => 'merge_metabolic_models_into_community_model',
+            method_name => 'compare_flux_with_expression',
         );
     }
 }
@@ -1355,6 +1466,37 @@ a string
 =item Description
 
 A string representing a FBA id.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 fbapathwayanalysis_id
+
+=over 4
+
+
+
+=item Description
+
+A string representing a FBAPathwayAnalysis id.
 
 
 =item Definition
@@ -1753,6 +1895,38 @@ a string
 
 
 
+=head2 ws_fbapathwayanalysis_id
+
+=over 4
+
+
+
+=item Description
+
+The workspace ID for a FBA pathway analysis object
+@id ws KBaseFBA.FBAPathwayAnalysis
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
 =head2 BuildMetabolicModelParams
 
 =over 4
@@ -1781,7 +1955,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -1813,7 +1987,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -1894,7 +2068,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -1927,7 +2101,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2010,7 +2184,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2051,7 +2225,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2199,7 +2373,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2231,7 +2405,7 @@ custom_bound_list has a value which is a reference to a list where each element 
 media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
-exp_condition has a value which is a string
+expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -2423,6 +2597,78 @@ new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 
 a reference to a hash where the following keys are defined:
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+
+=end text
+
+=back
+
+
+
+=head2 CompareFluxWithExpressionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fba_id has a value which is a fba_tools.fba_id
+expseries_id has a value which is a fba_tools.expseries_id
+expression_condition has a value which is a string
+exp_threshold_percentile has a value which is a float
+estimate_threshold has a value which is a fba_tools.bool
+maximize_agreement has a value which is a fba_tools.bool
+fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fba_id has a value which is a fba_tools.fba_id
+expseries_id has a value which is a fba_tools.expseries_id
+expression_condition has a value which is a string
+exp_threshold_percentile has a value which is a float
+estimate_threshold has a value which is a fba_tools.bool
+maximize_agreement has a value which is a fba_tools.bool
+fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+
+
+=end text
+
+=back
+
+
+
+=head2 CompareFluxWithExpressionResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
 
 
 =end text

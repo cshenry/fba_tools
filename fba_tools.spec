@@ -33,6 +33,10 @@ module fba_tools {
     */
     typedef string fba_id;
     /*
+        A string representing a FBAPathwayAnalysis id.
+    */
+    typedef string fbapathwayanalysis_id;
+    /*
         A string representing a FBA comparison id.
     */
     typedef string fbacomparison_id;
@@ -84,6 +88,11 @@ module fba_tools {
         @id ws KBasePhenotypes.PhenotypeSimulationSet
     */
 	typedef string ws_phenotypesim_id;
+	/* 
+        The workspace ID for a FBA pathway analysis object
+        @id ws KBaseFBA.FBAPathwayAnalysis
+    */
+	typedef string ws_fbapathwayanalysis_id;
 
 
     typedef structure {
@@ -105,7 +114,7 @@ module fba_tools {
 		
 		expseries_id expseries_id;
 		workspace_name expseries_workspace;
-		string exp_condition;
+		string expression_condition;
 		float exp_threshold_percentile;
 		float exp_threshold_margin;
 		float activation_coefficient;
@@ -146,7 +155,7 @@ module fba_tools {
 		
 		expseries_id expseries_id;
 		workspace_name expseries_workspace;
-		string exp_condition;
+		string expression_condition;
 		float exp_threshold_percentile;
 		float exp_threshold_margin;
 		float activation_coefficient;
@@ -190,7 +199,7 @@ module fba_tools {
 		
 		expseries_id expseries_id;
 		workspace_name expseries_workspace;
-		string exp_condition;
+		string expression_condition;
 		float exp_threshold_percentile;
 		float exp_threshold_margin;
 		float activation_coefficient;
@@ -252,7 +261,7 @@ module fba_tools {
 		
 		expseries_id expseries_id;
 		workspace_name expseries_workspace;
-		string exp_condition;
+		string expression_condition;
 		float exp_threshold_percentile;
 		float exp_threshold_margin;
 		float activation_coefficient;
@@ -310,4 +319,25 @@ module fba_tools {
          Merge two or more metabolic models into a compartmentalized community model
     */
 	funcdef merge_metabolic_models_into_community_model(MergeMetabolicModelsIntoCommunityModelParams params) returns (MergeMetabolicModelsIntoCommunityModelResults results) authentication required;
+	
+	typedef structure {
+		fba_id fba_id;
+		workspace_name fba_workspace;
+		expseries_id expseries_id;
+		workspace_name expseries_workspace;
+		string expression_condition;
+		float exp_threshold_percentile;
+		bool estimate_threshold;
+		bool maximize_agreement;
+		fbapathwayanalysis_id fbapathwayanalysis_output_id;
+		workspace_name workspace;
+    } CompareFluxWithExpressionParams;
+    
+    typedef structure {
+        ws_fbapathwayanalysis_id new_fbapathwayanalysis_ref;
+    } CompareFluxWithExpressionResults;
+    /*
+         Merge two or more metabolic models into a compartmentalized community model
+    */
+	funcdef compare_flux_with_expression(CompareFluxWithExpressionParams params) returns (CompareFluxWithExpressionResults results) authentication required;
 };

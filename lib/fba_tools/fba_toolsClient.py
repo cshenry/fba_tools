@@ -219,4 +219,11 @@ class fba_tools(object):
         resp = self._call('fba_tools.merge_metabolic_models_into_community_model',
                           [params], json_rpc_context)
         return resp[0]
+  
+    def compare_flux_with_expression(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method compare_flux_with_expression: argument json_rpc_context is not type dict as required.')
+        resp = self._call('fba_tools.compare_flux_with_expression',
+                          [params], json_rpc_context)
+        return resp[0]
  

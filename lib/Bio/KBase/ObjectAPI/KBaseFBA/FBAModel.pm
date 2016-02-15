@@ -1428,9 +1428,9 @@ sub merge_models {
 	for (my $i=0; $i < @{$parameters->{models}}; $i++) {
 		print "Loading model ".$parameters->{models}->[$i]."\n";
 		my $model = $self->getLinkedObject($parameters->{models}->[$i]);
-		my $biomassCpd = $self->getObject("modelcompounds","cpd11416_c0");
+		my $biomassCpd = $model->getObject("modelcompounds","cpd11416_c0");
 		#Adding genome, features, and roles to master mapping and annotation
-		my $mdlgenome = $self->genome();
+		my $mdlgenome = $model->genome();
 		$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
 		$genomeObj->num_contigs($genomeObj->num_contigs()+$mdlgenome->num_contigs());
 		$genomeObj->gc_content($genomeObj->gc_content()+$mdlgenome->dna_size()*$mdlgenome->gc_content());

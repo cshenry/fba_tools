@@ -30,17 +30,6 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    fbamodel_id_list :
-        ui-name : |
-            FBA Models
-        short-hint : |
-            A list of metabolic models consisting of stoichiometric reactions, compounds, and the weighted components of  the biomass. Either one model set (see next input) or at least two individual models must be provided. Both inputs can be provided and will be merged into a single set of models.
-        long-hint : |
-            A list of metabolic models consisting of stoichiometric reactions, compounds, and the weighted components of  the biomass. Either one model set (see next input) or at least two individual models must be provided. Both inputs can be provided and will be merged into a single set of models.
-        placeholder : |
-            Model to be merged
-
-
     fbamodel_output_id :
         ui-name : |
             Community model
@@ -50,6 +39,17 @@ parameters :
             Name of community model to be generated
         placeholder : |
             Output community model ID
+
+
+    fbamodel_id_list :
+        ui-name : |
+            FBA Models
+        short-hint : |
+            A list of metabolic models consisting of stoichiometric reactions, compounds, and the weighted components of  the biomass. Either one model set (see next input) or at least two individual models must be provided. Both inputs can be provided and will be merged into a single set of models.
+        long-hint : |
+            A list of metabolic models consisting of stoichiometric reactions, compounds, and the weighted components of  the biomass. Either one model set (see next input) or at least two individual models must be provided. Both inputs can be provided and will be merged into a single set of models.
+        placeholder : |
+            Model to be merged
 
 
     mixed_bag_model :

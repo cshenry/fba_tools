@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "media_supplement_list",
     "expseries_id",
     "expseries_workspace",
-    "exp_condition",
+    "expression_condition",
     "exp_threshold_percentile",
     "exp_threshold_margin",
     "activation_coefficient",
@@ -79,8 +79,8 @@ public class PropagateModelToNewGenomeParams {
     private java.lang.String expseriesId;
     @JsonProperty("expseries_workspace")
     private java.lang.String expseriesWorkspace;
-    @JsonProperty("exp_condition")
-    private java.lang.String expCondition;
+    @JsonProperty("expression_condition")
+    private java.lang.String expressionCondition;
     @JsonProperty("exp_threshold_percentile")
     private Double expThresholdPercentile;
     @JsonProperty("exp_threshold_margin")
@@ -337,18 +337,18 @@ public class PropagateModelToNewGenomeParams {
         return this;
     }
 
-    @JsonProperty("exp_condition")
-    public java.lang.String getExpCondition() {
-        return expCondition;
+    @JsonProperty("expression_condition")
+    public java.lang.String getExpressionCondition() {
+        return expressionCondition;
     }
 
-    @JsonProperty("exp_condition")
-    public void setExpCondition(java.lang.String expCondition) {
-        this.expCondition = expCondition;
+    @JsonProperty("expression_condition")
+    public void setExpressionCondition(java.lang.String expressionCondition) {
+        this.expressionCondition = expressionCondition;
     }
 
-    public PropagateModelToNewGenomeParams withExpCondition(java.lang.String expCondition) {
-        this.expCondition = expCondition;
+    public PropagateModelToNewGenomeParams withExpressionCondition(java.lang.String expressionCondition) {
+        this.expressionCondition = expressionCondition;
         return this;
     }
 
@@ -469,7 +469,7 @@ public class PropagateModelToNewGenomeParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((((((((((((((((((((((((((((("PropagateModelToNewGenomeParams"+" [fbamodelId=")+ fbamodelId)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", proteincomparisonId=")+ proteincomparisonId)+", proteincomparisonWorkspace=")+ proteincomparisonWorkspace)+", fbamodelOutputId=")+ fbamodelOutputId)+", workspace=")+ workspace)+", keepNogeneRxn=")+ keepNogeneRxn)+", gapfillModel=")+ gapfillModel)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", thermodynamicConstraints=")+ thermodynamicConstraints)+", comprehensiveGapfill=")+ comprehensiveGapfill)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expCondition=")+ expCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", expThresholdMargin=")+ expThresholdMargin)+", activationCoefficient=")+ activationCoefficient)+", omega=")+ omega)+", objectiveFraction=")+ objectiveFraction)+", minimumTargetFlux=")+ minimumTargetFlux)+", numberOfSolutions=")+ numberOfSolutions)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((((((((((((((((("PropagateModelToNewGenomeParams"+" [fbamodelId=")+ fbamodelId)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", proteincomparisonId=")+ proteincomparisonId)+", proteincomparisonWorkspace=")+ proteincomparisonWorkspace)+", fbamodelOutputId=")+ fbamodelOutputId)+", workspace=")+ workspace)+", keepNogeneRxn=")+ keepNogeneRxn)+", gapfillModel=")+ gapfillModel)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", thermodynamicConstraints=")+ thermodynamicConstraints)+", comprehensiveGapfill=")+ comprehensiveGapfill)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expressionCondition=")+ expressionCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", expThresholdMargin=")+ expThresholdMargin)+", activationCoefficient=")+ activationCoefficient)+", omega=")+ omega)+", objectiveFraction=")+ objectiveFraction)+", minimumTargetFlux=")+ minimumTargetFlux)+", numberOfSolutions=")+ numberOfSolutions)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

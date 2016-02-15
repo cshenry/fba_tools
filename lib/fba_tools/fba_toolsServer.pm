@@ -49,6 +49,9 @@ our %return_counts = (
         'merge_metabolic_models_into_community_model' => 1,
         'merge_metabolic_models_into_community_model_async' => 1,
         'merge_metabolic_models_into_community_model_check' => 1,
+        'compare_flux_with_expression' => 1,
+        'compare_flux_with_expression_async' => 1,
+        'compare_flux_with_expression_check' => 1,
         'version' => 1,
 );
 
@@ -74,6 +77,9 @@ our %method_authentication = (
         'merge_metabolic_models_into_community_model' => 'required',
         'merge_metabolic_models_into_community_model_async' => 'required',
         'merge_metabolic_models_into_community_model_check' => 'required',
+        'compare_flux_with_expression' => 'required',
+        'compare_flux_with_expression_async' => 'required',
+        'compare_flux_with_expression_check' => 'required',
 );
 
 our %sync_methods = (
@@ -84,6 +90,7 @@ our %sync_methods = (
         'propagate_model_to_new_genome' => 1,
         'simulate_growth_on_phenotype_data' => 1,
         'merge_metabolic_models_into_community_model' => 1,
+        'compare_flux_with_expression' => 1,
 );
 
 our %async_run_methods = (
@@ -94,6 +101,7 @@ our %async_run_methods = (
         'propagate_model_to_new_genome_async' => 'fba_tools.propagate_model_to_new_genome',
         'simulate_growth_on_phenotype_data_async' => 'fba_tools.simulate_growth_on_phenotype_data',
         'merge_metabolic_models_into_community_model_async' => 'fba_tools.merge_metabolic_models_into_community_model',
+        'compare_flux_with_expression_async' => 'fba_tools.compare_flux_with_expression',
 );
 
 our %async_check_methods = (
@@ -104,6 +112,7 @@ our %async_check_methods = (
         'propagate_model_to_new_genome_check' => 'fba_tools.propagate_model_to_new_genome',
         'simulate_growth_on_phenotype_data_check' => 'fba_tools.simulate_growth_on_phenotype_data',
         'merge_metabolic_models_into_community_model_check' => 'fba_tools.merge_metabolic_models_into_community_model',
+        'compare_flux_with_expression_check' => 'fba_tools.compare_flux_with_expression',
 );
 
 sub _build_valid_methods
@@ -131,6 +140,9 @@ sub _build_valid_methods
         'merge_metabolic_models_into_community_model' => 1,
         'merge_metabolic_models_into_community_model_async' => 1,
         'merge_metabolic_models_into_community_model_check' => 1,
+        'compare_flux_with_expression' => 1,
+        'compare_flux_with_expression_async' => 1,
+        'compare_flux_with_expression_check' => 1,
         'version' => 1,
     };
     return $methods;

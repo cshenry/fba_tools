@@ -361,4 +361,42 @@ publications :
         display-text: |
             Orth JD, Thiele I, Palsson BØ (2010) What is flux balance analysis? Nature Biotechnology 28: 245–248. doi:10.1038/nbt.1614.
         link: http://www.nature.com/nbt/journal/v28/n3/abs/nbt.1614.html
+{compare_flux_with_expression}
+#
+# Define basic display information
+#
+name     : Compare flux with expression
+
+tooltip  : |
+    Compare reaction flux with gene expression to identify pathways where expression and flux agree or are in conflict
+
+screenshots :
+    - compare_flux_with_expression_input.png
+    - compare_flux_with_expression_output.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+#
+# Configure the display and description of the parameters
+#
+---
+description : |
+    
+    <p>This method compare flux with gene expression for each metabolic pathway and the overall model.</p>
+    
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Chris Henry, Janaka Edirisinghe, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
 {blank}

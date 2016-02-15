@@ -264,4 +264,22 @@ public class FbaToolsClient {
         List<MergeMetabolicModelsIntoCommunityModelResults> res = caller.jsonrpcCall("fba_tools.merge_metabolic_models_into_community_model", args, retType, true, true, jsonRpcContext);
         return res.get(0);
     }
+
+    /**
+     * <p>Original spec-file function name: compare_flux_with_expression</p>
+     * <pre>
+     * Merge two or more metabolic models into a compartmentalized community model
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.CompareFluxWithExpressionParams CompareFluxWithExpressionParams}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.CompareFluxWithExpressionResults CompareFluxWithExpressionResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public CompareFluxWithExpressionResults compareFluxWithExpression(CompareFluxWithExpressionParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<CompareFluxWithExpressionResults>> retType = new TypeReference<List<CompareFluxWithExpressionResults>>() {};
+        List<CompareFluxWithExpressionResults> res = caller.jsonrpcCall("fba_tools.compare_flux_with_expression", args, retType, true, true, jsonRpcContext);
+        return res.get(0);
+    }
 }

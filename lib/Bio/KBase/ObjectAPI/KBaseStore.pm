@@ -135,6 +135,7 @@ sub get_objects {
 				my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
 				if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison") {
 					$self->cache()->{$newrefs->[$i]} = $objdatas->[$i]->{data};
+					$self->cache()->{$newrefs->[$i]}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
 				} else {
 					$self->cache()->{$newrefs->[$i]} = $class->new($objdatas->[$i]->{data});
 					$self->cache()->{$newrefs->[$i]}->parent($self);

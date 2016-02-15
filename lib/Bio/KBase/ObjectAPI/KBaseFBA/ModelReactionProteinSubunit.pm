@@ -66,6 +66,20 @@ sub _buildexchangeGPRString {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub subunit_expression {
+	my ($self,$expression_hash) = @_;
+	my $highest_expression = 0;
+	my $ftrs = $self->feature_refs();
+	foreach my $ftr (@{$ftrs}) {
+		if ($ftr =~ m/\/([^\/]+)$/) {
+			my $ftrid = $1;
+			if (defined($expression_hash->{$ftrid}) && $expression_hash->{$ftrid} > $highest_expression) {
+				$highest_expression = $expression_hash->{$ftrid};
+			}
+		}
+	}
+	return $highest_expression;
+}
 
 __PACKAGE__->meta->make_immutable;
 1;

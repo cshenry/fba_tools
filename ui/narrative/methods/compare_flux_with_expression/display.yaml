@@ -1,0 +1,100 @@
+#
+# Define basic display information
+#
+name     : Compare flux with expression
+
+tooltip  : |
+    Compare reaction flux with gene expression to identify pathways where expression and flux agree or are in conflict
+
+screenshots :
+    - compare_flux_with_expression_input.png
+    - compare_flux_with_expression_output.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    estimate_threshold :
+        ui-name : |
+            Estimate threshold
+        short-hint : |
+            Estimates threshold for gene expression based on a set of universal genes
+        long-hint : |
+            Estimates threshold for gene expression based on a set of universal genes
+
+
+    fbapathwayanalysis_output_id :
+        ui-name : |
+            Output ID
+        short-hint : |
+            ID where the results of the comparison will be saved
+        long-hint : |
+            ID where the results of the comparison will be saved
+
+
+    expseries_id :
+        ui-name : |
+            Expression data set
+        short-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+        long-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+
+
+    exp_threshold_percentile :
+        ui-name : |
+            Expression threshold
+        short-hint : |
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+        long-hint : |
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+
+
+    fba_id :
+        ui-name : |
+            FBA solution
+        short-hint : |
+            Flux balance analysis solution to be compared with expression values
+        long-hint : |
+            Flux balance analysis solution to be compared with expression values
+
+
+    expression_condition :
+        ui-name : |
+            Expression condition
+        short-hint : |
+            Specific condition in expression matrix that should be compared with reaction flux
+        long-hint : |
+            Specific condition in expression matrix that should be compared with reaction flux
+
+
+    maximize_agreement :
+        ui-name : |
+            Maximize agreement
+        short-hint : |
+            Set the expression threshold to maximize agreement with flux data
+        long-hint : |
+            Set the expression threshold to maximize agreement with flux data
+
+
+description : |
+    
+    <p>This method compare flux with gene expression for each metabolic pathway and the overall model.</p>
+    
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Chris Henry, Janaka Edirisinghe, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
