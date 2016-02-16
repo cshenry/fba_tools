@@ -79,6 +79,9 @@ sub _buildgene_subsystem_hash {
 
 sub _buildtemplate_classification {
 	my ($self) = @_;
+	if ($self->domain() eq "Plant" || $self->taxonomy() =~ /viridiplantae/i) {
+		return "plant";
+	}
 	my $classifier = Bio::KBase::ObjectAPI::utilities::classifier_data();
 	my $scores = {};
 	my $sum = 0;
