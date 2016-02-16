@@ -348,6 +348,7 @@ sub func_gapfill_metabolic_model {
 		$model = $self->util_kbase_store()->get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
     }
     if (!defined($params->{media_id})) {
+    	$params->{default_max_uptake} = 100;
     	$params->{media_id} = "Complete";
     	$params->{media_workspace} = "KBaseMedia";
     }
@@ -423,7 +424,7 @@ sub func_run_flux_balance_analysis {
 		max_p_uptake => undef,
 		max_s_uptake => undef,
 		max_o_uptake => undef,
-		default_max_uptake => 1000,
+		default_max_uptake => 0,
 		notes => undef,
 		massbalance => undef
     });
@@ -437,6 +438,7 @@ sub func_run_flux_balance_analysis {
     	$expseries = $self->util_kbase_store()->get_object($params->{expseries_workspace}."/".$params->{expseries_id});
     }
     if (!defined($params->{media_id})) {
+    	$params->{default_max_uptake} = 100;
     	$params->{media_id} = "Complete";
     	$params->{media_workspace} = "KBaseMedia";
     }

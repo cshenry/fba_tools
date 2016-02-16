@@ -223,6 +223,10 @@ sub get_objects {
 							}
 						}
 					}
+					if (!defined($self->cache()->{$newrefs->[$i]}->{_updated})) {
+						my $obj = $self->cache()->{$newrefs->[$i]};
+						$obj->update_from_old_versions();
+					}
 				}
 			}
 		}

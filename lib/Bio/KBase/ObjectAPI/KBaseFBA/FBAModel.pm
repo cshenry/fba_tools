@@ -1097,11 +1097,11 @@ sub add_gapfilling {
 		integrated => 0,
 		media_ref => $args->{object}->media()->_reference()
 	};
-	$self->add("gapfillings",$gfobj);
 	if (defined($args->{solution_to_integrate})) {
 		$gfobj->{integrated} = 1;
 		$gfobj->{integrated_solution} = $args->{solution_to_integrate};
 	}
+	$self->add("gapfillings",$gfobj);
 	#Integrating biomass removal information into biomass compounds
 	my $biomass_removals = $args->{object}->biomassRemovals();
 	my $brkeys = [keys(%{$biomass_removals})];
@@ -1715,6 +1715,33 @@ sub translate_to_localrefs {
     		}
     	}
     }
+}
+
+sub update_from_old_versions {
+	my $self = shift;
+	$self->{_updated} = 1;
+	my $gfs = $self->gapfillings();
+	for (my $i=0; $i < @{$gfs}; $i++) {
+		$self->remove("gapfillings",$gfs->[$i]);	
+	}
+	my $newgfs = $self->gapfillings();
+	for (my $i=0; $i < @{$gfs}; $i++) {
+		my $fbobj;
+		if (length($gfs->[$i]->gapfill_ref()) > 0) {
+			$fbobj = $gfs->[$i]->gapfill();
+		} elsif (length($gfs->[$i]->fba_ref()) > 0) {
+			$fbobj = $gfs->[$i]->fba();
+		}
+		if (defined($fbobj) && defined($fbobj->gapfillingSolutions()->[0])) {
+			print "Updating older style model gapfilling to new formats.\n";
+			$fbobj->fbamodel($self);
+			$self->add_gapfilling({
+				object => $fbobj,
+				id => "gf.".$i,
+				solution_to_integrate => 0
+			});
+		}
+	}
 }
 
 __PACKAGE__->meta->make_immutable;

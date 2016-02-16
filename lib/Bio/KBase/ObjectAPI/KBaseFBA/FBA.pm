@@ -504,14 +504,7 @@ sub PrepareForGapfilling {
 	if (defined($args->{expsample})) {
 		$self->{_expsample} = $args->{expsample};
 	}
-	if ($args->{use_discrete_variables} == 1 && $args->{solver} eq "GLPK") {
-	   	$args->{solver} = "SCIP";
-	   	$self->fva(0);
-	}
-	if (defined($args->{solver})) {
-		$self->parameters()->{MFASolver} = uc($args->{solver});
-	}
-	$self->parameters()->{"Reactions use variables"} = $args->{use_discrete_variables};
+	$self->parameters()->{"Reactions use variables"} = 0;
 	if (defined($self->{_expsample})) {
 		$self->comboDeletions(0);
 		$self->fluxMinimization(1);
@@ -1677,6 +1670,7 @@ sub createJobDirectory {
 	}
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file
+	#$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
 	my $paramData = [];
 	foreach my $param (keys(%{$parameters})) {
 		push(@{$paramData},$param."|".$parameters->{$param}."|Specialized parameters");
