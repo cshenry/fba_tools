@@ -1118,13 +1118,17 @@ $params is a fba_tools.CompareFluxWithExpressionParams
 $results is a fba_tools.CompareFluxWithExpressionResults
 CompareFluxWithExpressionParams is a reference to a hash where the following keys are defined:
 	fba_id has a value which is a fba_tools.fba_id
+	fba_workspace has a value which is a fba_tools.workspace_name
 	expseries_id has a value which is a fba_tools.expseries_id
+	expseries_workspace has a value which is a fba_tools.workspace_name
 	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	estimate_threshold has a value which is a fba_tools.bool
 	maximize_agreement has a value which is a fba_tools.bool
 	fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+	workspace has a value which is a fba_tools.workspace_name
 fba_id is a string
+workspace_name is a string
 expseries_id is a string
 bool is an int
 fbapathwayanalysis_id is a string
@@ -1142,13 +1146,17 @@ $params is a fba_tools.CompareFluxWithExpressionParams
 $results is a fba_tools.CompareFluxWithExpressionResults
 CompareFluxWithExpressionParams is a reference to a hash where the following keys are defined:
 	fba_id has a value which is a fba_tools.fba_id
+	fba_workspace has a value which is a fba_tools.workspace_name
 	expseries_id has a value which is a fba_tools.expseries_id
+	expseries_workspace has a value which is a fba_tools.workspace_name
 	expression_condition has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	estimate_threshold has a value which is a fba_tools.bool
 	maximize_agreement has a value which is a fba_tools.bool
 	fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+	workspace has a value which is a fba_tools.workspace_name
 fba_id is a string
+workspace_name is a string
 expseries_id is a string
 bool is an int
 fbapathwayanalysis_id is a string
@@ -1212,6 +1220,105 @@ Merge two or more metabolic models into a compartmentalized community model
     }
 }
  
+
+
+=head2 check_model_mass_balance
+
+  $results = $obj->check_model_mass_balance($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.CheckModelMassBalanceParams
+$results is a fba_tools.CheckModelMassBalanceResults
+CheckModelMassBalanceParams is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+fbamodel_id is a string
+workspace_name is a string
+CheckModelMassBalanceResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.CheckModelMassBalanceParams
+$results is a fba_tools.CheckModelMassBalanceResults
+CheckModelMassBalanceParams is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+fbamodel_id is a string
+workspace_name is a string
+CheckModelMassBalanceResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+Identifies reactions in the model that are not mass balanced
+
+=back
+
+=cut
+
+ sub check_model_mass_balance
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function check_model_mass_balance (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to check_model_mass_balance:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'check_model_mass_balance');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+	method => "fba_tools.check_model_mass_balance",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'check_model_mass_balance',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method check_model_mass_balance",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'check_model_mass_balance',
+				       );
+    }
+}
+ 
   
 
 sub version {
@@ -1225,16 +1332,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'compare_flux_with_expression',
+                method_name => 'check_model_mass_balance',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method compare_flux_with_expression",
+            error => "Error invoking method check_model_mass_balance",
             status_line => $self->{client}->status_line,
-            method_name => 'compare_flux_with_expression',
+            method_name => 'check_model_mass_balance',
         );
     }
 }
@@ -1905,6 +2012,38 @@ a string
 
 The workspace ID for a FBA pathway analysis object
 @id ws KBaseFBA.FBAPathwayAnalysis
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 ws_report_id
+
+=over 4
+
+
+
+=item Description
+
+The workspace ID for a Report object
+@id ws KBaseReport.Report
 
 
 =item Definition
@@ -2618,12 +2757,15 @@ new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 <pre>
 a reference to a hash where the following keys are defined:
 fba_id has a value which is a fba_tools.fba_id
+fba_workspace has a value which is a fba_tools.workspace_name
 expseries_id has a value which is a fba_tools.expseries_id
+expseries_workspace has a value which is a fba_tools.workspace_name
 expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 estimate_threshold has a value which is a fba_tools.bool
 maximize_agreement has a value which is a fba_tools.bool
 fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+workspace has a value which is a fba_tools.workspace_name
 
 </pre>
 
@@ -2633,12 +2775,15 @@ fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis
 
 a reference to a hash where the following keys are defined:
 fba_id has a value which is a fba_tools.fba_id
+fba_workspace has a value which is a fba_tools.workspace_name
 expseries_id has a value which is a fba_tools.expseries_id
+expseries_workspace has a value which is a fba_tools.workspace_name
 expression_condition has a value which is a string
 exp_threshold_percentile has a value which is a float
 estimate_threshold has a value which is a fba_tools.bool
 maximize_agreement has a value which is a fba_tools.bool
 fbapathwayanalysis_output_id has a value which is a fba_tools.fbapathwayanalysis_id
+workspace has a value which is a fba_tools.workspace_name
 
 
 =end text
@@ -2669,6 +2814,70 @@ new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysi
 
 a reference to a hash where the following keys are defined:
 new_fbapathwayanalysis_ref has a value which is a fba_tools.ws_fbapathwayanalysis_id
+
+
+=end text
+
+=back
+
+
+
+=head2 CheckModelMassBalanceParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 CheckModelMassBalanceResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
 
 
 =end text

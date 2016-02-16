@@ -20,19 +20,26 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
     "fba_id",
+    "fba_workspace",
     "expseries_id",
+    "expseries_workspace",
     "expression_condition",
     "exp_threshold_percentile",
     "estimate_threshold",
     "maximize_agreement",
-    "fbapathwayanalysis_output_id"
+    "fbapathwayanalysis_output_id",
+    "workspace"
 })
 public class CompareFluxWithExpressionParams {
 
     @JsonProperty("fba_id")
     private String fbaId;
+    @JsonProperty("fba_workspace")
+    private String fbaWorkspace;
     @JsonProperty("expseries_id")
     private String expseriesId;
+    @JsonProperty("expseries_workspace")
+    private String expseriesWorkspace;
     @JsonProperty("expression_condition")
     private String expressionCondition;
     @JsonProperty("exp_threshold_percentile")
@@ -43,6 +50,8 @@ public class CompareFluxWithExpressionParams {
     private Long maximizeAgreement;
     @JsonProperty("fbapathwayanalysis_output_id")
     private String fbapathwayanalysisOutputId;
+    @JsonProperty("workspace")
+    private String workspace;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("fba_id")
@@ -60,6 +69,21 @@ public class CompareFluxWithExpressionParams {
         return this;
     }
 
+    @JsonProperty("fba_workspace")
+    public String getFbaWorkspace() {
+        return fbaWorkspace;
+    }
+
+    @JsonProperty("fba_workspace")
+    public void setFbaWorkspace(String fbaWorkspace) {
+        this.fbaWorkspace = fbaWorkspace;
+    }
+
+    public CompareFluxWithExpressionParams withFbaWorkspace(String fbaWorkspace) {
+        this.fbaWorkspace = fbaWorkspace;
+        return this;
+    }
+
     @JsonProperty("expseries_id")
     public String getExpseriesId() {
         return expseriesId;
@@ -72,6 +96,21 @@ public class CompareFluxWithExpressionParams {
 
     public CompareFluxWithExpressionParams withExpseriesId(String expseriesId) {
         this.expseriesId = expseriesId;
+        return this;
+    }
+
+    @JsonProperty("expseries_workspace")
+    public String getExpseriesWorkspace() {
+        return expseriesWorkspace;
+    }
+
+    @JsonProperty("expseries_workspace")
+    public void setExpseriesWorkspace(String expseriesWorkspace) {
+        this.expseriesWorkspace = expseriesWorkspace;
+    }
+
+    public CompareFluxWithExpressionParams withExpseriesWorkspace(String expseriesWorkspace) {
+        this.expseriesWorkspace = expseriesWorkspace;
         return this;
     }
 
@@ -150,6 +189,21 @@ public class CompareFluxWithExpressionParams {
         return this;
     }
 
+    @JsonProperty("workspace")
+    public String getWorkspace() {
+        return workspace;
+    }
+
+    @JsonProperty("workspace")
+    public void setWorkspace(String workspace) {
+        this.workspace = workspace;
+    }
+
+    public CompareFluxWithExpressionParams withWorkspace(String workspace) {
+        this.workspace = workspace;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -162,7 +216,7 @@ public class CompareFluxWithExpressionParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((("CompareFluxWithExpressionParams"+" [fbaId=")+ fbaId)+", expseriesId=")+ expseriesId)+", expressionCondition=")+ expressionCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", estimateThreshold=")+ estimateThreshold)+", maximizeAgreement=")+ maximizeAgreement)+", fbapathwayanalysisOutputId=")+ fbapathwayanalysisOutputId)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((("CompareFluxWithExpressionParams"+" [fbaId=")+ fbaId)+", fbaWorkspace=")+ fbaWorkspace)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expressionCondition=")+ expressionCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", estimateThreshold=")+ estimateThreshold)+", maximizeAgreement=")+ maximizeAgreement)+", fbapathwayanalysisOutputId=")+ fbapathwayanalysisOutputId)+", workspace=")+ workspace)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

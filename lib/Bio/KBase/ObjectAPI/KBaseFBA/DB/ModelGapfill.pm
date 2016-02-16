@@ -21,9 +21,9 @@ has media_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribu
 has integrated => (is => 'rw', isa => 'Bool', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has jobnode => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has integrated_solution => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
-has gapfill_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has gapfill_ref => (is => 'rw', isa => 'Str', printOrder => '-1',default => '', type => 'attribute', metaclass => 'Typed');
 has id => (is => 'rw', isa => 'Str', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
-has fba_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has fba_ref => (is => 'rw', isa => 'Str', printOrder => '-1',default => '', type => 'attribute', metaclass => 'Typed');
 
 
 # LINKS:

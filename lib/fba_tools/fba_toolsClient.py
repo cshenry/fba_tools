@@ -226,4 +226,11 @@ class fba_tools(object):
         resp = self._call('fba_tools.compare_flux_with_expression',
                           [params], json_rpc_context)
         return resp[0]
+  
+    def check_model_mass_balance(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method check_model_mass_balance: argument json_rpc_context is not type dict as required.')
+        resp = self._call('fba_tools.check_model_mass_balance',
+                          [params], json_rpc_context)
+        return resp[0]
  

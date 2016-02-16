@@ -4270,8 +4270,42 @@ int MFAProblem::BuildCoreProblem(Data* InData,OptimizationParameter*& InParamete
 	//Now I add mass balance constraints for particular atoms
 	if (GetParameter("Mass balance atoms").length() > 0 && GetParameter("Mass balance atoms").compare("none") != 0) {
 	  vector<string>* strings = StringToStrings(GetParameter("Mass balance atoms"),";");
+
 	  for (int i=0; i < int(strings->size()); i++) {
 	    	    AddMassBalanceAtomConstraint((*strings)[i].data(), InData);
+	  }
+	  for (int i=0; i < InData->FNumReactions(); i++) {
+	  		string imbal = InData->GetReaction(i)->GetData("MASSIMBAL",STRING);
+	  		if (imbal.length() > 0) {
+	  			string message = "Reaction "+InData->GetReaction(i)->GetData("DATABASE",STRING)+" imbalanced\n"+imbal+"Reactants:\n";
+	  			string products = "Products:\n";
+	  			for (int j=0; j < InData->GetReaction(i)->FNumReactants(); j++) {
+	  				Species* reactant = InData->GetReaction(i)->GetReactant(j);
+	  				if (InData->GetReaction(i)->GetReactantCoef(j) < 0) {
+	  					message.append("(");
+	  					message.append(dtoa(-1*InData->GetReaction(i)->GetReactantCoef(j)));
+	  					message.append(") ");
+	  					message.append(reactant->GetData("NAME",STRING,1));
+	  					message.append(" [");
+	  					message.append(reactant->GetData("DATABASE",STRING));
+	  					message.append("] ");
+	  					message.append(reactant->FFormula());
+	  					message.append("\n");
+	  				} else {
+	  					products.append("(");
+	  					products.append(dtoa(InData->GetReaction(i)->GetReactantCoef(j)));
+	  					products.append(") ");
+	  					products.append(reactant->GetData("NAME",STRING,1));
+	  					products.append(" [");
+	  					products.append(reactant->GetData("DATABASE",STRING));
+	  					products.append("] ");
+	  					products.append(reactant->FFormula());
+						products.append("\n");
+	  				}
+	  			}
+	  			message += products;
+	  			MFALog->push_back(message);
+	  		}
 	  }
 	}
 	//	AddDeltaGofFormationConstraint(InData);
@@ -4334,18 +4368,27 @@ int MFAProblem::AddMassBalanceAtomConstraint(const char* ID, Data* InData) {
     if (reaction->GetData("DATABASE",STRING).length() > 3 && reaction->GetData("DATABASE",STRING).substr(0,3).compare("bio") == 0) {
       continue; // skip biomass reaction which is by definition balanced since cpd11416 has no formula
     }
-    int numID = 0;
+    float numID = 0;
     for (int j=0; j < reaction->FNumReactants(); j++) {
       Species* reactant = reaction->GetReactant(j);
       numID += reactant->CountAtomType(ID)*reaction->GetReactantCoef(j);
     }
     if (numID != 0) {
-      string logit = "Shutting down mass-imbalanced reaction: ";
-      logit.append(reaction->GetData("DATABASE",STRING));
-      logit.append(" [");
-      logit.append(ID);
-      logit.append("]");
-      MFALog->push_back(logit);
+    	string massimbal = reaction->GetData("MASSIMBAL",STRING);
+    	if (numID > 0) {
+    		massimbal.append("Extra ");
+    		massimbal.append(dtoa(numID));
+    		massimbal.append(" ");
+    		massimbal.append(ID);
+    		massimbal.append(" in products\n");
+    	} else {
+    		massimbal.append("Extra ");
+			massimbal.append(dtoa(-1*numID));
+			massimbal.append(" ");
+			massimbal.append(ID);
+			massimbal.append(" in reactants\n");
+    	}
+    	reaction->SetData("MASSIMBAL",massimbal.data(),STRING);
 
       if (reaction->GetMFAVar(FLUX) != NULL) {
 	LinEquation* shutdown = InitializeLinEquation("Shut down flux",0,EQUAL);

@@ -30,6 +30,15 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    add_positive_transporters :
+        ui-name : |
+            Add growth transporters?
+        short-hint : |
+            Add transporters for primary nutrients associated with all conditions with growth
+        long-hint : |
+            Add transporters for primary nutrients associated with all conditions with growth
+
+
     phenotypeset_id :
         ui-name : |
             Phenotype Set
@@ -39,33 +48,6 @@ parameters :
             A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
 
 
-    gapfill_phenotypes :
-        ui-name : |
-            Gapfill no-growth conditions?
-        short-hint : |
-            Identify minimal reaction set needed to permit growth in any conditon lacking growth
-        long-hint : |
-            Identify minimal reaction set needed to permit growth in any conditon lacking growth
-
-
-    add_all_transporters :
-        ui-name : |
-            Add all transporters?
-        short-hint : |
-            Add transporters for primary nutrients associated with all phenotype conditions
-        long-hint : |
-            Add transporters for primary nutrients associated with all phenotype conditions
-
-
-    media_supplement_list :
-        ui-name : |
-            Media supplement
-        short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-
-
     feature_ko_list :
         ui-name : |
             Gene Knockouts
@@ -73,24 +55,6 @@ parameters :
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
         long-hint : |
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-
-
-    phenotypesim_output_id :
-        ui-name : |
-            Phenotype Simulation Result
-        short-hint : |
-            Name the Phenotype Simulation Result data
-        long-hint : |
-            Name the Phenotype Simulation Result data
-
-
-    fbamodel_id :
-        ui-name : |
-            FBA Model
-        short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
 
 
     custom_bound_list :
@@ -104,13 +68,22 @@ parameters :
             e.g. 0;rxn00001;5
 
 
-    all_reversible :
+    fbamodel_id :
         ui-name : |
-            Make all reactions reversible?
+            FBA Model
         short-hint : |
-            Check this box to ignore the reversibility rules in the model and make every reaction reversible
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
         long-hint : |
-            Check this box to ignore the reversibility rules in the model and make every reaction reversible
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+
+
+    add_all_transporters :
+        ui-name : |
+            Add all transporters?
+        short-hint : |
+            Add transporters for primary nutrients associated with all phenotype conditions
+        long-hint : |
+            Add transporters for primary nutrients associated with all phenotype conditions
 
 
     objective_fraction :
@@ -122,6 +95,42 @@ parameters :
             What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
 
 
+    phenotypesim_output_id :
+        ui-name : |
+            Phenotype Simulation Result
+        short-hint : |
+            Name the Phenotype Simulation Result data
+        long-hint : |
+            Name the Phenotype Simulation Result data
+
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+
+
+    all_reversible :
+        ui-name : |
+            Make all reactions reversible?
+        short-hint : |
+            Check this box to ignore the reversibility rules in the model and make every reaction reversible
+        long-hint : |
+            Check this box to ignore the reversibility rules in the model and make every reaction reversible
+
+
+    gapfill_phenotypes :
+        ui-name : |
+            Gapfill no-growth conditions?
+        short-hint : |
+            Identify minimal reaction set needed to permit growth in any conditon lacking growth
+        long-hint : |
+            Identify minimal reaction set needed to permit growth in any conditon lacking growth
+
+
     reaction_ko_list :
         ui-name : |
             Reaction Knockouts
@@ -129,15 +138,6 @@ parameters :
             User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
         long-hint : |
             User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-
-
-    add_positive_transporters :
-        ui-name : |
-            Add growth transporters?
-        short-hint : |
-            Add transporters for primary nutrients associated with all conditions with growth
-        long-hint : |
-            Add transporters for primary nutrients associated with all conditions with growth
 
 
 description : |

@@ -486,14 +486,22 @@ sub PrepareForGapfilling {
 		add_external_rxns => 1,
 		make_model_rxns_reversible => 1,
 		activate_all_model_reactions => 1,
-		use_discrete_variables => 0
+		use_discrete_variables => 0,
+		gapfill_id => undef,
+		integrate_gapfilling_solution => 0
 	}, $args);
+	$self->parameters()->{gapfill_id} = $args->{gapfill_id};
+	$self->parameters()->{integrate_gapfilling_solution} = $args->{integrate_gapfilling_solution};
 	push(@{$self->gauranteedrxns()},@{$args->{gauranteedrxns}});
 	push(@{$self->blacklistedrxns()},@{$args->{blacklistedrxns}});
 	$self->parameters()->{minimum_target_flux} = $args->{minimum_target_flux};
 	$self->parameters()->{"scale penalty by flux"} = 0;#I think this may be sufficiently flawed we might consider removing altogether
 	$self->parameters()->{add_external_rxns} = $args->{add_external_rxns};
 	$self->parameters()->{make_model_rxns_reversible} = $args->{make_model_rxns_reversible};
+	$self->parameters()->{add_gapfilling_solution_to_model} = 0;
+	if ($self->parameters()->{add_external_rxns} == 1 || $self->parameters()->{make_model_rxns_reversible} == 1) {
+		$self->parameters()->{add_gapfilling_solution_to_model} = 1;
+	}
 	$self->parameters()->{omega} = $args->{omega};
 	$self->parameters()->{alpha} = $args->{alpha};
 	$self->parameters()->{"CPLEX solver time limit"} = $args->{timePerSolution};
@@ -2139,6 +2147,8 @@ Description:
 sub loadMFAToolkitResults {
 	my ($self) = @_;
 	$self->parseProblemReport();
+	$self->parseBiomassRemovals();
+	$self->parseGapfillingOutput();
 	$self->parseFluxFiles();
 	$self->parseMetaboliteProduction();
 	$self->parseFBAPhenotypeOutput();
@@ -2149,7 +2159,7 @@ sub loadMFAToolkitResults {
 	$self->parseTintleResult();
 	$self->parseOutputFiles();
 	$self->parseReactionMinimization();
-	$self->parseGapfillingOutput();
+	$self->parseMFALog();
 }
 
 =head3 parseBiomassRemovals
@@ -2165,12 +2175,19 @@ sub parseBiomassRemovals {
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/BiomassRemovals.txt") {
 		my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/BiomassRemovals.txt");
+		print "Model failed to grow. Could not produce the following biomass compounds:\n";
 		for (my $i=0; $i < @{$data}; $i++) {
 			if (length($data->[$i]) > 0) {
 				my $array = [split(/_/,$data->[$i])];
-				my $biomass = pop(@{$array});
-				my $compound = join("_",@{$array});
-				$self->biomassRemovals()->{$biomass} = $compound;
+				my $biomass = $array->[0];
+				my $compound = $array->[1]."_".$array->[2];
+				push(@{$self->biomassRemovals()->{$biomass}},$compound);
+				my $cpdobj = $self->fbamodel()->getObject("modelcompounds",$compound);
+				if (defined($cpdobj)) {
+					print $compound."\t".$cpdobj->name()."\n";
+				} else {
+					print $compound."\n";
+				}
 			}
 		}
 	}
@@ -3236,6 +3253,37 @@ sub parseGapfillingOutput {
 			$round++;
 		}
 		$self->add("gapfillingSolutions",$solution);
+		if ($self->parameters()->{add_gapfilling_solution_to_model} == 1) {
+			my $input = {
+				object => $self,
+				id => $self->parameters()->{gapfill_id}
+			};
+			if ($self->parameters()->{integrate_gapfilling_solution} == 1) {
+				$input->{solution_to_integrate} = 0;
+			}
+			$self->fbamodel()->add_gapfilling($input);
+		}
+	}
+}
+
+=head3 parseMFALog
+Definition:
+	void ModelSEED::MS::Model->parseMFALog();
+Description:
+	Parses MFA Log
+
+=cut
+
+sub parseMFALog {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MFALog.txt") {
+	    open (MFALOG, $directory."/MFALog.txt");
+	    my $loglines = join "", <MFALOG>;
+	    $self->MFALog($loglines);
+	}
+	else {
+	    $self->MFALog("Couldn't open MFALog.txt\n");	    
 	}
 }
 

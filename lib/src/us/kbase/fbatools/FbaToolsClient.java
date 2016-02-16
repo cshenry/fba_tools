@@ -282,4 +282,22 @@ public class FbaToolsClient {
         List<CompareFluxWithExpressionResults> res = caller.jsonrpcCall("fba_tools.compare_flux_with_expression", args, retType, true, true, jsonRpcContext);
         return res.get(0);
     }
+
+    /**
+     * <p>Original spec-file function name: check_model_mass_balance</p>
+     * <pre>
+     * Identifies reactions in the model that are not mass balanced
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.CheckModelMassBalanceParams CheckModelMassBalanceParams}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.CheckModelMassBalanceResults CheckModelMassBalanceResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public CheckModelMassBalanceResults checkModelMassBalance(CheckModelMassBalanceParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<CheckModelMassBalanceResults>> retType = new TypeReference<List<CheckModelMassBalanceResults>>() {};
+        List<CheckModelMassBalanceResults> res = caller.jsonrpcCall("fba_tools.check_model_mass_balance", args, retType, true, true, jsonRpcContext);
+        return res.get(0);
+    }
 }

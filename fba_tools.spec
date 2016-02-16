@@ -93,6 +93,11 @@ module fba_tools {
         @id ws KBaseFBA.FBAPathwayAnalysis
     */
 	typedef string ws_fbapathwayanalysis_id;
+	/* 
+        The workspace ID for a Report object
+        @id ws KBaseReport.Report
+    */
+	typedef string ws_report_id;
 
 
     typedef structure {
@@ -340,4 +345,18 @@ module fba_tools {
          Merge two or more metabolic models into a compartmentalized community model
     */
 	funcdef compare_flux_with_expression(CompareFluxWithExpressionParams params) returns (CompareFluxWithExpressionResults results) authentication required;
+
+	typedef structure {
+		fbamodel_id fbamodel_id;
+		workspace_name fbamodel_workspace;
+		workspace_name workspace;
+    } CheckModelMassBalanceParams;
+    
+    typedef structure {
+        ws_report_id new_report_ref;
+    } CheckModelMassBalanceResults;
+    /*
+         Identifies reactions in the model that are not mass balanced
+    */
+	funcdef check_model_mass_balance(CheckModelMassBalanceParams params) returns (CheckModelMassBalanceResults results) authentication required;
 };

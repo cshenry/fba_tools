@@ -80,7 +80,7 @@ has calculateReactionKnockoutSensitivity => (is => 'rw', isa => 'Bool', printOrd
 has maximizeActiveReactions => (is => 'rw', isa => 'Bool', printOrder => '-1', default => '0', type => 'attribute', metaclass => 'Typed');
 has biomassRemovals => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 has expression_matrix_column => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
-
+has MFALog => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
 has FBAMetaboliteProductionResults => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(FBAMetaboliteProductionResult)', metaclass => 'Typed', reader => '_FBAMetaboliteProductionResults', printOrder => '-1');
@@ -573,10 +573,17 @@ my $attributes = [
             'name' => 'expression_matrix_column',
             'type' => 'Str',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'MFALog',
+            'type' => 'Str',
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {media_ref => 0, compoundflux_objterms => 1, phenotypesimulationset_ref => 2, maximizeObjective => 3, jobnode => 4, promconstraint_ref => 5, id => 6, phenotypeset_ref => 7, geneKO_refs => 8, inputfiles => 9, drainfluxUseVariables => 10, quantitativeOptimization => 11, additionalCpd_refs => 12, outputfiles => 13, parameters => 14, noErrorThermodynamicConstraints => 15, objectiveConstraintFraction => 16, regulome_ref => 17, minimize_reactions => 18, minimizeErrorThermodynamicConstraints => 19, uptakeLimits => 20, allReversible => 21, tintleKappa => 22, objectiveValue => 23, minimize_reaction_costs => 24, numberOfSolutions => 25, fluxMinimization => 26, thermodynamicConstraints => 27, defaultMaxDrainFlux => 28, reactionflux_objterms => 29, fbamodel_ref => 30, tintleW => 31, reactionKO_refs => 32, fluxUseVariables => 33, findMinimalMedia => 34, PROMKappa => 35, simpleThermoConstraints => 36, comboDeletions => 37, defaultMinDrainFlux => 38, expression_matrix_ref => 39, fva => 40, decomposeReversibleDrainFlux => 41, biomassflux_objterms => 42, defaultMaxFlux => 43, decomposeReversibleFlux => 44,calculateReactionKnockoutSensitivity => 45,maximizeActiveReactions => 46,biomassRemovals => 47,expression_matrix_column => 48};
+my $attribute_map = {media_ref => 0, compoundflux_objterms => 1, phenotypesimulationset_ref => 2, maximizeObjective => 3, jobnode => 4, promconstraint_ref => 5, id => 6, phenotypeset_ref => 7, geneKO_refs => 8, inputfiles => 9, drainfluxUseVariables => 10, quantitativeOptimization => 11, additionalCpd_refs => 12, outputfiles => 13, parameters => 14, noErrorThermodynamicConstraints => 15, objectiveConstraintFraction => 16, regulome_ref => 17, minimize_reactions => 18, minimizeErrorThermodynamicConstraints => 19, uptakeLimits => 20, allReversible => 21, tintleKappa => 22, objectiveValue => 23, minimize_reaction_costs => 24, numberOfSolutions => 25, fluxMinimization => 26, thermodynamicConstraints => 27, defaultMaxDrainFlux => 28, reactionflux_objterms => 29, fbamodel_ref => 30, tintleW => 31, reactionKO_refs => 32, fluxUseVariables => 33, findMinimalMedia => 34, PROMKappa => 35, simpleThermoConstraints => 36, comboDeletions => 37, defaultMinDrainFlux => 38, expression_matrix_ref => 39, fva => 40, decomposeReversibleDrainFlux => 41, biomassflux_objterms => 42, defaultMaxFlux => 43, decomposeReversibleFlux => 44,calculateReactionKnockoutSensitivity => 45,maximizeActiveReactions => 46,biomassRemovals => 47,expression_matrix_column => 48,MFALog => 49};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

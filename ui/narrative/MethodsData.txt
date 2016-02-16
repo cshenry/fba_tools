@@ -399,4 +399,42 @@ description : |
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Chris Henry, Janaka Edirisinghe, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
+{check_model_mass_balance}
+#
+# Define basic display information
+#
+name     : Check model mass balance
+
+tooltip  : |
+    Check the mass balanced of all reactions in a model
+
+screenshots :
+    - check_model_mass_balance_input.png
+    - check_model_mass_balance_output.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+#
+# Configure the display and description of the parameters
+#
+---
+description : |
+    
+    <p>This method checks the elemental balance of all reactions in the model. Only compounds with specified molecular formulas are considered.</p>
+    
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Chris Henry, Matt DeJongh. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
 {blank}
