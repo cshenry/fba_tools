@@ -279,6 +279,10 @@ sub serializeToDB {
 		if (defined($self->$name())) {
 			if ($item->{type} eq "Int" || $item->{type} eq "Num" || $item->{type} eq "Bool") {
 				$data->{$name} = $self->$name()+0;
+			} elsif ($name eq "fba_ref" || $name eq "gapfill_ref") {
+				if (defined($self->$name()) && length($self->$name()) > 0) {
+					$data->{$name} = $self->$name();
+				}
 			} elsif ($name eq "cues") {
 				$data->{$name} = $self->$name();
 				foreach my $cue (keys(%{$data->{$name}})) {
