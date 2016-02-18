@@ -33,9 +33,9 @@ parameters :
         ui-name : |
             Model ID
         short-hint : |
-            ID of model for checking mass balance
+            ID of model to check the mass balance of
         long-hint : |
-            ID of model for checking mass balance
+            ID of model to check the mass balance of
 
 
 description : |

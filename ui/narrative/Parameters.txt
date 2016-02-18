@@ -46,7 +46,7 @@ build_metabolic_model	genome_id		0	0	0	KBaseGenomes.Genome	0	Genome	Genome ID fo
 build_metabolic_model	media_id		1	0	0	KBaseBiochem.Media	0	Media	Growth condition for gapfilling	Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
 build_metabolic_model	fbamodel_output_id		0	0	0	KBaseFBA.FBAModel	1	Output model	Output metabolic model name	Enter a name for the metabolic model to be created
 build_metabolic_model	template_id		1	0	0	KBaseFBA.FBAModelTemplate	0	Template model	Template model name	Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
-build_metabolic_model	gapfill_model	1	0	1	0	checkbox	0	Gapfill model?		Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
+build_metabolic_model	gapfill_model	1	0	0	0	checkbox	0	Gapfill model?		Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
 build_metabolic_model	thermodynamic_constraints	0	0	1	0	checkbox	0	Thermodynamic constraints?		Check this box to enable the use of thermodynamic constraints to enforce the thermodynamic feasibility of all active reactions in the flux solution
 build_metabolic_model	comprehensive_gapfill	0	0	1	0	checkbox	0	Comprehensive Gapfill		Check this box to activate as many reactions as possible, rather than just the biomass objective function
 build_metabolic_model	custom_bound_list		1	1	1	text	0	Custom flux bounds	e.g. 0;rxn00001;5	Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
@@ -102,4 +102,4 @@ compare_flux_with_expression	exp_threshold_percentile	0.5	0	0	0	float	0	Expressi
 compare_flux_with_expression	estimate_threshold	0	0	1	0	checkbox	0	Estimate threshold		Estimates threshold for gene expression based on a set of universal genes
 compare_flux_with_expression	maximize_agreement	0	0	1	0	checkbox	0	Maximize agreement		Set the expression threshold to maximize agreement with flux data
 compare_flux_with_expression	fbapathwayanalysis_output_id		0	0	0	KBaseFBA.FBAPathwayAnalysis	1	Output ID		ID where the results of the comparison will be saved
-check_model_mass_balance	fbamodel_id		0	0	0	KBaseFBA.FBAModel	0	Model ID		ID of model for checking mass balance
+check_model_mass_balance	fbamodel_id		0	0	0	KBaseFBA.FBAModel	0	Model ID		ID of model to check the mass balance of

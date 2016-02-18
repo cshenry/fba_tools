@@ -1,9 +1,19 @@
 {
-   "contact" : "help@kbase.us",
+   "job_id_output_field" : "docker",
+   "authors" : [
+      "chenry"
+   ],
+   "categories" : [
+      "active"
+   ],
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
    "behavior" : {
       "service-mapping" : {
-         "method" : "simulate_growth_on_phenotype_data",
          "name" : "fba_tools",
+         "method" : "simulate_growth_on_phenotype_data",
          "input_mapping" : [
             {
                "narrative_system_variable" : "workspace",
@@ -14,20 +24,20 @@
                "target_property" : "fbamodel_id"
             },
             {
-               "target_property" : "phenotypeset_id",
-               "input_parameter" : "phenotypeset_id"
+               "input_parameter" : "phenotypeset_id",
+               "target_property" : "phenotypeset_id"
             },
             {
                "target_property" : "phenotypesim_output_id",
                "input_parameter" : "phenotypesim_output_id"
             },
             {
-               "input_parameter" : "add_all_transporters",
-               "target_property" : "add_all_transporters"
+               "target_property" : "add_all_transporters",
+               "input_parameter" : "add_all_transporters"
             },
             {
-               "target_property" : "add_positive_transporters",
-               "input_parameter" : "add_positive_transporters"
+               "input_parameter" : "add_positive_transporters",
+               "target_property" : "add_positive_transporters"
             },
             {
                "target_property" : "gapfill_phenotypes",
@@ -46,8 +56,8 @@
                "input_parameter" : "reaction_ko_list"
             },
             {
-               "input_parameter" : "custom_bound_list",
-               "target_property" : "custom_bound_list"
+               "target_property" : "custom_bound_list",
+               "input_parameter" : "custom_bound_list"
             },
             {
                "target_property" : "media_supplement_list",
@@ -64,8 +74,8 @@
                "target_property" : "ws"
             },
             {
-               "constant_value" : "KBasePhenotypes.PhenotypeSimulationSet",
-               "target_property" : "type"
+               "target_property" : "type",
+               "constant_value" : "KBasePhenotypes.PhenotypeSimulationSet"
             },
             {
                "input_parameter" : "phenotypesim_output_id",
@@ -75,239 +85,229 @@
          "url" : ""
       }
    },
-   "visible" : true,
-   "widgets" : {
-      "output" : "kbaseTabTable",
-      "input" : null
-   },
    "parameters" : [
       {
-         "default_values" : [
-            ""
-         ],
+         "field_type" : "text",
          "advanced" : false,
          "id" : "fbamodel_id",
          "optional" : false,
+         "default_values" : [
+            ""
+         ],
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ]
          },
-         "field_type" : "text",
          "allow_multiple" : false
       },
       {
+         "default_values" : [
+            ""
+         ],
+         "optional" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBasePhenotypes.PhenotypeSet"
             ]
          },
-         "field_type" : "text",
          "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ],
-         "optional" : false,
+         "field_type" : "text",
          "advanced" : false,
          "id" : "phenotypeset_id"
       },
       {
+         "allow_multiple" : false,
+         "text_options" : {
+            "is_output_name" : true,
+            "valid_ws_types" : [
+               "KBasePhenotypes.PhenotypeSimulationSet"
+            ]
+         },
+         "optional" : false,
          "default_values" : [
             ""
          ],
-         "id" : "phenotypesim_output_id",
          "advanced" : false,
-         "optional" : false,
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBasePhenotypes.PhenotypeSimulationSet"
-            ],
-            "is_output_name" : true
-         },
-         "field_type" : "text",
-         "allow_multiple" : false
+         "id" : "phenotypesim_output_id",
+         "field_type" : "text"
       },
       {
          "field_type" : "checkbox",
-         "optional" : false,
          "text_options" : {
             "valid_ws_types" : []
          },
-         "allow_multiple" : false,
+         "id" : "add_all_transporters",
+         "advanced" : true,
          "default_values" : [
             "0"
          ],
-         "advanced" : true,
-         "id" : "add_all_transporters",
+         "optional" : false,
+         "allow_multiple" : false,
          "checkbox_options" : {
-            "unchecked_value" : 0,
-            "checked_value" : 1
+            "checked_value" : 1,
+            "unchecked_value" : 0
          }
       },
       {
-         "allow_multiple" : false,
+         "field_type" : "checkbox",
          "text_options" : {
             "valid_ws_types" : []
          },
-         "advanced" : true,
          "id" : "add_positive_transporters",
+         "advanced" : true,
          "default_values" : [
             "0"
          ],
-         "checkbox_options" : {
-            "unchecked_value" : 0,
-            "checked_value" : 1
-         },
-         "field_type" : "checkbox",
-         "optional" : false
-      },
-      {
-         "field_type" : "checkbox",
-         "optional" : false,
-         "checkbox_options" : {
-            "unchecked_value" : 0,
-            "checked_value" : 1
-         },
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "allow_multiple" : false,
-         "default_values" : [
-            "0"
-         ],
-         "id" : "gapfill_phenotypes",
-         "advanced" : true
-      },
-      {
-         "field_type" : "checkbox",
          "optional" : false,
          "checkbox_options" : {
             "checked_value" : 1,
             "unchecked_value" : 0
          },
-         "allow_multiple" : false,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "advanced" : true,
-         "id" : "all_reversible",
-         "default_values" : [
-            "0"
-         ]
+         "allow_multiple" : false
       },
       {
          "text_options" : {
             "valid_ws_types" : []
          },
+         "field_type" : "checkbox",
+         "optional" : false,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "allow_multiple" : false,
+         "advanced" : true,
+         "id" : "gapfill_phenotypes"
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "checkbox",
+         "default_values" : [
+            "0"
+         ],
+         "optional" : false,
+         "allow_multiple" : false,
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "advanced" : true,
+         "id" : "all_reversible"
+      },
+      {
          "field_type" : "text",
-         "allow_multiple" : true,
+         "id" : "feature_ko_list",
+         "advanced" : true,
          "default_values" : [
             ""
          ],
-         "advanced" : true,
-         "id" : "feature_ko_list",
-         "optional" : true
+         "optional" : true,
+         "allow_multiple" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         }
       },
       {
-         "field_type" : "textsubdata",
+         "allow_multiple" : true,
          "optional" : true,
+         "default_values" : [
+            ""
+         ],
+         "id" : "reaction_ko_list",
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "textsubdata",
          "textsubdata_options" : {
             "allow_custom" : false,
-            "multiselection" : true,
             "show_src_obj" : true,
+            "multiselection" : true,
             "subdata_selection" : {
-               "parameter_id" : "fbamodel_id",
-               "description_template" : "- {{name}}",
-               "path_to_subdata" : [
-                  "modelreactions"
-               ],
                "selection_description" : [
                   "name"
                ],
+               "path_to_subdata" : [
+                  "modelreactions"
+               ],
+               "parameter_id" : "fbamodel_id",
                "subdata_included" : [
                   "modelreactions/[*]/id",
                   "modelreactions/[*]/name"
                ],
-               "selection_id" : "id"
+               "selection_id" : "id",
+               "description_template" : "- {{name}}"
             }
-         },
-         "allow_multiple" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "advanced" : true,
-         "id" : "reaction_ko_list",
-         "default_values" : [
-            ""
-         ]
+         }
       },
       {
+         "advanced" : true,
+         "id" : "custom_bound_list",
+         "field_type" : "text",
          "allow_multiple" : true,
          "text_options" : {
             "valid_ws_types" : []
          },
-         "field_type" : "text",
-         "advanced" : true,
-         "id" : "custom_bound_list",
          "optional" : true,
          "default_values" : [
             ""
          ]
       },
       {
-         "advanced" : true,
-         "id" : "media_supplement_list",
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : true,
          "text_options" : {
             "valid_ws_types" : []
          },
          "textsubdata_options" : {
-            "allow_custom" : false,
+            "show_src_obj" : true,
+            "multiselection" : false,
             "subdata_selection" : {
-               "selection_description" : [
-                  "name"
-               ],
+               "description_template" : "- {{name}}",
                "selection_id" : "id",
                "subdata_included" : [
                   "modelcompounds/[*]/id",
                   "modelcompounds/[*]/name"
                ],
-               "parameter_id" : "fbamodel_id",
                "path_to_subdata" : [
                   "modelcompounds"
                ],
-               "description_template" : "- {{name}}"
+               "selection_description" : [
+                  "name"
+               ],
+               "parameter_id" : "fbamodel_id"
             },
-            "multiselection" : false,
-            "show_src_obj" : true
+            "allow_custom" : false
          },
+         "field_type" : "textsubdata",
+         "default_values" : [
+            ""
+         ],
          "optional" : true,
-         "field_type" : "textsubdata"
+         "allow_multiple" : true,
+         "advanced" : true,
+         "id" : "media_supplement_list"
       },
       {
-         "advanced" : true,
-         "optional" : false,
-         "id" : "objective_fraction",
          "default_values" : [
             "0.1"
          ],
-         "allow_multiple" : false,
+         "optional" : false,
          "text_options" : {
             "validate_as" : "float"
          },
-         "field_type" : "text"
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "id" : "objective_fraction",
+         "advanced" : true
       }
    ],
-   "categories" : [
-      "active"
-   ],
-   "authors" : [
-      "chenry"
-   ],
+   "contact" : "help@kbase.us",
    "name" : "simulate_growth_on_phenotype_data",
    "ver" : "1.0.0",
-   "job_id_output_field" : "docker"
+   "visible" : true
 }

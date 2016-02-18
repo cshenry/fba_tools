@@ -1,5 +1,12 @@
 {
    "contact" : "help@kbase.us",
+   "visible" : true,
+   "ver" : "1.0.0",
+   "name" : "compare_flux_with_expression",
+   "job_id_output_field" : "docker",
+   "authors" : [
+      "chenry"
+   ],
    "behavior" : {
       "service-mapping" : {
          "input_mapping" : [
@@ -16,12 +23,12 @@
                "input_parameter" : "expseries_id"
             },
             {
-               "input_parameter" : "expression_condition",
-               "target_property" : "expression_condition"
+               "target_property" : "expression_condition",
+               "input_parameter" : "expression_condition"
             },
             {
-               "input_parameter" : "exp_threshold_percentile",
-               "target_property" : "exp_threshold_percentile"
+               "target_property" : "exp_threshold_percentile",
+               "input_parameter" : "exp_threshold_percentile"
             },
             {
                "input_parameter" : "estimate_threshold",
@@ -36,161 +43,154 @@
                "target_property" : "fbapathwayanalysis_output_id"
             }
          ],
-         "name" : "fba_tools",
          "method" : "compare_flux_with_expression",
+         "name" : "fba_tools",
          "url" : "",
          "output_mapping" : [
             {
-               "target_property" : "ws",
-               "narrative_system_variable" : "workspace"
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
             },
             {
-               "constant_value" : "KBaseFBA.FBAPathwayAnalysis",
-               "target_property" : "type"
+               "target_property" : "type",
+               "constant_value" : "KBaseFBA.FBAPathwayAnalysis"
             },
             {
-               "target_property" : "obj",
-               "input_parameter" : "fbapathwayanalysis_output_id"
+               "input_parameter" : "fbapathwayanalysis_output_id",
+               "target_property" : "obj"
             }
          ]
       }
    },
-   "visible" : true,
    "widgets" : {
-      "input" : null,
-      "output" : "kbaseExpressionAnalysis"
+      "output" : "kbaseExpressionAnalysis",
+      "input" : null
    },
    "parameters" : [
       {
-         "allow_multiple" : false,
-         "field_type" : "text",
+         "optional" : false,
+         "default_values" : [
+            ""
+         ],
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBA"
             ]
          },
-         "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text",
          "advanced" : false,
-         "id" : "fba_id",
-         "default_values" : [
-            ""
-         ]
+         "id" : "fba_id"
       },
       {
-         "field_type" : "text",
+         "allow_multiple" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFeatureValues.ExpressionMatrix"
             ]
          },
+         "default_values" : [
+            ""
+         ],
+         "optional" : false,
+         "advanced" : false,
+         "id" : "expseries_id",
+         "field_type" : "text"
+      },
+      {
          "allow_multiple" : false,
          "default_values" : [
             ""
          ],
-         "advanced" : false,
          "optional" : false,
-         "id" : "expseries_id"
-      },
-      {
+         "id" : "expression_condition",
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
          "textsubdata_options" : {
-            "allow_custom" : false,
             "subdata_selection" : {
+               "selection_id" : "id",
+               "subdata_included" : [
+                  "data/col_ids"
+               ],
                "parameter_id" : "expseries_id",
                "path_to_subdata" : [
                   "data",
                   "col_ids"
-               ],
-               "subdata_included" : [
-                  "data/col_ids"
-               ],
-               "selection_id" : "id"
+               ]
             },
             "show_src_obj" : true,
-            "multiselection" : false
+            "multiselection" : false,
+            "allow_custom" : false
          },
-         "field_type" : "textsubdata",
-         "optional" : false,
-         "allow_multiple" : false,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "advanced" : false,
-         "id" : "expression_condition",
-         "default_values" : [
-            ""
-         ]
+         "field_type" : "textsubdata"
       },
       {
-         "allow_multiple" : false,
-         "field_type" : "text",
+         "optional" : false,
+         "default_values" : [
+            "0.5"
+         ],
          "text_options" : {
             "validate_as" : "float"
          },
-         "advanced" : false,
-         "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text",
          "id" : "exp_threshold_percentile",
-         "default_values" : [
-            "0.5"
-         ]
+         "advanced" : false
       },
       {
-         "checkbox_options" : {
-            "checked_value" : 1,
-            "unchecked_value" : 0
+         "text_options" : {
+            "valid_ws_types" : []
          },
+         "field_type" : "checkbox",
+         "optional" : false,
          "default_values" : [
             "0"
          ],
-         "advanced" : true,
-         "id" : "estimate_threshold",
-         "text_options" : {
-            "valid_ws_types" : []
-         },
          "allow_multiple" : false,
-         "optional" : false,
-         "field_type" : "checkbox"
-      },
-      {
          "checkbox_options" : {
             "checked_value" : 1,
             "unchecked_value" : 0
          },
-         "text_options" : {
-            "valid_ws_types" : []
-         },
+         "advanced" : true,
+         "id" : "estimate_threshold"
+      },
+      {
          "allow_multiple" : false,
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "optional" : false,
          "default_values" : [
             "0"
          ],
          "id" : "maximize_agreement",
          "advanced" : true,
-         "field_type" : "checkbox",
-         "optional" : false
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "checkbox"
       },
       {
-         "allow_multiple" : false,
+         "advanced" : false,
+         "id" : "fbapathwayanalysis_output_id",
+         "field_type" : "text",
          "text_options" : {
-            "is_output_name" : true,
             "valid_ws_types" : [
                "KBaseFBA.FBAPathwayAnalysis"
-            ]
+            ],
+            "is_output_name" : true
          },
-         "field_type" : "text",
-         "id" : "fbapathwayanalysis_output_id",
-         "advanced" : false,
-         "optional" : false,
+         "allow_multiple" : false,
          "default_values" : [
             ""
-         ]
+         ],
+         "optional" : false
       }
    ],
    "categories" : [
       "active"
-   ],
-   "ver" : "1.0.0",
-   "authors" : [
-      "chenry"
-   ],
-   "name" : "compare_flux_with_expression",
-   "job_id_output_field" : "docker"
+   ]
 }
