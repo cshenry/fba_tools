@@ -1,0 +1,41 @@
+{
+  "name" : "Edit Metabolic Model",
+  "ver" : "1.0.0",
+  "authors" : ["nconrad@anl.gov"],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : ["active"],
+  "widgets" : {
+    "input" : "kbaseEditModel",
+    "output" : "null"
+  },
+  "parameters" : [ {
+    "id" : "param0",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseFBA.FBAModel" ]
+    }
+  } ],
+  "behavior" : {
+    "none" : {
+      "output_mapping" : [
+        {
+          "constant_value": "KBaseFBA.FBAModel",
+          "target_property": "type"
+        },
+        {
+          "input_parameter": "param0",
+          "target_property": "obj"
+        },
+        {
+          "narrative_system_variable": "workspace",
+          "target_property": "ws"
+        }
+      ]
+    }
+  }
+}

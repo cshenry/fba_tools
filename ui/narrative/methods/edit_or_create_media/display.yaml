@@ -1,0 +1,42 @@
+#
+# Define basic display information
+#
+name     : Edit or Create Media
+subtitle : |
+    Edit existing or create new media.
+tooltip  : |
+    Bring up an editable view of media.
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    param0 :
+        ui-name : |
+            Media ID
+        short-hint : |
+            Media type [9.1]
+        long-hint  : |
+            Media type [9.1]
+description : |
+    Bring up an editable view of media.
+technical-description : |
+    Bring up an editable view of media.

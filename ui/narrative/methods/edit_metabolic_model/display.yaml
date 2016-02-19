@@ -1,0 +1,42 @@
+#
+# Define basic display information
+#
+name     : Edit Metabolic Model
+subtitle : |
+    Add/remove reactions, adjust reaction directionality, and more.
+tooltip  : |
+    Add/remove reactions, adjust reaction directionality, and more.
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    param0 :
+        ui-name : |
+            Metabolic Model
+        short-hint : |
+            Metabolic Model
+        long-hint  : |
+            Metabolic Model
+description : |
+    Bring up an editable view of metabolic model.
+technical-description : |
+    Bring up an editable view of metabolic model.  Add/remove reactions, adjust reaction directionality, and more.
