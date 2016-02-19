@@ -1264,6 +1264,7 @@ sub func_check_model_mass_balance {
     	}]
     });
    	return {
+		report_name => $params->{fbamodel_id}.".massbalancereport",
 		ws_report_id => $params->{workspace}.'/'.$params->{fbamodel_id}.".massbalancereport"
 	};
 }
