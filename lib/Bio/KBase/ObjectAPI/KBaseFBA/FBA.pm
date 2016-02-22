@@ -130,7 +130,9 @@ sub _buildjobpath {
 
 sub _buildjobdirectory {
 	my ($self) = @_;
-	return $self->jobPath()."/".$self->jobID();
+	my $directory = $self->jobPath()."/".$self->jobID();
+	$directory =~ s/\/\//\//g;
+	return $directory;
 }
 
 sub _buildmfatoolkitBinary {
@@ -1378,15 +1380,6 @@ sub createJobDirectory {
 			$objective .= ";FLUX;".$objid.";c;".$self->biomassflux_objterms()->{$objid};
 		}
 	}
-	my $exchange = "";
-	foreach my $key (keys(%{$exchangehash})) {
-		if (length($exchange) > 0) {
-			$exchange .= ";";
-		}
-		foreach my $comp (keys(%{$exchangehash->{$key}})) {
-			$exchange .= $key."[".$comp."]:".$exchangehash->{$key}->{$comp}->[0].":".$exchangehash->{$key}->{$comp}->[1];
-		}
-	}
 	#Setting up uptake limits
 	my $uptakeLimits = "none";
 	foreach my $atom (keys(%{$self->uptakeLimits()})) {
@@ -1422,7 +1415,6 @@ sub createJobDirectory {
 		"output folder" => $self->jobID()."/",
 		"use database fields" => 1,
 		"MFASolver" => $solver,
-		"exchange species" => $exchange,
 		"database spec file" => $directory."StringDBFile.txt",
 		"Reactions use variables" => $self->fluxUseVariables(),
 		"Force use variables for all reactions" => 1,
@@ -1495,14 +1487,26 @@ sub createJobDirectory {
 	my $cpdbnds = $self->FBACompoundBounds();
 	my $rxnbnds = $self->FBAReactionBounds();
 	foreach my $media (@{$medialist}) {
+		$media->parent($self->parent());
 		my $userBounds = {};
 		my $mediaCpds = $media->mediacompounds();
 		for (my $i=0; $i < @{$mediaCpds}; $i++) {
-			$userBounds->{$mediaCpds->[$i]->compound()->id()."_e0"}->{"e"}->{"DRAIN_FLUX"} = {
+			my $cid = $mediaCpds->[$i]->compound_ref();
+			$cid =~ s/^.+\///g;
+			my $cmp = "e";
+			if ($cid !~ m/_[a-z]+\d+$/) {
+				$cid .= "_e0";
+			} else {
+				$cmp = "c";
+			}
+			$userBounds->{$cid}->{$cmp}->{"DRAIN_FLUX"} = {
 				max => $mediaCpds->[$i]->maxFlux(),
 				min => $mediaCpds->[$i]->minFlux(),
 				conc => $mediaCpds->[$i]->concentration()
 			};
+			if ($cmp ne "e") {
+				$exchangehash->{$cid}->{c} = [$mediaCpds->[$i]->minFlux(),$mediaCpds->[$i]->maxFlux()];
+			}
 		}
 		for (my $i=0; $i < @{$cpdbnds}; $i++) {
 			my $comp = "c";
@@ -1514,6 +1518,9 @@ sub createJobDirectory {
 				min => $cpdbnds->[$i]->lowerBound(),
 				conc => 0.001
 			};
+			if ($comp ne "e") {
+				$exchangehash->{$cpdbnds->[$i]->modelcompound()->id()}->{c} = [$cpdbnds->[$i]->lowerBound(),$cpdbnds->[$i]->upperBound()];
+			}
 		}
 		for (my $i=0; $i < @{$rxnbnds}; $i++) {
 			$userBounds->{$rxnbnds->[$i]->modelreaction()->id()}->{c}->{$translation->{$rxnbnds->[$i]->variableType()}} = {
@@ -1679,6 +1686,16 @@ sub createJobDirectory {
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file
 	#$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
+	my $exchange = "";
+	foreach my $key (keys(%{$exchangehash})) {
+		if (length($exchange) > 0) {
+			$exchange .= ";";
+		}
+		foreach my $comp (keys(%{$exchangehash->{$key}})) {
+			$exchange .= $key."[".$comp."]:".$exchangehash->{$key}->{$comp}->[0].":".$exchangehash->{$key}->{$comp}->[1];
+		}
+	}
+	$parameters->{"exchange species"} = $exchange;
 	my $paramData = [];
 	foreach my $param (keys(%{$parameters})) {
 		push(@{$paramData},$param."|".$parameters->{$param}."|Specialized parameters");

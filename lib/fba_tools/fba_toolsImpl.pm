@@ -172,6 +172,31 @@ sub util_build_fba {
 			}
 		}
 	}
+	if (defined($model->genome_ref()) && defined($params->{feature_ko_list})) {
+		my $genome = $model->genome();
+		foreach my $gene (@{$params->{feature_ko_list}}) {
+			my $geneObj = $genome->searchForFeature($gene);
+			if (defined($geneObj)) {
+				$fbaobj->addLinkArrayItem("geneKOs",$geneObj);
+			}
+		}
+	}
+	if (defined($params->{reaction_ko_list})) {
+		foreach my $reaction (@{$params->{reaction_ko_list}}) {
+			my $rxnObj = $model->searchForReaction($reaction);
+			if (defined($rxnObj)) {
+				$fbaobj->addLinkArrayItem("reactionKOs",$rxnObj);
+			}
+		}
+	}
+	if (defined($params->{media_supplement_list})) {
+		foreach my $compound (@{$params->{media_supplement_list}}) {
+			my $cpdObj = $model->searchForCompound($compound);
+			if (defined($cpdObj)) {
+				$fbaobj->addLinkArrayItem("additionalCpds",$cpdObj);
+			}
+		}
+	}
 	if (!defined($params->{custom_bound_list})) {
 		$params->{custom_bound_list} = [];
 	}
