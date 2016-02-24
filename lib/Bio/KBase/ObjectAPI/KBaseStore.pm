@@ -203,6 +203,8 @@ sub get_objects {
 								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
 							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
 								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/PlantModelTemplate");
+							} elsif ($output->[0]->[7] eq "NewKBaseModelTemplates") {
+								$self->cache()->{$newrefs->[$i]}->template_ref($output->[0]->[7]."/".$output->[0]->[1]);
 							}
 						}
 					}
@@ -220,6 +222,8 @@ sub get_objects {
 								$temprefs->[$j] = "NewKBaseModelTemplates/GramNegModelTemplate";
 							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
 								$temprefs->[$j] = "NewKBaseModelTemplates/PlantModelTemplate";
+							} elsif ($output->[0]->[7] eq "NewKBaseModelTemplates") {
+								$temprefs->[$j] = $output->[0]->[7]."/".$output->[0]->[1];
 							}
 						}
 					}

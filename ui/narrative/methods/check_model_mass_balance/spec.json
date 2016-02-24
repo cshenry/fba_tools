@@ -1,69 +1,57 @@
 {
-   "authors" : [
-      "chenry"
-   ],
-   "job_id_output_field" : "docker",
+   "ver" : "1.0.0",
    "categories" : [
       "active"
    ],
-   "widgets" : {
-      "output" : "kbaseReportView",
-      "input" : null
-   },
+   "parameters" : [
+      {
+         "allow_multiple" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "id" : "fbamodel_id",
+         "default_values" : [
+            ""
+         ],
+         "optional" : false,
+         "advanced" : false,
+         "field_type" : "text"
+      }
+   ],
    "behavior" : {
       "service-mapping" : {
+         "name" : "fba_tools",
+         "url" : "",
          "output_mapping" : [
             {
-			"narrative_system_variable": "workspace",
-			"target_property": "workspace_name"
-			},
-			{
-			"service_method_output_path": [0,"report_name"],
-			"target_property": "report_name"
-			},
-			{
-			"service_method_output_path": [0,"ws_report_id"],
-			"target_property": "report_ref"
-			},
-			{
-			"constant_value": "16",
-			"target_property": "report_window_line_height"
-			}
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            }
          ],
-         "url" : "",
-         "name" : "fba_tools",
-         "method" : "check_model_mass_balance",
          "input_mapping" : [
             {
                "target_property" : "workspace",
                "narrative_system_variable" : "workspace"
             },
             {
-               "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
+               "input_parameter" : "fbamodel_id",
+               "target_property" : "fbamodel_id"
             }
-         ]
+         ],
+         "method" : "check_model_mass_balance"
       }
    },
-   "parameters" : [
-      {
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAModel"
-            ]
-         },
-         "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ],
-         "optional" : false,
-         "advanced" : false,
-         "id" : "fbamodel_id",
-         "field_type" : "text"
-      }
-   ],
    "contact" : "help@kbase.us",
+   "authors" : [
+      "chenry"
+   ],
+   "widgets" : {
+      "input" : null,
+      "output" : "kbaseReportView"
+   },
+   "visible" : true,
    "name" : "check_model_mass_balance",
-   "ver" : "1.0.0",
-   "visible" : true
+   "job_id_output_field" : "docker"
 }

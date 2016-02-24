@@ -1452,9 +1452,9 @@ sub createJobDirectory {
 		$parameters->{"PROM Kappa"} = $self->PROMKappa();
 		$parameters->{"prom constraints"} = 1;
 	}
-	if ($solver eq "SCIP") {
+	#if ($solver eq "SCIP") {
 		$parameters->{"use simple variable and constraint names"} = 1;
-	}
+	#}
 	if ($^O =~ m/^MSWin/) {
 		$parameters->{"scip executable"} = "scip.exe";
 		$parameters->{"perl directory"} = "C:/Perl/bin/perl.exe";
