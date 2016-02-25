@@ -29,6 +29,24 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    fba_id :
+        ui-name : |
+            FBA solution
+        short-hint : |
+            Flux balance analysis solution to be compared with expression values
+        long-hint : |
+            Flux balance analysis solution to be compared with expression values
+
+
+    maximize_agreement :
+        ui-name : |
+            Maximize agreement
+        short-hint : |
+            Set the expression threshold to maximize agreement with flux data
+        long-hint : |
+            Set the expression threshold to maximize agreement with flux data
+
+
     exp_threshold_percentile :
         ui-name : |
             Expression threshold
@@ -47,33 +65,6 @@ parameters :
             An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
 
 
-    expression_condition :
-        ui-name : |
-            Expression condition
-        short-hint : |
-            Specific condition in expression matrix that should be compared with reaction flux
-        long-hint : |
-            Specific condition in expression matrix that should be compared with reaction flux
-
-
-    maximize_agreement :
-        ui-name : |
-            Maximize agreement
-        short-hint : |
-            Set the expression threshold to maximize agreement with flux data
-        long-hint : |
-            Set the expression threshold to maximize agreement with flux data
-
-
-    fba_id :
-        ui-name : |
-            FBA solution
-        short-hint : |
-            Flux balance analysis solution to be compared with expression values
-        long-hint : |
-            Flux balance analysis solution to be compared with expression values
-
-
     fbapathwayanalysis_output_id :
         ui-name : |
             Output ID
@@ -90,6 +81,15 @@ parameters :
             Estimates threshold for gene expression based on a set of universal genes
         long-hint : |
             Estimates threshold for gene expression based on a set of universal genes
+
+
+    expression_condition :
+        ui-name : |
+            Expression condition
+        short-hint : |
+            Specific condition in expression matrix that should be compared with reaction flux
+        long-hint : |
+            Specific condition in expression matrix that should be compared with reaction flux
 
 
 description : |

@@ -1,3 +1,4 @@
+	Default	Optional	Advanced	Array	WSType	Output	ui-name	placeholder	description
 run_flux_balance_analysis	fbamodel_id		0	0	0	KBaseFBA.FBAModel	0	FBA model	Model for FBA	The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
 run_flux_balance_analysis	media_id		1	0	0	KBaseBiochem.Media	0	Media	Growth condition for FBA	Media specifies the set of chemical compounds organism can use for its growth
 run_flux_balance_analysis	target_reaction	bio1	0	0	0	text	0	Reaction to maximize		ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, bio1)

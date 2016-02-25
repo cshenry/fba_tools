@@ -1,57 +1,57 @@
 {
-   "ver" : "1.0.0",
-   "categories" : [
-      "active"
-   ],
-   "parameters" : [
-      {
-         "allow_multiple" : false,
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAModel"
-            ]
-         },
-         "id" : "fbamodel_id",
-         "default_values" : [
-            ""
-         ],
-         "optional" : false,
-         "advanced" : false,
-         "field_type" : "text"
-      }
+   "authors" : [
+      "chenry"
    ],
    "behavior" : {
       "service-mapping" : {
-         "name" : "fba_tools",
          "url" : "",
-         "output_mapping" : [
-            {
-               "target_property" : "ws",
-               "narrative_system_variable" : "workspace"
-            }
-         ],
          "input_mapping" : [
             {
                "target_property" : "workspace",
                "narrative_system_variable" : "workspace"
             },
             {
-               "input_parameter" : "fbamodel_id",
-               "target_property" : "fbamodel_id"
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id"
             }
          ],
+         "output_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
+            }
+         ],
+         "name" : "fba_tools",
          "method" : "check_model_mass_balance"
       }
    },
-   "contact" : "help@kbase.us",
-   "authors" : [
-      "chenry"
-   ],
    "widgets" : {
-      "input" : null,
-      "output" : "kbaseReportView"
+      "output" : "kbaseReportView",
+      "input" : null
    },
-   "visible" : true,
+   "categories" : [
+      "active"
+   ],
+   "parameters" : [
+      {
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "field_type" : "text",
+         "id" : "fbamodel_id",
+         "optional" : false,
+         "allow_multiple" : false
+      }
+   ],
+   "contact" : "help@kbase.us",
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker",
    "name" : "check_model_mass_balance",
-   "job_id_output_field" : "docker"
+   "visible" : true
 }

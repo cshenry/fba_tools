@@ -30,6 +30,15 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    mixed_bag_model :
+        ui-name : |
+            Construct mixed-bag model?
+        short-hint : |
+            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
+        long-hint : |
+            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
+
+
     fbamodel_output_id :
         ui-name : |
             Community model
@@ -50,15 +59,6 @@ parameters :
             A list of metabolic models consisting of stoichiometric reactions, compounds, and the weighted components of  the biomass. Either one model set (see next input) or at least two individual models must be provided. Both inputs can be provided and will be merged into a single set of models.
         placeholder : |
             Model to be merged
-
-
-    mixed_bag_model :
-        ui-name : |
-            Construct mixed-bag model?
-        short-hint : |
-            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
-        long-hint : |
-            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
 
 
 fixed-parameters :

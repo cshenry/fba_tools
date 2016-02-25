@@ -30,35 +30,6 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    gapfill_model :
-        ui-name : |
-            Gapfill model?
-        short-hint : |
-            Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
-        long-hint : |
-            Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
-
-
-    keep_nogene_rxn :
-        ui-name : |
-            Remove No-gene Reactions
-        short-hint : |
-            In the translated model certain reactions may be left without a gene assigned to them; entering "yes" in this field removes those reactions from the model.
-        long-hint : |
-            In the translated model certain reactions may be left without a gene assigned to them; entering "yes" in this field removes those reactions from the model.
-
-
-    media_supplement_list :
-        ui-name : |
-            Media supplement
-        short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        placeholder : |
-            Additional compounds to add to media
-
-
     custom_bound_list :
         ui-name : |
             Custom flux bounds
@@ -68,17 +39,6 @@ parameters :
             Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
         placeholder : |
             e.g. 0;rxn00001;5
-
-
-    fbamodel_id :
-        ui-name : |
-            Input model
-        short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        placeholder : |
-            ID of starting model
 
 
     proteincomparison_id :
@@ -92,24 +52,24 @@ parameters :
             Translation table of proteins
 
 
-    minimum_target_flux :
+    fbamodel_id :
         ui-name : |
-            Minimum reaction flux
+            Input model
         short-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
         long-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-
-
-    media_id :
-        ui-name : |
-            Media
-        short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
-        long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
         placeholder : |
-            Growth condition for gapfilling
+            ID of starting model
+
+
+    gapfill_model :
+        ui-name : |
+            Gapfill model?
+        short-hint : |
+            Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
+        long-hint : |
+            Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
 
 
     fbamodel_output_id :
@@ -121,6 +81,46 @@ parameters :
             Name of the model produced by the gapfill analysis
         placeholder : |
             Output metabolic model name
+
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        placeholder : |
+            Additional compounds to add to media
+
+
+    minimum_target_flux :
+        ui-name : |
+            Minimum reaction flux
+        short-hint : |
+            The minimum flux that the target reaction will have when the gapfilling is performed
+        long-hint : |
+            The minimum flux that the target reaction will have when the gapfilling is performed
+
+
+    keep_nogene_rxn :
+        ui-name : |
+            Remove No-gene Reactions
+        short-hint : |
+            In the translated model certain reactions may be left without a gene assigned to them; entering "yes" in this field removes those reactions from the model.
+        long-hint : |
+            In the translated model certain reactions may be left without a gene assigned to them; entering "yes" in this field removes those reactions from the model.
+
+
+    media_id :
+        ui-name : |
+            Media
+        short-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+        long-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+        placeholder : |
+            Growth condition for gapfilling
 
 
 description : |

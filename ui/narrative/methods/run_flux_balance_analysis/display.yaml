@@ -29,24 +29,33 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    exp_threshold_margin :
+    fbamodel_id :
         ui-name : |
-            Expression uncertainty
+            FBA model
         short-hint : |
-            Range of uncertainty for classification of reaction activity based on expression threshold
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
         long-hint : |
-            Range of uncertainty for classification of reaction activity based on expression threshold
-
-
-    custom_bound_list :
-        ui-name : |
-            Custom flux bounds
-        short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
         placeholder : |
-            e.g. 0;rxn00001;5
+            Model for FBA
+
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+
+
+    activation_coefficient :
+        ui-name : |
+            Activation coefficient
+        short-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+        long-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
 
 
     minimize_flux :
@@ -67,51 +76,15 @@ parameters :
             Maximum number of moles of oxygen permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
 
 
-    reaction_ko_list :
+    custom_bound_list :
         ui-name : |
-            Reaction Knockouts
+            Custom flux bounds
         short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
         long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-
-
-    fba_output_id :
-        ui-name : |
-            Output FBA Result
-        short-hint : |
-            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
-        long-hint : |
-            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
         placeholder : |
-            ID for saving FBA results
-
-
-    exp_threshold_percentile :
-        ui-name : |
-            Expression threshold
-        short-hint : |
-            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-        long-hint : |
-            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-
-
-    media_supplement_list :
-        ui-name : |
-            Media supplement
-        short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-
-
-    max_p_uptake :
-        ui-name : |
-            Max phosphate uptake
-        short-hint : |
-            Maximum number of moles of phosphate permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-        long-hint : |
-            Maximum number of moles of phosphate permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+            e.g. 0;rxn00001;5
 
 
     max_c_uptake :
@@ -123,6 +96,15 @@ parameters :
             Maximum number of moles of carbon permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
 
 
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+
+
     media_id :
         ui-name : |
             Media
@@ -132,42 +114,6 @@ parameters :
             Media specifies the set of chemical compounds organism can use for its growth
         placeholder : |
             Growth condition for FBA
-
-
-    simulate_ko :
-        ui-name : |
-            Simulate All Single KO?
-        short-hint : |
-            Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
-        long-hint : |
-            Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
-
-
-    expression_condition :
-        ui-name : |
-            Expression condition
-        short-hint : |
-            Specific condition in expression matrix to which reaction activity in FBA should be fit
-        long-hint : |
-            Specific condition in expression matrix to which reaction activity in FBA should be fit
-
-
-    expseries_id :
-        ui-name : |
-            Expression data set
-        short-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
-        long-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
-
-
-    max_s_uptake :
-        ui-name : |
-            Max sulfur uptake
-        short-hint : |
-            Maximum number of moles of sulfur permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
-        long-hint : |
-            Maximum number of moles of sulfur permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
 
 
     max_n_uptake :
@@ -188,13 +134,22 @@ parameters :
             Check this box to minimize and maximize all reaction fluxes, enabling reaction classification
 
 
-    activation_coefficient :
+    max_p_uptake :
         ui-name : |
-            Activation coefficient
+            Max phosphate uptake
         short-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+            Maximum number of moles of phosphate permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
         long-hint : |
-            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+            Maximum number of moles of phosphate permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+
+
+    simulate_ko :
+        ui-name : |
+            Simulate All Single KO?
+        short-hint : |
+            Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
+        long-hint : |
+            Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
 
 
     feature_ko_list :
@@ -206,6 +161,24 @@ parameters :
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
 
 
+    exp_threshold_percentile :
+        ui-name : |
+            Expression threshold
+        short-hint : |
+            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+        long-hint : |
+            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+
+
+    expseries_id :
+        ui-name : |
+            Expression data set
+        short-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
+        long-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
+
+
     target_reaction :
         ui-name : |
             Reaction to maximize
@@ -213,6 +186,44 @@ parameters :
             ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, bio1)
         long-hint : |
             ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, bio1)
+
+
+    max_s_uptake :
+        ui-name : |
+            Max sulfur uptake
+        short-hint : |
+            Maximum number of moles of sulfur permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+        long-hint : |
+            Maximum number of moles of sulfur permitted for uptake (default uptake rates varies from 0 to 100 for all nutrients)
+
+
+    exp_threshold_margin :
+        ui-name : |
+            Expression uncertainty
+        short-hint : |
+            Range of uncertainty for classification of reaction activity based on expression threshold
+        long-hint : |
+            Range of uncertainty for classification of reaction activity based on expression threshold
+
+
+    fba_output_id :
+        ui-name : |
+            Output FBA Result
+        short-hint : |
+            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
+        long-hint : |
+            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
+        placeholder : |
+            ID for saving FBA results
+
+
+    expression_condition :
+        ui-name : |
+            Expression condition
+        short-hint : |
+            Specific condition in expression matrix to which reaction activity in FBA should be fit
+        long-hint : |
+            Specific condition in expression matrix to which reaction activity in FBA should be fit
 
 
 description : |
