@@ -8069,7 +8069,6 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 			if (currvar != NULL) {
 				currvar->UpperBound = 0;
 				currvar->LowerBound = 0;
-				this->LoadVariable(currvar->Index);
 				//cout << "Set reaction variable of type " << currvar->Type << " to zero for " << currvar->AssociatedReaction->GetData("DATABASE",STRING) << endl;
 			}
 			for (int vi=0; vi < int(variables.size()); vi++) {
@@ -8078,7 +8077,6 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 					if ((Sign.compare("+") == 0 && vi == 2) || (Sign.compare("-") == 0 && vi < 2)) {
 						currvar->UpperBound = 0;
 						currvar->LowerBound = 0;
-						this->LoadVariable(currvar->Index);
 						//cout << "Set reaction variable of type " << currvar->Type << " to zero for " << currvar->AssociatedReaction->GetData("DATABASE",STRING) << endl;
 					}
 				}
@@ -8086,6 +8084,7 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 		}
 	}
 	//Forcing activated reactions to nonzero flux by setting slack to zero
+	LinEquation* newconstraint = InitializeLinEquation("At least forcing SLACK variables to minimal values",1,LESS, LINEAR);
 	for (int ari=0; ari < (*activatedrxns).size(); ari++) {
 		string ReactionID = (*activatedrxns)[ari];
 		//cout << "Checking activated rxn " << ReactionID << endl;
@@ -8093,13 +8092,15 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 		if (current != NULL) {
 			MFAVariable* currvar = current->GetMFAVar(REACTION_SLACK);
 			if (currvar != NULL) {
-				currvar->UpperBound = 0;
-				currvar->LowerBound = 0;
-				this->LoadVariable(currvar->Index);
+				newconstraint->Variables.push_back(currvar);
+				newconstraint->Coefficient.push_back(1);
+				//currvar->UpperBound = 0;
+				//currvar->LowerBound = 0;
 				//cout << "Set reaction variable of type " << currvar->Type << " to zero for " << currvar->AssociatedReaction->GetData("DATABASE",STRING) << endl;
 			}
 		}
 	}
+	this->AddConstraint(newconstraint);
 	//Forcing cut reactions to zero flux either through flux directly or through use variables
 	for (int nari=0; nari < notactivatedrxns->size(); nari++) {
 		string ReactionID = (*notactivatedrxns)[nari];
@@ -8111,7 +8112,6 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 				if (currvar != NULL) {
 					currvar->UpperBound = 0;
 					currvar->LowerBound = 0;
-					this->LoadVariable(currvar->Index);
 					//cout << "Set reaction variable of type " << currvar->Type << " to zero for " << currvar->AssociatedReaction->GetData("DATABASE",STRING) << endl;
 				}
 			}
@@ -8130,7 +8130,6 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 					if ((Sign.compare("+") == 0 && vi < 2) || (Sign.compare("-") == 0 && vi == 2)) {
 						currvar->UpperBound = 0;
 						currvar->LowerBound = 0;
-						this->LoadVariable(currvar->Index);
 						//cout << "Set reaction variable of type " << currvar->Type << " to zero for " << currvar->AssociatedReaction->GetData("DATABASE",STRING) << endl;
 					}
 				}
@@ -8138,7 +8137,6 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 		}
 	}
 	ObjectiveConstraint->RightHandSide = 0; // we're maximizing this anyway
-	LoadConstToSolver(ObjectiveConstraint->Index);
 	this->ResetSolver();
 	this->LoadSolver();
 	CurrentSolution = RunSolver(true,false,true);
@@ -8164,6 +8162,13 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactst
 	//Iterate over the number of requested solutions
 	MFAVariable* NewSolutionForcingVariable = NULL;
 	vector<int> first_solution_variables;
+	bool slacks_in_objective = false;
+	for (int i=0; i < this->ObjFunct->Variables.size(); i++) {
+		if (this->ObjFunct->Variables[i]->Type == REACTION_SLACK) {
+			slacks_in_objective = true;
+			InParameters->NumSolutions = 1;
+		}
+	}
 	for (int m=0; m < InParameters->RecursiveMILPSolutionLimit; m++) {
 		//Resetting the solver to ensure all bounds and constraints are synchronized with solver
 		this->ResetSolver();
@@ -8186,13 +8191,13 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactst
 		double gfobjective = 0;
 		//Now adding a step in case binary variables are not being used, which intoduces binary variables for key terms and reminimizes
 		vector<MFAVariable*> solutionvariables;
-		if (InParameters->ReactionsUse == false) {
+		if (InParameters->ReactionsUse == false && slacks_in_objective == false) {
 			LinEquation* NewObjFunct = InitializeLinEquation("objective",0,EQUAL);
 			for (int i=0; i < this->ObjFunct->Variables.size(); i++) {
 				if (i >= gfstart && ObjFunct->Coefficient[i] > 0) {
 					MFAVariable* current = this->ObjFunct->Variables[i];
 					double value = CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index];
-					if (value > threshold) {
+					if (value > MFA_ZERO_TOLERANCE) {
 						if (current->Type == REACTION_SLACK) {
 							ObjFunct->Variables[i]->Binary = true;
 							NewObjFunct->Variables.push_back(ObjFunct->Variables[i]);
