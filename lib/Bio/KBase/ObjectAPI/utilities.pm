@@ -18,6 +18,7 @@ our $defbio = undef;
 our $globalparams = {"gapfill name" => "none"};
 our $startime = undef;
 our $classifierdata = undef;
+our $full_trace = 0;
 
 =head1 Bio::KBase::ObjectAPI::utilities
 
@@ -181,8 +182,6 @@ sub args {
     return $args;
 }
 
-sub error { Carp::confess($_[0]); }
-
 =head3 ARGS
 
 Definition:
@@ -278,18 +277,21 @@ sub USAGE {
 	return $call."{".$usage."}";
 }
 
-=head3 ERROR
+=head3 error
 
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::ERROR();
+	void Bio::KBase::ObjectAPI::utilities::error();
 Description:	
 
 =cut
 
-sub ERROR {	
+sub error {	
 	my ($message) = @_;
-    $message = "\"\"$message\"\"";
-	Carp::confess($message);
+    if ($full_trace == 1) {
+		Carp::confess($message);
+    } else {
+    	die $message;
+    }
 }
 
 =head3 USEERROR

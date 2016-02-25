@@ -191,7 +191,7 @@ sub get_objects {
 				}
 				if ($type eq "FBAModel") {
 					if (defined($self->cache()->{$newrefs->[$i]}->template_ref())) {
-						if ($self->cache()->{$newrefs->[$i]}->template_ref() =~ m/(\w+)\/(\w+)\/\d+/) {
+						if ($self->cache()->{$newrefs->[$i]}->template_ref() =~ m/(\w+)\/(\w+)\/*\d*/) {
 							my $output = $self->workspace()->get_object_info([{
 								"ref" => $self->cache()->{$newrefs->[$i]}->template_ref()
 							}],0);

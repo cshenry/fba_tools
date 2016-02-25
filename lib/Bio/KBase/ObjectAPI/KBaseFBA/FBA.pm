@@ -385,7 +385,7 @@ sub runFBA {
 	}
 	if ($self->jobDirectory() =~ m/\/fbajobs\/.+/) {
 		if (!defined($self->parameters()->{nodelete}) || $self->parameters()->{nodelete} == 0) {
-			rmtree($self->jobDirectory());
+			system("rm -rf ".$self->jobDirectory());
 		}
 	}
 	return $self->objectiveValue();
@@ -2192,18 +2192,26 @@ sub parseBiomassRemovals {
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/BiomassRemovals.txt") {
 		my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/BiomassRemovals.txt");
-		print "Model failed to grow. Could not produce the following biomass compounds:\n";
-		for (my $i=0; $i < @{$data}; $i++) {
-			if (length($data->[$i]) > 0) {
-				my $array = [split(/_/,$data->[$i])];
-				my $biomass = $array->[0];
-				my $compound = $array->[1]."_".$array->[2];
-				push(@{$self->biomassRemovals()->{$biomass}},$compound);
-				my $cpdobj = $self->fbamodel()->getObject("modelcompounds",$compound);
-				if (defined($cpdobj)) {
-					print $compound."\t".$cpdobj->name()."\n";
-				} else {
-					print $compound."\n";
+		if (@{$data} == 0 || (@{$data} == 1 && length($data->[0]) == 0)) {
+			if ($self->parameters()->{add_external_rxns} == 1) {
+				print "Model failed to be gapfilled for growth, and we could not identify the biomass components that could not be produced!\nIf this is a published or translated model, try rerunning gapfilling using the original published model as a source model.\n";
+			} else {
+				print "Model failed to grow, and we could not identify the biomass components that could not be produced!\nRun gapfilling on this model with the same media and objective, then try FBA again!\n";
+			}
+		} else {
+			print "Model failed to grow. Could not produce the following biomass compounds:\n";
+			for (my $i=0; $i < @{$data}; $i++) {
+				if (length($data->[$i]) > 0) {
+					my $array = [split(/_/,$data->[$i])];
+					my $biomass = $array->[0];
+					my $compound = $array->[1]."_".$array->[2];
+					push(@{$self->biomassRemovals()->{$biomass}},$compound);
+					my $cpdobj = $self->fbamodel()->getObject("modelcompounds",$compound);
+					if (defined($cpdobj)) {
+						print $compound."\t".$cpdobj->name()."\n";
+					} else {
+						print $compound."\n";
+					}
 				}
 			}
 		}
@@ -3102,6 +3110,9 @@ sub parseGapfillingOutput {
 			$rxnhash->{$rxns->[$i]->id()} = $rxns->[$i];
 		}	
 		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/GapfillingOutput.txt","\t");
+		if (!defined($tbl->{data}->[0]->[3])) {
+			Bio::KBase::ObjectAPI::utilities::error("Gapfilling failed to find a solution to permit model growth on specified media condition!");
+		}	
 		my $solution;
 		my $round = 0;
 		my $temparray = [split(/\//,$tbl->{data}->[0]->[3])];
