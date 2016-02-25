@@ -1,57 +1,57 @@
 {
-   "authors" : [
-      "chenry"
-   ],
-   "behavior" : {
-      "service-mapping" : {
-         "url" : "",
-         "input_mapping" : [
-            {
-               "target_property" : "workspace",
-               "narrative_system_variable" : "workspace"
-            },
-            {
-               "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
-            }
-         ],
-         "output_mapping" : [
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "ws"
-            }
-         ],
-         "name" : "fba_tools",
-         "method" : "check_model_mass_balance"
-      }
-   },
-   "widgets" : {
-      "output" : "kbaseReportView",
-      "input" : null
-   },
-   "categories" : [
-      "active"
-   ],
    "parameters" : [
       {
-         "advanced" : false,
-         "default_values" : [
-            ""
-         ],
+         "id" : "fbamodel_id",
+         "optional" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ]
          },
          "field_type" : "text",
-         "id" : "fbamodel_id",
-         "optional" : false,
-         "allow_multiple" : false
+         "advanced" : false,
+         "allow_multiple" : false,
+         "default_values" : [
+            ""
+         ]
       }
    ],
+   "widgets" : {
+      "input" : null,
+      "output" : "kbaseReportView"
+   },
    "contact" : "help@kbase.us",
+   "name" : "check_model_mass_balance",
    "ver" : "1.0.0",
    "job_id_output_field" : "docker",
-   "name" : "check_model_mass_balance",
-   "visible" : true
+   "authors" : [
+      "chenry"
+   ],
+   "behavior" : {
+      "service-mapping" : {
+         "method" : "check_model_mass_balance",
+         "output_mapping" : [
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            }
+         ],
+         "input_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "workspace"
+            },
+            {
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id"
+            }
+         ],
+         "url" : "",
+         "name" : "fba_tools"
+      }
+   },
+   "visible" : true,
+   "categories" : [
+      "active"
+   ]
 }

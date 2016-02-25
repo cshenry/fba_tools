@@ -1,7 +1,7 @@
-	Default	Optional	Advanced	Array	WSType	Output	ui-name	placeholder	description
+		Default	Optional	Advanced	Array	WSType	Output	ui-name	placeholder	description
 run_flux_balance_analysis	fbamodel_id		0	0	0	KBaseFBA.FBAModel	0	FBA model	Model for FBA	The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
 run_flux_balance_analysis	media_id		1	0	0	KBaseBiochem.Media	0	Media	Growth condition for FBA	Media specifies the set of chemical compounds organism can use for its growth
-run_flux_balance_analysis	target_reaction	bio1	0	0	0	text	0	Reaction to maximize		ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, bio1)
+run_flux_balance_analysis	target_reaction	bio1	0	0	0	text	0	Reaction to maximize		ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
 run_flux_balance_analysis	fba_output_id		0	0	0	KBaseFBA.FBA	1	Output FBA Result	ID for saving FBA results	The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
 run_flux_balance_analysis	fva	1	0	1	0	checkbox	0	Flux Variability Analysis?		Check this box to minimize and maximize all reaction fluxes, enabling reaction classification
 run_flux_balance_analysis	minimize_flux	1	0	1	0	checkbox	0	Minimize Flux?		Check this box to minize the sum of all fluxes *after* the primary objective function has been optimized.
@@ -50,7 +50,7 @@ compare_fba_solutions	fba_id_list		0	0	1	KBaseFBA.FBA	0	FBA(s)		Select FBA solut
 compare_fba_solutions	fbacomparison_output_id		0	0	0	KBaseFBA.FBAComparison	1	FBA comparison ID		Name of the object where FBA comparison data will be stored in your narrative
 gapfill_metabolic_model	fbamodel_id		0	0	0	KBaseFBA.FBAModel	0	Input model		The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
 gapfill_metabolic_model	media_id		0	0	0	KBaseBiochem.Media	0	Media	Growth condition for gapfilling	Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
-gapfill_metabolic_model	target_reaction		0	0	0	text	0	Reaction to maximize		ID of reaction flux to maximize in flux balance analysis (e.g. rxn00001, cpd00001_e0, bio1)
+gapfill_metabolic_model	target_reaction	bio1	0	0	0	text	0	Reaction to maximize		ID of reaction that must carry flux in the gapfilled model (note - you must manually type bio1 to maximize biomass)
 gapfill_metabolic_model	fbamodel_output_id		0	0	0	KBaseFBA.FBAModel	1	Output model		Name of the model produced by the gapfill analysis
 gapfill_metabolic_model	source_fbamodel_id		1	1	0	KBaseFBA.FBAModel	0	Source Gapfill Model		A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
 gapfill_metabolic_model	feature_ko_list		1	1	1	text	0	Gene Knockouts		User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)

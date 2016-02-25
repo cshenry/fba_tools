@@ -625,7 +625,7 @@ sub func_compare_fba_solutions {
     for (my $i=0; $i < @{$fbaids}; $i++) {
     	for (my $j=0; $j < @{$fbaids}; $j++) {
     		if ($j != $i) {
-    			$fbahash->{$fbaids->[$i]}->fba_similarity()->{$fbaids->[$j]} = [0,0,0,0,0,0];
+    			$fbahash->{$fbaids->[$i]}->fba_similarity()->{$fbaids->[$j]} = [0,0,0,0,0,0,0,0];
     		}
     	}
     }

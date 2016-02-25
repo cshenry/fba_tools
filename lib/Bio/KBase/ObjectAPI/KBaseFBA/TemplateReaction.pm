@@ -24,6 +24,7 @@ has msid => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', met
 has msname => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmsname' );
 has msabbreviation => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmsabbreviation' );
 has isTransporter => ( is => 'rw', isa => 'Bool',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildisTransporter' );
+has stoichiometry => ( is => 'rw', isa => 'ArrayRef', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstoichiometry' );
 
 has reaction_ref => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildreaction_ref' );
 
@@ -112,6 +113,15 @@ sub _buildisTransporter {
 		}
 	}
 	return 0;
+}
+
+sub _buildstoichiometry {
+	my ($self) = @_;
+	my $stoichiometry = [];
+	foreach my $reagent (@{$self->templateReactionReagents()}) {
+		push(@{$stoichiometry},[$reagent->coefficient(),$reagent->templatecompcompound()->templatecompound()->name(),$reagent->templatecompcompound()->id()]);
+	}
+	return $stoichiometry;
 }
 
 #***********************************************************************************************************

@@ -1,236 +1,236 @@
 {
-   "categories" : [
-      "active"
-   ],
-   "behavior" : {
-      "service-mapping" : {
-         "output_mapping" : [
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "ws"
-            },
-            {
-               "target_property" : "type",
-               "constant_value" : "KBaseFBA.FBAModel"
-            },
-            {
-               "input_parameter" : "fbamodel_output_id",
-               "target_property" : "obj"
-            }
-         ],
-         "name" : "fba_tools",
-         "url" : "",
-         "input_mapping" : [
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "workspace"
-            },
-            {
-               "input_parameter" : "fbamodel_id",
-               "target_property" : "fbamodel_id"
-            },
-            {
-               "target_property" : "proteincomparison_id",
-               "input_parameter" : "proteincomparison_id"
-            },
-            {
-               "target_property" : "media_id",
-               "input_parameter" : "media_id"
-            },
-            {
-               "input_parameter" : "fbamodel_output_id",
-               "target_property" : "fbamodel_output_id"
-            },
-            {
-               "target_property" : "keep_nogene_rxn",
-               "input_parameter" : "keep_nogene_rxn"
-            },
-            {
-               "target_property" : "gapfill_model",
-               "input_parameter" : "gapfill_model"
-            },
-            {
-               "input_parameter" : "custom_bound_list",
-               "target_property" : "custom_bound_list"
-            },
-            {
-               "target_property" : "media_supplement_list",
-               "input_parameter" : "media_supplement_list"
-            },
-            {
-               "target_property" : "minimum_target_flux",
-               "input_parameter" : "minimum_target_flux"
-            }
-         ],
-         "method" : "propagate_model_to_new_genome"
-      }
-   },
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseTabTable"
-   },
-   "authors" : [
-      "chenry"
-   ],
-   "visible" : true,
-   "name" : "propagate_model_to_new_genome",
-   "job_id_output_field" : "docker",
-   "ver" : "1.0.0",
-   "contact" : "help@kbase.us",
    "parameters" : [
       {
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : false,
+         "advanced" : false,
+         "field_type" : "text",
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ]
          },
-         "default_values" : [
-            ""
-         ],
-         "advanced" : false,
-         "field_type" : "text",
-         "id" : "fbamodel_id",
          "optional" : false,
-         "allow_multiple" : false
+         "id" : "fbamodel_id"
       },
       {
-         "allow_multiple" : false,
-         "optional" : true,
-         "id" : "proteincomparison_id",
+         "advanced" : false,
          "field_type" : "text",
+         "allow_multiple" : false,
          "default_values" : [
             ""
          ],
+         "id" : "proteincomparison_id",
+         "optional" : true,
          "text_options" : {
             "valid_ws_types" : [
                "GenomeComparison.ProteomeComparison"
             ]
-         },
-         "advanced" : false
+         }
       },
       {
-         "field_type" : "text",
-         "id" : "media_id",
-         "advanced" : false,
          "default_values" : [
             ""
          ],
+         "allow_multiple" : false,
+         "advanced" : false,
+         "field_type" : "text",
          "text_options" : {
             "valid_ws_types" : [
                "KBaseBiochem.Media"
             ]
          },
-         "allow_multiple" : false,
-         "optional" : true
+         "optional" : true,
+         "id" : "media_id"
       },
       {
-         "optional" : false,
-         "allow_multiple" : false,
          "default_values" : [
             ""
          ],
+         "allow_multiple" : false,
+         "advanced" : false,
+         "field_type" : "text",
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ],
             "is_output_name" : true
          },
+         "id" : "fbamodel_output_id",
+         "optional" : false
+      },
+      {
          "advanced" : false,
-         "field_type" : "text",
-         "id" : "fbamodel_output_id"
+         "default_values" : [
+            "0"
+         ],
+         "optional" : false,
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "id" : "keep_nogene_rxn",
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         }
       },
       {
          "allow_multiple" : false,
-         "id" : "keep_nogene_rxn",
-         "advanced" : false,
-         "optional" : false,
+         "field_type" : "checkbox",
+         "text_options" : {
+            "valid_ws_types" : []
+         },
          "checkbox_options" : {
             "checked_value" : 1,
             "unchecked_value" : 0
          },
-         "field_type" : "checkbox",
+         "id" : "gapfill_model",
          "default_values" : [
-            "0"
+            "1"
          ],
+         "advanced" : true,
+         "optional" : false
+      },
+      {
+         "advanced" : true,
+         "field_type" : "text",
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : true,
+         "optional" : true,
+         "id" : "custom_bound_list",
          "text_options" : {
             "valid_ws_types" : []
          }
       },
       {
-         "field_type" : "checkbox",
-         "checkbox_options" : {
-            "checked_value" : 1,
-            "unchecked_value" : 0
-         },
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "default_values" : [
-            "1"
-         ],
-         "optional" : false,
-         "id" : "gapfill_model",
-         "advanced" : true,
-         "allow_multiple" : false
-      },
-      {
-         "field_type" : "text",
-         "id" : "custom_bound_list",
-         "advanced" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "default_values" : [
-            ""
-         ],
-         "optional" : true,
-         "allow_multiple" : true
-      },
-      {
-         "advanced" : true,
          "id" : "media_supplement_list",
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "textsubdata",
+         "allow_multiple" : true,
+         "optional" : true,
          "textsubdata_options" : {
+            "allow_custom" : false,
+            "show_src_obj" : true,
             "subdata_selection" : {
+               "description_template" : "- {{name}}",
                "selection_id" : "id",
-               "path_to_subdata" : [
-                  "modelcompounds"
+               "selection_description" : [
+                  "name"
                ],
                "subdata_included" : [
                   "modelcompounds/[*]/id",
                   "modelcompounds/[*]/name"
                ],
-               "description_template" : "- {{name}}",
                "parameter_id" : "fbamodel_id",
-               "selection_description" : [
-                  "name"
+               "path_to_subdata" : [
+                  "modelcompounds"
                ]
             },
-            "show_src_obj" : true,
-            "allow_custom" : false,
             "multiselection" : false
          },
-         "allow_multiple" : true,
+         "advanced" : true,
          "default_values" : [
             ""
-         ],
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "field_type" : "textsubdata",
-         "optional" : true
+         ]
       },
       {
-         "text_options" : {
-            "validate_as" : "float"
-         },
+         "field_type" : "text",
+         "advanced" : true,
+         "allow_multiple" : false,
          "default_values" : [
             "0.1"
          ],
-         "advanced" : true,
-         "field_type" : "text",
          "id" : "minimum_target_flux",
          "optional" : false,
-         "allow_multiple" : false
+         "text_options" : {
+            "validate_as" : "float"
+         }
       }
-   ]
+   ],
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "contact" : "help@kbase.us",
+   "authors" : [
+      "chenry"
+   ],
+   "behavior" : {
+      "service-mapping" : {
+         "name" : "fba_tools",
+         "url" : "",
+         "output_mapping" : [
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
+            },
+            {
+               "target_property" : "obj",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ],
+         "method" : "propagate_model_to_new_genome",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id"
+            },
+            {
+               "input_parameter" : "proteincomparison_id",
+               "target_property" : "proteincomparison_id"
+            },
+            {
+               "input_parameter" : "media_id",
+               "target_property" : "media_id"
+            },
+            {
+               "target_property" : "fbamodel_output_id",
+               "input_parameter" : "fbamodel_output_id"
+            },
+            {
+               "target_property" : "keep_nogene_rxn",
+               "input_parameter" : "keep_nogene_rxn"
+            },
+            {
+               "input_parameter" : "gapfill_model",
+               "target_property" : "gapfill_model"
+            },
+            {
+               "target_property" : "custom_bound_list",
+               "input_parameter" : "custom_bound_list"
+            },
+            {
+               "input_parameter" : "media_supplement_list",
+               "target_property" : "media_supplement_list"
+            },
+            {
+               "target_property" : "minimum_target_flux",
+               "input_parameter" : "minimum_target_flux"
+            }
+         ]
+      }
+   },
+   "visible" : true,
+   "categories" : [
+      "active"
+   ],
+   "name" : "propagate_model_to_new_genome",
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker"
 }

@@ -29,6 +29,15 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    fbapathwayanalysis_output_id :
+        ui-name : |
+            Output ID
+        short-hint : |
+            ID where the results of the comparison will be saved
+        long-hint : |
+            ID where the results of the comparison will be saved
+
+
     fba_id :
         ui-name : |
             FBA solution
@@ -38,40 +47,13 @@ parameters :
             Flux balance analysis solution to be compared with expression values
 
 
-    maximize_agreement :
+    expression_condition :
         ui-name : |
-            Maximize agreement
+            Expression condition
         short-hint : |
-            Set the expression threshold to maximize agreement with flux data
+            Specific condition in expression matrix that should be compared with reaction flux
         long-hint : |
-            Set the expression threshold to maximize agreement with flux data
-
-
-    exp_threshold_percentile :
-        ui-name : |
-            Expression threshold
-        short-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-        long-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-
-
-    expseries_id :
-        ui-name : |
-            Expression data set
-        short-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
-        long-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
-
-
-    fbapathwayanalysis_output_id :
-        ui-name : |
-            Output ID
-        short-hint : |
-            ID where the results of the comparison will be saved
-        long-hint : |
-            ID where the results of the comparison will be saved
+            Specific condition in expression matrix that should be compared with reaction flux
 
 
     estimate_threshold :
@@ -83,13 +65,31 @@ parameters :
             Estimates threshold for gene expression based on a set of universal genes
 
 
-    expression_condition :
+    maximize_agreement :
         ui-name : |
-            Expression condition
+            Maximize agreement
         short-hint : |
-            Specific condition in expression matrix that should be compared with reaction flux
+            Set the expression threshold to maximize agreement with flux data
         long-hint : |
-            Specific condition in expression matrix that should be compared with reaction flux
+            Set the expression threshold to maximize agreement with flux data
+
+
+    expseries_id :
+        ui-name : |
+            Expression data set
+        short-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+        long-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+
+
+    exp_threshold_percentile :
+        ui-name : |
+            Expression threshold
+        short-hint : |
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+        long-hint : |
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
 
 
 description : |
