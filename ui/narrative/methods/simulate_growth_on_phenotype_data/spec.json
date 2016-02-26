@@ -69,7 +69,7 @@
                "input_parameter" : "media_supplement_list"
             }
          ],
-         "name" : "fba_tools_matt"
+         "name" : "fba_tools"
       }
    },
    "visible" : true,

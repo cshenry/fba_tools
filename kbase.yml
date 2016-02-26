@@ -1,5 +1,5 @@
 module-name:
-    fba_tools_matt
+    fba_tools
 
 module-description:
     This module includes implementation of official KBase functions that comprise the metabolic modeling pipeline of KBase.
@@ -11,5 +11,5 @@ module-version:
     0.0.2
 
 owners:
-    [dejongh]
+    [chenry]
 
