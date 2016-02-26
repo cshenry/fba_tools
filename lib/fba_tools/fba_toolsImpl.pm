@@ -807,7 +807,8 @@ sub func_simulate_growth_on_phenotype_data {
 		media_supplement_list => [],
 		all_transporters => 0,
 		positive_transporters => 0,
-		gapfill_phenotypes => 0
+		gapfill_phenotypes => 0,
+		target_reaction => "bio1"
     });
     if (!defined($model)) {
     	print "Retrieving model.\n";

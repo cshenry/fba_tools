@@ -56,9 +56,9 @@ parameters :
         ui-name : |
             Construct mixed-bag model?
         short-hint : |
-            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
+            Rather than placing each model into its own compartment, check this box to combine all models into a single non-redundant model consolidated in a single cytosol compartment.
         long-hint : |
-            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
+            Rather than placing each model into its own compartment, check this box to combine all models into a single non-redundant model consolidated in a single cytosol compartment.
 
 
 fixed-parameters :
