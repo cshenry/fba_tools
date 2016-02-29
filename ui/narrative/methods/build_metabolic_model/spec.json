@@ -1,6 +1,7 @@
 {
    "categories" : [
-      "active"
+      "active",
+      "metabolic_modeling"
    ],
    "visible" : true,
    "behavior" : {
