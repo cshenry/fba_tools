@@ -97,7 +97,9 @@
       "chenry"
    ],
    "categories" : [
-      "active"
+      "active",
+      "metabolic_modeling",
+      "communities"
    ],
    "visible" : true,
    "job_id_output_field" : "docker",
