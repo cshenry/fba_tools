@@ -3,7 +3,9 @@
    "ver" : "1.0.0",
    "name" : "compare_flux_with_expression",
    "categories" : [
-      "active"
+      "active",
+      "metabolic_modeling",
+      "expression"
    ],
    "visible" : true,
    "behavior" : {
