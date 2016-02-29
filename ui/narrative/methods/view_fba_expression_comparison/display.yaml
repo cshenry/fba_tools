@@ -9,6 +9,8 @@ tooltip  : |
 
 screenshots :
     []
+    
+icon: fba-teal.png
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
