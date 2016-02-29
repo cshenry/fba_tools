@@ -10,6 +10,8 @@ tooltip  : |
 screenshots :
     - simulate_growth_on_a_phenotype_data_input.png
 
+icon: modelseed-teal.png
+
 #
 # Define the set of other narrative methods that should be suggested to the user.
 #
