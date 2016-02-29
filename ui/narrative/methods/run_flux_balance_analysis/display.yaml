@@ -10,6 +10,8 @@ screenshots :
     - run_flux_balance_analysis_input.png
     - run_flux_balance_analysis_output.png
 
+icon: fba-teal.png
+
 #
 # Define the set of other narrative methods that should be suggested to the user.
 #
