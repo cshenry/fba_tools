@@ -701,6 +701,8 @@ sub getLinkedObject {
     	return $self->store()->get_object($1)->queryObject($2,{$3 => $4});
     } elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+$/) {
     	return $self->store()->get_object($ref);
+    } elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+    	return $self->store()->get_object($1)->queryObject($2,{$3 => $4});
     }
     Bio::KBase::ObjectAPI::utilities::error("Unrecognized reference format:".$ref);
 }

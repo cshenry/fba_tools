@@ -756,7 +756,7 @@ sub createJobDirectory {
 	#We add all gapfill candidates to an input file
 	my $actcoef = {};
 	my $gfcoef = {};
-	my $additionalrxn = [];
+	my $additionalrxn = ["id\tdirection\ttag"];
 	my $rxnhash = {};
 	my $mdlData = ["REACTIONS","LOAD;DIRECTIONALITY;COMPARTMENT;ASSOCIATED PEG;COMPLEXES"];
 	my $BioRxn = ["id	abbrev	deltaG	deltaGErr	equation	name	reversibility	status	thermoReversibility"];
@@ -820,7 +820,9 @@ sub createJobDirectory {
 						$equation = $reactants." ".$equation;
 					}
 					push(@{$BioRxn},$biomasses->[$i]->id()."_".$id."\t".$biomasses->[$i]->id()."\t0\t".$biocpds->[$j]->coefficient()."\t".$equation."\t".$biomasses->[$i]->id()."\t=>\tOK\t=>");
-					push(@{$additionalrxn},$biomasses->[$i]->id()."_".$id."\t>\tbiomasssupply");
+					if ($id !~ m/cpd11416_c\d+/) {
+						push(@{$additionalrxn},$biomasses->[$i]->id()."_".$id."\t>\tbiomasssupply");
+					}
 				}
 			}
 		}
