@@ -47,7 +47,6 @@ parameters :
         long-hint : |
             Name the Phenotype Simulation Result data
 
-
     media_supplement_list :
         ui-name : |
             Media supplement
@@ -56,6 +55,13 @@ parameters :
         long-hint : |
             Specify additional compounds to add to media one at a time by using “add another media supplement” button
 
+    target_reaction :
+        ui-name : |
+            Reaction to maximize
+        short-hint : |
+            ID of reaction flux to maximize in phenotype simulation (e.g. rxn00001, cpd00001_e0, bio1)
+        long-hint  : |
+            ID of reaction flux to maximize in phenotype simulation (e.g. rxn00001, cpd00001_e0, bio1)
 
     reaction_ko_list :
         ui-name : |

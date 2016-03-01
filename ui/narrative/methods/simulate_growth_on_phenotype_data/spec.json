@@ -48,6 +48,10 @@
                "target_property" : "add_positive_transporters",
                "input_parameter" : "add_positive_transporters"
             },
+	    {
+	       "target_property": "target_reaction",
+	       "input_parameter": "target_reaction"
+	    },
             {
                "input_parameter" : "feature_ko_list",
                "target_property" : "feature_ko_list"
@@ -152,6 +156,17 @@
          ],
          "advanced" : true,
          "optional" : false
+      },
+      {
+         "id": "target_reaction",
+	 "optional":true,
+	 "advanced":true,
+	 "allow_multiple":false,
+	 "default_values":["bio1"],
+	 "field_type" : "text",
+	 "text_options" : {
+	    "valid_ws_types" : [ ]
+	 }
       },
       {
          "advanced" : true,

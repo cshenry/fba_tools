@@ -299,6 +299,7 @@ module fba_tools {
 		list<reaction_id> reaction_ko_list;
 		list<string> custom_bound_list;
 		list<compound_id> media_supplement_list;
+		string target_reaction;
     } SimulateGrowthOnPhenotypeDataParams;
     
     typedef structure {
