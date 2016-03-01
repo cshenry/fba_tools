@@ -264,7 +264,7 @@ sub func_build_metabolic_model {
 	my ($self,$params) = @_;
 	$params = $self->util_validate_args($params,["workspace","genome_id"],{
     	media_id => undef,
-    	template_id => undef,
+    	template_id => "auto",
     	genome_workspace => $params->{workspace},
     	template_workspace => $params->{workspace},
     	media_workspace => $params->{workspace},
