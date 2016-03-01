@@ -228,7 +228,9 @@
    },
    "visible" : true,
    "categories" : [
-      "active"
+      "active",
+      "metabolic_modeling",
+      "comparative_genomics"
    ],
    "name" : "propagate_model_to_new_genome",
    "ver" : "1.0.0",

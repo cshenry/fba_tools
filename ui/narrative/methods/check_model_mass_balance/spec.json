@@ -52,6 +52,7 @@
    },
    "visible" : true,
    "categories" : [
-      "active"
+      "active",
+      "metabolic_modeling"
    ]
 }

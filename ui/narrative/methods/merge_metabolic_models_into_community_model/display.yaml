@@ -10,6 +10,8 @@ screenshots :
     - merge_metabolic_models_into_community_model_input.png
     - merge_metabolic_models_into_community_model_output.png
 
+icon: modelseed-teal.png
+
 #
 # Define the set of other narrative methods that should be suggested to the user.
 #

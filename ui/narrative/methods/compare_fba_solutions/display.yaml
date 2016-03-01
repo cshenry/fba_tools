@@ -11,6 +11,7 @@ screenshots :
     - compare_fba_input.png
     - compare_fba_output1.png
 
+icon: fba-teal.png
 
 #
 # Define the set of other narrative methods that should be suggested to the user.

@@ -4,7 +4,8 @@
    "ver" : "1.0.0",
    "visible" : true,
    "categories" : [
-      "active"
+      "active",
+      "metabolic_modeling"
    ],
    "authors" : [
       "chenry"

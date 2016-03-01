@@ -11,6 +11,7 @@ screenshots :
     - build_metabolic_model_input.png
     - build_metabolic_model_output.png
 
+icon: modelseed-teal.png
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
