@@ -2203,10 +2203,9 @@ sub parseBiomassRemovals {
 		} else {
 			print "Model failed to grow. Could not produce the following biomass compounds:\n";
 			for (my $i=0; $i < @{$data}; $i++) {
-				if (length($data->[$i]) > 0) {
-					my $array = [split(/_/,$data->[$i])];
-					my $biomass = $array->[0];
-					my $compound = $array->[1]."_".$array->[2];
+				if (length($data->[$i]) > 0 && $data->[$i] =~ m/^(bio\d+)_(.+)_([a-z]+\d+)$/) {
+					my $biomass = $1;
+					my $compound = $2."_".$3;
 					push(@{$self->biomassRemovals()->{$biomass}},$compound);
 					my $cpdobj = $self->fbamodel()->getObject("modelcompounds",$compound);
 					if (defined($cpdobj)) {
@@ -3210,15 +3209,18 @@ sub parseGapfillingOutput {
 					} else {
 						$dir = "<";
 					}
+					my $rxn = $self->fbamodel()->searchForReaction($2."_".$3.$4);
 					my $cmp = $self->fbamodel()->template()->searchForCompartment($3);
-					my $rxn = $self->fbamodel()->template()->searchForReaction($2."_".$3);
 					if (!defined($rxn)) {
-						if (defined($self->{_source_model})) {
-							$rxn = $self->{_source_model}->searchForReaction($2."_".$3.$4);
-						}
-						if (!defined $rxn) {
-							print "Skipping gapfilling ".$array->[$i]."\n";
-							next;	
+						$rxn = $self->fbamodel()->template()->searchForReaction($2."_".$3);
+						if (!defined($rxn)) {
+							if (defined($self->{_source_model})) {
+								$rxn = $self->{_source_model}->searchForReaction($2."_".$3.$4);
+							}
+							if (!defined $rxn) {
+								print "Skipping gapfilling ".$array->[$i]."\n";
+								next;	
+							}
 						}
 					}
 					push(@{$solution->{gapfillingSolutionReactions}},{

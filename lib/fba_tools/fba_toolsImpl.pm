@@ -158,17 +158,19 @@ sub util_build_fba {
 	if (!defined($params->{target_reaction})) {
 		$params->{target_reaction} = "bio1";
 	}
-    my $bio = $model->searchForBiomass($params->{target_reaction});
+    my $bio = $model->getObject("biomasses",$params->{target_reaction});
 	if (defined($bio)) {
 		$fbaobj->biomassflux_objterms()->{$bio->id()} = 1;
 	} else {
-		my $rxn = $model->searchForReaction($params->{target_reaction});
+		my $rxn = $model->getObject("modelreactions",$params->{target_reaction});
 		if (defined($rxn)) {
 			$fbaobj->reactionflux_objterms()->{$rxn->id()} = 1;
 		} else {
-			my $cpd = $model->searchForCompound($params->{target_reaction});
+			my $cpd = $model->getObject("modelcompounds",$params->{target_reaction});
 			if (defined($cpd)) {
 				$fbaobj->compoundflux_objterms()->{$cpd->id()} = 1;
+			} else {
+				Bio::KBase::ObjectAPI::utilities::error("Could not find biomass objective object:".$params->{target_reaction});
 			}
 		}
 	}
@@ -470,12 +472,12 @@ sub func_run_flux_balance_analysis {
     #Running FBA
     print "Running flux balance analysis problem.\n";
     my $objective;
-    eval {
+    #eval {
 		local $SIG{ALRM} = sub { die "FBA timed out! Model likely contains numerical instability!" };
 		alarm 3600;
 		$objective = $fba->runFBA();
 		alarm 0;
-	};
+	#};
     if (!defined($objective)) {
     	Bio::KBase::ObjectAPI::utilities::error("FBA failed with no solution returned!");
     }    
