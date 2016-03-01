@@ -1,34 +1,43 @@
 {
    "parameters" : [
       {
-         "id" : "fbamodel_id",
          "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "id" : "fbamodel_id",
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ]
          },
-         "field_type" : "text",
          "advanced" : false,
-         "allow_multiple" : false,
          "default_values" : [
             ""
          ]
       }
    ],
+   "job_id_output_field" : "docker",
+   "ver" : "1.0.0",
+   "authors" : [
+      "chenry"
+   ],
    "widgets" : {
       "input" : null,
       "output" : "kbaseReportView"
    },
-   "contact" : "help@kbase.us",
-   "name" : "check_model_mass_balance",
-   "ver" : "1.0.0",
-   "job_id_output_field" : "docker",
-   "authors" : [
-      "chenry"
-   ],
    "behavior" : {
       "service-mapping" : {
+         "input_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "workspace"
+            },
+            {
+               "input_parameter" : "fbamodel_id",
+               "target_property" : "fbamodel_id"
+            }
+         ],
+         "name" : "fba_tools",
          "method" : "check_model_mass_balance",
          "output_mapping" : [
             {
@@ -36,22 +45,14 @@
                "narrative_system_variable" : "workspace"
             }
          ],
-         "input_mapping" : [
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "workspace"
-            },
-            {
-               "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
-            }
-         ],
-         "url" : "",
-         "name" : "fba_tools"
+         "url" : ""
       }
    },
-   "visible" : true,
    "categories" : [
-      "active"
-   ]
+      "active",
+      "metabolic_modeling"
+   ],
+   "contact" : "help@kbase.us",
+   "visible" : true,
+   "name" : "check_model_mass_balance"
 }

@@ -1,60 +1,450 @@
 {
-   "name" : "run_flux_balance_analysis",
-   "job_id_output_field" : "docker",
-   "ver" : "1.0.0",
-   "visible" : true,
-   "categories" : [
-      "active"
-   ],
    "authors" : [
       "chenry"
    ],
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker",
+   "parameters" : [
+      {
+         "optional" : false,
+         "field_type" : "text",
+         "id" : "fbamodel_id",
+         "allow_multiple" : false,
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "default_values" : [
+            ""
+         ]
+      },
+      {
+         "field_type" : "text",
+         "id" : "media_id",
+         "allow_multiple" : false,
+         "optional" : true,
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseBiochem.Media"
+            ]
+         }
+      },
+      {
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "allow_multiple" : false,
+         "textsubdata_options" : {
+            "allow_custom" : true,
+            "subdata_selection" : {
+               "parameter_id" : "fbamodel_id",
+               "description_template" : "- {{name}}",
+               "selection_description" : [
+                  "name"
+               ],
+               "subdata_included" : [
+                  "modelreactions/[*]/id",
+                  "modelreactions/[*]/name"
+               ],
+               "path_to_subdata" : [
+                  "modelreactions"
+               ],
+               "additional_options" : [
+                  "bio1 - Biomass"
+               ],
+               "selection_id" : "id"
+            },
+            "multiselection" : false,
+            "show_src_obj" : true
+         },
+         "default_values" : [
+            "bio1"
+         ],
+         "optional" : false,
+         "id" : "target_reaction",
+         "field_type" : "textsubdata"
+      },
+      {
+         "advanced" : false,
+         "text_options" : {
+            "is_output_name" : true,
+            "valid_ws_types" : [
+               "KBaseFBA.FBA"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "optional" : false,
+         "field_type" : "text",
+         "id" : "fba_output_id",
+         "allow_multiple" : false
+      },
+      {
+         "default_values" : [
+            "1"
+         ],
+         "field_type" : "checkbox",
+         "id" : "fva",
+         "optional" : false,
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true,
+         "allow_multiple" : false
+      },
+      {
+         "default_values" : [
+            "1"
+         ],
+         "id" : "minimize_flux",
+         "field_type" : "checkbox",
+         "optional" : false,
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "allow_multiple" : false
+      },
+      {
+         "id" : "simulate_ko",
+         "field_type" : "checkbox",
+         "optional" : false,
+         "default_values" : [
+            "0"
+         ],
+         "allow_multiple" : false,
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true,
+         "default_values" : [
+            ""
+         ],
+         "optional" : true,
+         "allow_multiple" : true,
+         "field_type" : "text",
+         "id" : "feature_ko_list"
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true,
+         "allow_multiple" : true,
+         "textsubdata_options" : {
+            "allow_custom" : false,
+            "multiselection" : true,
+            "subdata_selection" : {
+               "parameter_id" : "fbamodel_id",
+               "selection_id" : "id",
+               "path_to_subdata" : [
+                  "modelreactions"
+               ],
+               "subdata_included" : [
+                  "modelreactions/[*]/id",
+                  "modelreactions/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "description_template" : "- {{name}}"
+            },
+            "show_src_obj" : true
+         },
+         "default_values" : [
+            ""
+         ],
+         "optional" : true,
+         "id" : "reaction_ko_list",
+         "field_type" : "textsubdata"
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true,
+         "default_values" : [
+            ""
+         ],
+         "optional" : true,
+         "allow_multiple" : true,
+         "id" : "custom_bound_list",
+         "field_type" : "text"
+      },
+      {
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : false,
+            "subdata_selection" : {
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ],
+               "selection_id" : "id",
+               "description_template" : "- {{name}}",
+               "subdata_included" : [
+                  "modelcompounds/[*]/id",
+                  "modelcompounds/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "parameter_id" : "fbamodel_id"
+            },
+            "multiselection" : false
+         },
+         "allow_multiple" : true,
+         "default_values" : [
+            ""
+         ],
+         "optional" : true,
+         "field_type" : "textsubdata",
+         "id" : "media_supplement_list"
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFeatureValues.ExpressionMatrix"
+            ]
+         },
+         "advanced" : true,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "id" : "expseries_id",
+         "optional" : true
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "id" : "expression_condition",
+         "field_type" : "textsubdata",
+         "optional" : true,
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "textsubdata_options" : {
+            "multiselection" : false,
+            "subdata_selection" : {
+               "parameter_id" : "expseries_id",
+               "subdata_included" : [
+                  "data/col_ids"
+               ],
+               "selection_id" : "id",
+               "path_to_subdata" : [
+                  "data",
+                  "col_ids"
+               ]
+            },
+            "allow_custom" : false,
+            "show_src_obj" : true
+         },
+         "allow_multiple" : false
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "advanced" : true,
+         "default_values" : [
+            "0.5"
+         ],
+         "optional" : false,
+         "allow_multiple" : false,
+         "id" : "exp_threshold_percentile",
+         "field_type" : "text"
+      },
+      {
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "id" : "exp_threshold_margin",
+         "optional" : false,
+         "default_values" : [
+            "0.1"
+         ],
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "advanced" : true
+      },
+      {
+         "advanced" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "default_values" : [
+            "0.5"
+         ],
+         "optional" : false,
+         "id" : "activation_coefficient",
+         "field_type" : "text",
+         "allow_multiple" : false
+      },
+      {
+         "id" : "max_c_uptake",
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : true,
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "id" : "max_n_uptake",
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : true,
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "id" : "max_p_uptake",
+         "field_type" : "text",
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "advanced" : true,
+         "default_values" : [
+            ""
+         ]
+      },
+      {
+         "id" : "max_s_uptake",
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : true,
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "advanced" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "default_values" : [
+            ""
+         ],
+         "optional" : true,
+         "field_type" : "text",
+         "id" : "max_o_uptake",
+         "allow_multiple" : false
+      }
+   ],
+   "name" : "run_flux_balance_analysis",
+   "visible" : true,
+   "contact" : "help@kbase.us",
    "behavior" : {
       "service-mapping" : {
+         "url" : "",
+         "name" : "fba_tools",
+         "method" : "run_flux_balance_analysis",
+         "output_mapping" : [
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "target_property" : "type",
+               "constant_value" : "KBaseFBA.FBA"
+            },
+            {
+               "input_parameter" : "fba_output_id",
+               "target_property" : "obj"
+            }
+         ],
          "input_mapping" : [
             {
                "target_property" : "workspace",
                "narrative_system_variable" : "workspace"
             },
             {
-               "input_parameter" : "fbamodel_id",
-               "target_property" : "fbamodel_id"
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id"
             },
             {
                "input_parameter" : "media_id",
                "target_property" : "media_id"
             },
             {
-               "input_parameter" : "target_reaction",
-               "target_property" : "target_reaction"
+               "target_property" : "target_reaction",
+               "input_parameter" : "target_reaction"
             },
             {
-               "target_property" : "fba_output_id",
-               "input_parameter" : "fba_output_id"
+               "input_parameter" : "fba_output_id",
+               "target_property" : "fba_output_id"
             },
             {
-               "target_property" : "fva",
-               "input_parameter" : "fva"
+               "input_parameter" : "fva",
+               "target_property" : "fva"
             },
             {
-               "target_property" : "minimize_flux",
-               "input_parameter" : "minimize_flux"
+               "input_parameter" : "minimize_flux",
+               "target_property" : "minimize_flux"
             },
             {
-               "target_property" : "simulate_ko",
-               "input_parameter" : "simulate_ko"
+               "input_parameter" : "simulate_ko",
+               "target_property" : "simulate_ko"
             },
             {
-               "input_parameter" : "feature_ko_list",
-               "target_property" : "feature_ko_list"
+               "target_property" : "feature_ko_list",
+               "input_parameter" : "feature_ko_list"
             },
             {
                "input_parameter" : "reaction_ko_list",
                "target_property" : "reaction_ko_list"
             },
             {
-               "target_property" : "custom_bound_list",
-               "input_parameter" : "custom_bound_list"
+               "input_parameter" : "custom_bound_list",
+               "target_property" : "custom_bound_list"
             },
             {
                "target_property" : "media_supplement_list",
@@ -69,435 +459,47 @@
                "input_parameter" : "expression_condition"
             },
             {
-               "target_property" : "exp_threshold_percentile",
-               "input_parameter" : "exp_threshold_percentile"
+               "input_parameter" : "exp_threshold_percentile",
+               "target_property" : "exp_threshold_percentile"
             },
             {
                "input_parameter" : "exp_threshold_margin",
                "target_property" : "exp_threshold_margin"
             },
             {
-               "input_parameter" : "activation_coefficient",
-               "target_property" : "activation_coefficient"
+               "target_property" : "activation_coefficient",
+               "input_parameter" : "activation_coefficient"
             },
             {
-               "input_parameter" : "max_c_uptake",
-               "target_property" : "max_c_uptake"
+               "target_property" : "max_c_uptake",
+               "input_parameter" : "max_c_uptake"
             },
             {
-               "input_parameter" : "max_n_uptake",
-               "target_property" : "max_n_uptake"
+               "target_property" : "max_n_uptake",
+               "input_parameter" : "max_n_uptake"
             },
             {
                "input_parameter" : "max_p_uptake",
                "target_property" : "max_p_uptake"
             },
             {
-               "input_parameter" : "max_s_uptake",
-               "target_property" : "max_s_uptake"
+               "target_property" : "max_s_uptake",
+               "input_parameter" : "max_s_uptake"
             },
             {
                "target_property" : "max_o_uptake",
                "input_parameter" : "max_o_uptake"
             }
-         ],
-         "output_mapping" : [
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "ws"
-            },
-            {
-               "constant_value" : "KBaseFBA.FBA",
-               "target_property" : "type"
-            },
-            {
-               "input_parameter" : "fba_output_id",
-               "target_property" : "obj"
-            }
-         ],
-         "method" : "run_flux_balance_analysis",
-         "url" : "",
-         "name" : "fba_tools"
+         ]
       }
    },
-   "contact" : "help@kbase.us",
+   "categories" : [
+      "active",
+      "metabolic_modeling",
+      "expression"
+   ],
    "widgets" : {
       "output" : "kbaseTabTable",
       "input" : null
-   },
-   "parameters" : [
-      {
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAModel"
-            ]
-         },
-         "optional" : false,
-         "id" : "fbamodel_id",
-         "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ],
-         "advanced" : false,
-         "field_type" : "text"
-      },
-      {
-         "advanced" : false,
-         "field_type" : "text",
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : false,
-         "id" : "media_id",
-         "optional" : true,
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseBiochem.Media"
-            ]
-         }
-      },
-      {
-         "advanced" : false,
-         "textsubdata_options" : {
-            "subdata_selection" : {
-               "description_template" : "- {{name}}",
-               "selection_description" : [
-                  "name"
-               ],
-               "selection_id" : "id",
-               "path_to_subdata" : [
-                  "modelreactions"
-               ],
-               "parameter_id" : "fbamodel_id",
-               "subdata_included" : [
-                  "modelreactions/[*]/id",
-                  "modelreactions/[*]/name"
-               ],
-               "additional_options" : [
-                  "bio1 - Biomass"
-               ]
-            },
-            "multiselection" : false,
-            "allow_custom" : true,
-            "show_src_obj" : true
-         },
-         "default_values" : [
-            "bio1"
-         ],
-         "optional" : false,
-         "field_type" : "textsubdata",
-         "allow_multiple" : false,
-         "id" : "target_reaction",
-         "text_options" : {
-            "valid_ws_types" : []
-         }
-      },
-      {
-         "id" : "fba_output_id",
-         "optional" : false,
-         "text_options" : {
-            "is_output_name" : true,
-            "valid_ws_types" : [
-               "KBaseFBA.FBA"
-            ]
-         },
-         "advanced" : false,
-         "field_type" : "text",
-         "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ]
-      },
-      {
-         "optional" : false,
-         "default_values" : [
-            "1"
-         ],
-         "advanced" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "checkbox_options" : {
-            "unchecked_value" : 0,
-            "checked_value" : 1
-         },
-         "id" : "fva",
-         "allow_multiple" : false,
-         "field_type" : "checkbox"
-      },
-      {
-         "advanced" : true,
-         "default_values" : [
-            "1"
-         ],
-         "optional" : false,
-         "field_type" : "checkbox",
-         "allow_multiple" : false,
-         "id" : "minimize_flux",
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "checkbox_options" : {
-            "unchecked_value" : 0,
-            "checked_value" : 1
-         }
-      },
-      {
-         "allow_multiple" : false,
-         "field_type" : "checkbox",
-         "checkbox_options" : {
-            "checked_value" : 1,
-            "unchecked_value" : 0
-         },
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "id" : "simulate_ko",
-         "default_values" : [
-            "0"
-         ],
-         "advanced" : true,
-         "optional" : false
-      },
-      {
-         "allow_multiple" : true,
-         "default_values" : [
-            ""
-         ],
-         "advanced" : true,
-         "field_type" : "text",
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "optional" : true,
-         "id" : "feature_ko_list"
-      },
-      {
-         "allow_multiple" : true,
-         "field_type" : "textsubdata",
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "id" : "reaction_ko_list",
-         "default_values" : [
-            ""
-         ],
-         "advanced" : true,
-         "textsubdata_options" : {
-            "multiselection" : true,
-            "subdata_selection" : {
-               "description_template" : "- {{name}}",
-               "selection_description" : [
-                  "name"
-               ],
-               "selection_id" : "id",
-               "parameter_id" : "fbamodel_id",
-               "path_to_subdata" : [
-                  "modelreactions"
-               ],
-               "subdata_included" : [
-                  "modelreactions/[*]/id",
-                  "modelreactions/[*]/name"
-               ]
-            },
-            "show_src_obj" : true,
-            "allow_custom" : false
-         },
-         "optional" : true
-      },
-      {
-         "id" : "custom_bound_list",
-         "optional" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "advanced" : true,
-         "field_type" : "text",
-         "allow_multiple" : true,
-         "default_values" : [
-            ""
-         ]
-      },
-      {
-         "allow_multiple" : true,
-         "field_type" : "textsubdata",
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "id" : "media_supplement_list",
-         "default_values" : [
-            ""
-         ],
-         "advanced" : true,
-         "textsubdata_options" : {
-            "allow_custom" : false,
-            "show_src_obj" : true,
-            "subdata_selection" : {
-               "description_template" : "- {{name}}",
-               "selection_id" : "id",
-               "selection_description" : [
-                  "name"
-               ],
-               "subdata_included" : [
-                  "modelcompounds/[*]/id",
-                  "modelcompounds/[*]/name"
-               ],
-               "parameter_id" : "fbamodel_id",
-               "path_to_subdata" : [
-                  "modelcompounds"
-               ]
-            },
-            "multiselection" : false
-         },
-         "optional" : true
-      },
-      {
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFeatureValues.ExpressionMatrix"
-            ]
-         },
-         "id" : "expseries_id",
-         "optional" : true,
-         "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ],
-         "field_type" : "text",
-         "advanced" : true
-      },
-      {
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "id" : "expression_condition",
-         "allow_multiple" : false,
-         "field_type" : "textsubdata",
-         "optional" : true,
-         "default_values" : [
-            ""
-         ],
-         "textsubdata_options" : {
-            "subdata_selection" : {
-               "selection_id" : "id",
-               "parameter_id" : "expseries_id",
-               "path_to_subdata" : [
-                  "data",
-                  "col_ids"
-               ],
-               "subdata_included" : [
-                  "data/col_ids"
-               ]
-            },
-            "multiselection" : false,
-            "show_src_obj" : true,
-            "allow_custom" : false
-         },
-         "advanced" : true
-      },
-      {
-         "text_options" : {
-            "validate_as" : "float"
-         },
-         "optional" : false,
-         "id" : "exp_threshold_percentile",
-         "default_values" : [
-            "0.5"
-         ],
-         "allow_multiple" : false,
-         "advanced" : true,
-         "field_type" : "text"
-      },
-      {
-         "optional" : false,
-         "id" : "exp_threshold_margin",
-         "text_options" : {
-            "validate_as" : "float"
-         },
-         "field_type" : "text",
-         "advanced" : true,
-         "default_values" : [
-            "0.1"
-         ],
-         "allow_multiple" : false
-      },
-      {
-         "text_options" : {
-            "validate_as" : "float"
-         },
-         "id" : "activation_coefficient",
-         "optional" : false,
-         "allow_multiple" : false,
-         "default_values" : [
-            "0.5"
-         ],
-         "advanced" : true,
-         "field_type" : "text"
-      },
-      {
-         "text_options" : {
-            "validate_as" : "float"
-         },
-         "id" : "max_c_uptake",
-         "optional" : true,
-         "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ],
-         "advanced" : true,
-         "field_type" : "text"
-      },
-      {
-         "text_options" : {
-            "validate_as" : "float"
-         },
-         "optional" : true,
-         "id" : "max_n_uptake",
-         "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ],
-         "field_type" : "text",
-         "advanced" : true
-      },
-      {
-         "advanced" : true,
-         "field_type" : "text",
-         "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ],
-         "optional" : true,
-         "id" : "max_p_uptake",
-         "text_options" : {
-            "validate_as" : "float"
-         }
-      },
-      {
-         "optional" : true,
-         "id" : "max_s_uptake",
-         "text_options" : {
-            "validate_as" : "float"
-         },
-         "advanced" : true,
-         "field_type" : "text",
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : false
-      },
-      {
-         "text_options" : {
-            "validate_as" : "float"
-         },
-         "id" : "max_o_uptake",
-         "optional" : true,
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : false,
-         "field_type" : "text",
-         "advanced" : true
-      }
-   ]
+   }
 }

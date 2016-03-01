@@ -1,180 +1,20 @@
 {
-   "parameters" : [
-      {
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : false,
-         "advanced" : false,
-         "field_type" : "text",
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAModel"
-            ]
-         },
-         "optional" : false,
-         "id" : "fbamodel_id"
-      },
-      {
-         "advanced" : false,
-         "field_type" : "text",
-         "allow_multiple" : false,
-         "default_values" : [
-            ""
-         ],
-         "id" : "proteincomparison_id",
-         "optional" : true,
-         "text_options" : {
-            "valid_ws_types" : [
-               "GenomeComparison.ProteomeComparison"
-            ]
-         }
-      },
-      {
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : false,
-         "advanced" : false,
-         "field_type" : "text",
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseBiochem.Media"
-            ]
-         },
-         "optional" : true,
-         "id" : "media_id"
-      },
-      {
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : false,
-         "advanced" : false,
-         "field_type" : "text",
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAModel"
-            ],
-            "is_output_name" : true
-         },
-         "id" : "fbamodel_output_id",
-         "optional" : false
-      },
-      {
-         "advanced" : false,
-         "default_values" : [
-            "0"
-         ],
-         "optional" : false,
-         "field_type" : "checkbox",
-         "allow_multiple" : false,
-         "id" : "keep_nogene_rxn",
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "checkbox_options" : {
-            "unchecked_value" : 0,
-            "checked_value" : 1
-         }
-      },
-      {
-         "allow_multiple" : false,
-         "field_type" : "checkbox",
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "checkbox_options" : {
-            "checked_value" : 1,
-            "unchecked_value" : 0
-         },
-         "id" : "gapfill_model",
-         "default_values" : [
-            "1"
-         ],
-         "advanced" : true,
-         "optional" : false
-      },
-      {
-         "advanced" : true,
-         "field_type" : "text",
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : true,
-         "optional" : true,
-         "id" : "custom_bound_list",
-         "text_options" : {
-            "valid_ws_types" : []
-         }
-      },
-      {
-         "id" : "media_supplement_list",
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "field_type" : "textsubdata",
-         "allow_multiple" : true,
-         "optional" : true,
-         "textsubdata_options" : {
-            "allow_custom" : false,
-            "show_src_obj" : true,
-            "subdata_selection" : {
-               "description_template" : "- {{name}}",
-               "selection_id" : "id",
-               "selection_description" : [
-                  "name"
-               ],
-               "subdata_included" : [
-                  "modelcompounds/[*]/id",
-                  "modelcompounds/[*]/name"
-               ],
-               "parameter_id" : "fbamodel_id",
-               "path_to_subdata" : [
-                  "modelcompounds"
-               ]
-            },
-            "multiselection" : false
-         },
-         "advanced" : true,
-         "default_values" : [
-            ""
-         ]
-      },
-      {
-         "field_type" : "text",
-         "advanced" : true,
-         "allow_multiple" : false,
-         "default_values" : [
-            "0.1"
-         ],
-         "id" : "minimum_target_flux",
-         "optional" : false,
-         "text_options" : {
-            "validate_as" : "float"
-         }
-      }
-   ],
+   "name" : "propagate_model_to_new_genome",
    "widgets" : {
-      "output" : "kbaseTabTable",
-      "input" : null
+      "input" : null,
+      "output" : "kbaseTabTable"
    },
-   "contact" : "help@kbase.us",
-   "authors" : [
-      "chenry"
-   ],
    "behavior" : {
       "service-mapping" : {
-         "name" : "fba_tools",
          "url" : "",
          "output_mapping" : [
             {
-               "target_property" : "ws",
-               "narrative_system_variable" : "workspace"
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
             },
             {
-               "constant_value" : "KBaseFBA.FBAModel",
-               "target_property" : "type"
+               "target_property" : "type",
+               "constant_value" : "KBaseFBA.FBAModel"
             },
             {
                "target_property" : "obj",
@@ -182,14 +22,15 @@
             }
          ],
          "method" : "propagate_model_to_new_genome",
+         "name" : "fba_tools",
          "input_mapping" : [
             {
                "target_property" : "workspace",
                "narrative_system_variable" : "workspace"
             },
             {
-               "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
+               "input_parameter" : "fbamodel_id",
+               "target_property" : "fbamodel_id"
             },
             {
                "input_parameter" : "proteincomparison_id",
@@ -204,20 +45,20 @@
                "input_parameter" : "fbamodel_output_id"
             },
             {
-               "target_property" : "keep_nogene_rxn",
-               "input_parameter" : "keep_nogene_rxn"
+               "input_parameter" : "keep_nogene_rxn",
+               "target_property" : "keep_nogene_rxn"
             },
             {
                "input_parameter" : "gapfill_model",
                "target_property" : "gapfill_model"
             },
             {
-               "target_property" : "custom_bound_list",
-               "input_parameter" : "custom_bound_list"
+               "input_parameter" : "custom_bound_list",
+               "target_property" : "custom_bound_list"
             },
             {
-               "input_parameter" : "media_supplement_list",
-               "target_property" : "media_supplement_list"
+               "target_property" : "media_supplement_list",
+               "input_parameter" : "media_supplement_list"
             },
             {
                "target_property" : "minimum_target_flux",
@@ -226,11 +67,172 @@
          ]
       }
    },
-   "visible" : true,
    "categories" : [
-      "active"
+      "active",
+      "metabolic_modeling",
+      "comparative_genomics"
    ],
-   "name" : "propagate_model_to_new_genome",
+   "contact" : "help@kbase.us",
+   "visible" : true,
+   "job_id_output_field" : "docker",
    "ver" : "1.0.0",
-   "job_id_output_field" : "docker"
+   "authors" : [
+      "chenry"
+   ],
+   "parameters" : [
+      {
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "field_type" : "text",
+         "id" : "fbamodel_id",
+         "allow_multiple" : false,
+         "optional" : false
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "GenomeComparison.ProteomeComparison"
+            ]
+         },
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "id" : "proteincomparison_id"
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "id" : "media_id",
+         "field_type" : "text",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseBiochem.Media"
+            ]
+         },
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ]
+      },
+      {
+         "text_options" : {
+            "is_output_name" : true,
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "id" : "fbamodel_output_id"
+      },
+      {
+         "default_values" : [
+            "0"
+         ],
+         "id" : "keep_nogene_rxn",
+         "field_type" : "checkbox",
+         "optional" : false,
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "allow_multiple" : false
+      },
+      {
+         "allow_multiple" : false,
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "id" : "gapfill_model",
+         "field_type" : "checkbox",
+         "optional" : false,
+         "default_values" : [
+            "1"
+         ]
+      },
+      {
+         "optional" : true,
+         "field_type" : "text",
+         "id" : "custom_bound_list",
+         "allow_multiple" : true,
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ]
+      },
+      {
+         "id" : "media_supplement_list",
+         "field_type" : "textsubdata",
+         "optional" : true,
+         "default_values" : [
+            ""
+         ],
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : false,
+            "subdata_selection" : {
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ],
+               "selection_id" : "id",
+               "description_template" : "- {{name}}",
+               "subdata_included" : [
+                  "modelcompounds/[*]/id",
+                  "modelcompounds/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "parameter_id" : "fbamodel_id"
+            },
+            "multiselection" : false
+         },
+         "allow_multiple" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "advanced" : true
+      },
+      {
+         "default_values" : [
+            "0.1"
+         ],
+         "advanced" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "id" : "minimum_target_flux",
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false
+      }
+   ]
 }

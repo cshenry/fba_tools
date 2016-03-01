@@ -38,6 +38,24 @@ parameters :
             ID where the results of the comparison will be saved
 
 
+    exp_threshold_percentile :
+        ui-name : |
+            Expression threshold
+        short-hint : |
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+        long-hint : |
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+
+
+    expseries_id :
+        ui-name : |
+            Expression data set
+        short-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+        long-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+
+
     fba_id :
         ui-name : |
             FBA solution
@@ -56,15 +74,6 @@ parameters :
             Specific condition in expression matrix that should be compared with reaction flux
 
 
-    estimate_threshold :
-        ui-name : |
-            Estimate threshold
-        short-hint : |
-            Estimates threshold for gene expression based on a set of universal genes
-        long-hint : |
-            Estimates threshold for gene expression based on a set of universal genes
-
-
     maximize_agreement :
         ui-name : |
             Maximize agreement
@@ -74,23 +83,16 @@ parameters :
             Set the expression threshold to maximize agreement with flux data
 
 
-    expseries_id :
+    estimate_threshold :
         ui-name : |
-            Expression data set
+            Estimate threshold
         short-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+            Estimates threshold for gene expression based on a set of universal genes
         long-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+            Estimates threshold for gene expression based on a set of universal genes
 
 
-    exp_threshold_percentile :
-        ui-name : |
-            Expression threshold
-        short-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-        long-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-
+icon: fba-teal.png
 
 description : |
     

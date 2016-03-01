@@ -30,6 +30,15 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    mixed_bag_model :
+        ui-name : |
+            Construct mixed-bag model?
+        short-hint : |
+            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
+        long-hint : |
+            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
+
+
     fbamodel_output_id :
         ui-name : |
             Community model
@@ -52,21 +61,14 @@ parameters :
             Model to be merged
 
 
-    mixed_bag_model :
-        ui-name : |
-            Construct mixed-bag model?
-        short-hint : |
-            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
-        long-hint : |
-            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
-
-
 fixed-parameters :
     -
         ui-name : |
             Template Model
         description : |
             Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. For microbial models, KBase primarily uses two template models based on their Gram classification (Gram positive or Gram negative). These template models differ from each other by biomass composition and biochemical reaction functional associations. KBase users currently do not have the option to choose or alter the default template model.
+
+icon: fba-teal.png
 
 description : |
     <p>The method merges two or more metabolic models of individual organisms resulting in a compartmentalized joint model of a community of multiple organisms.</p>

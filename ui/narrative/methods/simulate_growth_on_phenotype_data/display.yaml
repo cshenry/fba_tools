@@ -30,6 +30,51 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    add_all_transporters :
+        ui-name : |
+            Add all transporters?
+        short-hint : |
+            Add transporters for primary nutrients associated with all phenotype conditions
+        long-hint : |
+            Add transporters for primary nutrients associated with all phenotype conditions
+
+
+    feature_ko_list :
+        ui-name : |
+            Gene Knockouts
+        short-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+        long-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+
+
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+
+
+    target_reaction :
+        ui-name : |
+            Reaction to maximize
+        short-hint : |
+            ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
+        long-hint : |
+            ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
+
+
+    add_positive_transporters :
+        ui-name : |
+            Add growth transporters?
+        short-hint : |
+            Add transporters for primary nutrients associated with all conditions with growth
+        long-hint : |
+            Add transporters for primary nutrients associated with all conditions with growth
+
+
     phenotypeset_id :
         ui-name : |
             Phenotype Set
@@ -37,6 +82,17 @@ parameters :
             A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
         long-hint : |
             A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
+
+
+    custom_bound_list :
+        ui-name : |
+            Custom flux bounds
+        short-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        long-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        placeholder : |
+            e.g. 0;rxn00001;5
 
 
     phenotypesim_output_id :
@@ -57,53 +113,6 @@ parameters :
             Specify additional compounds to add to media one at a time by using “add another media supplement” button
 
 
-    reaction_ko_list :
-        ui-name : |
-            Reaction Knockouts
-        short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-        long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-
-
-    feature_ko_list :
-        ui-name : |
-            Gene Knockouts
-        short-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-        long-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-
-
-    custom_bound_list :
-        ui-name : |
-            Custom flux bounds
-        short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        placeholder : |
-            e.g. 0;rxn00001;5
-
-
-    add_positive_transporters :
-        ui-name : |
-            Add growth transporters?
-        short-hint : |
-            Add transporters for primary nutrients associated with all conditions with growth
-        long-hint : |
-            Add transporters for primary nutrients associated with all conditions with growth
-
-
-    add_all_transporters :
-        ui-name : |
-            Add all transporters?
-        short-hint : |
-            Add transporters for primary nutrients associated with all phenotype conditions
-        long-hint : |
-            Add transporters for primary nutrients associated with all phenotype conditions
-
-
     fbamodel_id :
         ui-name : |
             FBA Model
@@ -112,6 +121,8 @@ parameters :
         long-hint : |
             The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
 
+
+icon: fba-teal.png
 
 description : |
     <p>This method uses an input metabolic model to simulate growth in a set of media conditions, with a specified set of gene knockouts, and with specified media supplements. A metabolic model can be curated using phenotypic data such as Biolog growth data or gene essentiality data generated on a specific set of media conditions. The method reports differences between growth predictions and experimentally measured growth rates. This method can be applied to test the accuracy of a model in replicating experimental observations, as well as exploring the set of metabolites that an organism can utilize as nutrient sources.  The Simulate Growth on Phenotype Data  method carries out flux balance analysis (FBA) for each medium and knockout in the phenotype dataset and displays the output (growth/no growth) as a side-by-side comparison of model predictions and experimental results. To begin, the user uploads a table of phenotype data (e.g., Biolog or gene essentiality data) into the app. The user also either uploads a metabolic model or selects a model already present in KBase. KBase uses the selected model to simulate the uploaded phenotypes, presenting simulation results in a detailed exportable report. This method also conducts some reconciliation of models with phenotype data.</p>

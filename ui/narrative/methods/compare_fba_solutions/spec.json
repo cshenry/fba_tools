@@ -1,25 +1,14 @@
 {
-   "ver" : "1.0.0",
-   "job_id_output_field" : "docker",
    "name" : "compare_fba_solutions",
+   "visible" : true,
+   "contact" : "help@kbase.us",
+   "categories" : [
+      "active",
+      "metabolic_modeling",
+      "comparative_genomics"
+   ],
    "behavior" : {
       "service-mapping" : {
-         "url" : "",
-         "output_mapping" : [
-            {
-               "target_property" : "ws",
-               "narrative_system_variable" : "workspace"
-            },
-            {
-               "constant_value" : "KBaseFBA.FBAComparison",
-               "target_property" : "type"
-            },
-            {
-               "input_parameter" : "fbacomparison_output_id",
-               "target_property" : "obj"
-            }
-         ],
-         "method" : "compare_fba_solutions",
          "input_mapping" : [
             {
                "narrative_system_variable" : "workspace",
@@ -30,56 +19,69 @@
                "input_parameter" : "fba_id_list"
             },
             {
-               "target_property" : "fbacomparison_output_id",
-               "input_parameter" : "fbacomparison_output_id"
+               "input_parameter" : "fbacomparison_output_id",
+               "target_property" : "fbacomparison_output_id"
             }
          ],
-         "name" : "fba_tools"
+         "url" : "",
+         "method" : "compare_fba_solutions",
+         "name" : "fba_tools",
+         "output_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAComparison",
+               "target_property" : "type"
+            },
+            {
+               "input_parameter" : "fbacomparison_output_id",
+               "target_property" : "obj"
+            }
+         ]
       }
+   },
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
    },
    "authors" : [
       "chenry"
    ],
-   "categories" : [
-      "active"
-   ],
-   "visible" : true,
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseTabTable"
-   },
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker",
    "parameters" : [
       {
-         "optional" : false,
-         "id" : "fba_id_list",
+         "advanced" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBA"
             ]
          },
-         "field_type" : "text",
-         "advanced" : false,
-         "allow_multiple" : true,
-         "default_values" : [
-            ""
-         ]
-      },
-      {
-         "field_type" : "text",
-         "advanced" : false,
          "default_values" : [
             ""
          ],
+         "optional" : false,
+         "id" : "fba_id_list",
+         "field_type" : "text",
+         "allow_multiple" : true
+      },
+      {
          "allow_multiple" : false,
          "id" : "fbacomparison_output_id",
+         "field_type" : "text",
          "optional" : false,
+         "default_values" : [
+            ""
+         ],
          "text_options" : {
             "is_output_name" : true,
             "valid_ws_types" : [
                "KBaseFBA.FBAComparison"
             ]
-         }
+         },
+         "advanced" : false
       }
-   ],
-   "contact" : "help@kbase.us"
+   ]
 }

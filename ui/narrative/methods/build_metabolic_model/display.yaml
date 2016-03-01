@@ -32,37 +32,6 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    fbamodel_output_id :
-        ui-name : |
-            Output model
-        short-hint : |
-            Enter a name for the metabolic model to be created
-        long-hint : |
-            Enter a name for the metabolic model to be created
-        placeholder : |
-            Output metabolic model name
-
-
-    minimum_target_flux :
-        ui-name : |
-            Minimum reaction flux
-        short-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-        long-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-
-
-    custom_bound_list :
-        ui-name : |
-            Custom flux bounds
-        short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        placeholder : |
-            e.g. 0;rxn00001;5
-
-
     gapfill_model :
         ui-name : |
             Gapfill model?
@@ -72,13 +41,15 @@ parameters :
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
 
 
-    media_supplement_list :
+    fbamodel_output_id :
         ui-name : |
-            Media supplement
+            Output model
         short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+            Enter a name for the metabolic model to be created
         long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+            Enter a name for the metabolic model to be created
+        placeholder : |
+            Output metabolic model name
 
 
     media_id :
@@ -105,14 +76,43 @@ parameters :
 
     template_id :
         ui-name : |
-            Template model
+            Template for reconstruction
         short-hint : |
             Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
         long-hint : |
             Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
-        placeholder : |
-            Template model name
 
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+
+
+    minimum_target_flux :
+        ui-name : |
+            Minimum reaction flux
+        short-hint : |
+            The minimum flux that the target reaction will have when the gapfilling is performed
+        long-hint : |
+            The minimum flux that the target reaction will have when the gapfilling is performed
+
+
+    custom_bound_list :
+        ui-name : |
+            Custom flux bounds
+        short-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        long-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        placeholder : |
+            e.g. 0;rxn00001;5
+
+
+icon: modelseed-teal.png
 
 description : |
 

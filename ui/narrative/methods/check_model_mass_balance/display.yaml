@@ -38,6 +38,8 @@ parameters :
             ID of model to check the mass balance of
 
 
+icon: fba-teal.png
+
 description : |
     
     <p>This method checks the elemental balance of all reactions in the model. Only compounds with specified molecular formulas are considered.</p>

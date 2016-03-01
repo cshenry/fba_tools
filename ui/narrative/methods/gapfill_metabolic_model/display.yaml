@@ -10,7 +10,7 @@ screenshots :
     - gapfill_metabolic_model_input.png
     - gapfill_metabolic_model_output.png
 
-icon: icon.png
+icon: modelseed-teal.png
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -31,44 +31,6 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    media_supplement_list :
-        ui-name : |
-            Media supplement
-        short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-
-
-    media_id :
-        ui-name : |
-            Media
-        short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
-        long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
-        placeholder : |
-            Growth condition for gapfilling
-
-
-    feature_ko_list :
-        ui-name : |
-            Gene Knockouts
-        short-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-        long-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-
-
-    reaction_ko_list :
-        ui-name : |
-            Reaction Knockouts
-        short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-        long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-
-
     target_reaction :
         ui-name : |
             Reaction to maximize
@@ -76,24 +38,6 @@ parameters :
             ID of reaction that must carry flux in the gapfilled model (note - you must manually type bio1 to maximize biomass)
         long-hint : |
             ID of reaction that must carry flux in the gapfilled model (note - you must manually type bio1 to maximize biomass)
-
-
-    fbamodel_id :
-        ui-name : |
-            Input model
-        short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-
-
-    minimum_target_flux :
-        ui-name : |
-            Minimum reaction flux
-        short-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-        long-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
 
 
     custom_bound_list :
@@ -107,6 +51,33 @@ parameters :
             e.g. 0;rxn00001;5
 
 
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+
+
+    minimum_target_flux :
+        ui-name : |
+            Minimum reaction flux
+        short-hint : |
+            The minimum flux that the target reaction will have when the gapfilling is performed
+        long-hint : |
+            The minimum flux that the target reaction will have when the gapfilling is performed
+
+
+    feature_ko_list :
+        ui-name : |
+            Gene Knockouts
+        short-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+        long-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+
+
     source_fbamodel_id :
         ui-name : |
             Source Gapfill Model
@@ -114,6 +85,24 @@ parameters :
             A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
         long-hint : |
             A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
+
+
+    fbamodel_id :
+        ui-name : |
+            Input model
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
 
 
     fbamodel_output_id :
@@ -124,6 +113,19 @@ parameters :
         long-hint : |
             Name of the model produced by the gapfill analysis
 
+
+    media_id :
+        ui-name : |
+            Media
+        short-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+        long-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+        placeholder : |
+            Growth condition for gapfilling
+
+
+icon: fba-teal.png
 
 description : |
     <p>Draft metabolic models usually have missing reactions (gaps) due to incomplete or incorrect functional genome annotations. As a result, these models are unable to generate biomass on media where the organism typically is capable of growing. Gapfilling algorithms can be used to overcome this problem. These algorithms tentatively fill metabolic gaps by identifying the minimal number of biochemical reactions to add to the draft metabolic model to enable it to produce biomass in a specified media. Gapfilling is an optimization procedure that can produce multiple solutions.</p>
