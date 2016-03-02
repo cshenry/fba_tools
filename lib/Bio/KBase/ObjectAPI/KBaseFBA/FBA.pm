@@ -3209,12 +3209,15 @@ sub parseGapfillingOutput {
 					} else {
 						$dir = "<";
 					}
+					my $rxnref = "~/fbamodel/modelreactions/id/".$2."_".$3.$4;
 					my $rxn = $self->fbamodel()->searchForReaction($2."_".$3.$4);
 					my $cmp = $self->fbamodel()->template()->searchForCompartment($3);
 					if (!defined($rxn)) {
+						$rxnref = "~/fbamodel/template/reactions/id/".$2."_".$3;
 						$rxn = $self->fbamodel()->template()->searchForReaction($2."_".$3);
 						if (!defined($rxn)) {
 							if (defined($self->{_source_model})) {
+								$rxnref = $self->{_source_model}->_reference()."/modelreactions/id/".$2."_".$3.$4;
 								$rxn = $self->{_source_model}->searchForReaction($2."_".$3.$4);
 							}
 							if (!defined $rxn) {
@@ -3225,7 +3228,7 @@ sub parseGapfillingOutput {
 					}
 					push(@{$solution->{gapfillingSolutionReactions}},{
 						round => $round+0,
-						reaction_ref => $rxn->_reference(),
+						reaction_ref => $rxnref,
 						compartment_ref => $cmp->_reference(),
 						direction => $dir,
 						compartmentIndex => $ind+0,
