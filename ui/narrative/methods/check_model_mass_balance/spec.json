@@ -1,58 +1,58 @@
 {
+   "widgets" : {
+      "input" : null,
+      "output" : "kbaseReportView"
+   },
+   "name" : "check_model_mass_balance",
+   "authors" : [
+      "chenry"
+   ],
+   "ver" : "1.0.0",
+   "visible" : true,
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "job_id_output_field" : "docker",
+   "contact" : "help@kbase.us",
    "parameters" : [
       {
-         "optional" : false,
+         "default_values" : [
+            ""
+         ],
          "allow_multiple" : false,
          "field_type" : "text",
-         "id" : "fbamodel_id",
+         "advanced" : false,
+         "optional" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ]
          },
-         "advanced" : false,
-         "default_values" : [
-            ""
-         ]
+         "id" : "fbamodel_id"
       }
    ],
-   "job_id_output_field" : "docker",
-   "ver" : "1.0.0",
-   "authors" : [
-      "chenry"
-   ],
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseReportView"
-   },
    "behavior" : {
       "service-mapping" : {
-         "input_mapping" : [
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "workspace"
-            },
-            {
-               "input_parameter" : "fbamodel_id",
-               "target_property" : "fbamodel_id"
-            }
-         ],
          "name" : "fba_tools",
          "method" : "check_model_mass_balance",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id"
+            }
+         ],
+         "url" : "",
          "output_mapping" : [
             {
                "target_property" : "ws",
                "narrative_system_variable" : "workspace"
             }
-         ],
-         "url" : ""
+         ]
       }
-   },
-   "categories" : [
-      "active",
-      "metabolic_modeling"
-   ],
-   "contact" : "help@kbase.us",
-   "visible" : true,
-   "name" : "check_model_mass_balance"
+   }
 }

@@ -38,13 +38,13 @@ parameters :
             ID where the results of the comparison will be saved
 
 
-    exp_threshold_percentile :
+    fba_id :
         ui-name : |
-            Expression threshold
+            FBA solution
         short-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+            Flux balance analysis solution to be compared with expression values
         long-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+            Flux balance analysis solution to be compared with expression values
 
 
     expseries_id :
@@ -56,13 +56,13 @@ parameters :
             An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
 
 
-    fba_id :
+    estimate_threshold :
         ui-name : |
-            FBA solution
+            Estimate threshold
         short-hint : |
-            Flux balance analysis solution to be compared with expression values
+            Estimates threshold for gene expression based on a set of universal genes
         long-hint : |
-            Flux balance analysis solution to be compared with expression values
+            Estimates threshold for gene expression based on a set of universal genes
 
 
     expression_condition :
@@ -83,13 +83,13 @@ parameters :
             Set the expression threshold to maximize agreement with flux data
 
 
-    estimate_threshold :
+    exp_threshold_percentile :
         ui-name : |
-            Estimate threshold
+            Expression threshold
         short-hint : |
-            Estimates threshold for gene expression based on a set of universal genes
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
         long-hint : |
-            Estimates threshold for gene expression based on a set of universal genes
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
 
 
 icon: fba-teal.png

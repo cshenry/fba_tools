@@ -1,15 +1,20 @@
 {
-   "name" : "gapfill_metabolic_model",
-   "contact" : "help@kbase.us",
-   "visible" : true,
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseTabTable"
-   },
+   "job_id_output_field" : "docker",
    "categories" : [
       "active",
       "metabolic_modeling"
    ],
+   "ver" : "1.0.0",
+   "visible" : true,
+   "authors" : [
+      "chenry"
+   ],
+   "name" : "gapfill_metabolic_model",
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "contact" : "help@kbase.us",
    "behavior" : {
       "service-mapping" : {
          "input_mapping" : [
@@ -18,179 +23,174 @@
                "narrative_system_variable" : "workspace"
             },
             {
-               "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
+               "input_parameter" : "fbamodel_id",
+               "target_property" : "fbamodel_id"
             },
             {
-               "input_parameter" : "media_id",
-               "target_property" : "media_id"
+               "target_property" : "media_id",
+               "input_parameter" : "media_id"
             },
             {
-               "target_property" : "target_reaction",
-               "input_parameter" : "target_reaction"
+               "input_parameter" : "target_reaction",
+               "target_property" : "target_reaction"
             },
             {
                "input_parameter" : "fbamodel_output_id",
                "target_property" : "fbamodel_output_id"
             },
             {
-               "input_parameter" : "source_fbamodel_id",
-               "target_property" : "source_fbamodel_id"
+               "target_property" : "source_fbamodel_id",
+               "input_parameter" : "source_fbamodel_id"
             },
             {
-               "target_property" : "feature_ko_list",
-               "input_parameter" : "feature_ko_list"
+               "input_parameter" : "feature_ko_list",
+               "target_property" : "feature_ko_list"
             },
             {
-               "target_property" : "reaction_ko_list",
-               "input_parameter" : "reaction_ko_list"
+               "input_parameter" : "reaction_ko_list",
+               "target_property" : "reaction_ko_list"
             },
             {
                "input_parameter" : "custom_bound_list",
                "target_property" : "custom_bound_list"
             },
             {
-               "input_parameter" : "media_supplement_list",
-               "target_property" : "media_supplement_list"
+               "target_property" : "media_supplement_list",
+               "input_parameter" : "media_supplement_list"
             },
             {
                "input_parameter" : "minimum_target_flux",
                "target_property" : "minimum_target_flux"
             }
          ],
+         "method" : "gapfill_metabolic_model",
+         "name" : "fba_tools",
+         "url" : "",
          "output_mapping" : [
             {
                "narrative_system_variable" : "workspace",
                "target_property" : "ws"
             },
             {
-               "target_property" : "type",
-               "constant_value" : "KBaseFBA.FBAModel"
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
             },
             {
                "target_property" : "obj",
                "input_parameter" : "fbamodel_output_id"
             }
-         ],
-         "name" : "fba_tools",
-         "method" : "gapfill_metabolic_model",
-         "url" : ""
+         ]
       }
    },
-   "job_id_output_field" : "docker",
-   "ver" : "1.0.0",
-   "authors" : [
-      "chenry"
-   ],
    "parameters" : [
       {
-         "field_type" : "text",
          "id" : "fbamodel_id",
-         "allow_multiple" : false,
-         "optional" : false,
-         "default_values" : [
-            ""
-         ],
-         "advanced" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ]
-         }
+         },
+         "optional" : false,
+         "advanced" : false,
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "default_values" : [
+            ""
+         ]
       },
       {
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : false,
+         "optional" : false,
+         "field_type" : "text",
          "advanced" : false,
+         "id" : "media_id",
          "text_options" : {
             "valid_ws_types" : [
                "KBaseBiochem.Media"
             ]
-         },
-         "default_values" : [
-            ""
-         ],
-         "optional" : false,
-         "field_type" : "text",
-         "id" : "media_id",
-         "allow_multiple" : false
+         }
       },
       {
-         "advanced" : false,
+         "default_values" : [
+            "bio1"
+         ],
          "text_options" : {
             "valid_ws_types" : []
          },
+         "optional" : false,
+         "advanced" : false,
+         "field_type" : "textsubdata",
          "allow_multiple" : false,
+         "id" : "target_reaction",
          "textsubdata_options" : {
             "allow_custom" : true,
+            "show_src_obj" : true,
             "subdata_selection" : {
-               "parameter_id" : "fbamodel_id",
-               "description_template" : "- {{name}}",
-               "selection_description" : [
-                  "name"
-               ],
-               "subdata_included" : [
-                  "modelreactions/[*]/id",
-                  "modelreactions/[*]/name"
-               ],
                "path_to_subdata" : [
                   "modelreactions"
                ],
                "additional_options" : [
                   "bio1 - Biomass"
                ],
-               "selection_id" : "id"
+               "description_template" : "- {{name}}",
+               "parameter_id" : "fbamodel_id",
+               "selection_id" : "id",
+               "selection_description" : [
+                  "name"
+               ],
+               "subdata_included" : [
+                  "modelreactions/[*]/id",
+                  "modelreactions/[*]/name"
+               ]
             },
-            "multiselection" : false,
-            "show_src_obj" : true
-         },
-         "default_values" : [
-            "bio1"
-         ],
-         "optional" : false,
-         "field_type" : "textsubdata",
-         "id" : "target_reaction"
+            "multiselection" : false
+         }
       },
       {
          "default_values" : [
             ""
          ],
+         "allow_multiple" : false,
+         "field_type" : "text",
          "advanced" : false,
+         "optional" : false,
          "text_options" : {
-            "is_output_name" : true,
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
-            ]
+            ],
+            "is_output_name" : true
          },
-         "field_type" : "text",
-         "id" : "fbamodel_output_id",
-         "allow_multiple" : false,
-         "optional" : false
+         "id" : "fbamodel_output_id"
       },
       {
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAModel"
-            ]
-         },
-         "advanced" : true,
          "default_values" : [
             ""
          ],
-         "optional" : true,
          "allow_multiple" : false,
+         "advanced" : true,
          "field_type" : "text",
+         "optional" : true,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
          "id" : "source_fbamodel_id"
       },
       {
+         "allow_multiple" : true,
          "default_values" : [
             ""
          ],
          "text_options" : {
             "valid_ws_types" : []
          },
-         "advanced" : true,
-         "allow_multiple" : true,
          "id" : "feature_ko_list",
          "field_type" : "text",
+         "advanced" : true,
          "optional" : true
       },
       {
@@ -198,64 +198,61 @@
             ""
          ],
          "field_type" : "textsubdata",
-         "id" : "reaction_ko_list",
+         "advanced" : true,
          "optional" : true,
          "text_options" : {
             "valid_ws_types" : []
          },
-         "advanced" : true,
+         "allow_multiple" : true,
          "textsubdata_options" : {
-            "allow_custom" : false,
-            "multiselection" : true,
             "subdata_selection" : {
-               "parameter_id" : "fbamodel_id",
-               "selection_id" : "id",
-               "path_to_subdata" : [
-                  "modelreactions"
+               "selection_description" : [
+                  "name"
                ],
                "subdata_included" : [
                   "modelreactions/[*]/id",
                   "modelreactions/[*]/name"
                ],
-               "selection_description" : [
-                  "name"
+               "path_to_subdata" : [
+                  "modelreactions"
                ],
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
                "description_template" : "- {{name}}"
             },
+            "multiselection" : true,
+            "allow_custom" : false,
             "show_src_obj" : true
          },
-         "allow_multiple" : true
+         "id" : "reaction_ko_list"
       },
       {
-         "allow_multiple" : true,
-         "id" : "custom_bound_list",
-         "field_type" : "text",
          "optional" : true,
-         "default_values" : [
-            ""
-         ],
+         "advanced" : true,
+         "field_type" : "text",
+         "id" : "custom_bound_list",
          "text_options" : {
             "valid_ws_types" : []
          },
-         "advanced" : true
-      },
-      {
-         "field_type" : "textsubdata",
-         "id" : "media_supplement_list",
-         "optional" : true,
          "default_values" : [
             ""
          ],
-         "allow_multiple" : true,
+         "allow_multiple" : true
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "optional" : true,
+         "field_type" : "textsubdata",
+         "advanced" : true,
+         "default_values" : [
+            ""
+         ],
+         "id" : "media_supplement_list",
          "textsubdata_options" : {
-            "show_src_obj" : true,
-            "allow_custom" : false,
+            "multiselection" : false,
             "subdata_selection" : {
-               "path_to_subdata" : [
-                  "modelcompounds"
-               ],
-               "selection_id" : "id",
-               "description_template" : "- {{name}}",
                "subdata_included" : [
                   "modelcompounds/[*]/id",
                   "modelcompounds/[*]/name"
@@ -263,27 +260,30 @@
                "selection_description" : [
                   "name"
                ],
-               "parameter_id" : "fbamodel_id"
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
+               "description_template" : "- {{name}}",
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ]
             },
-            "multiselection" : false
+            "show_src_obj" : true,
+            "allow_custom" : false
          },
-         "advanced" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         }
+         "allow_multiple" : true
       },
       {
+         "allow_multiple" : false,
          "default_values" : [
             "0.1"
          ],
+         "id" : "minimum_target_flux",
          "text_options" : {
             "validate_as" : "float"
          },
-         "advanced" : true,
-         "allow_multiple" : false,
+         "optional" : false,
          "field_type" : "text",
-         "id" : "minimum_target_flux",
-         "optional" : false
+         "advanced" : true
       }
    ]
 }

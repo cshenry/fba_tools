@@ -38,6 +38,7 @@ parameters :
         long-hint  : |
             the FBA expression comparison to view
 
+icon: fba-teal.png
 
 description : |
     Bring up a detailed view of your FBA Expression Comparison.

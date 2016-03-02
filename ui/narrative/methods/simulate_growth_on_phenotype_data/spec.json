@@ -1,26 +1,228 @@
 {
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseTabTable"
-   },
-   "categories" : [
-      "active",
-      "metabolic_modeling"
+   "parameters" : [
+      {
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : false,
+         "optional" : false,
+         "advanced" : false,
+         "field_type" : "text",
+         "id" : "fbamodel_id",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         }
+      },
+      {
+         "allow_multiple" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBasePhenotypes.PhenotypeSet"
+            ]
+         },
+         "id" : "phenotypeset_id",
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : false
+      },
+      {
+         "allow_multiple" : false,
+         "textsubdata_options" : {
+            "allow_custom" : true,
+            "show_src_obj" : true,
+            "subdata_selection" : {
+               "path_to_subdata" : [
+                  "modelreactions"
+               ],
+               "additional_options" : [
+                  "bio1 - Biomass"
+               ],
+               "description_template" : "- {{name}}",
+               "parameter_id" : "fbamodel_id",
+               "selection_id" : "id",
+               "selection_description" : [
+                  "name"
+               ],
+               "subdata_included" : [
+                  "modelreactions/[*]/id",
+                  "modelreactions/[*]/name"
+               ]
+            },
+            "multiselection" : false
+         },
+         "id" : "target_reaction",
+         "default_values" : [
+            "bio1"
+         ],
+         "optional" : false,
+         "advanced" : false,
+         "field_type" : "textsubdata",
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "optional" : false,
+         "field_type" : "text",
+         "advanced" : false,
+         "id" : "phenotypesim_output_id",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBasePhenotypes.PhenotypeSimulationSet"
+            ],
+            "is_output_name" : true
+         },
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : false
+      },
+      {
+         "optional" : false,
+         "advanced" : true,
+         "field_type" : "checkbox",
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "id" : "add_all_transporters",
+         "allow_multiple" : false
+      },
+      {
+         "id" : "add_positive_transporters",
+         "allow_multiple" : false,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "optional" : false,
+         "advanced" : true,
+         "field_type" : "checkbox",
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "default_values" : [
+            "0"
+         ]
+      },
+      {
+         "allow_multiple" : true,
+         "default_values" : [
+            ""
+         ],
+         "id" : "feature_ko_list",
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "optional" : true,
+         "advanced" : true,
+         "field_type" : "text"
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "optional" : true,
+         "field_type" : "textsubdata",
+         "advanced" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "allow_multiple" : true,
+         "textsubdata_options" : {
+            "subdata_selection" : {
+               "selection_description" : [
+                  "name"
+               ],
+               "subdata_included" : [
+                  "modelreactions/[*]/id",
+                  "modelreactions/[*]/name"
+               ],
+               "path_to_subdata" : [
+                  "modelreactions"
+               ],
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
+               "description_template" : "- {{name}}"
+            },
+            "multiselection" : true,
+            "allow_custom" : false,
+            "show_src_obj" : true
+         },
+         "id" : "reaction_ko_list"
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "allow_multiple" : true,
+         "optional" : true,
+         "advanced" : true,
+         "field_type" : "text",
+         "id" : "custom_bound_list",
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "allow_multiple" : true,
+         "id" : "media_supplement_list",
+         "textsubdata_options" : {
+            "multiselection" : false,
+            "subdata_selection" : {
+               "subdata_included" : [
+                  "modelcompounds/[*]/id",
+                  "modelcompounds/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
+               "description_template" : "- {{name}}",
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ]
+            },
+            "show_src_obj" : true,
+            "allow_custom" : false
+         },
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "optional" : true,
+         "advanced" : true,
+         "field_type" : "textsubdata"
+      }
    ],
    "behavior" : {
       "service-mapping" : {
          "input_mapping" : [
             {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "workspace"
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
             },
             {
-               "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
+               "input_parameter" : "fbamodel_id",
+               "target_property" : "fbamodel_id"
             },
             {
-               "target_property" : "phenotypeset_id",
-               "input_parameter" : "phenotypeset_id"
+               "input_parameter" : "phenotypeset_id",
+               "target_property" : "phenotypeset_id"
             },
             {
                "input_parameter" : "target_reaction",
@@ -31,265 +233,63 @@
                "input_parameter" : "phenotypesim_output_id"
             },
             {
-               "target_property" : "add_all_transporters",
-               "input_parameter" : "add_all_transporters"
+               "input_parameter" : "add_all_transporters",
+               "target_property" : "add_all_transporters"
             },
             {
                "target_property" : "add_positive_transporters",
                "input_parameter" : "add_positive_transporters"
             },
             {
-               "input_parameter" : "feature_ko_list",
-               "target_property" : "feature_ko_list"
+               "target_property" : "feature_ko_list",
+               "input_parameter" : "feature_ko_list"
             },
             {
-               "target_property" : "reaction_ko_list",
-               "input_parameter" : "reaction_ko_list"
+               "input_parameter" : "reaction_ko_list",
+               "target_property" : "reaction_ko_list"
             },
             {
-               "target_property" : "custom_bound_list",
-               "input_parameter" : "custom_bound_list"
+               "input_parameter" : "custom_bound_list",
+               "target_property" : "custom_bound_list"
             },
             {
-               "target_property" : "media_supplement_list",
-               "input_parameter" : "media_supplement_list"
+               "input_parameter" : "media_supplement_list",
+               "target_property" : "media_supplement_list"
             }
          ],
+         "method" : "simulate_growth_on_phenotype_data",
+         "name" : "fba_tools",
          "output_mapping" : [
             {
-               "target_property" : "ws",
-               "narrative_system_variable" : "workspace"
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
             },
             {
-               "target_property" : "type",
-               "constant_value" : "KBasePhenotypes.PhenotypeSimulationSet"
+               "constant_value" : "KBasePhenotypes.PhenotypeSimulationSet",
+               "target_property" : "type"
             },
             {
                "input_parameter" : "phenotypesim_output_id",
                "target_property" : "obj"
             }
          ],
-         "method" : "simulate_growth_on_phenotype_data",
-         "name" : "fba_tools",
          "url" : ""
       }
    },
-   "contact" : "help@kbase.us",
-   "visible" : true,
    "name" : "simulate_growth_on_phenotype_data",
-   "parameters" : [
-      {
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAModel"
-            ]
-         },
-         "advanced" : false,
-         "default_values" : [
-            ""
-         ],
-         "optional" : false,
-         "allow_multiple" : false,
-         "field_type" : "text",
-         "id" : "fbamodel_id"
-      },
-      {
-         "advanced" : false,
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBasePhenotypes.PhenotypeSet"
-            ]
-         },
-         "default_values" : [
-            ""
-         ],
-         "optional" : false,
-         "id" : "phenotypeset_id",
-         "field_type" : "text",
-         "allow_multiple" : false
-      },
-      {
-         "allow_multiple" : false,
-         "textsubdata_options" : {
-            "allow_custom" : true,
-            "subdata_selection" : {
-               "parameter_id" : "fbamodel_id",
-               "description_template" : "- {{name}}",
-               "selection_description" : [
-                  "name"
-               ],
-               "subdata_included" : [
-                  "modelreactions/[*]/id",
-                  "modelreactions/[*]/name"
-               ],
-               "path_to_subdata" : [
-                  "modelreactions"
-               ],
-               "additional_options" : [
-                  "bio1 - Biomass"
-               ],
-               "selection_id" : "id"
-            },
-            "multiselection" : false,
-            "show_src_obj" : true
-         },
-         "advanced" : false,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "optional" : false,
-         "field_type" : "textsubdata",
-         "id" : "target_reaction",
-         "default_values" : [
-            "bio1"
-         ]
-      },
-      {
-         "default_values" : [
-            ""
-         ],
-         "advanced" : false,
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBasePhenotypes.PhenotypeSimulationSet"
-            ],
-            "is_output_name" : true
-         },
-         "id" : "phenotypesim_output_id",
-         "field_type" : "text",
-         "allow_multiple" : false,
-         "optional" : false
-      },
-      {
-         "allow_multiple" : false,
-         "advanced" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "checkbox_options" : {
-            "checked_value" : 1,
-            "unchecked_value" : 0
-         },
-         "optional" : false,
-         "field_type" : "checkbox",
-         "id" : "add_all_transporters",
-         "default_values" : [
-            "0"
-         ]
-      },
-      {
-         "field_type" : "checkbox",
-         "id" : "add_positive_transporters",
-         "optional" : false,
-         "default_values" : [
-            "0"
-         ],
-         "allow_multiple" : false,
-         "checkbox_options" : {
-            "checked_value" : 1,
-            "unchecked_value" : 0
-         },
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "advanced" : true
-      },
-      {
-         "default_values" : [
-            ""
-         ],
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "advanced" : true,
-         "allow_multiple" : true,
-         "field_type" : "text",
-         "id" : "feature_ko_list",
-         "optional" : true
-      },
-      {
-         "advanced" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "allow_multiple" : true,
-         "textsubdata_options" : {
-            "allow_custom" : false,
-            "multiselection" : true,
-            "subdata_selection" : {
-               "parameter_id" : "fbamodel_id",
-               "selection_id" : "id",
-               "path_to_subdata" : [
-                  "modelreactions"
-               ],
-               "subdata_included" : [
-                  "modelreactions/[*]/id",
-                  "modelreactions/[*]/name"
-               ],
-               "selection_description" : [
-                  "name"
-               ],
-               "description_template" : "- {{name}}"
-            },
-            "show_src_obj" : true
-         },
-         "default_values" : [
-            ""
-         ],
-         "id" : "reaction_ko_list",
-         "field_type" : "textsubdata",
-         "optional" : true
-      },
-      {
-         "default_values" : [
-            ""
-         ],
-         "advanced" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "id" : "custom_bound_list",
-         "field_type" : "text",
-         "allow_multiple" : true,
-         "optional" : true
-      },
-      {
-         "id" : "media_supplement_list",
-         "field_type" : "textsubdata",
-         "optional" : true,
-         "default_values" : [
-            ""
-         ],
-         "allow_multiple" : true,
-         "textsubdata_options" : {
-            "show_src_obj" : true,
-            "allow_custom" : false,
-            "subdata_selection" : {
-               "path_to_subdata" : [
-                  "modelcompounds"
-               ],
-               "selection_id" : "id",
-               "description_template" : "- {{name}}",
-               "subdata_included" : [
-                  "modelcompounds/[*]/id",
-                  "modelcompounds/[*]/name"
-               ],
-               "selection_description" : [
-                  "name"
-               ],
-               "parameter_id" : "fbamodel_id"
-            },
-            "multiselection" : false
-         },
-         "advanced" : true,
-         "text_options" : {
-            "valid_ws_types" : []
-         }
-      }
-   ],
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
    "job_id_output_field" : "docker",
    "ver" : "1.0.0",
+   "visible" : true,
    "authors" : [
       "chenry"
-   ]
+   ],
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "contact" : "help@kbase.us"
 }
