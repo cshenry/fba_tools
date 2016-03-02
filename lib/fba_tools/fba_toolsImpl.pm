@@ -290,9 +290,9 @@ sub func_build_metabolic_model {
 	print "Retrieving genome.\n";
 	my $genome = $self->util_kbase_store()->get_object($params->{genome_workspace}."/".$params->{genome_id});
 	#Classifying genome
+	$params->{template_workspace} = "NewKBaseModelTemplates";
 	if ($params->{template_id} eq "auto") {
     	print "Classifying genome in order to select template.\n";
-    	$params->{template_workspace} = "NewKBaseModelTemplates";
     	if ($genome->template_classification() eq "plant") {
     		$params->{template_id} = "PlantModelTemplate";
     	} elsif ($genome->template_classification() eq "Gram negative") {
@@ -300,7 +300,7 @@ sub func_build_metabolic_model {
     	} elsif ($genome->template_classification() eq "Gram positive") {
     		$params->{template_id} = "GramPosModelTemplate";
     	}
-	} elsif ($params->{template_id} eq "grampos") {
+	} elsif ($params->{template_id} eq "grampos") {		
 		$params->{template_id} = "GramPosModelTemplate";
 	} elsif ($params->{template_id} eq "gramneg") {
 		$params->{template_id} = "GramNegModelTemplate";
