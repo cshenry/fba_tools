@@ -30,6 +30,15 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    mixed_bag_model :
+        ui-name : |
+            Construct mixed-bag model?
+        short-hint : |
+            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
+        long-hint : |
+            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
+
+
     fbamodel_output_id :
         ui-name : |
             Community model
@@ -39,15 +48,6 @@ parameters :
             Name of community model to be generated
         placeholder : |
             Output community model ID
-
-
-    mixed_bag_model :
-        ui-name : |
-            Construct mixed-bag model?
-        short-hint : |
-            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
-        long-hint : |
-            Rather than placing each model into it's own compartment, check this box to combine all models into a single non-redunandant model consolidated in a single cytosol compartment.
 
 
     fbamodel_id_list :

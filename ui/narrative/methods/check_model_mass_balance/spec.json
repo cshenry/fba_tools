@@ -1,41 +1,41 @@
 {
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseReportView"
-   },
-   "name" : "check_model_mass_balance",
+   "visible" : true,
    "authors" : [
       "chenry"
    ],
-   "ver" : "1.0.0",
-   "visible" : true,
+   "name" : "check_model_mass_balance",
+   "job_id_output_field" : "docker",
    "categories" : [
       "active",
       "metabolic_modeling"
    ],
-   "job_id_output_field" : "docker",
    "contact" : "help@kbase.us",
    "parameters" : [
       {
+         "advanced" : false,
+         "allow_multiple" : false,
+         "id" : "fbamodel_id",
          "default_values" : [
             ""
          ],
-         "allow_multiple" : false,
          "field_type" : "text",
-         "advanced" : false,
          "optional" : false,
          "text_options" : {
             "valid_ws_types" : [
                "KBaseFBA.FBAModel"
             ]
-         },
-         "id" : "fbamodel_id"
+         }
       }
    ],
+   "widgets" : {
+      "output" : "kbaseReportView",
+      "input" : null
+   },
    "behavior" : {
       "service-mapping" : {
-         "name" : "fba_tools",
          "method" : "check_model_mass_balance",
+         "url" : "",
+         "name" : "fba_tools",
          "input_mapping" : [
             {
                "target_property" : "workspace",
@@ -46,13 +46,13 @@
                "input_parameter" : "fbamodel_id"
             }
          ],
-         "url" : "",
          "output_mapping" : [
             {
-               "target_property" : "ws",
-               "narrative_system_variable" : "workspace"
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
             }
          ]
       }
-   }
+   },
+   "ver" : "1.0.0"
 }

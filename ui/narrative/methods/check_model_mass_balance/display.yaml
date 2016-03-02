@@ -1,7 +1,7 @@
 #
 # Define basic display information
 #
-name     : Check model mass balance
+name     : Check Model Mass Balance
 
 tooltip  : |
     Check the mass balanced of all reactions in a model

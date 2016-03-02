@@ -30,6 +30,17 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
+    fbamodel_id :
+        ui-name : |
+            Input model
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        placeholder : |
+            ID of starting model
+
+
     minimum_target_flux :
         ui-name : |
             Minimum reaction flux
@@ -37,6 +48,28 @@ parameters :
             The minimum flux that the target reaction will have when the gapfilling is performed
         long-hint : |
             The minimum flux that the target reaction will have when the gapfilling is performed
+
+
+    custom_bound_list :
+        ui-name : |
+            Custom flux bounds
+        short-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        long-hint : |
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        placeholder : |
+            e.g. 0;rxn00001;5
+
+
+    fbamodel_output_id :
+        ui-name : |
+            Output model
+        short-hint : |
+            Name of the model produced by the gapfill analysis
+        long-hint : |
+            Name of the model produced by the gapfill analysis
+        placeholder : |
+            Output metabolic model name
 
 
     keep_nogene_rxn :
@@ -59,39 +92,6 @@ parameters :
             Translation table of proteins
 
 
-    fbamodel_id :
-        ui-name : |
-            Input model
-        short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        placeholder : |
-            ID of starting model
-
-
-    fbamodel_output_id :
-        ui-name : |
-            Output model
-        short-hint : |
-            Name of the model produced by the gapfill analysis
-        long-hint : |
-            Name of the model produced by the gapfill analysis
-        placeholder : |
-            Output metabolic model name
-
-
-    custom_bound_list :
-        ui-name : |
-            Custom flux bounds
-        short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        placeholder : |
-            e.g. 0;rxn00001;5
-
-
     gapfill_model :
         ui-name : |
             Gapfill model?
@@ -99,17 +99,6 @@ parameters :
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
         long-hint : |
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
-
-
-    media_supplement_list :
-        ui-name : |
-            Media supplement
-        short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        placeholder : |
-            Additional compounds to add to media
 
 
     media_id :
@@ -121,6 +110,17 @@ parameters :
             Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
         placeholder : |
             Growth condition for gapfilling
+
+
+    media_supplement_list :
+        ui-name : |
+            Media supplement
+        short-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        long-hint : |
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+        placeholder : |
+            Additional compounds to add to media
 
 
 icon: fba-teal.png
