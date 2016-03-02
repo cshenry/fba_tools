@@ -1623,6 +1623,9 @@ sub translate_model {
 		$olist = $protcomp->{proteome1names};
 		$odata = $protcomp->{data1};
 	}
+	if ($numftrs == 0) {
+		Bio::KBase::ObjectAPI::utilities::error("The model is associated with a genome that contains no features!");
+	}
 	print "Fraction of matching features between model genomes and proteome comparison:".$matchcount/$numftrs."\n";
 	if ($matchcount/$numftrs < 0.8) {
 		Bio::KBase::ObjectAPI::utilities::error("Proteome comparison does not involve genome used in model!");
