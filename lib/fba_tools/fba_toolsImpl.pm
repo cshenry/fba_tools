@@ -829,6 +829,7 @@ sub func_simulate_growth_on_phenotype_data {
 		$model->addPhenotypeTransporters({phenotypes => $pheno,positiveonly => 1});
 	}
     print "Retrieving ".$params->{media_id}." media.\n";
+    $params->{default_max_uptake} = 100;
     my $media = $self->util_kbase_store()->get_object("KBaseMedia/Complete");
     print "Preparing flux balance analysis problem.\n";
     my $fba;
