@@ -1,0 +1,40 @@
+#
+# Define basic display information
+#
+name     : Create or Edit Media
+subtitle : |
+    Create new media for metabolic modeling or edit an existing media formulation.
+tooltip  : |
+    Create new media for metabolic modeling or edit an existing media formulation.
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    param0 :
+        ui-name : |
+            Media to edit
+        short-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth
+        long-hint  : |
+            Media specifies the set of chemical compounds organism can use for its growth
+description : |
+    <p>Create or edit a media formulation by adding or removing compounds, changing concentrations, or adjusting flux bounds.</p>

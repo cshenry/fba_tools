@@ -1,0 +1,40 @@
+#
+# Define basic display information
+#
+name     : Edit Metabolic Model
+subtitle : |
+    Edit a metabolic model by adding or removing reactions and adjusting their directionality.
+tooltip  : |
+    Edit a metabolic model by adding or removing reactions and adjusting their directionality.
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    param0 :
+        ui-name : |
+            FBA model to edit
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint  : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+description : |
+    <p>Modify a metabolic model by adding or removing reactions, or changing directionality.</p>
