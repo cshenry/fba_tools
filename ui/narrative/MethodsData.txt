@@ -160,7 +160,7 @@ description : |
 #
 # Define basic display information
 #
-name     : Build metabolic model
+name     : Build Metabolic Model
 
 tooltip  : |
     Generate a draft metabolic model based on an annotated genome.
@@ -226,7 +226,7 @@ publications :
 #
 # Define basic display information
 #
-name     : Compare FBA solutions
+name     : Compare FBA Solutions
 
 tooltip  : |
     Compare the solutions from multiple FBA simulations
@@ -278,8 +278,6 @@ screenshots :
     - gapfill_metabolic_model_input.png
     - gapfill_metabolic_model_output.png
 
-icon: modelseed-teal.png
-
 #
 # Define the set of other narrative methods that should be suggested to the user.
 #
@@ -299,7 +297,7 @@ suggestions :
 # Configure the display and description of the parameters
 #
 ---
-icon: fba-teal.png
+icon: modelseed-teal.png
 
 description : |
     <p>Draft metabolic models usually have missing reactions (gaps) due to incomplete or incorrect functional genome annotations. As a result, these models are unable to generate biomass on media where the organism typically is capable of growing. Gapfilling algorithms can be used to overcome this problem. These algorithms tentatively fill metabolic gaps by identifying the minimal number of biochemical reactions to add to the draft metabolic model to enable it to produce biomass in a specified media. Gapfilling is an optimization procedure that can produce multiple solutions.</p>
@@ -379,7 +377,7 @@ publications :
 #
 # Define basic display information
 #
-name     : Compare flux with expression
+name     : Compare Flux with Expression
 
 tooltip  : |
     Compare reaction flux with gene expression to identify pathways where expression and flux agree or are in conflict
@@ -419,7 +417,7 @@ description : |
 #
 # Define basic display information
 #
-name     : Check model mass balance
+name     : Check Model Mass Balance
 
 tooltip  : |
     Check the mass balanced of all reactions in a model
