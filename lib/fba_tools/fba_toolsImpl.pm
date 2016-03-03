@@ -844,7 +844,7 @@ sub func_simulate_growth_on_phenotype_data {
     print "Running flux balance analysis problem.\n";
     $fba->runFBA();
 	if (!defined($fba->{_tempphenosim})) {
-    	Bio::KBase::ObjectAPI::utilities::error("Simulation of phenotypes failed to return results from FBA!");
+    	Bio::KBase::ObjectAPI::utilities::error("Simulation of phenotypes failed to return results from FBA! The model probably failed to grow on Complete media. Try running gapfiling first on Complete media.");
 	}
     print "Saving FBA object with gapfilling sensitivity analysis and flux.\n";
     my $wsmeta = $self->util_kbase_store()->save_object($fba->phenotypesimulationset(),$params->{workspace}."/".$params->{phenotypesim_output_id});
