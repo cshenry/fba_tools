@@ -21,6 +21,7 @@ has allowableCompartmentString => ( is => 'rw',printOrder => 18, isa => 'Str', t
 has mediaID => ( is => 'rw',printOrder => 19, isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmediaID' );
 has reactionKOString => ( is => 'rw',printOrder => 19, isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildreactionKOString' );
 has geneKOString => ( is => 'rw',printOrder => 19, isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildgeneKOString' );
+has biomassRemovals => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub{return {};}, type => 'attribute', metaclass => 'Typed');
 
 #***********************************************************************************************************
 # BUILDERS:
