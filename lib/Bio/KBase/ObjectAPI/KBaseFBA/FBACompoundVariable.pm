@@ -16,6 +16,7 @@ extends 'Bio::KBase::ObjectAPI::KBaseFBA::DB::FBACompoundVariable';
 #***********************************************************************************************************
 has compoundID => ( is => 'rw', isa => 'Str',printOrder => '1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcompoundID');
 has compoundName => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcompoundName');
+has modelcompound => ( is => 'rw', isa => 'Ref',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmodelcompound');
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -27,6 +28,13 @@ sub _buildcompoundID {
 sub _buildcompoundName {
 	my ($self) = @_;
 	return $self->modelcompound()->compound()->name();
+}
+sub _buildmodelcompound {
+	 my ($self) = @_;
+	 if ($self->modelcompound_ref() =~ m/~\/modelcompounds\/id\/(.+)/) {
+	 	$self->modelcompound_ref("~/fbamodel/modelcompounds/id/".$1);
+	 }
+	 return $self->getLinkedObject($self->modelcompound_ref());
 }
 
 #***********************************************************************************************************

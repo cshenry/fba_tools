@@ -2275,7 +2275,7 @@ sub parseFluxFiles {
 								$upper = $cpdid2bound->{$mdlcpd->id()}->{upper};
 							}
 							$self->add("FBACompoundVariables",{
-								modelcompound_ref => $mdlcpd->_reference(),
+								modelcompound_ref => "~/fbamodel/modelcompounds/id/".$mdlcpd->id(),
 								variableType => "drainflux",
 								value => $value,
 								lowerBound => $lower,
@@ -2335,7 +2335,7 @@ sub parseFluxFiles {
 									$upper = $rxnid2bound->{$mdlrxn->id()}->{upper};
 								}
 								my $rxnvar = $self->add("FBAReactionVariables",{
-									modelreaction_ref => $mdlrxn->_reference(),
+									modelreaction_ref => "~/fbamodel/modelreactions/id/".$mdlrxn->id(),
 									variableType => "flux",
 									value => $value,
 									lowerBound => $lower,
@@ -2364,7 +2364,7 @@ sub parseFluxFiles {
 									my $lower = 0;
 									my $upper = $self->defaultMaxFlux();
 									$self->add("FBABiomassVariables",{
-										biomass_ref => $biorxn->_reference(),
+										biomass_ref => "~/fbamodel/biomasses/id/".$biorxn->id(),
 										variableType => "biomassflux",
 										value => $value,
 										lowerBound => $lower,
@@ -2567,7 +2567,7 @@ sub parseMetaboliteProduction {
 				my $cpd = $self->fbamodel()->getObject("modelcompounds",$row->[0]);
 				if (defined($cpd)) {
 					$self->add("FBAMetaboliteProductionResults",{
-						modelcompound_ref => $cpd->_reference(),
+						modelcompound_ref => "~/fbamodel/modelcompounds/id/".$cpd->id(),
 						maximumProduction => -1*$row->[1]
 					});
 				}
@@ -2793,12 +2793,12 @@ sub parseFVAResults {
 										$max = 0;	
 									}
 									my $fbaRxnVar = $self->queryObject("FBAReactionVariables",{
-										modelreaction_ref => $mdlrxn->_reference(),
+										modelreaction_ref => "~/fbamodel/modelreactions/id/".$mdlrxn->id(),
 										variableType => $vartrans->{$vartype}->[0],
 									});
 									if (!defined($fbaRxnVar)) {
 										$fbaRxnVar = $self->add("FBAReactionVariables",{
-											modelreaction_ref => $mdlrxn->_reference(),
+											modelreaction_ref => "~/fbamodel/modelreactions/id/".$mdlrxn->id(),
 											variableType => $vartrans->{$vartype}->[0],
 												upperBound => 0.0,
 												lowerBound => 0.0,
@@ -2890,12 +2890,12 @@ sub parseFVAResults {
 											$max = 0;	
 										}
 										my $fbaCpdVar = $self->queryObject("FBACompoundVariables",{
-											modelcompound_ref => $mdlcpd->_reference(),
+											modelcompound_ref => "~/fbamodel/modelcompounds/id/".$mdlcpd->id(),
 											variableType => $vartrans->{$vartype}->[0],
 										});
 										if (!defined($fbaCpdVar)) {
 											$fbaCpdVar = $self->add("FBACompoundVariables",{
-												modelcompound_ref => $mdlcpd->_reference(),
+												modelcompound_ref => "~/fbamodel/modelcompounds/id/".$mdlcpd->id(),
 												variableType => $vartrans->{$vartype}->[0],
 												upperBound => 0.0,
 												lowerBound => 0.0,
@@ -3100,7 +3100,7 @@ sub parseGapfillingOutput {
 	sub fluxForRxn {
 	my  ($self, $rxn) = @_;
 	my $fbaRxnVar = $self->queryObject("FBAReactionVariables",{
-		modelreaction_ref => $rxn->_reference()});
+		modelreaction_ref => "~/fbamodel/modelreactions/id/".$rxn->id()});
 	return $fbaRxnVar->variableType().":".$fbaRxnVar->value();
 	}
 
@@ -3243,7 +3243,7 @@ sub parseGapfillingOutput {
 				if (defined($mdlrxn)) {
 					push(@{$solution->{activatedReactions}},{
 						round => $round,
-						modelreaction_ref => $mdlrxn->_reference()
+						modelreaction_ref => "~/fbamodel/modelreactions/id/".$mdlrxn->id()
 					});
 				}
 			}
@@ -3252,7 +3252,7 @@ sub parseGapfillingOutput {
 			for (my $i=0; $i < @{$array}; $i++) {
 				my $mdlrxn = $self->fbamodel()->searchForReaction($array->[$i]);
 				if (defined($mdlrxn)) {
-					push(@{$solution->{failedReaction_refs}},modelreaction_ref => $mdlrxn->_reference());
+					push(@{$solution->{failedReaction_refs}},modelreaction_ref => "~/fbamodel/modelreactions/id/".$mdlrxn->id());
 				}
 			}
 			next if (@$row < 11);

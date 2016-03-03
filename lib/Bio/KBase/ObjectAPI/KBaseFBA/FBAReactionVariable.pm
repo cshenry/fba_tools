@@ -16,6 +16,7 @@ extends 'Bio::KBase::ObjectAPI::KBaseFBA::DB::FBAReactionVariable';
 #***********************************************************************************************************
 has reactionID => ( is => 'rw', isa => 'Str',printOrder => '1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildreactionID');
 has reactionName => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildreactionName');
+has modelreaction => ( is => 'rw', isa => 'Ref',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmodelreaction');
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -27,6 +28,13 @@ sub _buildreactionID {
 sub _buildreactionName {
 	my ($self) = @_;
 	return $self->modelreaction()->reaction()->msname();
+}
+sub _buildmodelreaction {
+	 my ($self) = @_;
+	 if ($self->modelreaction_ref() =~ m/~\/modelreactions\/id\/(.+)/) {
+	 	$self->modelreaction_ref("~/fbamodel/modelreactions/id/".$1);
+	 }
+	 return $self->getLinkedObject($self->modelreaction_ref());
 }
 
 #***********************************************************************************************************
