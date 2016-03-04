@@ -1198,6 +1198,9 @@ sub func_compare_flux_with_expression {
 	for (my $m=0; $m < @{$all_analyses}; $m++) {
 		my $expAnalysis = $all_analyses->[$m];
 		for (my $i=0; $i < @{$expAnalysis->{pathways}}; $i++) {
+			if (!defined($expAnalysis->{pathways}->[$i]->{reaction_list})) {
+				$expAnalysis->{pathways}->[$i]->{reaction_list} = [];
+			}
 			my $currentcutoff = $threshold_value;;
 			if ($expAnalysis->{pathways}->[$i]->{pathwayId} eq "ideal") {
 				$currentcutoff = $idealcutoff;

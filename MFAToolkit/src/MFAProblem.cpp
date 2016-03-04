@@ -3075,7 +3075,7 @@ int MFAProblem::RecursiveMILP(Data* InData, OptimizationParameter*& InParameters
 	
 		//Now I load the solver or refresh the solver depending on whether or not I already optimized the initial objective
 		if (LoadSolver() != SUCCESS) {
-			LoadState(ProblemStateIndex,true,true,true,PrintSolutions,true);
+			LoadState(ProblemStateIndex,true,true,true,false,true);
 			ClearState(ProblemStateIndex);
 			ClearClock(ClockIndex);
 			return FAIL;
@@ -3088,7 +3088,7 @@ int MFAProblem::RecursiveMILP(Data* InData, OptimizationParameter*& InParameters
 	if (NewSolution->Status != SUCCESS) {
 		FErrorFile() << "Initial optimization failed. Cannot continue." << endl;
 		FlushErrorFile();
-		LoadState(ProblemStateIndex,true,true,true,PrintSolutions,true);
+		LoadState(ProblemStateIndex,true,true,true,false,true);
 		ClearState(ProblemStateIndex);
 		ClearClock(ClockIndex);
 		return FAIL;
@@ -3234,7 +3234,7 @@ int MFAProblem::RecursiveMILP(Data* InData, OptimizationParameter*& InParameters
 			if (LoadConstToSolver(AddUseSolutionConst(NewSolution,VariableTypes,InParameters)->Index) != SUCCESS) {
 				FErrorFile() << "Could not add use solution constraint to solver." << endl;
 				FlushErrorFile();
-				LoadState(ProblemStateIndex,true,true,true,PrintSolutions,true);
+				LoadState(ProblemStateIndex,true,true,true,false,true);
 				ClearState(ProblemStateIndex);
 				ClearClock(ClockIndex);
 				return FAIL;
@@ -3297,7 +3297,7 @@ int MFAProblem::RecursiveMILP(Data* InData, OptimizationParameter*& InParameters
 		}
 	}
 	//Restoring problem state
-	LoadState(ProblemStateIndex,true,true,true,PrintSolutions,true);
+	LoadState(ProblemStateIndex,true,true,true,false,true);
 	ClearState(ProblemStateIndex);
 	ResetSolver();
 	LoadSolver();
@@ -4200,7 +4200,7 @@ int MFAProblem::LoadAdditionalReactions(Data* InData,OptimizationParameter* InPa
 				} else {
 					NewReaction->SetType(REVERSE);
 				}
-				InData->AddReaction(NewReaction);
+				NewReaction = InData->AddReaction(NewReaction);
 			}
 		}
 	}
@@ -8145,7 +8145,7 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 		SetParameter("expression informed biomass optimization","fail");
 		return FAIL;
 	}
-	this->LoadState(state,true,true,true,true,true);
+	//this->LoadState(state,true,true,true,false,true);
 	this->ClearState(state);
 	return SUCCESS;
 }
@@ -8413,7 +8413,7 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactst
 		ObjFunct->Coefficient[first_solution_variables[i]] = 0;
 	}
 	output.close();
-	this->LoadState(state,true,true,true,true,true);
+	this->LoadState(state,true,true,true,false,true);
 	this->ClearState(state);
 	return stay_in_loop;
 }
@@ -8575,7 +8575,7 @@ int MFAProblem::ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& Curre
 		}
 	}
 	output.close();
-	this->LoadState(state,true,true,true,true,true);
+	this->LoadState(state,true,true,true,false,true);
 	this->ClearState(state);
 	this->RelaxIntegerVariables = false;
 	if (this->Solver != CPLEX) {
