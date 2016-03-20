@@ -1,32 +1,64 @@
 {
-   "job_id_output_field" : "docker",
-   "categories" : [
-      "active",
-      "metabolic_modeling"
-   ],
    "contact" : "help@kbase.us",
-   "authors" : [
-      "chenry"
-   ],
-   "name" : "compare_fba_solutions",
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
    "visible" : true,
+   "parameters" : [
+      {
+         "field_type" : "text",
+         "allow_multiple" : true,
+         "optional" : false,
+         "id" : "fba_id_list",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBA"
+            ]
+         }
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAComparison"
+            ],
+            "is_output_name" : true
+         },
+         "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "id" : "fbacomparison_output_id"
+      }
+   ],
    "ver" : "1.0.0",
+   "job_id_output_field" : "docker",
+   "name" : "compare_fba_solutions",
    "behavior" : {
       "service-mapping" : {
          "output_mapping" : [
             {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "ws"
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
             },
             {
-               "constant_value" : "KBaseFBA.FBAComparison",
-               "target_property" : "type"
+               "target_property" : "type",
+               "constant_value" : "KBaseFBA.FBAComparison"
             },
             {
-               "input_parameter" : "fbacomparison_output_id",
-               "target_property" : "obj"
+               "target_property" : "obj",
+               "input_parameter" : "fbacomparison_output_id"
             }
          ],
+         "name" : "fba_tools",
+         "method" : "compare_fba_solutions",
          "input_mapping" : [
             {
                "narrative_system_variable" : "workspace",
@@ -41,46 +73,14 @@
                "target_property" : "fbacomparison_output_id"
             }
          ],
-         "name" : "fba_tools",
-         "url" : "",
-         "method" : "compare_fba_solutions"
+         "url" : ""
       }
    },
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseTabTable"
-   },
-   "parameters" : [
-      {
-         "id" : "fba_id_list",
-         "allow_multiple" : true,
-         "advanced" : false,
-         "field_type" : "text",
-         "default_values" : [
-            ""
-         ],
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBA"
-            ]
-         },
-         "optional" : false
-      },
-      {
-         "field_type" : "text",
-         "default_values" : [
-            ""
-         ],
-         "text_options" : {
-            "is_output_name" : true,
-            "valid_ws_types" : [
-               "KBaseFBA.FBAComparison"
-            ]
-         },
-         "optional" : false,
-         "id" : "fbacomparison_output_id",
-         "advanced" : false,
-         "allow_multiple" : false
-      }
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "authors" : [
+      "chenry"
    ]
 }

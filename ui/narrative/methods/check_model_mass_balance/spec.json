@@ -1,41 +1,9 @@
 {
-   "visible" : true,
-   "authors" : [
-      "chenry"
-   ],
    "name" : "check_model_mass_balance",
-   "job_id_output_field" : "docker",
-   "categories" : [
-      "active",
-      "metabolic_modeling"
-   ],
-   "contact" : "help@kbase.us",
-   "parameters" : [
-      {
-         "advanced" : false,
-         "allow_multiple" : false,
-         "id" : "fbamodel_id",
-         "default_values" : [
-            ""
-         ],
-         "field_type" : "text",
-         "optional" : false,
-         "text_options" : {
-            "valid_ws_types" : [
-               "KBaseFBA.FBAModel"
-            ]
-         }
-      }
-   ],
-   "widgets" : {
-      "output" : "kbaseReportView",
-      "input" : null
-   },
    "behavior" : {
       "service-mapping" : {
-         "method" : "check_model_mass_balance",
          "url" : "",
-         "name" : "fba_tools",
+         "method" : "check_model_mass_balance",
          "input_mapping" : [
             {
                "target_property" : "workspace",
@@ -46,17 +14,52 @@
                "input_parameter" : "fbamodel_id"
             }
          ],
+         "name" : "fba_tools",
          "output_mapping" : [
             {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "workspace_name"
+               "target_property" : "workspace_name",
+               "narrative_system_variable" : "workspace"
             },
             {
-         		"service_method_output_path": [0,"report_name"],
-         		"target_property": "report_name"
-        	}
+               "service_method_output_path" : [
+                  0,
+                  "report_name"
+               ],
+               "target_property" : "report_name"
+            }
          ]
       }
    },
-   "ver" : "1.0.0"
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "authors" : [
+      "chenry"
+   ],
+   "widgets" : {
+      "input" : null,
+      "output" : "kbaseReportView"
+   },
+   "contact" : "help@kbase.us",
+   "visible" : true,
+   "parameters" : [
+      {
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "id" : "fbamodel_id",
+         "allow_multiple" : false,
+         "optional" : false,
+         "field_type" : "text",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         }
+      }
+   ],
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker"
 }

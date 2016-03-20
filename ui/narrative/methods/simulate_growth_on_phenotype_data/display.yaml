@@ -39,22 +39,13 @@ parameters :
             Name the Phenotype Simulation Result data
 
 
-    target_reaction :
+    reaction_ko_list :
         ui-name : |
-            Reaction to maximize
+            Reaction Knockouts
         short-hint : |
-            ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
         long-hint : |
-            ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
-
-
-    add_all_transporters :
-        ui-name : |
-            Add all transporters?
-        short-hint : |
-            Add transporters for primary nutrients associated with all phenotype conditions
-        long-hint : |
-            Add transporters for primary nutrients associated with all phenotype conditions
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
 
 
     media_supplement_list :
@@ -66,13 +57,24 @@ parameters :
             Specify additional compounds to add to media one at a time by using “add another media supplement” button
 
 
-    fbamodel_id :
+    custom_bound_list :
         ui-name : |
-            FBA Model
+            Custom flux bounds
         short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
         long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+        placeholder : |
+            e.g. 0;rxn00001;5
+
+
+    add_all_transporters :
+        ui-name : |
+            Add all transporters?
+        short-hint : |
+            Add transporters for primary nutrients associated with all phenotype conditions
+        long-hint : |
+            Add transporters for primary nutrients associated with all phenotype conditions
 
 
     phenotypeset_id :
@@ -84,24 +86,6 @@ parameters :
             A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model  
 
 
-    reaction_ko_list :
-        ui-name : |
-            Reaction Knockouts
-        short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-        long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-
-
-    feature_ko_list :
-        ui-name : |
-            Gene Knockouts
-        short-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-        long-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-
-
     add_positive_transporters :
         ui-name : |
             Add growth transporters?
@@ -111,15 +95,31 @@ parameters :
             Add transporters for primary nutrients associated with all conditions with growth
 
 
-    custom_bound_list :
+    target_reaction :
         ui-name : |
-            Custom flux bounds
+            Reaction to maximize
         short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
         long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        placeholder : |
-            e.g. 0;rxn00001;5
+            ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
+
+
+    fbamodel_id :
+        ui-name : |
+            FBA Model
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+
+
+    feature_ko_list :
+        ui-name : |
+            Gene Knockouts
+        short-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+        long-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
 
 
 icon: fba-teal.png
