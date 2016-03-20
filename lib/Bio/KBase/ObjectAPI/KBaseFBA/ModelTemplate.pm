@@ -138,9 +138,34 @@ sub buildModel {
 	$mdl->genome($genome);
 	$mdl->_reference("~");
 	$mdl->parent($self->parent());
+	$self->extend_model_from_features({
+		model => $mdl,
+		features => $genome->features()
+	});
+	my $bios = $self->biomasses();
+	for (my $i=0; $i < @{$bios}; $i++) {
+		my $bio = $bios->[$i];
+		my $gc = $genome->gc_content();
+		if (!defined($gc)) {
+			$gc = 0.5;
+		}
+ 		$bio->addBioToModel({
+			gc => $gc,
+			model => $mdl
+		});
+	}
+	return $mdl;
+}	
+	
+sub extend_model_from_features {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["features","model"],{
+		fulldb => 0
+	}, @_);	
 	my $rxns = $self->reactions();
 	my $roleFeatures = {};
-	my $features = $genome->features();
+	my $mdl = $args->{model};
+	my $features = $args->{features};
 	for (my $i=0; $i < @{$features}; $i++) {
 		my $ftr = $features->[$i];
 		my $roles = $ftr->roles();
@@ -170,19 +195,6 @@ sub buildModel {
 			fulldb => $args->{fulldb}
 		});
 	}
-	my $bios = $self->biomasses();
-	for (my $i=0; $i < @{$bios}; $i++) {
-		my $bio = $bios->[$i];
-		my $gc = $genome->gc_content();
-		if (!defined($gc)) {
-			$gc = 0.5;
-		}
- 		$bio->addBioToModel({
-			gc => $gc,
-			model => $mdl
-		});
-	}
-	return $mdl;
 }
 
 sub buildModelFromFunctions {

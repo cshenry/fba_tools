@@ -1579,7 +1579,8 @@ Description:
 sub translate_model {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["proteome_comparison"], {
-		keep_nogene_rxn => 1
+		keep_nogene_rxn => 1,
+		translation_policy => "translate_only"
 	}, @_);
 	my $protcomp = $args->{proteome_comparison};
 	my $genome = $self->genome();
@@ -1631,10 +1632,14 @@ sub translate_model {
 		Bio::KBase::ObjectAPI::utilities::error("Proteome comparison does not involve genome used in model!");
 	}
 	my $translate;
+	$ftrhash = {};
 	for(my $i=0; $i < @{$data}; $i++) {
 		for (my $j=0; $j < @{$data->[$i]}; $j++) {
 			if ($data->[$i]->[$j]->[2] == 100) {
 				push(@{$translate->{$list->[$i]}},$olist->[$data->[$i]->[$j]->[0]]);
+				if ($args->{translation_policy} eq "add_reactions_for_unique_genes") {
+					$ftrhash->{$olist->[$data->[$i]->[$j]->[0]]} = 1;
+				}
 			}
 		}
 	}
@@ -1655,6 +1660,9 @@ sub translate_model {
 					if (defined($translate->{$ftrs->[$m]->id()})) {
 						foreach my $gene (@{$translate->{$ftrs->[$m]->id()}}) {
 							my $newftr = $newgenome->getObject("features",$gene);
+							if ($args->{translation_policy} eq "reconcile") {
+								$ftrhash->{$newftr->id()} = 1;
+							}
 							push(@{$newftrs},$newftr->_reference());
 						}
 					}
@@ -1677,6 +1685,19 @@ sub translate_model {
 	}
 	$self->genome_ref($ref);
 	$self->genome($newgenome);
+	if ($args->{translation_policy} ne "translate_only") {
+		my $extra_features = [];
+		$ftrs = $newgenome->features();
+		for (my $i=0; $i < @{$ftrs}; $i++) {
+			if (!defined($ftrhash->{$ftrs->[$i]->id()})) {
+				push(@{$extra_features},$ftrs->[$i]);
+			}
+		}
+		$self->template()->extend_model_from_features({
+			model => $self,
+			features => $extra_features
+		});
+	}
 	return {};
 }
 

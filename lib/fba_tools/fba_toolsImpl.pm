@@ -752,7 +752,8 @@ sub func_propagate_model_to_new_genome {
 		omega => 0,
 		objective_fraction => 0.1,
 		minimum_target_flux => 0.1,
-		number_of_solutions => 1
+		number_of_solutions => 1,
+		translation_policy => "translate_only"
     });
 	#Getting genome
 	my $source_model = $self->util_kbase_store()->get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
@@ -764,7 +765,8 @@ sub func_propagate_model_to_new_genome {
 	print "Translating model.\n";
 	my $report = $model->translate_model({
 		proteome_comparison => $protcomp,
-		keep_nogene_rxn => $params->{keep_nogene_rxn}
+		keep_nogene_rxn => $params->{keep_nogene_rxn},
+		translation_policy => $params->{translation_policy},
 	});
 	#Gapfilling model if requested
 	my $output;

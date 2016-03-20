@@ -405,9 +405,9 @@ sub addRxnToModel {
 	$mdlrxn = $mdl->add("modelreactions",{
 		id => $self->msid()."_".$mdlcmp->id(),
 		probability => 0,
-		reaction_ref => $self->_reference(),
+		reaction_ref => "~/template/reactions/id/".$self->id(),
 		direction => $self->direction(),
-		modelcompartment_ref => $mdlcmp->_reference(),
+		modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
 		modelReactionReagents => [],
 		modelReactionProteins => []
 	});
@@ -422,16 +422,16 @@ sub addRxnToModel {
 		});
 		$mdlrxn->addReagentToReaction({
 			coefficient => $coefficient,
-			modelcompound_ref => $mdlcpd->_reference()
+			modelcompound_ref => "~/modelcompounds/id/".$mdlcpd->id()
 		});
 	}
     }
     if (@{$proteins} > 0 && scalar(@{$mdlrxn->modelReactionProteins()})==0) {
 	foreach my $protein (@{$proteins}) {
 	    $mdlrxn->addModelReactionProtein({
-		proteinDataTree => $protein,
-		complex_ref => $protein->{cpx}->_reference()
-					     });
+			proteinDataTree => $protein,
+			complex_ref => "~/template/complexes/id/".$protein->{cpx}->id()
+		});
 	}
     } elsif (scalar(@{$mdlrxn->modelReactionProteins()})==0) {
 	$mdlrxn->addModelReactionProtein({
