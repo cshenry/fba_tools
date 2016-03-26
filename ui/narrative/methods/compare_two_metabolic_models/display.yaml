@@ -13,7 +13,7 @@ screenshots :
     - compare_two_metabolic_models_output3.png
     - compare_two_metabolic_models_output4.png
 
-icon: modelseed-teal.png
+icon: fba-teal.png
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
