@@ -2,10 +2,9 @@
 # Define basic display information
 #
 name     : Simulate Growth on Phenotype Data
-subtitle : |
-    Use Flux Balance Analysis (FBA) to simulate multiple growth phenotypes.
+
 tooltip  : |
-    Use Flux Balance Analysis (FBA) to simulate multiple growth phenotypes.
+    Use flux balance analysis to simulate multiple growth phenotypes.
 
 screenshots :
     - simulate_growth_on_a_phenotype_data_input.png
