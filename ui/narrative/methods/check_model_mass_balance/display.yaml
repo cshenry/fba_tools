@@ -4,7 +4,7 @@
 name     : Check Model Mass Balance
 
 tooltip  : |
-    Check the mass balanced of all reactions in a model
+    Check the mass balance of all reactions in a metabolic model.
 
 screenshots :
     - check_model_mass_balance_input.png
