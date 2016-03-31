@@ -480,7 +480,7 @@ sub func_run_flux_balance_analysis {
     my $objective;
     #eval {
 		local $SIG{ALRM} = sub { die "FBA timed out! Model likely contains numerical instability!" };
-		alarm 3600;
+		alarm 86400;
 		$objective = $fba->runFBA();
 		alarm 0;
 	#};
