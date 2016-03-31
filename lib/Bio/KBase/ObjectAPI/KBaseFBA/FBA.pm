@@ -1110,85 +1110,111 @@ sub createJobDirectory {
 		my $gfm = $self->{_source_model};
 		if (defined($gfm)) {
 			$mdlcpd = $gfm->modelcompounds();
-			for (my $i=0; $i < @{$mdlcpd}; $i++) {
-				my $cpd = $mdlcpd->[$i];
-				my $id = $cpd->id();
-				if (defined($genex->{$cpd->compound()->id()})) {
-					if (defined($genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()})) {
-						if ($cpd->modelcompartment()->compartment()->id() eq "e") {
-							$exchangehash->{$cpd->id()}->{e} = $genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()};
-						} else {
-							$exchangehash->{$cpd->id()}->{c} = $genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()};
-						}				
-					}
-				}
-				my $name = $cpd->name();
-				my $abbrev = $cpd->id();
-				if (!defined($cpdhash->{$id})) {
-					push(@{$BioCpd},$id."\t".$abbrev."\t".$cpd->charge()."\t".$cpd->formula()."\t0\t".$name);
-					$cpdhash->{$id} = $cpd;
-				}
-			}
 			$mdlrxn = $gfm->modelreactions();
-			my $compindecies = {};
-			my $comps = $gfm->modelcompartments();
-			for (my $i=0; $i < @{$comps}; $i++) {
-				$compindecies->{$comps->[$i]->compartmentIndex()}->{$comps->[$i]->compartment()->id()} = 1;
-			}
-			for (my $i=0; $i < @{$mdlrxn}; $i++) {
-				my $rxn = $mdlrxn->[$i];
-				my $direction = $rxn->direction();
-				my $rxndir = "<=>";
-				if ($direction eq ">") {
-					$rxndir = "=>";
-				} elsif ($direction eq "<") {
-					$rxndir = "<=";
+			foreach my $compindex (keys(%{$compindecies})) {
+				if (defined($compindecies->{1})) {
+					if ($compindex == 0) {
+						next;
+					}
 				}
-				my $id = $rxn->id();
-				my $name = $rxn->name();
-				if (!defined($rxnhash->{$id})) {
-					push(@{$additionalrxn},$id."\t".$direction."\tSRCMDL");
-					$gfcoef->{$id} = {tag => "SRCMDL"};
-					if ($direction eq ">" || $direction eq "=") {
-						$gfcoef->{$id}->{forward} = "10";
-					}
-					if ($direction eq "<" || $direction eq "=") {
-						$gfcoef->{$id}->{"reverse"} = "10";
-					}
-					$rxnhash->{$id} = $rxn;
-					my $reactants = "";
-					my $products = "";
-					my $rgts = $rxn->modelReactionReagents();
-					for (my $j=0;$j < @{$rgts}; $j++) {
-						my $rgt = $rgts->[$j];
-						my $suffix = "";
-						if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
-							$suffix = "[e]";
+				for (my $i=0; $i < @{$mdlcpd}; $i++) {
+					my $cpd = $mdlcpd->[$i];
+					my $id = $cpd->id();
+					if ($id =~ /(.+)_([a-z]+)(\d+)/) {
+						my $trueid = $1."_".$2.$compindex;
+						my $oldcmp = $2.$3;
+						my $newcmp = $2.$compindex;
+						if ($2 eq "e") {
+							$trueid = $1."_".$2."0";
+							$oldcmp = $2.$3;
+							$newcmp = $2."0";
 						}
-						if ($rgt->coefficient() < 0) {
-							if (length($reactants) > 0) {
-								$reactants .= " + ";
+						if (defined($genex->{$cpd->compound()->id()})) {
+							if (defined($genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()})) {
+								if ($cpd->modelcompartment()->compartment()->id() eq "e") {
+									$exchangehash->{$trueid}->{e} = $genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()};
+								} else {
+									$exchangehash->{$trueid}->{c} = $genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()};
+								}				
 							}
-							$reactants .= "(".abs($rgt->coefficient()).") ".$rgt->modelcompound()->id().$suffix;
-						} elsif ($rgt->coefficient() > 0) {
-							if (length($products) > 0) {
-								$products .= " + ";
-							}
-							$products .= "(".$rgt->coefficient().") ".$rgt->modelcompound()->id().$suffix;
+						}
+						my $name = $cpd->name();
+						$name =~ s/$oldcmp/$newcmp/;
+						my $abbrev = $trueid;
+						if (!defined($cpdhash->{$trueid})) {
+							push(@{$BioCpd},$trueid."\t".$abbrev."\t".$cpd->charge()."\t".$cpd->formula()."\t0\t".$name);
+							$cpdhash->{$trueid} = $cpd;
 						}
 					}
-					my $equation = $reactants." ".$rxndir." ".$products;
-					(my $dg, my $dge, my $st) = (0,0,"OK");
-					if (defined($rxn->reaction()->deltaG())) {
-						$dg = $rxn->reaction()->deltaG();
+				}
+				for (my $i=0; $i < @{$mdlrxn}; $i++) {
+					my $rxn = $mdlrxn->[$i];
+					my $direction = $rxn->direction();
+					my $rxndir = "<=>";
+					if ($direction eq ">") {
+						$rxndir = "=>";
+					} elsif ($direction eq "<") {
+						$rxndir = "<=";
 					}
-					if (defined($rxn->reaction()->deltaGErr())) {
-						$dge = $rxn->reaction()->deltaGErr();
+					my $id = $rxn->id();
+					if ($id =~ /(.+)_([a-z]+)(\d+)/) {
+						my $trueid = $1."_".$2.$compindex;
+						my $oldcmp = $2.$3;
+						my $newcmp = $2.$compindex;
+						my $name = $rxn->name();
+						$name =~ s/$oldcmp/$newcmp/;
+						if (!defined($rxnhash->{$trueid})) {
+							push(@{$additionalrxn},$trueid."\t".$direction."\tSRCMDL");
+							$gfcoef->{$trueid} = {tag => "SRCMDL"};
+							if ($direction eq ">" || $direction eq "=") {
+								$gfcoef->{$trueid}->{forward} = "10";
+							}
+							if ($direction eq "<" || $direction eq "=") {
+								$gfcoef->{$trueid}->{"reverse"} = "10";
+							}
+							$rxnhash->{$trueid} = $rxn;
+							my $reactants = "";
+							my $products = "";
+							my $rgts = $rxn->modelReactionReagents();
+							for (my $j=0;$j < @{$rgts}; $j++) {
+								my $rgt = $rgts->[$j];
+								my $rgtid = $rgt->modelcompound()->id();
+								if ($rgtid =~ /(.+)_([a-z]+)(\d+)/) {
+									$rgtid = $1."_".$2.$compindex;
+									if ($2 eq "e") {
+										$rgtid = $1."_".$2."0";
+									}	
+									my $suffix = "";
+									if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
+										$suffix = "[e]";
+									}
+									if ($rgt->coefficient() < 0) {
+										if (length($reactants) > 0) {
+											$reactants .= " + ";
+										}
+										$reactants .= "(".abs($rgt->coefficient()).") ".$rgtid.$suffix;
+									} elsif ($rgt->coefficient() > 0) {
+										if (length($products) > 0) {
+											$products .= " + ";
+										}
+										$products .= "(".$rgt->coefficient().") ".$rgtid.$suffix;
+									}
+								}
+							}
+							my $equation = $reactants." ".$rxndir." ".$products;
+							(my $dg, my $dge, my $st) = (0,0,"OK");
+							if (defined($rxn->reaction()->deltaG())) {
+								$dg = $rxn->reaction()->deltaG();
+							}
+							if (defined($rxn->reaction()->deltaGErr())) {
+								$dge = $rxn->reaction()->deltaGErr();
+							}
+							if (defined($rxn->reaction()->status())) {
+								$st = $rxn->reaction()->status();
+							}
+							push(@{$BioRxn},$trueid."\t".$trueid."\t".$dg."\t".$dge."\t".$equation."\t".$trueid."\t".$rxndir."\t".$st."\t".$rxndir);
+						}
 					}
-					if (defined($rxn->reaction()->status())) {
-						$st = $rxn->reaction()->status();
-					}
-					push(@{$BioRxn},$id."\t".$id."\t".$dg."\t".$dge."\t".$equation."\t".$id."\t".$rxndir."\t".$st."\t".$rxndir);
 				}
 			}
 		}
@@ -3219,6 +3245,10 @@ sub parseGapfillingOutput {
 							if (defined($self->{_source_model})) {
 								$rxnref = $self->{_source_model}->_reference()."/modelreactions/id/".$2."_".$3.$4;
 								$rxn = $self->{_source_model}->searchForReaction($2."_".$3.$4);
+							}
+							if (!defined($rxn) && $ind != 0) {
+								$rxnref = $self->{_source_model}->_reference()."/modelreactions/id/".$2."_".$3."0";
+								$rxn = $self->{_source_model}->searchForReaction($2."_".$3."0");
 							}
 							if (!defined $rxn) {
 								print "Skipping gapfilling ".$array->[$i]."\n";

@@ -481,7 +481,11 @@ sub addModelReaction {
 				my $rgt = $rgts->[$i];
 				my $rgtcmp = $mdlcmp;
 				if ($cmpchange == 1) {
-					$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
+					if ($rgt->templatecompcompound()->templatecompartment()->id() eq "e") {
+						$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
+					} else {
+						$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => $args->{compartmentIndex}});
+					}
 				}
 				my $coefficient = $rgt->coefficient();
 				my $mdlcpd = $self->addCompoundToModel({
@@ -1144,7 +1148,11 @@ sub add_gapfilling {
 			my $rxnid = $rxn->reaction()->id();
 			my $mdlrxn;
 			my $ismdlrxn = 0;
-			if ($rxnid =~ m/.+_[a-zA-Z]\d+$/) {
+			if ($rxnid =~ m/(.+)_([a-zA-Z]+)(\d+)$/) {
+				my $idindex = $3;
+				if ($idindex != $rxn->compartmentIndex()) {
+					$rxnid = $1."_".$2.$rxn->compartmentIndex();
+				}
 				$ismdlrxn = 1;
 				$mdlrxn = $self->getObject("modelreactions",$rxnid);
 			} else {
@@ -1173,8 +1181,14 @@ sub add_gapfilling {
 			}
 			if (!defined($mdlrxn)) {
 				if ($ismdlrxn == 1) {
-					if (!defined($self->getObject("modelcompartments",$rxn->reaction()->modelcompartment()->id()))) {
-						$self->add("modelcompartments",$rxn->reaction()->modelcompartment()->cloneObject());
+					if (!defined($self->getObject("modelcompartments",$rxn->compartment()->id().$rxn->compartmentIndex()))) {
+						$self->add("modelcompartments",{
+							id => $rxn->compartment()->id().$rxn->compartmentIndex(),
+							compartment_ref => $rxn->compartment()->_reference(),
+							label => $rxn->compartment()->name()."_".$rxn->compartmentIndex(),
+							pH => 7,
+							compartmentIndex => $rxn->compartmentIndex()
+						});
 					}
 					$mdlrxn = $rxn->reaction()->cloneObject();
 					$mdlrxn->parent($rxn->reaction()->parent());
@@ -1184,14 +1198,51 @@ sub add_gapfilling {
 						$mdlrxn->remove("modelReactionProteins",$prots->[$m]);
 					}
 					$mdlrxn->direction($rxn->direction());
+					my $newrgts = [];
 					my $rgts = $mdlrxn->modelReactionReagents();
 					for (my $m=0; $m < @{$rgts}; $m++) {
-						if (!defined($self->getObject("modelcompounds",$rgts->[$m]->modelcompound()->id()))) {
-							$self->add("modelcompounds",$rgts->[$m]->modelcompound()->cloneObject());		
-							if (!defined($self->getObject("modelcompartments",$rgts->[$m]->modelcompound()->modelcompartment()->id()))) {
-								$self->add("modelcompartments",$rgts->[$m]->modelcompound()->modelcompartment()->cloneObject());
+						if ($rgts->[$m]->modelcompound_ref =~ m/\/([^\/]+)_([a-z]+)(\d+)$/) {
+							my $cmpid = $2;
+							my $mdlcpdid = $1."_".$cmpid.$rxn->compartmentIndex();
+							my $mdlcmpdid = $cmpid.$rxn->compartmentIndex();
+							my $index = $rxn->compartmentIndex();
+							if ($cmpid eq "e") {
+								$mdlcpdid = $1."_".$cmpid."0";
+								$mdlcmpdid = $cmpid."0";
+								$index = 0;
+							}
+							push(@{$newrgts},{
+								modelcompound_ref => "~/modelcompounds/id/".$mdlcpdid,
+								coefficient => $rgts->[$m]->coefficient()
+							});
+							if (!defined($self->getObject("modelcompounds",$mdlcpdid))) {
+								if (!defined($self->getObject("modelcompartments",$mdlcmpdid))) {
+									$self->add("modelcompartments",{
+										id => $mdlcmpdid,
+										compartment_ref => "~/template/compartments/id/".$cmpid,
+										label => $cmpid."_".$index,
+										pH => 7,
+										compartmentIndex => $index
+									});
+								}
+								my $name = $rgts->[$m]->modelcompound()->name();
+								$name =~ s/_[a-z]+\d+$/_$mdlcmpdid/;
+								my $mdlcpd = $self->add("modelcompounds",{
+									id => $mdlcpdid,
+									compound_ref => $rgts->[$m]->modelcompound()->compound_ref(),
+									name => $name,
+									aliases => $rgts->[$m]->modelcompound()->aliases(),
+									charge => $rgts->[$m]->modelcompound()->charge(),
+									maxuptake => $rgts->[$m]->modelcompound()->maxuptake(),
+									formula => $rgts->[$m]->modelcompound()->formula(),
+									modelcompartment_ref => "~/modelcompartments/id/".$mdlcmpdid,
+								});		
 							}
 						}
+						$mdlrxn->remove("modelReactionReagents",$rgts->[$m]);
+					}
+					for (my $m=0; $m < @{$newrgts}; $m++) {
+						$mdlrxn->add("modelReactionReagents",$newrgts->[$m]);
 					}
 					$mdlrxn->parent($self);
 					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
