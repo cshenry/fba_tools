@@ -381,6 +381,7 @@ struct OptimizationParameter {
 	vector<vector<string> > KOSets;
 	vector<string> mediaConditions;
 	vector<string> labels;
+	vector<double> observedgrowth;
 	
 	vector<string> KOReactions;
 	vector<string> KOGenes;

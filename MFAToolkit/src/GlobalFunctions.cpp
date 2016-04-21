@@ -1463,6 +1463,9 @@ OptimizationParameter* ReadParameters() {
 			if (strings != NULL && strings->size() >= 3) {
 				(*strings)[1] = StringReplace((*strings)[1].data(),";",",");
 				temp.append((*strings)[0]+":"+(*strings)[2]+":"+(*strings)[1]);
+				if (strings->size() >= 4) {
+					temp.append(":"+(*strings)[3]);
+				}
 			}
 			delete strings;
 		}
@@ -1485,6 +1488,9 @@ OptimizationParameter* ReadParameters() {
 					}
 					NewParameters->KOSets.push_back(newSet);
 					delete stringsThree;
+					if (stringsTwo->size() >= 4) {
+						NewParameters->observedgrowth.push_back(atof((*stringsTwo)[3].data()));
+					}
 				}
 				delete stringsTwo;
 			}

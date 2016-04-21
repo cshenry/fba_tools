@@ -212,7 +212,6 @@ void MFAProblem::DetermineProbType() {
 			}
 		}
 	}
-	
 	for (int i=0; i < FNumConstraints(); i++) {
 		if (Constraints[i]->ConstraintType == NONLINEAR) {
 			Nonlinear = true;
@@ -220,13 +219,11 @@ void MFAProblem::DetermineProbType() {
 			Quadratic = true;
 		}
 	}
-
 	if (GetObjective()->ConstraintType == NONLINEAR) {
 		Nonlinear = true;
 	} else if (GetObjective()->ConstraintType == QUADRATIC) {
 		Quadratic = true;
 	}
-
 	if (Integer) {
 		if (Nonlinear) {
 			ProbType = MINP;
@@ -1976,7 +1973,7 @@ string MFAProblem::fluxToString() {
 //Solver interaction
 int MFAProblem::LoadSolver(bool PrintFromSolver) {
 	int Status = FAIL;
-	DetermineProbType();	
+	DetermineProbType();
 	Status = GlobalInitializeSolver(Solver);	
 	ProblemLoaded = false;
 	LoadedRelaxation = RelaxIntegerVariables;
@@ -3622,6 +3619,17 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 	SavedBounds* currentBounds = this->saveBounds();
 	bool originalSense = this->FMax();
 	LinEquation* originalObjective = this->GetObjective();
+	LinEquation* gapfillobj = this->GetObjective();
+	if (GapfillPhenosim) {
+		originalObjective = this->ObjectiveConstraint;
+		for (int i=0; i < int(gapfillobj->Variables.size()); i++) {
+			if (gapfillobj->Coefficient[i] > 0) {
+				if (gapfillobj->Variables[i]->Type == FLUX || gapfillobj->Variables[i]->Type == FORWARD_FLUX || gapfillobj->Variables[i]->Type == REVERSE_FLUX) {
+					gapfillobj->Variables[i]->Exclude = true;
+				}
+			}
+		}
+	}
 	map<string,bool> inactiveReactions;
 	map<string,bool> compoundsToAssess;
 	this->RelaxIntegerVariables = true;
@@ -3640,7 +3648,6 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 		InParameters->KOSets.clear();
 	}
 	if (GetParameter("find tight bounds").compare("1") == 0) {
-		ObjFunct = NULL;
 		this->FindTightBounds(InData,InParameters,false,true);
 		for (int i=0; i < FNumVariables(); i++) {
 			if ((GetVariable(i)->AssociatedReaction != NULL && GetVariable(i)->Type == FLUX) || (GetVariable(i)->AssociatedSpecies != NULL && GetVariable(i)->Type == DRAIN_FLUX && GetVariable(i)->Compartment == GetCompartment("c")->Index)) {
@@ -3656,14 +3663,13 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 				}
 			}
 		}
-		this->AddObjective(originalObjective);
+		this->ObjFunct = originalObjective;
 	}
 	LinEquation* objectiveConstraint = this->MakeObjectiveConstraint(-10000,GREATER);
 	if (essentialrxnko) {
 		objectiveConstraint->RightHandSide = 0.1;
 		this->loadMedia(InParameters->mediaConditions[0],InData,true);
 		this->LoadSolver();
-		ObjFunct = NULL;
 		this->FindTightBounds(InData,InParameters,false,true);
 		for (int i=0; i < FNumVariables(); i++) {
 			if (GetVariable(i)->AssociatedReaction != NULL && GetVariable(i)->Type == FLUX) {
@@ -3680,7 +3686,7 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 			}
 		}
 		objectiveConstraint->RightHandSide = -10000;
-		this->AddObjective(originalObjective);
+		this->ObjFunct = originalObjective;
 	}
 	map<string,bool> koReactions;
 	for (int i=0; i < int(InParameters->labels.size()); i++) {
@@ -3696,7 +3702,7 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 		}
 		delete strings;
 	}
-	this->LoadSolver();
+	this->LoadSolver(true);
 	string lastmedia;
 	int rerun = 0;
 	map<string,bool> deletedReactions;
@@ -3711,6 +3717,7 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 		string label = InParameters->labels[i];
 		string newInactiveReactions;
 		string newEssentialGenes;
+		string gapfilling("none");
 		vector<Reaction*> KOReactions;
 		vector<int> KODirections;
 		if (deletedReactions.count(label) > 0) {
@@ -3721,223 +3728,244 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 				this->loadMedia(InParameters->mediaConditions[i],InData,true);
 			}
 			//Calculating WT growth
-			if (originalSense) {
-				this->SetMax();
-			} else {
-				this->SetMin();
-			}
-			ObjFunct = NULL;
-			this->AddObjective(originalObjective);
+			this->ObjFunct = originalObjective;
+			this->ObjectiveConstraint->RightHandSide = 0;
+			LoadConstToSolver(this->ObjectiveConstraint->Index);
+			this->SetMax();
 			LoadObjective();
-			if (GapfillPhenosim) {
-				bool gapfilled = SolveGapfillingProblem(1,atoi(GetParameter("gfstart").data()),atoi(GetParameter("inactstart").data()),atoi(GetParameter("threshold").data()),NewSolution,label,InParameters);
-				if (gapfilled) {
-					WTgrowth = 0;
-					growth = atof(GetParameter("original objective").data());
-				} else if (GetParameter("current gapfilled reactions").compare("fail") == 0) {
-					WTgrowth = 0;
-					growth = 0;
-				} else if (GetParameter("current gapfilled reactions").compare("none") == 0) {
-					WTgrowth = atof(GetParameter("original objective").data());
-					growth = atof(GetParameter("original objective").data());
-				}
-				noGrowth.assign(GetParameter("current gapfilled reactions"));
-			} else {
-				NewSolution = RunSolver(false,false,false);
-				if (NewSolution != NULL && NewSolution->Status == SUCCESS) {
-					WTgrowth = NewSolution->Objective;
-					if (WTgrowth < 1e-7) {
-						string note;
-						if (InParameters->OptimizeMetabolitesWhenZero) {
-							//CheckIndividualMetaboliteProduction(InData,InParameters,GetParameter("metabolites to optimize"),false,false,note,true);
-							noGrowth = GetParameter("No growth metabolites");
-						}
-					} else {
-						vector<Gene*> KOList;
-						if (InParameters->KOSets[i].size() > 0 && ConvertToLower(InParameters->KOSets[i][0]).compare("none") != 0) {
-							for (int j=0; j < int(InParameters->KOSets[i].size()); j++) {
-								Gene* currentGene = InData->FindGene("DATABASE",InParameters->KOSets[i][j].data());
-								if (currentGene != NULL) {
-									KOList.push_back(currentGene);
-								} else {
-									Reaction* currentReaction = InData->FindReaction("DATABASE",InParameters->KOSets[i][j].data());
-									if (currentReaction != NULL) {
-										if (InParameters->KOSets[i][j].substr(0,1).compare("+") == 0) {
-											KODirections.push_back(1);
-										} else if (InParameters->KOSets[i][j].substr(0,1).compare("-") == 0) {
-											KODirections.push_back(-1);
-										} else {
-											KODirections.push_back(0);
-										}
-										KOReactions.push_back(currentReaction);
+			NewSolution = RunSolver(false,false,false);
+			if (NewSolution != NULL && NewSolution->Status == SUCCESS) {
+				WTgrowth = NewSolution->Objective;
+				if (WTgrowth < 1e-7) {
+					if (GapfillPhenosim) {
+						if (GetParameter("fit phenotype data").compare("0") == 0 || InParameters->observedgrowth.size() <= i || InParameters->observedgrowth[i] > 0) {
+							for (int j=0; j < int(gapfillobj->Variables.size()); j++) {
+								if (gapfillobj->Coefficient[j] > 0) {
+									if (gapfillobj->Variables[j]->Type == FLUX || gapfillobj->Variables[j]->Type == FORWARD_FLUX || gapfillobj->Variables[j]->Type == REVERSE_FLUX) {
+										gapfillobj->Variables[j]->Exclude = false;
 									}
 								}
 							}
-						}
-						for (int j=0; j < int(KOList.size()); j++) {
-							KOList[j]->SetMark(true);
-						}
-						for (int j=0; j < InData->FNumReactions(); j++) {
-							if (InData->GetReaction(j)->CheckForKO()) {
-								KOReactions.push_back(InData->GetReaction(j));
-								KODirections.push_back(0);
+							if (this->Solver != CPLEX) {
+								this->Solver = SOLVER_SCIP;
 							}
-						}
-						for (int j=0; j < int(KOReactions.size()); j++) {
-							if (KOrxn.compare("none") == 0) {
-								KOrxn = "";
+							this->LoadSolver(true);
+							NewSolution = RunSolver(false,false,false);
+							if (NewSolution->Objective >= InParameters->MinimumTargetFlux) {
+								this->ObjFunct = gapfillobj;
+								this->ObjectiveConstraint->RightHandSide = InParameters->MinimumTargetFlux;
+								LoadConstToSolver(this->ObjectiveConstraint->Index);
+								this->SetMin();
+								bool gapfilled = SolveGapfillingProblem(0,NewSolution,label,InParameters);
+								this->SetMax();
+								cout << "Setting gapfilling:" << GetParameter("current gapfilled reactions") << endl;
+								cout << "WTgrowth:" << WTgrowth << endl;
+								gapfilling.assign(GetParameter("current gapfilled reactions"));
+								for (int j=0; j < int(gapfillobj->Variables.size()); j++) {
+									if (gapfillobj->Coefficient[j] > 0) {
+										if (gapfillobj->Variables[j]->Type == FLUX || gapfillobj->Variables[j]->Type == FORWARD_FLUX || gapfillobj->Variables[j]->Type == REVERSE_FLUX) {
+											gapfillobj->Variables[j]->Exclude = true;
+										}
+									}
+								}
+								this->LoadSolver(true);
 							} else {
-								KOrxn.append(";");
+								gapfilling.assign("no solution found");
 							}
-							string prefix("");
-							if (KODirections[j] == 1) {
-								prefix.assign("+");
-								KOReactions[j]->ResetFluxBounds(FLAG,0,this);
-							} else if (KODirections[j] == -1) {
-								prefix.assign("-");
-								KOReactions[j]->ResetFluxBounds(0,FLAG,this);
-							} else {
-								KOReactions[j]->ResetFluxBounds(0,0,this);
-							}
-							KOrxn.append(prefix+KOReactions[j]->GetData("DATABASE",STRING));
-						}
-						for (int j=0; j < int(KOList.size()); j++) {
-							KOList[j]->SetMark(false);
-						}
-						//Simulating KO if reactions are knocked out. Not simulating otherwise
-						if (KOReactions.size() == 0) {
-							growth = WTgrowth;
-							if (growth > 1e-7 && GetParameter("Combinatorial deletions").compare("none") != 0) {
-								cout << "ComboKO" << endl;
-								CombinatorialKO(1,InData,false);
-								vector<string>* strings = StringToStrings(GetParameter("Essential Gene List"),";");
-								for (int j=0; j < int(strings->size()); j++) {
-									if (essentialGenes.count((*strings)[j]) == 0) {
-										if (newEssentialGenes.length() > 0) {
-											newEssentialGenes.append(";");
-										}
-										newEssentialGenes.append((*strings)[j]);
-									}
-								}
-								delete strings;
-							}
-							if (growth > 1e-7 && GetParameter("find tight bounds").compare("1") == 0) {
-								objectiveConstraint->RightHandSide = NewSolution->Objective*0.1;
-								this->LoadConstToSolver(objectiveConstraint->Index);
-								bool currentSense = this->FMax();
-								LinEquation* currObj = this->GetObjective();
-								ObjFunct = NULL;
-								this->FindTightBounds(InData,InParameters,false,true);
-								for (int j=0; j < FNumVariables(); j++) {
-									if ((GetVariable(j)->AssociatedReaction != NULL && GetVariable(j)->Type == FLUX) || (GetVariable(j)->AssociatedSpecies != NULL && GetVariable(j)->Type == DRAIN_FLUX && GetVariable(j)->Compartment == GetCompartment("c")->Index)) {
-										if (fabs(GetVariable(j)->Max) < 1e-7 && fabs(GetVariable(j)->Min) < 1e-7) {
-											string databaseID;
-											if (GetVariable(j)->AssociatedReaction != NULL) {
-												databaseID = GetVariable(j)->AssociatedReaction->GetData("DATABASE",STRING);
-											} else {
-												databaseID = GetVariable(j)->AssociatedSpecies->GetData("DATABASE",STRING);
-												if (compoundsToAssess.count(databaseID) == 0) {
-													databaseID = "";
-												}
-											}
-											if (databaseID.length() > 0 && inactiveReactions.count(databaseID) == 0) {
-												if (newInactiveReactions.length() > 0) {
-													newInactiveReactions.append(";");
-												}
-												newInactiveReactions.append(databaseID);
-											}
-										}
-									}
-								}
-								objectiveConstraint->RightHandSide = -10000;
-								this->LoadConstToSolver(objectiveConstraint->Index);
-								this->AddObjective(currObj);
-								if (currentSense) {
-									this->SetMax();
-								} else {
-									this->SetMin();
-								}
-								this->LoadObjective();
+							if (this->Solver != CPLEX) {
+								this->Solver = GLPK;
 							}
 						} else {
-							NewSolution = RunSolver(false,false,false);
-							if (NewSolution != NULL && NewSolution->Status == SUCCESS) {
-								if (NewSolution->Objective/WTgrowth < 0.9) {
-									cout << "Reduced growth" << endl;
-								}
-								if (InParameters->OptimizeMetabolitesWhenZero && NewSolution->Objective < 1e-7) {
-									string note;
-									CheckIndividualMetaboliteProduction(InData,InParameters,GetParameter("metabolites to optimize"),false,false,note,true);
-									noGrowth = GetParameter("No growth metabolites");
-									this->LoadSolver();
-								} else if (NewSolution->Objective > 1e-7) {
-									if (GetParameter("Combinatorial deletions").compare("none") != 0) {
-										if (CombinatorialKO(1,InData,false)) {
-											vector<string>* strings = StringToStrings(GetParameter("Essential Gene List"),";");
-											for (int i=0; i < int(strings->size()); i++) {
-												if (essentialGenes.count((*strings)[i]) == 0) {
-													if (newEssentialGenes.length() > 0) {
-														newEssentialGenes.append(";");
-													}
-													newEssentialGenes.append((*strings)[i]);
-												}
-											}
-											delete strings;
-										}
+							gapfilling.assign("not attempted");
+						}
+					} else {
+						gapfilling.assign("not attempted");
+					}
+				} else {
+					vector<Gene*> KOList;
+					if (InParameters->KOSets[i].size() > 0 && ConvertToLower(InParameters->KOSets[i][0]).compare("none") != 0) {
+						for (int j=0; j < int(InParameters->KOSets[i].size()); j++) {
+							Gene* currentGene = InData->FindGene("DATABASE",InParameters->KOSets[i][j].data());
+							if (currentGene != NULL) {
+								KOList.push_back(currentGene);
+							} else {
+								Reaction* currentReaction = InData->FindReaction("DATABASE",InParameters->KOSets[i][j].data());
+								if (currentReaction != NULL) {
+									if (InParameters->KOSets[i][j].substr(0,1).compare("+") == 0) {
+										KODirections.push_back(1);
+									} else if (InParameters->KOSets[i][j].substr(0,1).compare("-") == 0) {
+										KODirections.push_back(-1);
+									} else {
+										KODirections.push_back(0);
 									}
-									if (NewSolution->Objective > 1e-7 && GetParameter("find tight bounds").compare("1") == 0) {
-										objectiveConstraint->RightHandSide = NewSolution->Objective*0.1;
-										this->LoadConstToSolver(objectiveConstraint->Index);
-										bool currentSense = this->FMax();
-										LinEquation* currObj = this->GetObjective();
-										ObjFunct = NULL;
-										this->FindTightBounds(InData,InParameters,false,true);
-										bool nonContributing = true;
-										for (int j=0; j < FNumVariables(); j++) {
-											if ((GetVariable(j)->AssociatedReaction != NULL && GetVariable(j)->Type == FLUX) || (GetVariable(j)->AssociatedSpecies != NULL && GetVariable(j)->Type == DRAIN_FLUX && GetVariable(j)->Compartment == GetCompartment("c")->Index)) {
-												if (fabs(GetVariable(j)->Max) < 1e-7 && fabs(GetVariable(j)->Min) < 1e-7) {
-													string databaseID;
-													if (GetVariable(j)->AssociatedReaction != NULL) {
-														databaseID = GetVariable(j)->AssociatedReaction->GetData("DATABASE",STRING);
-													} else {
-														databaseID = GetVariable(j)->AssociatedSpecies->GetData("DATABASE",STRING);
-														if (compoundsToAssess.count(databaseID) == 0) {
-															databaseID = "";
-														}
-													}
-													if (databaseID.length() > 0 && inactiveReactions.count(databaseID) == 0 && databaseID.compare(InParameters->labels[i]) != 0) {
-														if (GetVariable(j)->AssociatedReaction != NULL && koReactions.count(databaseID) == 0) {
-															nonContributing = false;
-														}
-														if (newInactiveReactions.length() > 0) {
-															newInactiveReactions.append(";");
-														}
-														newInactiveReactions.append(databaseID);
-													}
-												}
-											}
-										}
-										if (nonContributing && GetParameter("delete noncontributing reactions").compare("1") == 0) {
-											deletedReactions[label] = true;
-											newInactiveReactions.assign("DELETED");
-											rerun = 1;
-										}
-										objectiveConstraint->RightHandSide = -10000;
-										this->LoadConstToSolver(objectiveConstraint->Index);
-										this->AddObjective(currObj);
-										if (currentSense) {
-											this->SetMax();
-										} else {
-											this->SetMin();
-										}
-										this->LoadObjective();
-									}
+									KOReactions.push_back(currentReaction);
 								}
-								growth = NewSolution->Objective;
 							}
 						}
-						fluxes = this->fluxToString();
 					}
+					for (int j=0; j < int(KOList.size()); j++) {
+						KOList[j]->SetMark(true);
+					}
+					for (int j=0; j < InData->FNumReactions(); j++) {
+						if (InData->GetReaction(j)->CheckForKO()) {
+							KOReactions.push_back(InData->GetReaction(j));
+							KODirections.push_back(0);
+						}
+					}
+					for (int j=0; j < int(KOReactions.size()); j++) {
+						if (KOrxn.compare("none") == 0) {
+							KOrxn = "";
+						} else {
+							KOrxn.append(";");
+						}
+						string prefix("");
+						if (KODirections[j] == 1) {
+							prefix.assign("+");
+							KOReactions[j]->ResetFluxBounds(FLAG,0,this);
+						} else if (KODirections[j] == -1) {
+							prefix.assign("-");
+							KOReactions[j]->ResetFluxBounds(0,FLAG,this);
+						} else {
+							KOReactions[j]->ResetFluxBounds(0,0,this);
+						}
+						KOrxn.append(prefix+KOReactions[j]->GetData("DATABASE",STRING));
+					}
+					for (int j=0; j < int(KOList.size()); j++) {
+						KOList[j]->SetMark(false);
+					}
+					//Simulating KO if reactions are knocked out. Not simulating otherwise
+					if (KOReactions.size() == 0) {
+						growth = WTgrowth;
+						if (growth > 1e-7 && GetParameter("Combinatorial deletions").compare("none") != 0) {
+							cout << "ComboKO" << endl;
+							CombinatorialKO(1,InData,false);
+							vector<string>* strings = StringToStrings(GetParameter("Essential Gene List"),";");
+							for (int j=0; j < int(strings->size()); j++) {
+								if (essentialGenes.count((*strings)[j]) == 0) {
+									if (newEssentialGenes.length() > 0) {
+										newEssentialGenes.append(";");
+									}
+									newEssentialGenes.append((*strings)[j]);
+								}
+							}
+							delete strings;
+						}
+						if (growth > 1e-7 && GetParameter("find tight bounds").compare("1") == 0) {
+							objectiveConstraint->RightHandSide = NewSolution->Objective*0.1;
+							this->LoadConstToSolver(objectiveConstraint->Index);
+							bool currentSense = this->FMax();
+							LinEquation* currObj = this->GetObjective();
+							ObjFunct = NULL;
+							this->FindTightBounds(InData,InParameters,false,true);
+							for (int j=0; j < FNumVariables(); j++) {
+								if ((GetVariable(j)->AssociatedReaction != NULL && GetVariable(j)->Type == FLUX) || (GetVariable(j)->AssociatedSpecies != NULL && GetVariable(j)->Type == DRAIN_FLUX && GetVariable(j)->Compartment == GetCompartment("c")->Index)) {
+									if (fabs(GetVariable(j)->Max) < 1e-7 && fabs(GetVariable(j)->Min) < 1e-7) {
+										string databaseID;
+										if (GetVariable(j)->AssociatedReaction != NULL) {
+											databaseID = GetVariable(j)->AssociatedReaction->GetData("DATABASE",STRING);
+										} else {
+											databaseID = GetVariable(j)->AssociatedSpecies->GetData("DATABASE",STRING);
+											if (compoundsToAssess.count(databaseID) == 0) {
+												databaseID = "";
+											}
+										}
+										if (databaseID.length() > 0 && inactiveReactions.count(databaseID) == 0) {
+											if (newInactiveReactions.length() > 0) {
+												newInactiveReactions.append(";");
+											}
+											newInactiveReactions.append(databaseID);
+										}
+									}
+								}
+							}
+							objectiveConstraint->RightHandSide = -10000;
+							this->LoadConstToSolver(objectiveConstraint->Index);
+							this->AddObjective(currObj);
+							if (currentSense) {
+								this->SetMax();
+							} else {
+								this->SetMin();
+							}
+							this->LoadObjective();
+						}
+					} else {
+						NewSolution = RunSolver(false,false,false);
+						if (NewSolution != NULL && NewSolution->Status == SUCCESS) {
+							if (NewSolution->Objective/WTgrowth < 0.9) {
+								cout << "Reduced growth" << endl;
+							}
+							if (InParameters->OptimizeMetabolitesWhenZero && NewSolution->Objective < 1e-7) {
+								string note;
+								CheckIndividualMetaboliteProduction(InData,InParameters,GetParameter("metabolites to optimize"),false,false,note,true);
+								noGrowth = GetParameter("No growth metabolites");
+								this->LoadSolver();
+							} else if (NewSolution->Objective > 1e-7) {
+								if (GetParameter("Combinatorial deletions").compare("none") != 0) {
+									if (CombinatorialKO(1,InData,false)) {
+										vector<string>* strings = StringToStrings(GetParameter("Essential Gene List"),";");
+										for (int i=0; i < int(strings->size()); i++) {
+											if (essentialGenes.count((*strings)[i]) == 0) {
+												if (newEssentialGenes.length() > 0) {
+													newEssentialGenes.append(";");
+												}
+												newEssentialGenes.append((*strings)[i]);
+											}
+										}
+										delete strings;
+									}
+								}
+								if (NewSolution->Objective > 1e-7 && GetParameter("find tight bounds").compare("1") == 0) {
+									objectiveConstraint->RightHandSide = NewSolution->Objective*0.1;
+									this->LoadConstToSolver(objectiveConstraint->Index);
+									bool currentSense = this->FMax();
+									LinEquation* currObj = this->GetObjective();
+									ObjFunct = NULL;
+									this->FindTightBounds(InData,InParameters,false,true);
+									bool nonContributing = true;
+									for (int j=0; j < FNumVariables(); j++) {
+										if ((GetVariable(j)->AssociatedReaction != NULL && GetVariable(j)->Type == FLUX) || (GetVariable(j)->AssociatedSpecies != NULL && GetVariable(j)->Type == DRAIN_FLUX && GetVariable(j)->Compartment == GetCompartment("c")->Index)) {
+											if (fabs(GetVariable(j)->Max) < 1e-7 && fabs(GetVariable(j)->Min) < 1e-7) {
+												string databaseID;
+												if (GetVariable(j)->AssociatedReaction != NULL) {
+													databaseID = GetVariable(j)->AssociatedReaction->GetData("DATABASE",STRING);
+												} else {
+													databaseID = GetVariable(j)->AssociatedSpecies->GetData("DATABASE",STRING);
+													if (compoundsToAssess.count(databaseID) == 0) {
+														databaseID = "";
+													}
+												}
+												if (databaseID.length() > 0 && inactiveReactions.count(databaseID) == 0 && databaseID.compare(InParameters->labels[i]) != 0) {
+													if (GetVariable(j)->AssociatedReaction != NULL && koReactions.count(databaseID) == 0) {
+														nonContributing = false;
+													}
+													if (newInactiveReactions.length() > 0) {
+														newInactiveReactions.append(";");
+													}
+													newInactiveReactions.append(databaseID);
+												}
+											}
+										}
+									}
+									if (nonContributing && GetParameter("delete noncontributing reactions").compare("1") == 0) {
+										deletedReactions[label] = true;
+										newInactiveReactions.assign("DELETED");
+										rerun = 1;
+									}
+									objectiveConstraint->RightHandSide = -10000;
+									this->LoadConstToSolver(objectiveConstraint->Index);
+									this->AddObjective(currObj);
+									if (currentSense) {
+										this->SetMax();
+									} else {
+										this->SetMin();
+									}
+									this->LoadObjective();
+								}
+							}
+							growth = NewSolution->Objective;
+						}
+					}
+					fluxes = this->fluxToString();
 				}
 			}
 		}
@@ -3959,8 +3987,10 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 		newLine.append("\t");
 		newLine.append(newEssentialGenes);
 		newLine.append("\t");
-		newLine.append(fluxes);
-		//cerr << i << "\t" << int(InParameters->labels.size()) << "\t" << newLine << endl;
+		newLine.append(gapfilling);
+		//newLine.append("\t");
+		//newLine.append(fluxes);
+		cout << newLine << endl;
 		outputVector.push_back(newLine);
 		if (newInactiveReactions.compare("DELETED") == 0) {
 			for (int j=0; j < int(KOReactions.size()); j++) {
@@ -3974,12 +4004,12 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 			}
 		}
 		this->loadBounds(currentBounds,true);
-		if (GetParameter("delete noncontributing reactions").compare("1") == 0 && rerun == 1 && i == int(InParameters->labels.size()-1)) {
-			outputVector.clear();
-			SetParameter("delete noncontributing reactions","0");
-			i = -1;
-			rerun = 0;
-		}
+		//if (GetParameter("delete noncontributing reactions").compare("1") == 0 && rerun == 1 && i == int(InParameters->labels.size()-1)) {
+			//outputVector.clear();
+			//SetParameter("delete noncontributing reactions","0");
+			//i = -1;
+			//rerun = 0;
+		//}
 	}
 	delete currentBounds;
 	//Reloading original bounds
@@ -4776,7 +4806,7 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 		this->QuantitativeModelOptimization(InData,InParameters);
 	} else if (InParameters->DetermineMinimalMedia) {
 		this->DetermineMinimalFeasibleMedia(InData,InParameters,false);//working
-	} else if (InParameters->PhenotypeAnalysis) {
+	} else if (InParameters->PhenotypeAnalysis && !InParameters->GapFilling) {
 		ObjectiveConstraint->RightHandSide = 0;
 		LoadConstToSolver(ObjectiveConstraint->Index);
 		this->RunDeletionExperiments(InData,InParameters,false);//TODO
@@ -7861,8 +7891,6 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 	ObjFunct = NULL;
 	bool originalsense = this->FMax();
 	double omegap = 1-InParameters->omega;
-	int gfstart = 0;
-	int inactstart = 0;
 	if (InParameters->omega > 0) {
 		ObjFunct = CloneLinEquation(OldObjective);
 		int sign = 1;
@@ -7873,7 +7901,6 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 		for (int i=0; i < OldObjective->Variables.size(); i++) {
 			ObjFunct->Coefficient[i] = ObjFunct->Coefficient[i]*sign*InParameters->omega/CurrentSolution->Objective;
 		}
-		gfstart = int(ObjFunct->Variables.size());
 	} else {
 		ObjFunct = InitializeLinEquation("Gapfilling objective");
 	}
@@ -7904,7 +7931,6 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 			}
 		}
 	}
-	inactstart = int(ObjFunct->Variables.size());
 	vector<int> variables;
 	variables.push_back(FLUX);
 	variables.push_back(FORWARD_FLUX);
@@ -7982,13 +8008,6 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 	}
 	this->SetMin();
 	if (InParameters->PhenotypeAnalysis) {
-		if (this->ObjectiveConstraint != NULL && this->ObjectiveConstraint->RightHandSide == 0) {
-			this->ObjectiveConstraint->RightHandSide = 0.01;
-		}
-		LoadConstToSolver(this->ObjectiveConstraint->Index);
-		SetParameter("inactstart",itoa(inactstart));
-		SetParameter("gfstart",itoa(gfstart));
-		SetParameter("threshold",dtoa(threshold));
 		this->RunDeletionExperiments(InData,InParameters,true);
 	} else {
 		ofstream output;
@@ -8007,7 +8026,7 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 					if (currvar != NULL) {
 						currvar->UpperBound = 0;
 						LoadVariable(currvar->Index);
-						SolveGapfillingProblem(1,gfstart,inactstart,threshold,CurrentSolution,InParameters->GapfillingTargetReactions[i],InParameters);
+						SolveGapfillingProblem(1,CurrentSolution,InParameters->GapfillingTargetReactions[i],InParameters);
 						currvar->UpperBound = 1;
 						LoadVariable(currvar->Index);
 					}
@@ -8015,7 +8034,7 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 			}
 		} else {
 			while (stay_in_loop) {
-				stay_in_loop = SolveGapfillingProblem(currentround,gfstart,inactstart,threshold,CurrentSolution,"objective",InParameters);
+				stay_in_loop = SolveGapfillingProblem(currentround,CurrentSolution,"objective",InParameters);
 				//if (InParameters->alpha == 0) {
 					//If this is a straight up gapfilling with no activation, then we only solve once
 					stay_in_loop = false;
@@ -8023,10 +8042,9 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 				currentround++;
 			}
 		}
-
+		delete ObjFunct;
 	}
 
-	delete ObjFunct;
 	if (originalsense) {
 		this->SetMax();
 	}
@@ -8150,7 +8168,45 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 	return SUCCESS;
 }
 
-bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactstart,double threshold,OptSolutionData*& CurrentSolution,string label,OptimizationParameter* InParameters) {
+vector<MFAVariable*> MFAProblem::BiomassSensitivityAnalysis(OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters) {
+	if (ObjectiveConstraint == NULL) {
+		ObjectiveConstraint = MakeObjectiveConstraint(0.1,GREATER);
+	} else {
+		ObjectiveConstraint->RightHandSide = 0.1;
+	}
+	LinEquation* OldObjective = this->ObjFunct;
+	bool is_max = this->FMax();
+	this->ObjFunct = InitializeLinEquation("biomass supply objective",0);
+	vector<MFAVariable*> activated_variables;
+	for (int i=0; i < int(this->Variables.size()); i++) {
+		if (this->Variables[i]->Exclude) {
+			this->Variables[i]->Exclude = false;
+			ObjFunct->Variables.push_back(this->Variables[i]);
+			ObjFunct->Coefficient.push_back(1);
+		}
+	}
+	this->SetMin();
+	this->LoadSolver();
+	CurrentSolution = this->RunSolver(false,false,false);
+	string biomass_removals = "";
+	for (int i=0; i < int(ObjFunct->Variables.size()); i++) {
+		if (CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index] <= MFA_ZERO_TOLERANCE) {
+			ObjFunct->Variables[i]->Exclude = true;
+		} else {
+			activated_variables.push_back(ObjFunct->Variables[i]);
+		}
+	}
+	ObjectiveConstraint->RightHandSide = 0;
+	this->ObjFunct = OldObjective;
+	if (is_max) {
+		this->SetMax();
+	}
+	this->LoadSolver();
+	CurrentSolution = this->RunSolver(false,false,false);
+	return activated_variables;
+}
+
+bool MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& CurrentSolution,string label,OptimizationParameter* InParameters) {
 	//Saving state, which makes a copy of the current variables, constraints, and objectives
 	int state = this->SaveState();
 	int vartype;
@@ -8190,6 +8246,10 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactst
 		double objective = 0;
 		double gfobjective = 0;
 		//Now adding a step in case binary variables are not being used, which intoduces binary variables for key terms and reminimizes
+		int gfstart = 0;
+		if (InParameters->omega > 0) {
+			gfstart = int(this->ObjectiveConstraint->Variables.size());
+		}
 		vector<MFAVariable*> solutionvariables;
 		if (InParameters->ReactionsUse == false && slacks_in_objective == false) {
 			LinEquation* NewObjFunct = InitializeLinEquation("objective",0,EQUAL);
@@ -8285,36 +8345,37 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactst
 		}
 		gfobjective = 0;
 		for (int i=0; i < CurrentObjectiveSize; i++) {
-			//cout << ObjFunct->Coefficient[i] << "\t" << ObjFunct->Variables[i]->Type << endl;
 			if (i >= gfstart && ObjFunct->Coefficient[i] > 0) {
 				gfobjective += ObjFunct->Coefficient[i]*CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index];
 				// double check whether there is flux through the reaction
 				//cout << "Checking flux variables for " << ObjFunct->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING) << endl;
-				int thereWasFlux = 0;
-				MFAVariable* fluxVar = ObjFunct->Variables[i]->AssociatedReaction->GetMFAVar(FLUX);
-				if (fluxVar != NULL) {
-					if (CurrentSolution->SolutionData[fluxVar->Index] >= MFA_ZERO_TOLERANCE) {
-						thereWasFlux = 1;
+				if (ObjFunct->Variables[i]->Type == REACTION_SLACK) {
+					int thereWasFlux = 0;
+					if (ObjFunct->Variables[i]->AssociatedReaction != NULL) {
+						MFAVariable* fluxVar = ObjFunct->Variables[i]->AssociatedReaction->GetMFAVar(FLUX);
+						if (fluxVar != NULL) {
+							if (CurrentSolution->SolutionData[fluxVar->Index] >= MFA_ZERO_TOLERANCE) {
+								thereWasFlux = 1;
+							}
+							//cout << " FLUX is " << CurrentSolution->SolutionData[fluxVar->Index] << endl;
+						}
+						fluxVar = ObjFunct->Variables[i]->AssociatedReaction->GetMFAVar(FORWARD_FLUX);
+						if (fluxVar != NULL) {
+							if (CurrentSolution->SolutionData[fluxVar->Index] >= MFA_ZERO_TOLERANCE) {
+								thereWasFlux = 1;
+							}
+							//cout << " FORWARD_FLUX is " << CurrentSolution->SolutionData[fluxVar->Index] << endl;
+						}
+						fluxVar = ObjFunct->Variables[i]->AssociatedReaction->GetMFAVar(REVERSE_FLUX);
+						if (fluxVar != NULL) {
+							if (CurrentSolution->SolutionData[fluxVar->Index] >= MFA_ZERO_TOLERANCE) {
+								thereWasFlux = 1;
+							}
+							//cout << " REVERSE_FLUX is " << CurrentSolution->SolutionData[fluxVar->Index] << endl;
+						}
 					}
-					//cout << " FLUX is " << CurrentSolution->SolutionData[fluxVar->Index] << endl;
-				}
-				fluxVar = ObjFunct->Variables[i]->AssociatedReaction->GetMFAVar(FORWARD_FLUX);
-				if (fluxVar != NULL) {
-					if (CurrentSolution->SolutionData[fluxVar->Index] >= MFA_ZERO_TOLERANCE) {
-						thereWasFlux = 1;
-					}
-					//cout << " FORWARD_FLUX is " << CurrentSolution->SolutionData[fluxVar->Index] << endl;
-				}
-				fluxVar = ObjFunct->Variables[i]->AssociatedReaction->GetMFAVar(REVERSE_FLUX);
-				if (fluxVar != NULL) {
-					if (CurrentSolution->SolutionData[fluxVar->Index] >= MFA_ZERO_TOLERANCE) {
-						thereWasFlux = 1;
-					}
-					//cout << " REVERSE_FLUX is " << CurrentSolution->SolutionData[fluxVar->Index] << endl;
-				}
-				if (i < inactstart) {
 					//cout << " checking REACTION_SLACK for " << ObjFunct->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING) << " with value " << CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index] << endl;
-					if (CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index] > threshold) {
+					if (CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index] > MFA_ZERO_TOLERANCE) {
 						// REACTION_SLACK IS 1; but was there really no flux?
 						if (thereWasFlux == 1) {
 							cout << " weirdness: REACTION_SLACK but flux" << endl;
@@ -8355,9 +8416,9 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactst
 							}
 						}
 					}
-				} else {
+				} else if (ObjFunct->Variables[i]->AssociatedReaction != NULL) {
 					//cout << " checking USE (type " << ObjFunct->Variables[i]->Type << ") for " << ObjFunct->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING) << " with value " << CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index] << endl;
-					if (CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index] > threshold) {
+					if (CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index] > MFA_ZERO_TOLERANCE) {
 						string sign = "+";
 						vartype = REACTION_USE;
 						if (ObjFunct->Variables[i]->Type == REVERSE_FLUX || ObjFunct->Variables[i]->Type == REVERSE_USE) {
@@ -8370,11 +8431,15 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactst
 						if (rxns[0].length() > 0) {
 							rxns[0].append(";");
 						}
+						cout << "Gapfilling: " << ObjFunct->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING) << endl;
 						rxns[0].append(sign+ObjFunct->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING));
 						counts[0]++;
 						scores[0] += ObjFunct->Coefficient[i]*CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index];
 						if (m==0) {
 							first_solution_variables.push_back(i);
+						}
+						if (GetParameter("fit phenotype data").compare("1") == 0) {
+							ObjFunct->Coefficient[i] = 0;
 						}
 					} else {
 						string sign = "+";
@@ -8409,51 +8474,13 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,int gfstart,int inactst
 			SetParameter("current cut candidate reactions",rxns[3].data());
 		}
 	}
-	for (int i=0; i < int(first_solution_variables.size()); i++) {
-		ObjFunct->Coefficient[first_solution_variables[i]] = 0;
-	}
+	//for (int i=0; i < int(first_solution_variables.size()); i++) {
+		//ObjFunct->Coefficient[first_solution_variables[i]] = 0;
+	//}
 	output.close();
 	this->LoadState(state,true,true,true,false,true);
 	this->ClearState(state);
 	return stay_in_loop;
-}
-
-vector<MFAVariable*> MFAProblem::BiomassSensitivityAnalysis(OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters) {
-	if (ObjectiveConstraint == NULL) {
-		ObjectiveConstraint = MakeObjectiveConstraint(0.1,GREATER);
-	} else {
-		ObjectiveConstraint->RightHandSide = 0.1;
-	}
-	LinEquation* OldObjective = this->ObjFunct;
-	bool is_max = this->FMax();
-	this->ObjFunct = InitializeLinEquation("biomass supply objective",0);
-	vector<MFAVariable*> activated_variables;
-	for (int i=0; i < int(this->Variables.size()); i++) {
-		if (this->Variables[i]->Exclude) {
-			this->Variables[i]->Exclude = false;
-			ObjFunct->Variables.push_back(this->Variables[i]);
-			ObjFunct->Coefficient.push_back(1);
-		}
-	}
-	this->SetMin();
-	this->LoadSolver();
-	CurrentSolution = this->RunSolver(false,false,false);
-	string biomass_removals = "";
-	for (int i=0; i < int(ObjFunct->Variables.size()); i++) {
-		if (CurrentSolution->SolutionData[ObjFunct->Variables[i]->Index] <= MFA_ZERO_TOLERANCE) {
-			ObjFunct->Variables[i]->Exclude = true;
-		} else {
-			activated_variables.push_back(ObjFunct->Variables[i]);
-		}
-	}
-	ObjectiveConstraint->RightHandSide = 0;
-	this->ObjFunct = OldObjective;
-	if (is_max) {
-		this->SetMax();
-	}
-	this->LoadSolver();
-	CurrentSolution = this->RunSolver(false,false,false);
-	return activated_variables;
 }
 
 int MFAProblem::ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters) {
@@ -9119,14 +9146,11 @@ int MFAProblem::QuantitativeModelOptimization(Data* InData, OptimizationParamete
 	for (int i=0; i < NewObjective->Variables.size(); i++) {
 		cout << NewObjective->Coefficient[i] << "\t" << GetMFAVariableName(NewObjective->Variables[i]) << endl;
 	}
-	cout << "TEST10" << endl;
 	ObjFunct = NULL;
 	AddObjective(NewObjective);
 	SetMax();
 	ResetIndecies();
-	cout << "TEST11" << endl;
 	LoadSolver(true);
-	cout << "TEST12" << endl;
 	vector<int> VariableTypes;
 	VariableTypes.push_back(OBJECTIVE_TERMS);
 	RecursiveMILP(InData,InParameters,VariableTypes,true);

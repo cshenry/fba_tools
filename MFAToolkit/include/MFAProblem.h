@@ -179,7 +179,7 @@ public:
 	int AddUptakeLimitConstraints();
 	int FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationParameter* InParameters);
 	int QuantitativeModelOptimization(Data* InData, OptimizationParameter* InParameters);
-	bool SolveGapfillingProblem(int currentround,int gfstart,int inactstart,double threshold,OptSolutionData*& CurrentSolution,string label,OptimizationParameter* InParameters);
+	bool SolveGapfillingProblem(int currentround,OptSolutionData*& CurrentSolution,string label,OptimizationParameter* InParameters);
 
 	//FBA extension studies
 	int CombinatorialKO(int maxDeletions,Data* InData, bool reactions);
