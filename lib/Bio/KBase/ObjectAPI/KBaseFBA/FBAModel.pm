@@ -1794,27 +1794,36 @@ sub translate_to_localrefs {
 
 sub update_from_old_versions {
 	my $self = shift;
-	$self->{_updated} = 1;
 	my $gfs = $self->gapfillings();
+	my $updated = 1;
 	for (my $i=0; $i < @{$gfs}; $i++) {
-		$self->remove("gapfillings",$gfs->[$i]);	
-	}
-	my $newgfs = $self->gapfillings();
-	for (my $i=0; $i < @{$gfs}; $i++) {
-		my $fbobj;
 		if (length($gfs->[$i]->gapfill_ref()) > 0) {
-			$fbobj = $gfs->[$i]->gapfill();
+			$updated = 0;
 		} elsif (length($gfs->[$i]->fba_ref()) > 0) {
-			$fbobj = $gfs->[$i]->fba();
+			$updated = 0;
 		}
-		if (defined($fbobj) && defined($fbobj->gapfillingSolutions()->[0])) {
-			print "Updating older style model gapfilling to new formats.\n";
-			$fbobj->fbamodel($self);
-			$self->add_gapfilling({
-				object => $fbobj,
-				id => "gf.".$i,
-				solution_to_integrate => 0
-			});
+	}
+	if ($updated == 0) {
+		print "Updating model gapfilling data!\n";
+		for (my $i=0; $i < @{$gfs}; $i++) {
+			$self->remove("gapfillings",$gfs->[$i]);	
+		}
+		for (my $i=0; $i < @{$gfs}; $i++) {
+			my $fbobj;
+			if (length($gfs->[$i]->gapfill_ref()) > 0) {
+				$fbobj = $gfs->[$i]->gapfill();
+			} elsif (length($gfs->[$i]->fba_ref()) > 0) {
+				$fbobj = $gfs->[$i]->fba();
+			}
+			if (defined($fbobj) && defined($fbobj->gapfillingSolutions()->[0])) {
+				print "Updating older style model gapfilling to new formats.\n";
+				$fbobj->fbamodel($self);
+				$self->add_gapfilling({
+					object => $fbobj,
+					id => "gf.".$i,
+					solution_to_integrate => 0
+				});
+			}
 		}
 	}
 }

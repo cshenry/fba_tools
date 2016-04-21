@@ -43,7 +43,7 @@ sub _buildgauranteedrxns {
 		rxn1 rxn2 rxn3 rxn4 rxn5 rxn6 rxn7 rxn8 rxn11572
 		rxn07298 rxn24256 rxn04219 rxn17241 rxn19302 rxn25468 rxn23165
 		rxn25469 rxn23171 rxn23067 rxn30830 rxn30910 rxn31440 rxn01659
-		rxn13782 rxn13783 rxn13784 rxn05294 rxn05295 rxn05296 rxn10002
+		rxn13782 rxn13783 rxn13784 rxn05295 rxn05296 rxn10002
 		rxn10088 rxn11921 rxn11922 rxn10200 rxn11923 rxn05029
 	)];
 }
@@ -98,7 +98,7 @@ sub _buildblacklistedrxns {
 		rxn11619 rxn11620 rxn11624 rxn11626 rxn11638 rxn11648 rxn11651
 		rxn11665 rxn11666 rxn11667 rxn11698 rxn11983 rxn11986 rxn11994
 		rxn12006 rxn12007 rxn12014 rxn12017 rxn12022 rxn12160 rxn12161
-		rxn01267 
+		rxn01267 rxn05294
 	)];
 }
 sub _buildjobid {
@@ -489,10 +489,8 @@ sub PrepareForGapfilling {
 		make_model_rxns_reversible => 1,
 		activate_all_model_reactions => 1,
 		use_discrete_variables => 0,
-		gapfill_id => undef,
 		integrate_gapfilling_solution => 0
 	}, $args);
-	$self->parameters()->{gapfill_id} = $args->{gapfill_id};
 	$self->parameters()->{integrate_gapfilling_solution} = $args->{integrate_gapfilling_solution};
 	push(@{$self->gauranteedrxns()},@{$args->{gauranteedrxns}});
 	push(@{$self->blacklistedrxns()},@{$args->{blacklistedrxns}});
@@ -1425,6 +1423,7 @@ sub createJobDirectory {
 	}
 	#Setting parameters
 	my $parameters = {
+		"fit phenotype data" => 0,
 		"deltagslack" => 10,
 		"maximize active reactions" => 0,
 		"calculate reaction knockout sensitivity" => 0,
@@ -1465,6 +1464,9 @@ sub createJobDirectory {
 		"Min flux multiplier" => 1,
 		"Max deltaG" => 10000
 	};
+	if (defined($self->{"fit phenotype data"})) {
+		$parameters->{"fit phenotype data"} = $self->{"fit phenotype data"};
+	}
 	if ($self->calculateReactionKnockoutSensitivity() == 1) {
 		$parameters->{"calculate reaction knockout sensitivity"} = 1;
 	}
@@ -1713,7 +1715,7 @@ sub createJobDirectory {
 	}
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file
-	#$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
+	$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
 	my $exchange = "";
 	foreach my $key (keys(%{$exchangehash})) {
 		if (length($exchange) > 0) {
@@ -1884,7 +1886,7 @@ sub setupFBAExperiments {
 		$self->parameters()->{"phenotype analysis"} = 1;
 		my $phenoset = $self->phenotypeset();
 		$fbaExpFile = "FBAExperiment.txt";
-		my $phenoData = ["Label\tKO\tMedia"];
+		my $phenoData = ["Label\tKO\tMedia\tGrowth"];
 		my $mediaHash = {};
 		my $tempMediaIndex = 1;
 		my $phenos = $phenoset->phenotypes();
@@ -1914,7 +1916,7 @@ sub setupFBAExperiments {
 				}
 			}
 			$phenoko =~ s/\|/___/g;
-			push(@{$phenoData},$pheno->id()."\t".$phenoko."\t".$media);
+			push(@{$phenoData},$pheno->id()."\t".$phenoko."\t".$media."\t".$pheno->normalizedGrowth());
 		}
 		foreach my $key (keys(%{$mediaHash})) {
 			push(@{$medialist},$mediaHash->{$key});
@@ -2524,8 +2526,8 @@ sub parseFBAPhenotypeOutput {
 					phenotype_ref => $self->phenotypeset()->_reference()."/phenotypes/id/".$row->[0]
 				};
 				if (defined($self->parameters()->{"Perform gap filling"}) && $self->parameters()->{"Perform gap filling"} == 1) {
-					if ($row->[6] =~ m/rxn\d\d\d\d\d/) {
-						$phenoOutputHash->{$row->[0]}->{gapfilledReactions} = [split(/;/,$row->[6])];
+					if ($row->[9] =~ m/_[a-z]+\d+$/) {
+						$phenoOutputHash->{$row->[0]}->{gapfilledReactions} = [split(/;/,$row->[9])];
 						$phenoOutputHash->{$row->[0]}->{numGapfilledReactions} = @{$phenoOutputHash->{$row->[0]}->{gapfilledReactions}};
 					}
 				}	
@@ -2539,8 +2541,8 @@ sub parseFBAPhenotypeOutput {
 				if (defined($row->[8]) && length($row->[8]) > 0) {
 					$phenoOutputHash->{$row->[0]}->{dependantReactions} = [split(/;/,$row->[8])];
 				}
-				if (defined($row->[9]) && length($row->[9]) > 0) {
-					my @fluxList = split(/;/,$row->[9]);
+				if (defined($row->[10]) && length($row->[10]) > 0) {
+					my @fluxList = split(/;/,$row->[10]);
 					for (my $j=0; $j < @fluxList; $j++) {
 						my @temp = split(/:/,$fluxList[$j]);
 						$phenoOutputHash->{$row->[0]}->{fluxes}->{$temp[0]} = $temp[1];
@@ -3319,9 +3321,19 @@ sub parseGapfillingOutput {
 		}
 		$self->add("gapfillingSolutions",$solution);
 		if ($self->parameters()->{add_gapfilling_solution_to_model} == 1) {
+			my $gfs = $self->fbamodel()->gapfillings();
+			my $currentid = 0;
+			for (my $i=0; $i < @{$gfs}; $i++) {
+				if ($gfs->[$i]->id() =~ m/gf\.(\d+)$/) {
+					if ($1 >= $currentid) {
+						$currentid = $1+1;
+					}
+				}
+			}
+			my $gfid = "gf.".$currentid;
 			my $input = {
 				object => $self,
-				id => $self->parameters()->{gapfill_id}
+				id => $gfid
 			};
 			if ($self->parameters()->{integrate_gapfilling_solution} == 1) {
 				$input->{solution_to_integrate} = 0;

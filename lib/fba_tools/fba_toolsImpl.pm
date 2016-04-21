@@ -232,7 +232,6 @@ sub util_build_fba {
 			$params->{activation_coefficient} = 0;
 		}
 		my $input = {
-			gapfill_id => $params->{gapfill_id},
 			integrate_gapfilling_solution => 1,
 			minimum_target_flux => $params->{minimum_target_flux},
 			target_reactions => [],#?
@@ -402,7 +401,6 @@ sub func_gapfill_metabolic_model {
 		}
 	}
 	my $gfid = "gf.".$currentid;
-	$params->{gapfill_id} = $gfid;
     my $fba = $self->util_build_fba($params,$model,$media,$params->{fbamodel_output_id}.".".$gfid,1,1,$source_model,1);
     print "Running flux balance analysis problem.\n";
 	$fba->runFBA();
@@ -817,7 +815,9 @@ sub func_simulate_growth_on_phenotype_data {
 		media_supplement_list => [],
 		all_transporters => 0,
 		positive_transporters => 0,
-		gapfill_phenotypes => 0
+		gapfill_phenotypes => 0,
+		fit_phenotype_data => 0,
+		fbamodel_output_id => $params->{fbamodel_id}.".phenogf"
     });
     if (!defined($model)) {
     	print "Retrieving model.\n";
@@ -835,7 +835,7 @@ sub func_simulate_growth_on_phenotype_data {
     my $media = $self->util_kbase_store()->get_object("KBaseMedia/Complete");
     print "Preparing flux balance analysis problem.\n";
     my $fba;
-    if ($params->{gapfill_phenotypes} == 0) {
+    if ($params->{gapfill_phenotypes} == 0 && $params->{fit_phenotype_data} == 0) {
     	$fba = $self->util_build_fba($params,$model,$media,$params->{phenotypesim_output_id}.".fba",0,0,undef);
     } else {
     	$fba = $self->util_build_fba($params,$model,$media,$params->{phenotypesim_output_id}.".fba",1,1,undef,1);
@@ -844,13 +844,30 @@ sub func_simulate_growth_on_phenotype_data {
     $fba->phenotypeset_ref($pheno->_reference());
     $fba->phenotypeset($pheno);
     print "Running flux balance analysis problem.\n";
+   	$fba->{"fit phenotype data"} = $params->{fit_phenotype_data};
     $fba->runFBA();
 	if (!defined($fba->{_tempphenosim})) {
     	Bio::KBase::ObjectAPI::utilities::error("Simulation of phenotypes failed to return results from FBA! The model probably failed to grow on Complete media. Try running gapfiling first on Complete media.");
 	}
-    print "Saving FBA object with gapfilling sensitivity analysis and flux.\n";
-    my $wsmeta = $self->util_kbase_store()->save_object($fba->phenotypesimulationset(),$params->{workspace}."/".$params->{phenotypesim_output_id});
-    $fba->phenotypesimulationset_ref($fba->phenotypesimulationset()->_reference());
+	my $phenoset = $fba->phenotypesimulationset();
+	if ($params->{gapfill_phenotypes} == 1 || $params->{fit_phenotype_data} == 1) {
+		print "Phenotype gapfilling results:\n";
+		print "Media\tKO\tSupplements\tGrowth\tSim growth\tGapfilling count\tGapfilled reactions\n";
+		my $phenos = $phenoset->phenotypeSimulations();
+		for (my $i=0; $i < @{$phenos}; $i++) {
+			if ($phenos->[$i]->numGapfilledReactions() > 0) {
+				print $phenos->[$i]->phenotype()->media()->id()."\t".$phenos->[$i]->phenotype()->geneKOString()."\t".$phenos->[$i]->phenotype()->additionalCpdString()."\t".$phenos->[$i]->phenotype()->normalizedGrowth()."\t".$phenos->[$i]->simulatedGrowth()."\t".$phenos->[$i]->numGapfilledReactions()."\t".join(";",@{$phenos->[$i]->gapfilledReactions()})."\n";
+			}
+		}
+		if ($params->{fit_phenotype_data} == 1) {
+			print "Saving gapfilled model.\n";
+			my $wsmeta = $self->util_kbase_store()->save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id});
+    		$fba->fbamodel_ref($model->_reference());
+		}
+	}
+    print "Saving FBA object with phenotype simulation results.\n";
+    my $wsmeta = $self->util_kbase_store()->save_object($phenoset,$params->{workspace}."/".$params->{phenotypesim_output_id});
+    $fba->phenotypesimulationset_ref($phenoset->_reference());
     $wsmeta = $self->util_kbase_store()->save_object($fba,$params->{workspace}."/".$params->{phenotypesim_output_id}.".fba",{hidden => 1});
     return {
 		new_phenotypesim_ref => $params->{workspace}."/".$params->{phenotypesim_output_id}

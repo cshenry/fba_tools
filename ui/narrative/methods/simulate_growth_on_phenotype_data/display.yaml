@@ -120,7 +120,22 @@ parameters :
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
         long-hint : |
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+    
+    gapfill_phenosim :
+        ui-name : |
+            Gapfill if zero growth?
+        short-hint : |
+            Automatically gapfill model on any condition where it fails to grow, and report gapfilled reactions in results. Results currently appear in the console log.
+        long-hint : |
+            Automatically gapfill model on any condition where it fails to grow, and report gapfilled reactions in results. Results currently appear in the console log.
 
+    fit_phenotype_data :
+        ui-name : |
+            Gapfill to fit data?
+        short-hint : |
+            Automatically gapfill model on any condition where it fails to grow and the cell is observed to grow, and integrate all gapfilled reactions into the model. Results currently appear in the console log.
+        long-hint : |
+            Automatically gapfill model on any condition where it fails to grow and the cell is observed to grow, and integrate all gapfilled reactions into the model. Results currently appear in the console log.
 
 icon: fba-teal.png
 

@@ -32,6 +32,40 @@
          "optional" : false
       },
       {
+         "default_values" : [
+            "0"
+         ],
+         "advanced" : false,
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "gapfill_phenosim"
+      },
+      {
+         "default_values" : [
+            "0"
+         ],
+         "advanced" : false,
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "fit_phenotype_data"
+      },
+      {
          "id" : "target_reaction",
          "field_type" : "textsubdata",
          "allow_multiple" : false,
@@ -243,6 +277,14 @@
             {
                "input_parameter" : "target_reaction",
                "target_property" : "target_reaction"
+            },
+            {
+               "input_parameter" : "gapfill_phenosim",
+               "target_property" : "gapfill_phenosim"
+            },
+            {
+               "input_parameter" : "fit_phenotype_data",
+               "target_property" : "fit_phenotype_data"
             },
             {
                "input_parameter" : "phenotypesim_output_id",

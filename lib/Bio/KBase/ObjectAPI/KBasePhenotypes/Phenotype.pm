@@ -45,7 +45,7 @@ sub _build_additionalCpdString {
 		if (length($output) > 0) {
 			$output .= ";";
 		}
-		$output .= $cpds->[$i]->id();
+		$output .= $cpds->[$i]->name();
 	}
 	if (length($output) == 0) {
 		$output = "none";
