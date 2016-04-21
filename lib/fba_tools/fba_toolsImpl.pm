@@ -856,7 +856,7 @@ sub func_simulate_growth_on_phenotype_data {
 		my $phenos = $phenoset->phenotypeSimulations();
 		for (my $i=0; $i < @{$phenos}; $i++) {
 			if ($phenos->[$i]->numGapfilledReactions() > 0) {
-				print $phenos->[$i]->phenotype()->media()->id()."\t".$phenos->[$i]->phenotype()->geneKOString()."\t".$phenos->[$i]->phenotype()->additionalCpdString()."\t".$phenos->[$i]->phenotype()->normalizedGrowth()."\t".$phenos->[$i]->simulatedGrowth()."\t".$phenos->[$i]->numGapfilledReactions()."\t".join(";",@{$phenos->[$i]->gapfilledReactions()})."\n";
+				print $phenos->[$i]->phenotype()->media()->_wsname()."\t".$phenos->[$i]->phenotype()->geneKOString()."\t".$phenos->[$i]->phenotype()->additionalCpdString()."\t".$phenos->[$i]->phenotype()->normalizedGrowth()."\t".$phenos->[$i]->simulatedGrowth()."\t".$phenos->[$i]->numGapfilledReactions()."\t".join(";",@{$phenos->[$i]->gapfilledReactions()})."\n";
 			}
 		}
 		if ($params->{fit_phenotype_data} == 1) {
