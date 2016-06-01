@@ -4,7 +4,7 @@
 name     : Run Flux Balance Analysis
 
 tooltip  : |
-    Use Flux Balance Analysis (FBA) to predict metabolic fluxes in a metabolic model of an organism grown on a given media.
+    Use flux balance analysis to predict metabolic fluxes in a metabolic model of an organism grown on a given media.
 
 screenshots :
     - run_flux_balance_analysis_input.png
