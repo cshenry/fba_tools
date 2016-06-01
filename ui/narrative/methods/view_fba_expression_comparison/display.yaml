@@ -2,10 +2,9 @@
 # Define basic display information
 #
 name     : View FBA Expression Comparison
-subtitle : |
-    Bring up a detailed view of your FBA Expression Comparison.
+
 tooltip  : |
-    Bring up a detailed view of your FBA Expression Comparison.
+    Explore a detailed view of an FBA Expression Comparison.
 
 screenshots :
     []
