@@ -1591,8 +1591,8 @@ sub func_edit_metabolic_model {
 }
 
 sub func_quantitative_optimization {
-	my ($params,$model) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::util_validate_args($params,["fbamodel_id","constraints","workspace"],{
+	my ($self,$params,$model) = @_;
+    $params = $self->util_validate_args($params,["fbamodel_id","constraints","workspace"],{
     	fbamodel_workspace => $params->{workspace},
     	fbamodel_output_id => $params->{fbamodel_id},
     	MaxBoundMult => 2,
@@ -1614,19 +1614,19 @@ sub func_quantitative_optimization {
 		objective_fraction => 0.1,
 		default_max_uptake => 0
     });
-	$handler->util_log("Loading model from workspace");
+	print "Loading model from workspace";
 	if (!defined($model)) {
-    	$handler->util_log("Retrieving model.");
-		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+    	print "Retrieving model.";
+		$model = $self->util_kbase_store()->get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
     }
 	if (!defined($params->{media_id})) {
     	$params->{default_max_uptake} = 100;
     	$params->{media_id} = "Complete";
     	$params->{media_workspace} = "KBaseMedia";
     }
-	$handler->util_log("Retrieving ".$params->{media_id}." media.");
-	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
-	$handler->util_log("Preparing flux balance analysis problem.");
+	print "Retrieving ".$params->{media_id}." media.";
+	my $media = $self->util_kbase_store()->get_object($params->{media_workspace}."/".$params->{media_id});
+	print"Preparing flux balance analysis problem.";
     my $fba = Bio::KBase::ObjectAPI::utilities::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef); 
     $fba->RunQuantitativeOptimization({
 		ReactionCoef => $params->{ReactionCoef},
@@ -1643,18 +1643,18 @@ sub func_quantitative_optimization {
 		Resolution => $params->{Resolution},
 		MinVariables => $params->{MinVariables}
 	});
-    $handler->util_log("Saving FBA results.");
-    my $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{fbamodel_output_id}.".fba",{type => "KBaseFBA.FBA"});
+    print "Saving FBA results.";
+    my $wsmeta = $self->util_kbase_store()->save_object($fba,$params->{workspace}."/".$params->{fbamodel_output_id}.".fba");
     $model->AddQuantitativeOptimization($fba,1);
-    $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
+    $self->util_kbase_store()->save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id});
 	return {
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id}
 	};
 }
 
 sub func_compare_models {
-	my ($params,$model) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::util_validate_args($params,["workspace","model_refs","protcomp_ref","pangenome_ref"],{
+	my ($self,$params,$model) = @_;
+    $params = $self->util_validate_args($params,["workspace","model_refs","protcomp_ref","pangenome_ref"],{
     	mc_name => "ModelComparison"
     });
 	if (@{$params->{model_refs}} < 2) {
@@ -1674,7 +1674,7 @@ sub func_compare_models {
     foreach my $model_ref (@{$params->{model_refs}}) {
 	my $model=undef;
 	eval {
-	    $model=$handler->util_get_object($model_ref,{raw => 1});
+	    $model=$self->util_kbase_store()->get_object($model_ref,{raw => 1});
 	    $model->{model_ref} = $model_ref;
 	    push @models, $model;
 	    push @{$provenance->[0]->{'input_ws_objects'}}, $model_ref;
@@ -1687,7 +1687,7 @@ sub func_compare_models {
     my $protcomp;
     if (defined $protcomp_ref) {
 	eval {
-	    $protcomp=$handler->util_get_object($protcomp_ref,{raw => 1});
+	    $protcomp=$self->util_kbase_store()->get_object($protcomp_ref,{raw => 1});
 	    push @{$provenance->[0]->{'input_ws_objects'}}, $protcomp_ref;
 	};
 	if ($@) {
@@ -1698,7 +1698,7 @@ sub func_compare_models {
     my $pangenome;
     if (defined $pangenome_ref) {
 	eval {
-	    $pangenome=$handler->util_get_object($pangenome_ref,{raw => 1});
+	    $pangenome=$self->util_kbase_store()->get_object($pangenome_ref,{raw => 1});
 	    push @{$provenance->[0]->{'input_ws_objects'}}, $pangenome_ref;
 	};
 	if ($@) {
@@ -1706,7 +1706,7 @@ sub func_compare_models {
 	}
     }
 
-    $handler->util_log("All data loaded from workspace");
+    print "All data loaded from workspace";
 
     # PREPARE MODEL INFO
     my %mcpd_refs; # hash from modelcompound_refs to their data
@@ -1714,7 +1714,7 @@ sub func_compare_models {
     my %ftr2reactions;
 
     foreach my $model (@models) {
-	$handler->util_log("Processing model ", $model->{id}, "");
+	print "Processing model ", $model->{id}, "";
 	foreach my $cmp (@{$model->{modelcompartments}}) {
 	    $model->{cmphash}->{$cmp->{id}} = $cmp;
 	}
@@ -1891,7 +1891,7 @@ sub func_compare_models {
 	$mc_model->{families} = exists $model2family{$model1->{id}} ? scalar keys %{$model2family{$model1->{id}}} : 0;
 
 	eval {
-		my $genome=$handler->util_get_object($model1->{genome_ref},{raw => 1});
+		my $genome=$self->util_kbase_store()->get_object($model1->{genome_ref},{raw => 1});
 	    $mc_model->{name} = $genome->{scientific_name};
 	    $mc_model->{taxonomy} = $genome->{taxonomy};
 	};
@@ -2146,7 +2146,7 @@ sub func_compare_models {
     $mc->{protcomp_ref} = $protcomp_ref if (defined $protcomp_ref);
     $mc->{pangenome_ref} = $pangenome_ref if (defined $pangenome_ref);
     
-    my $mc_metadata = $handler->util_save_object($mc,$workspace_name."/".$mc_name,{hash => 1,type => "KBaseFBA.ModelComparison"});   
+    my $mc_metadata = $self->util_kbase_store()->save_object($mc,$workspace_name."/".$mc_name,{hash => 1,type => "KBaseFBA.ModelComparison"});   
     my $metadata = $handler->util_report({
     	'ref' => $workspace_name."/model_comparison_report_".$mc_name,
     	message => "ModelComparison saved to $workspace_name/$mc_name\n",
