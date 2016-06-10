@@ -99,7 +99,7 @@
       },
       {
          "allow_multiple" : false,
-         "optional" : false,
+         "optional" : true,
          "field_type" : "text",
          "advanced" : false,
          "default_values" : [
