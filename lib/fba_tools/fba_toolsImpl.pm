@@ -2147,14 +2147,14 @@ sub func_compare_models {
     $mc->{pangenome_ref} = $pangenome_ref if (defined $pangenome_ref);
     
     my $mc_metadata = $self->util_kbase_store()->save_object($mc,$workspace_name."/".$mc_name,{hash => 1,type => "KBaseFBA.ModelComparison"});   
-    my $metadata = $handler->util_report({
-    	'ref' => $workspace_name."/model_comparison_report_".$mc_name,
-    	message => "ModelComparison saved to $workspace_name/$mc_name\n",
-    	objects => [[$workspace_name."/".$mc_name,"Model Comparison"]]
-    });
+    #my $metadata = $handler->util_report({
+    #	'ref' => $workspace_name."/model_comparison_report_".$mc_name,
+    #	message => "ModelComparison saved to $workspace_name/$mc_name\n",
+    #	objects => [[$workspace_name."/".$mc_name,"Model Comparison"]]
+    #});
     return { 
-    	'report_name'=>'model_comparison_report_'.$mc_name,
-    	'report_ref' => $metadata->[6]."/".$metadata->[0]."/".$metadata->[4], 
+    	#'report_name'=>'model_comparison_report_'.$mc_name,
+    	#'report_ref' => $metadata->[6]."/".$metadata->[0]."/".$metadata->[4], 
     	'mc_ref' => $workspace_name."/".$mc_name
     };
 }
