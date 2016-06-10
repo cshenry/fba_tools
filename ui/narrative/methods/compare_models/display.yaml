@@ -1,0 +1,51 @@
+#
+# define display information
+#
+name: Compare Models
+tooltip: |
+    Compare FBA Models based on reactions, compounds, biomass and proteins
+screenshots: []
+
+icon: fba-teal.png
+
+#
+# define a set of similar methods that might be useful to the user
+#
+suggestions:
+    apps:
+        related:
+            []
+        next:
+            []
+    methods:
+        related:
+            []
+        next:
+            []
+
+#
+# Configure the display and description of parameters
+#
+parameters :
+    mc_name :
+        ui-name : |
+            Model Comparison
+        short-hint : |
+            Name for Model Comparison to be created
+    model_ref :
+        ui-name : |
+            FBA Model
+        short-hint : |
+            An FBA Model to compare
+    protcomp_ref :
+        ui-name : |
+            Proteome Comparison
+        short-hint : |
+            A Proteome Comparison to use in comparing reaction-associated proteins between two models
+    pangenome_ref :
+        ui-name : |
+            Pangenome
+        short-hint : |
+            A Pangenome to use in comparing reaction-associated proteins among two or more models
+description : |
+    <p>This is a method to compare FBA Models based on reactions, compounds, biomass and proteins.</p>

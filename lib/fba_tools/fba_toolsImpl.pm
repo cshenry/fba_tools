@@ -1654,8 +1654,10 @@ sub func_quantitative_optimization {
 
 sub func_compare_models {
 	my ($self,$params,$model) = @_;
-    $params = $self->util_validate_args($params,["workspace","model_refs","protcomp_ref","pangenome_ref"],{
-    	mc_name => "ModelComparison"
+    $params = $self->util_validate_args($params,["workspace","model_refs"],{
+    	mc_name => "ModelComparison",
+    	protcomp_ref => undef,
+    	pangenome_ref => undef
     });
 	if (@{$params->{model_refs}} < 2) {
 		Bio::KBase::ObjectAPI::utilities::error("Must select at least two models to compare");
@@ -1667,14 +1669,14 @@ sub func_compare_models {
     my $return = {};
 
     my $workspace_name=$params->{'workspace'};
-    my $wsClient = Bio::KBase::ObjectAPI::utilities::util_kbase_store->workspace();
+    my $wsClient = $self->util_kbase_store->workspace();
 
     my $provenance = [{}];
     my @models;
     foreach my $model_ref (@{$params->{model_refs}}) {
 	my $model=undef;
 	eval {
-	    $model=$self->util_kbase_store()->get_object($model_ref,{raw => 1});
+	    $model=$self->util_kbase_store()->get_object($model_ref,{raw => 1})->serializeToDB();
 	    $model->{model_ref} = $model_ref;
 	    push @models, $model;
 	    push @{$provenance->[0]->{'input_ws_objects'}}, $model_ref;
@@ -1687,7 +1689,7 @@ sub func_compare_models {
     my $protcomp;
     if (defined $protcomp_ref) {
 	eval {
-	    $protcomp=$self->util_kbase_store()->get_object($protcomp_ref,{raw => 1});
+	    $protcomp=$self->util_kbase_store()->get_object($protcomp_ref,{raw => 1})->serializeToDB();
 	    push @{$provenance->[0]->{'input_ws_objects'}}, $protcomp_ref;
 	};
 	if ($@) {
@@ -1698,7 +1700,7 @@ sub func_compare_models {
     my $pangenome;
     if (defined $pangenome_ref) {
 	eval {
-	    $pangenome=$self->util_kbase_store()->get_object($pangenome_ref,{raw => 1});
+	    $pangenome=$self->util_kbase_store()->get_object($pangenome_ref,{raw => 1})->serializeToDB();
 	    push @{$provenance->[0]->{'input_ws_objects'}}, $pangenome_ref;
 	};
 	if ($@) {
@@ -1728,8 +1730,19 @@ sub func_compare_models {
 	    
 	    $model->{cpdhash}->{$cpd->{id}} = $cpd;
 	    if ($cpd->{cpdkbid} ne "cpd00000") {
-		$model->{cpdhash}->{$cpd->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}}} = $cpd;
+			$model->{cpdhash}->{$cpd->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}}} = $cpd;
 	    }
+	}
+	foreach my $bio (@{$model->{biomasses}}) {
+		foreach my $biocpd (@{$bio->{biomasscompounds}}) {
+			my $cpdid = pop @{[split "/", $biocpd->{modelcompound_ref}]};
+			my $cpdobj = $model->{cpdhash}->{$cpdid};
+			if ($cpdobj->{cpdkbid} =~ "cpd00000") {
+				$model->{biocpdhash}->{$cpdobj->{id}} = $biocpd;
+			} else {
+				$model->{biocpdhash}->{$cpdobj->{cpdkbid}."_".$cpdobj->{cmpkbid}} = $biocpd;
+			}	
+		}
 	}
 	foreach my $rxn (@{$model->{modelreactions}}) {
 	    $rxn->{rxnkbid} = pop @{[split "/", $rxn->{reaction_ref}]};
@@ -1883,252 +1896,249 @@ sub func_compare_models {
     my $mc_bcpds;
 
     foreach my $model1 (@models) {
-	my $mc_model = {};
-	push @{$mc_models}, $mc_model;
-	$mc_model->{id} = $model1->{id};
-	$mc_model->{model_ref} = $model1->{model_ref};
-	$mc_model->{genome_ref} = $model1->{genome_ref};
-	$mc_model->{families} = exists $model2family{$model1->{id}} ? scalar keys %{$model2family{$model1->{id}}} : 0;
-
-	eval {
-		my $genome=$self->util_kbase_store()->get_object($model1->{genome_ref},{raw => 1});
-	    $mc_model->{name} = $genome->{scientific_name};
-	    $mc_model->{taxonomy} = $genome->{taxonomy};
-	};
-	if ($@) {
-	    warn "Error loading genome from workspace:\n".$@;
-	}
-
-	$mc_model->{reactions} = scalar @{$model1->{modelreactions}};
-	$mc_model->{compounds} = scalar @{$model1->{modelcompounds}};
-	$mc_model->{biomasses} = scalar @{$model1->{biomasses}};
-
-	foreach my $model2 (@models) {
-	    next if $model1->{id} eq $model2->{id};		    
-	    $mc_model->{model_similarity}->{$model2->{id}} = [0,0,0,0,0];
-	}
-
-	foreach my $rxn (@{$model1->{modelreactions}}) {
-	    my $ftrs = [];
-	    if (defined $pangenome) {
-		foreach my $ftr (keys %{$rxn->{ftrhash}}) {
-		    my $family = $ftr2family{$ftr};
-		    next if ! defined $family;
-		    my $conservation = 0;
-		    foreach my $m (keys %model2family) {
-			$conservation++ if exists $model2family{$m}->{$family->{id}};
-		    }
-		    push @$ftrs, [$ftr, $family->{id}, $conservation*1.0/@models, 0];
-		}
-		# maybe families associated with reaction aren't in model
-		foreach my $familyid (keys %{$rxn2families{$rxn->{id}}}) {
-		    if (! exists $model2family{$model1->{id}}->{$familyid}) {
-			my $conservation = 0;
-			foreach my $m (keys %model2family) {
-			    $conservation++ if exists $model2family{$m}->{$familyid};
-			}
-			push @$ftrs, ["", $familyid, $conservation*1.0/@models, 1];
-		    }
-		}
-	    }
-	    my $mc_reaction = $mc_reactions->{$rxn->{id}};
-	    if (! defined $mc_reaction) {
-		$mc_reaction = {
-		    id => $rxn->{id},
-		    reaction_ref => $rxn->{reaction_ref},
-		    name => $rxn->{name},
-		    equation => $rxn->{equation},
-		    number_models => 1,
-		    core => 0
+		my $mc_model = {};
+		push @{$mc_models}, $mc_model;
+		$mc_model->{id} = $model1->{id};
+		$mc_model->{model_ref} = $model1->{model_ref};
+		$mc_model->{genome_ref} = $model1->{genome_ref};
+		$mc_model->{families} = exists $model2family{$model1->{id}} ? scalar keys %{$model2family{$model1->{id}}} : 0;
+	
+		eval {
+			my $genome=$self->util_kbase_store()->get_object($model1->{genome_ref},{raw => 1})->serializeToDB();
+		    $mc_model->{name} = $genome->{scientific_name};
+		    $mc_model->{taxonomy} = $genome->{taxonomy};
 		};
-		$mc_reactions->{$mc_reaction->{id}} = $mc_reaction;
-	    } else {
-		$mc_reaction->{number_models}++;
-	    }
-	    $mc_reaction->{reaction_model_data}->{$model1->{id}} = [1,$rxn->{direction},$ftrs,$rxn->{dispfeatures}];
-	    foreach my $model2 (@models) {
-		next if $model1->{id} eq $model2->{id};
-
-		my $model2_ftrs;
-		if ($rxn->{rxnkbid} =~ "rxn00000" && defined $model2->{rxnhash}->{$rxn->{id}}) {
-		    $mc_model->{model_similarity}->{$model2->{id}}->[0]++;
-		    $model2_ftrs = $model2->{rxnhash}->{$rxn->{id}}->{ftrhash};
+		if ($@) {
+		    warn "Error loading genome from workspace:\n".$@;
 		}
-		elsif (defined $model2->{rxnhash}->{$rxn->{rxnkbid}."_".$rxn->{cmpkbid}}) {
-		    $mc_model->{model_similarity}->{$model2->{id}}->[0]++;
-		    $model2_ftrs = $model2->{rxnhash}->{$rxn->{rxnkbid}."_".$rxn->{cmpkbid}}->{ftrhash};
-		}
-
-		my $gpr_matched = 0;
-		if (scalar keys %{$rxn->{ftrhash}} > 0) {
-		    $gpr_matched = 1;
-		    foreach my $ftr (keys %{$rxn->{ftrhash}}) {
-			my $found_a_match = 0;
-			foreach my $gene (keys %{$gene_translation->{$ftr}}) {
-			    if (exists $ftr2model{$gene}->{$model2->{id}}) {
-				$found_a_match = 1;
-				last;
-			    }
-			}
-			$gpr_matched = 0 if ($found_a_match == 0);
-		    }
-		    if ($gpr_matched == 1) {
-			foreach my $ftr (keys %{$model2_ftrs}) {
-			    my $found_a_match = 0;
-			    foreach my $gene (keys %{$gene_translation->{$ftr}}) {
-				if (exists $ftr2model{$gene}->{$model1->{id}}) {
-				    $found_a_match = 1;
-				    last;
-				}
-			    }
-			    $gpr_matched = 0 if ($found_a_match == 0);
-			}
-		    }
-		}
-		if ($gpr_matched == 1) {
-		    $mc_model->{model_similarity}->{$model2->{id}}->[4]++;
-		}
-	    }
-	}
-	# fill in info for reactions not in model
-	foreach my $rxnid (keys %rxn2families) {
-	    if (! exists $model1->{rxnhash}->{$rxnid}) {
-		my $ftrs = [];
-		if (defined $pangenome) {
-		    foreach my $familyid (keys %{$rxn2families{$rxnid}}) {
-			my $conservation = 0;
-			foreach my $m (keys %model2family) {
-			    $conservation++ if exists $model2family{$m}->{$familyid};
-			}
-			if (exists $model2family{$model1->{id}}->{$familyid}) {
-			    foreach my $ftr (@{$model2family{$model1->{id}}->{$familyid}}) {
-				push @$ftrs, [$ftr, $familyid, $conservation*1.0/@models, 0];
-			    }
-			}
-			else {
-			    push @$ftrs, ["", $familyid, $conservation*1.0/@models, 1];
-			}
-		    }
-		}
-		$mc_reactions->{$rxnid}->{reaction_model_data}->{$model1->{id}} = [1,"",$ftrs,""];
-	    }
-	}
-	# process compounds
-	my %cpds_registered; # keep track of which compounds are accounted for since they might appear in multiple compartments
-	foreach my $cpd (@{$model1->{modelcompounds}}) {
-	    my $match_id = $cpd->{cpdkbid};
-	    if ($match_id =~ "cpd00000") {
-		$match_id = $cpd->{id};
-		$match_id =~ s/_[a-zA-z]\d+$//g;
-	    }
-	    my $mc_compound = $mc_compounds->{$match_id};
-	    if (! defined $mc_compound) {
-		$mc_compound = {
-		    id => $match_id,
-		    compound_ref => $cpd->{compound_ref},
-		    name => $cpd->{name},
-		    number_models => 0,
-		    core => 0,
-		    model_compound_compartments => { $model1->{id} => [[$cpd->{modelcompartment_ref},$cpd->{charge}]] }
-		};
-		$mc_compounds->{$mc_compound->{id}} = $mc_compound;
-	    } else {
-		push @{$mc_compound->{model_compound_compartments}->{$model1->{id}}}, [$cpd->{modelcompartment_ref},$cpd->{charge}];
-	    }
-	    if (! exists $cpds_registered{$match_id}) {
-		$mc_compound->{number_models}++;
-		$cpds_registered{$match_id} = 1;
-	    }
-	    foreach my $model2 (@models) {
-		next if $model1->{id} eq $model2->{id};
-
-		if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
-		    (defined $model2->{cpdhash}->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}})) {
-		    $mc_model->{model_similarity}->{$model2->{id}}->[1]++;
-		}
-	    }
-	}
-	my %model1bcpds;
-	foreach my $biomass (@{$model1->{biomasses}}) {
-	    foreach my $bcpd (@{$biomass->{biomasscompounds}}) {
-		my $cpdkbid = pop @{[split "/", $bcpd->{modelcompound_ref}]};
-		my $cpd = $model1->{cpdhash}->{$cpdkbid};
-		my $match_id = $cpd->{cpdkbid};
-		if (! defined $match_id || $match_id =~ "cpd00000") {
-		    $match_id = $cpd->{id};
-		    $match_id =~ s/_[a-zA-z]\d+$//g;
-		}
-		if (! defined $match_id) {
-		    Bio::KBase::ObjectAPI::utilities::error("no match possible for biomass compound:");
-		    Bio::KBase::ObjectAPI::utilities::error(Dumper($bcpd));
-		    next;
-		}
-		$model1bcpds{$match_id} = 0;
-		my $mc_bcpd = $mc_bcpds->{$match_id};
-		my $cref = defined $cpd->{modelcompartment_ref} ? $cpd->{modelcompartment_ref} : "";
-		if (! defined $mc_bcpd) {
-		    $mc_bcpd = {
-			id => $match_id,
-			compound_ref => defined $cpd->{compound_ref} ? $cpd->{compound_ref} : "",
-			name => $cpd->{name},
-			number_models => 1,
-			core => 0,
-			model_biomass_compounds => { $model1->{id} => [[$cref,$bcpd->{coefficient}]] }
-		    };
-		    $mc_bcpds->{$mc_bcpd->{id}} = $mc_bcpd;
-		} else {
-		    $mc_bcpd->{number_models}++;
-		    push @{$mc_bcpd->{model_biomass_compounds}->{$model1->{id}}}, [$cref,$bcpd->{coefficient}];
-		}
+	
+		$mc_model->{reactions} = scalar @{$model1->{modelreactions}};
+		$mc_model->{compounds} = scalar @{$model1->{modelcompounds}};
+		$mc_model->{biomasses} = scalar @{$model1->{biomasses}};
+	
 		foreach my $model2 (@models) {
-		    next if $model1->{id} eq $model2->{id};
-
-		    if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
-			(defined $model2->{cpdhash}->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}})) {
-			$mc_model->{model_similarity}->{$model2->{id}}->[2]++;
+		    next if $model1->{id} eq $model2->{id};		    
+		    $mc_model->{model_similarity}->{$model2->{id}} = [0,0,0,0,0];
+		}
+	
+		foreach my $rxn (@{$model1->{modelreactions}}) {
+		    my $ftrs = [];
+		    if (defined $pangenome) {
+				foreach my $ftr (keys %{$rxn->{ftrhash}}) {
+				    my $family = $ftr2family{$ftr};
+				    next if ! defined $family;
+				    my $conservation = 0;
+				    foreach my $m (keys %model2family) {
+						$conservation++ if exists $model2family{$m}->{$family->{id}};
+				    }
+				    push @$ftrs, [$ftr, $family->{id}, $conservation*1.0/@models, 0];
+				}
+				# maybe families associated with reaction aren't in model
+				foreach my $familyid (keys %{$rxn2families{$rxn->{id}}}) {
+				    if (! exists $model2family{$model1->{id}}->{$familyid}) {
+						my $conservation = 0;
+						foreach my $m (keys %model2family) {
+						    $conservation++ if exists $model2family{$m}->{$familyid};
+						}
+						push @$ftrs, ["", $familyid, $conservation*1.0/@models, 1];
+				    }
+				}
+		    }
+		    my $mc_reaction = $mc_reactions->{$rxn->{id}};
+		    if (! defined $mc_reaction) {
+				$mc_reaction = {
+				    id => $rxn->{id},
+				    reaction_ref => $rxn->{reaction_ref},
+				    name => $rxn->{name},
+				    equation => $rxn->{equation},
+				    number_models => 1,
+				    core => 0
+				};
+				$mc_reactions->{$mc_reaction->{id}} = $mc_reaction;
+		    } else {
+				$mc_reaction->{number_models}++;
+		    }
+		    $mc_reaction->{reaction_model_data}->{$model1->{id}} = [1,$rxn->{direction},$ftrs,$rxn->{dispfeatures}];
+		    foreach my $model2 (@models) {
+				next if $model1->{id} eq $model2->{id};
+		
+				my $model2_ftrs;
+				if ($rxn->{rxnkbid} =~ "rxn00000" && defined $model2->{rxnhash}->{$rxn->{id}}) {
+				    $mc_model->{model_similarity}->{$model2->{id}}->[0]++;
+				    $model2_ftrs = $model2->{rxnhash}->{$rxn->{id}}->{ftrhash};
+				} elsif (defined $model2->{rxnhash}->{$rxn->{rxnkbid}."_".$rxn->{cmpkbid}}) {
+				    $mc_model->{model_similarity}->{$model2->{id}}->[0]++;
+				    $model2_ftrs = $model2->{rxnhash}->{$rxn->{rxnkbid}."_".$rxn->{cmpkbid}}->{ftrhash};
+				}
+		
+				my $gpr_matched = 0;
+				if (scalar keys %{$rxn->{ftrhash}} > 0) {
+				    $gpr_matched = 1;
+				    foreach my $ftr (keys %{$rxn->{ftrhash}}) {
+						my $found_a_match = 0;
+						foreach my $gene (keys %{$gene_translation->{$ftr}}) {
+						    if (exists $ftr2model{$gene}->{$model2->{id}}) {
+								$found_a_match = 1;
+								last;
+						    }
+						}
+						$gpr_matched = 0 if ($found_a_match == 0);
+				    }
+				    if ($gpr_matched == 1) {
+						foreach my $ftr (keys %{$model2_ftrs}) {
+						    my $found_a_match = 0;
+						    foreach my $gene (keys %{$gene_translation->{$ftr}}) {
+								if (exists $ftr2model{$gene}->{$model1->{id}}) {
+								    $found_a_match = 1;
+								    last;
+								}
+						    }
+						    $gpr_matched = 0 if ($found_a_match == 0);
+						}
+				    }
+				}
+				if ($gpr_matched == 1) {
+				    $mc_model->{model_similarity}->{$model2->{id}}->[4]++;
+				}
 		    }
 		}
-	    }
-	}
-	$mc_model->{biomasscpds} = scalar keys %model1bcpds;
-
-	foreach my $family (keys %{$model2family{$model1->{id}}}) {
-	    foreach my $model2 (@models) {
-		next if $model1->{id} eq $model2->{id};
-
-		if (exists $model2family{$model2->{id}}->{$family}) {
-		    $mc_model->{model_similarity}->{$model2->{id}}->[3]++;
+		# fill in info for reactions not in model
+		foreach my $rxnid (keys %rxn2families) {
+		    if (! exists $model1->{rxnhash}->{$rxnid}) {
+				my $ftrs = [];
+				if (defined $pangenome) {
+				    foreach my $familyid (keys %{$rxn2families{$rxnid}}) {
+						my $conservation = 0;
+						foreach my $m (keys %model2family) {
+						    $conservation++ if exists $model2family{$m}->{$familyid};
+						}
+						if (exists $model2family{$model1->{id}}->{$familyid}) {
+						    foreach my $ftr (@{$model2family{$model1->{id}}->{$familyid}}) {
+								push @$ftrs, [$ftr, $familyid, $conservation*1.0/@models, 0];
+						    }
+						}
+						else {
+						    push @$ftrs, ["", $familyid, $conservation*1.0/@models, 1];
+						}
+				    }
+				}
+				$mc_reactions->{$rxnid}->{reaction_model_data}->{$model1->{id}} = [1,"",$ftrs,""];
+		    }
 		}
-	    }
-	}
+		# process compounds
+		my %cpds_registered; # keep track of which compounds are accounted for since they might appear in multiple compartments
+		foreach my $cpd (@{$model1->{modelcompounds}}) {
+		    my $match_id = $cpd->{cpdkbid};
+		    if ($match_id =~ "cpd00000") {
+				$match_id = $cpd->{id};
+				$match_id =~ s/_[a-zA-z]\d+$//g;
+		    }
+		    my $mc_compound = $mc_compounds->{$match_id};
+		    if (! defined $mc_compound) {
+				$mc_compound = {
+				    id => $match_id,
+				    compound_ref => $cpd->{compound_ref},
+				    name => $cpd->{name},
+				    number_models => 0,
+				    core => 0,
+				    model_compound_compartments => { $model1->{id} => [[$cpd->{modelcompartment_ref},$cpd->{charge}]] }
+				};
+				$mc_compounds->{$mc_compound->{id}} = $mc_compound;
+		    } else {
+				push @{$mc_compound->{model_compound_compartments}->{$model1->{id}}}, [$cpd->{modelcompartment_ref},$cpd->{charge}];
+		    }
+		    if (! exists $cpds_registered{$match_id}) {
+				$mc_compound->{number_models}++;
+				$cpds_registered{$match_id} = 1;
+		    }
+		    foreach my $model2 (@models) {
+				next if $model1->{id} eq $model2->{id};
+		
+				if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
+				    (defined $model2->{cpdhash}->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}})) {
+				    $mc_model->{model_similarity}->{$model2->{id}}->[1]++;
+				}
+		    }
+		}
+		my %model1bcpds;
+		foreach my $biomass (@{$model1->{biomasses}}) {
+		    foreach my $bcpd (@{$biomass->{biomasscompounds}}) {
+				my $cpdkbid = pop @{[split "/", $bcpd->{modelcompound_ref}]};
+				my $cpd = $model1->{cpdhash}->{$cpdkbid};
+				my $match_id = $cpd->{cpdkbid};
+				if (! defined $match_id || $match_id =~ "cpd00000") {
+				    $match_id = $cpd->{id};
+				    $match_id =~ s/_[a-zA-z]\d+$//g;
+				}
+				if (! defined $match_id) {
+				    Bio::KBase::ObjectAPI::utilities::error("no match possible for biomass compound:");
+				    Bio::KBase::ObjectAPI::utilities::error(Dumper($bcpd));
+				    next;
+				}
+				$model1bcpds{$match_id} = 0;
+				my $mc_bcpd = $mc_bcpds->{$match_id};
+				my $cref = defined $cpd->{modelcompartment_ref} ? $cpd->{modelcompartment_ref} : "";
+				if (! defined $mc_bcpd) {
+				    $mc_bcpd = {
+						id => $match_id,
+						compound_ref => defined $cpd->{compound_ref} ? $cpd->{compound_ref} : "",
+						name => $cpd->{name},
+						number_models => 1,
+						core => 0,
+						model_biomass_compounds => { $model1->{id} => [[$cref,$bcpd->{coefficient}]] }
+				    };
+				    $mc_bcpds->{$mc_bcpd->{id}} = $mc_bcpd;
+				} else {
+				    $mc_bcpd->{number_models}++;
+				    push @{$mc_bcpd->{model_biomass_compounds}->{$model1->{id}}}, [$cref,$bcpd->{coefficient}];
+				}
+				foreach my $model2 (@models) {
+				    next if $model1->{id} eq $model2->{id};
+				    if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{biocpdhash}->{$cpd->{id}}) ||
+						(defined $model2->{biocpdhash}->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}})) {
+						$mc_model->{model_similarity}->{$model2->{id}}->[2]++;
+				    }
+				}
+		    }
+		}
+		$mc_model->{biomasscpds} = scalar keys %model1bcpds;
+	
+		foreach my $family (keys %{$model2family{$model1->{id}}}) {
+		    foreach my $model2 (@models) {
+				next if $model1->{id} eq $model2->{id};
+				if (exists $model2family{$model2->{id}}->{$family}) {
+				    $mc_model->{model_similarity}->{$model2->{id}}->[3]++;
+				}
+		    }
+		}
     }
 
     # need to set 'core' and 'fraction_models'
     my $core_reactions = 0;
     foreach my $mc_reaction (values %$mc_reactions) {
-	if ($mc_reaction->{number_models} == @models) {
-	    $core_reactions++;
-	    $mc_reaction->{core} = 1;
-	}
-	$mc_reaction->{fraction_models} = 1.0*$mc_reaction->{number_models}/@models;
+		if ($mc_reaction->{number_models} == @models) {
+		    $core_reactions++;
+		    $mc_reaction->{core} = 1;
+		}
+		$mc_reaction->{fraction_models} = 1.0*$mc_reaction->{number_models}/@models;
     }
 
     my $core_compounds = 0;
     foreach my $mc_compound (values %$mc_compounds) {
-	if ($mc_compound->{number_models} == @models) {
-	    $core_compounds++;
-	    $mc_compound->{core} = 1;
-	}
-	$mc_compound->{fraction_models} = 1.0*$mc_compound->{number_models}/@models;
+		if ($mc_compound->{number_models} == @models) {
+		    $core_compounds++;
+		    $mc_compound->{core} = 1;
+		}
+		$mc_compound->{fraction_models} = 1.0*$mc_compound->{number_models}/@models;
     }
 
     my $core_bcpds = 0;
     foreach my $mc_bcpd (values %$mc_bcpds) {
-	if ($mc_bcpd->{number_models} == @models) {
-	    $core_bcpds++;
-	    $mc_bcpd->{core} = 1;
-	}
-	$mc_bcpd->{fraction_models} = 1.0*$mc_bcpd->{number_models}/@models;
+		if ($mc_bcpd->{number_models} == @models) {
+		    $core_bcpds++;
+		    $mc_bcpd->{core} = 1;
+		}
+		$mc_bcpd->{fraction_models} = 1.0*$mc_bcpd->{number_models}/@models;
     }
 
     my $mc = {};
@@ -2145,6 +2155,9 @@ sub func_compare_models {
     $mc->{families} = [values %$mc_families];
     $mc->{protcomp_ref} = $protcomp_ref if (defined $protcomp_ref);
     $mc->{pangenome_ref} = $pangenome_ref if (defined $pangenome_ref);
+    
+    my $json = Bio::KBase::ObjectAPI::utilities::TOJSON($mc,1);
+    Bio::KBase::ObjectAPI::utilities::PRINTFILE("/Users/chenry/workspace/Electrosynthesis/model_comparison.json",[$json]);
     
     my $mc_metadata = $self->util_kbase_store()->save_object($mc,$workspace_name."/".$mc_name,{hash => 1,type => "KBaseFBA.ModelComparison"});   
     #my $metadata = $handler->util_report({
@@ -3373,7 +3386,7 @@ sub compare_models
     my($return);
     #BEGIN compare_models
     $self->util_initialize_call($params,$ctx);
-	$return = Bio::KBase::ObjectAPI::functions::func_compare_models($params);
+	$return = $self->func_compare_models($params);
     #END compare_models
     my @_bad_returns;
     (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");

@@ -1,0 +1,150 @@
+{
+ver: "0.0.1",
+authors: [
+"dejongh"
+],
+contact: "help@kbase.us",
+visible: true,
+categories: [
+"active"
+],
+widgets: {
+input: null,
+output: "kbaseFbaModelComparisonNew"
+},
+parameters: [
+{
+id: "mc_name",
+optional: false,
+advanced: false,
+allow_multiple: false,
+default_values: [
+""
+],
+field_type: "text",
+text_options: {
+valid_ws_types: [
+"KBaseFBA.ModelComparison"
+],
+is_output_name: true
+}
+},
+{
+id: "model_ref",
+optional: false,
+advanced: false,
+allow_multiple: true,
+default_values: [
+""
+],
+field_type: "text",
+text_options: {
+valid_ws_types: [
+"KBaseFBA.FBAModel"
+]
+}
+},
+{
+id: "protcomp_ref",
+optional: true,
+advanced: false,
+allow_multiple: false,
+default_values: [
+""
+],
+field_type: "text",
+text_options: {
+valid_ws_types: [
+"GenomeComparison.ProteomeComparison"
+]
+}
+},
+{
+id: "pangenome_ref",
+optional: true,
+advanced: false,
+allow_multiple: false,
+default_values: [
+""
+],
+field_type: "text",
+text_options: {
+valid_ws_types: [
+"KBaseGenomes.Pangenome"
+]
+}
+}
+],
+behavior: {
+service-mapping: {
+url: "",
+name: "ModelComparison",
+method: "compare_models",
+input_mapping: [
+{
+narrative_system_variable: "workspace",
+target_property: "workspace"
+},
+{
+input_parameter: "mc_name",
+target_property: "mc_name"
+},
+{
+input_parameter: "model_ref",
+target_property: "model_refs",
+target_type_transform: "list<ref>"
+},
+{
+input_parameter: "protcomp_ref",
+target_property: "protcomp_ref",
+target_type_transform: "ref"
+},
+{
+input_parameter: "pangenome_ref",
+target_property: "pangenome_ref",
+target_type_transform: "ref"
+}
+],
+output_mapping: [
+{
+service_method_output_path: [
+0,
+"mc_ref"
+],
+target_property: "mc_ref"
+},
+{
+input_parameter: "mc_name",
+target_property: "mc_id"
+},
+{
+narrative_system_variable: "workspace",
+target_property: "ws_name"
+},
+{
+narrative_system_variable: "workspace",
+target_property: "workspace_name"
+},
+{
+service_method_output_path: [
+0,
+"report_name"
+],
+target_property: "report_name"
+},
+{
+service_method_output_path: [
+0,
+"report_ref"
+],
+target_property: "report_ref"
+},
+{
+constant_value: "16",
+target_property: "report_window_line_height"
+}
+]
+}
+},
+job_id_output_field: "docker"
+}
