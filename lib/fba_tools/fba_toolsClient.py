@@ -233,4 +233,18 @@ class fba_tools(object):
         resp = self._call('fba_tools.check_model_mass_balance',
                           [params], json_rpc_context)
         return resp[0]
+  
+    def compare_models(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method compare_models: argument json_rpc_context is not type dict as required.')
+        resp = self._call('fba_tools.compare_models',
+                          [params], json_rpc_context)
+        return resp[0]
+  
+    def edit_metabolic_model(self, params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method edit_metabolic_model: argument json_rpc_context is not type dict as required.')
+        resp = self._call('fba_tools.edit_metabolic_model',
+                          [params], json_rpc_context)
+        return resp[0]
  

@@ -351,7 +351,7 @@ Description:
 sub searchForCompound {
 	my ($self,$compound) = @_;
 	#First search by exact alias match
-	my $cpdobj = $self->getObjectByAlias("compounds",$compound);
+	my $cpdobj = $self->getObject("compounds",$compound);
 	#Next, search by name
 	if (!defined($cpdobj)) {
 		my $searchname = Bio::KBase::ObjectAPI::KBaseFBA::TemplateCompound->nameToSearchname($compound);

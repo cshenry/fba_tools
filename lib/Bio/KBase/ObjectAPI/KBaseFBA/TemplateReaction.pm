@@ -25,12 +25,21 @@ has msname => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', m
 has msabbreviation => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmsabbreviation' );
 has isTransporter => ( is => 'rw', isa => 'Bool',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildisTransporter' );
 has stoichiometry => ( is => 'rw', isa => 'ArrayRef', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstoichiometry' );
-
+has equationCode => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildequationcode' );
+has revEquationCode => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildrevequationcode' );
 has reaction_ref => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildreaction_ref' );
 
 #***********************************************************************************************************
 # BUILDERS:
 #***********************************************************************************************************
+sub _buildequationcode {
+	my ($self) = @_;
+	return $self->createEquation({format=>"id",hashed=>1,protons=>0,direction=>0});
+}
+sub _buildrevequationcode {
+	my ($self) = @_;
+	return $self->createEquation({format=>"id",hashed=>1,protons=>0,reverse=>1,direction=>0});
+}
 sub _builddefinition {
 	my ($self) = @_;
 	return $self->createEquation({format=>"name"});
@@ -377,7 +386,7 @@ sub addRxnToModel {
 						$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
 					} else {
 						foreach my $feature (@{$roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}}) {
-							$subunits->{$cpxrole->templaterole()->name()}->{genes}->{$feature->_reference()} = $feature;	
+							$subunits->{$cpxrole->templaterole()->name()}->{genes}->{"~/genome/features/id/".$feature->id()} = $feature;	
 						}
 					}
 				}
@@ -427,18 +436,17 @@ sub addRxnToModel {
 	}
     }
     if (@{$proteins} > 0 && scalar(@{$mdlrxn->modelReactionProteins()})==0) {
-	foreach my $protein (@{$proteins}) {
-	    $mdlrxn->addModelReactionProtein({
-			proteinDataTree => $protein,
-			complex_ref => "~/template/complexes/id/".$protein->{cpx}->id()
-		});
-	}
+		foreach my $protein (@{$proteins}) {
+	    	$mdlrxn->addModelReactionProtein({
+				proteinDataTree => $protein,
+				complex_ref => "~/template/complexes/id/".$protein->{cpx}->id()
+			});
+		}
     } elsif (scalar(@{$mdlrxn->modelReactionProteins()})==0) {
-	$mdlrxn->addModelReactionProtein({
-	    proteinDataTree => {note => $self->type()},
-					 });
+		$mdlrxn->addModelReactionProtein({
+	    	proteinDataTree => {note => $self->type()},
+		});
     }
-
     return $mdlrxn;
 }
 

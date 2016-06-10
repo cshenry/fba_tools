@@ -16,7 +16,7 @@ extends 'Bio::KBase::ObjectAPI::KBaseFBA::DB::TemplateCompound';
 #***********************************************************************************************************
 has biomass_coproducts  => ( is => 'rw', isa => 'ArrayRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_biomass_coproducts' );
 has class  => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_class' );
-
+has searchnames  => ( is => 'rw', isa => 'ArrayRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_searchnames' );
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -139,6 +139,15 @@ sub _build_biomass_coproducts {
 	}
 	return [];
 }
+sub _build_searchnames {
+	my ($self) = @_;
+	my $hash = {$self->nameToSearchname($self->name()) => 1};
+	my $names = $self->aliases();
+	foreach my $name (@{$names}) {
+		$hash->{$self->nameToSearchname($name)} = 1;
+	}
+	return [keys(%{$hash})];
+}
 
 #***********************************************************************************************************
 # CONSTANTS:
@@ -147,6 +156,11 @@ sub _build_biomass_coproducts {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub msid {
+	my ($self) = @_;
+	return $self->id();
+}
+
 =head3 nameToSearchname
 
 Definition:
@@ -178,7 +192,7 @@ sub nameToSearchname {
 	$InName =~ s/\[//g;
 	$InName =~ s/\]//g;
 	$InName =~ s/\://g;
-	$InName =~ s/’//g;
+	$InName =~ s/ï¿½//g;
 	$InName =~ s/'//g;
 	$InName =~ s/\;//g;
 	$InName .= $ending;

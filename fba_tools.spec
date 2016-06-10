@@ -98,7 +98,16 @@ module fba_tools {
         @id ws KBaseReport.Report
     */
 	typedef string ws_report_id;
-
+	/*
+    	Reference to a Pangenome object in the workspace
+    	@id ws KBaseGenomes.Pangenome
+    */
+    typedef string ws_pangenome_id;
+    /*
+    	Reference to a Proteome Comparison object in the workspace
+    	@id ws GenomeComparison.ProteomeComparison
+    */
+    typedef string ws_proteomecomparison_id;
 
     typedef structure {
 		genome_id genome_id;
@@ -359,4 +368,50 @@ module fba_tools {
          Identifies reactions in the model that are not mass balanced
     */
 	funcdef check_model_mass_balance(CheckModelMassBalanceParams params) returns (CheckModelMassBalanceResults results) authentication required;
+
+    /*
+    ModelComparisonParams object: a list of models and optional pangenome and protein comparison; mc_name is the name for the new object.
+
+    @optional protcomp_ref pangenome_ref
+    */
+    typedef structure {
+		workspace_name workspace;
+		string mc_name;
+		list<ws_fbamodel_id> model_refs;
+		ws_proteomecomparison_id protcomp_ref;
+		ws_pangenome_id pangenome_ref;
+    } ModelComparisonParams;
+    
+    typedef structure {
+		string report_name;
+		ws_report_id report_ref;
+		string mc_ref;
+    } ModelComparisonResult;
+
+    /*
+    Compare models
+    */
+    funcdef compare_models(ModelComparisonParams params) returns (ModelComparisonResult) authentication required;
+
+	/*
+    EditMetabolicModelParams object: arguments for the edit model function
+    */
+    typedef structure {
+		workspace_name workspace;
+		workspace_name fbamodel_workspace;
+		ws_fbamodel_id fbamodel_id;
+		ws_fbamodel_id fbamodel_output_id;
+		mapping<string,list<list<string>>> data;
+    } EditMetabolicModelParams;
+    
+    typedef structure {
+		string report_name;
+		ws_report_id report_ref;
+		ws_fbamodel_id new_fbamodel_ref;
+    } EditMetabolicModelResult;
+
+    /*
+    Edit models
+    */
+    funcdef edit_metabolic_model(EditMetabolicModelParams params) returns (EditMetabolicModelResult) authentication required;
 };

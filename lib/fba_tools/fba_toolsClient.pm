@@ -1319,6 +1319,232 @@ Identifies reactions in the model that are not mass balanced
     }
 }
  
+
+
+=head2 compare_models
+
+  $return = $obj->compare_models($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ModelComparisonParams
+$return is a fba_tools.ModelComparisonResult
+ModelComparisonParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	mc_name has a value which is a string
+	model_refs has a value which is a reference to a list where each element is a fba_tools.ws_fbamodel_id
+	protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
+	pangenome_ref has a value which is a fba_tools.ws_pangenome_id
+workspace_name is a string
+ws_fbamodel_id is a string
+ws_proteomecomparison_id is a string
+ws_pangenome_id is a string
+ModelComparisonResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	mc_ref has a value which is a string
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ModelComparisonParams
+$return is a fba_tools.ModelComparisonResult
+ModelComparisonParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	mc_name has a value which is a string
+	model_refs has a value which is a reference to a list where each element is a fba_tools.ws_fbamodel_id
+	protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
+	pangenome_ref has a value which is a fba_tools.ws_pangenome_id
+workspace_name is a string
+ws_fbamodel_id is a string
+ws_proteomecomparison_id is a string
+ws_pangenome_id is a string
+ModelComparisonResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	mc_ref has a value which is a string
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+Compare models
+
+=back
+
+=cut
+
+ sub compare_models
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function compare_models (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to compare_models:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'compare_models');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+	method => "fba_tools.compare_models",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'compare_models',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method compare_models",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'compare_models',
+				       );
+    }
+}
+ 
+
+
+=head2 edit_metabolic_model
+
+  $return = $obj->edit_metabolic_model($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.EditMetabolicModelParams
+$return is a fba_tools.EditMetabolicModelResult
+EditMetabolicModelParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
+	fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
+	data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
+	protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
+	pangenome_ref has a value which is a fba_tools.ws_pangenome_id
+workspace_name is a string
+ws_fbamodel_id is a string
+ws_proteomecomparison_id is a string
+ws_pangenome_id is a string
+EditMetabolicModelResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.EditMetabolicModelParams
+$return is a fba_tools.EditMetabolicModelResult
+EditMetabolicModelParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
+	fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
+	data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
+	protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
+	pangenome_ref has a value which is a fba_tools.ws_pangenome_id
+workspace_name is a string
+ws_fbamodel_id is a string
+ws_proteomecomparison_id is a string
+ws_pangenome_id is a string
+EditMetabolicModelResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+Edit models
+
+=back
+
+=cut
+
+ sub edit_metabolic_model
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function edit_metabolic_model (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to edit_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'edit_metabolic_model');
+	}
+    }
+
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+	method => "fba_tools.edit_metabolic_model",
+	params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'edit_metabolic_model',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method edit_metabolic_model",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'edit_metabolic_model',
+				       );
+    }
+}
+ 
   
 
 sub version {
@@ -1332,16 +1558,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'check_model_mass_balance',
+                method_name => 'edit_metabolic_model',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method check_model_mass_balance",
+            error => "Error invoking method edit_metabolic_model",
             status_line => $self->{client}->status_line,
-            method_name => 'check_model_mass_balance',
+            method_name => 'edit_metabolic_model',
         );
     }
 }
@@ -2044,6 +2270,70 @@ a string
 
 The workspace ID for a Report object
 @id ws KBaseReport.Report
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 ws_pangenome_id
+
+=over 4
+
+
+
+=item Description
+
+Reference to a Pangenome object in the workspace
+@id ws KBaseGenomes.Pangenome
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 ws_proteomecomparison_id
+
+=over 4
+
+
+
+=item Description
+
+Reference to a Proteome Comparison object in the workspace
+@id ws GenomeComparison.ProteomeComparison
 
 
 =item Definition
@@ -2878,6 +3168,166 @@ new_report_ref has a value which is a fba_tools.ws_report_id
 
 a reference to a hash where the following keys are defined:
 new_report_ref has a value which is a fba_tools.ws_report_id
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelComparisonParams
+
+=over 4
+
+
+
+=item Description
+
+ModelComparisonParams object: a list of models and optional pangenome and protein comparison; mc_name is the name for the new object.
+
+@optional protcomp_ref pangenome_ref
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+mc_name has a value which is a string
+model_refs has a value which is a reference to a list where each element is a fba_tools.ws_fbamodel_id
+protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
+pangenome_ref has a value which is a fba_tools.ws_pangenome_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+mc_name has a value which is a string
+model_refs has a value which is a reference to a list where each element is a fba_tools.ws_fbamodel_id
+protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
+pangenome_ref has a value which is a fba_tools.ws_pangenome_id
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelComparisonResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+mc_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+mc_ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 EditMetabolicModelParams
+
+=over 4
+
+
+
+=item Description
+
+EditMetabolicModelParams object: arguments for the edit model function
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
+fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
+data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
+protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
+pangenome_ref has a value which is a fba_tools.ws_pangenome_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
+fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
+data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
+protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
+pangenome_ref has a value which is a fba_tools.ws_pangenome_id
+
+
+=end text
+
+=back
+
+
+
+=head2 EditMetabolicModelResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 
 
 =end text

@@ -55,6 +55,12 @@ our %return_counts = (
         'check_model_mass_balance' => 1,
         'check_model_mass_balance_async' => 1,
         'check_model_mass_balance_check' => 1,
+        'compare_models' => 1,
+        'compare_models_async' => 1,
+        'compare_models_check' => 1,
+        'edit_metabolic_model' => 1,
+        'edit_metabolic_model_async' => 1,
+        'edit_metabolic_model_check' => 1,
         'version' => 1,
 );
 
@@ -86,6 +92,12 @@ our %method_authentication = (
         'check_model_mass_balance' => 'required',
         'check_model_mass_balance_async' => 'required',
         'check_model_mass_balance_check' => 'required',
+        'compare_models' => 'required',
+        'compare_models_async' => 'required',
+        'compare_models_check' => 'required',
+        'edit_metabolic_model' => 'required',
+        'edit_metabolic_model_async' => 'required',
+        'edit_metabolic_model_check' => 'required',
 );
 
 our %sync_methods = (
@@ -98,6 +110,8 @@ our %sync_methods = (
         'merge_metabolic_models_into_community_model' => 1,
         'compare_flux_with_expression' => 1,
         'check_model_mass_balance' => 1,
+        'compare_models' => 1,
+        'edit_metabolic_model' => 1,
 );
 
 our %async_run_methods = (
@@ -110,6 +124,8 @@ our %async_run_methods = (
         'merge_metabolic_models_into_community_model_async' => 'fba_tools.merge_metabolic_models_into_community_model',
         'compare_flux_with_expression_async' => 'fba_tools.compare_flux_with_expression',
         'check_model_mass_balance_async' => 'fba_tools.check_model_mass_balance',
+        'compare_models_async' => 'fba_tools.compare_models',
+        'edit_metabolic_model_async' => 'fba_tools.edit_metabolic_model',
 );
 
 our %async_check_methods = (
@@ -122,6 +138,8 @@ our %async_check_methods = (
         'merge_metabolic_models_into_community_model_check' => 'fba_tools.merge_metabolic_models_into_community_model',
         'compare_flux_with_expression_check' => 'fba_tools.compare_flux_with_expression',
         'check_model_mass_balance_check' => 'fba_tools.check_model_mass_balance',
+        'compare_models_check' => 'fba_tools.compare_models',
+        'edit_metabolic_model_check' => 'fba_tools.edit_metabolic_model',
 );
 
 sub _build_valid_methods
@@ -155,6 +173,12 @@ sub _build_valid_methods
         'check_model_mass_balance' => 1,
         'check_model_mass_balance_async' => 1,
         'check_model_mass_balance_check' => 1,
+        'compare_models' => 1,
+        'compare_models_async' => 1,
+        'compare_models_check' => 1,
+        'edit_metabolic_model' => 1,
+        'edit_metabolic_model_async' => 1,
+        'edit_metabolic_model_check' => 1,
         'version' => 1,
     };
     return $methods;

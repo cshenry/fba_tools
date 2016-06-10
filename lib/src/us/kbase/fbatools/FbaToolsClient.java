@@ -300,4 +300,40 @@ public class FbaToolsClient {
         List<CheckModelMassBalanceResults> res = caller.jsonrpcCall("fba_tools.check_model_mass_balance", args, retType, true, true, jsonRpcContext);
         return res.get(0);
     }
+
+    /**
+     * <p>Original spec-file function name: compare_models</p>
+     * <pre>
+     * Compare models
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.ModelComparisonParams ModelComparisonParams}
+     * @return   instance of type {@link us.kbase.fbatools.ModelComparisonResult ModelComparisonResult}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public ModelComparisonResult compareModels(ModelComparisonParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<ModelComparisonResult>> retType = new TypeReference<List<ModelComparisonResult>>() {};
+        List<ModelComparisonResult> res = caller.jsonrpcCall("fba_tools.compare_models", args, retType, true, true, jsonRpcContext);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: edit_metabolic_model</p>
+     * <pre>
+     * Edit models
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.EditMetabolicModelParams EditMetabolicModelParams}
+     * @return   instance of type {@link us.kbase.fbatools.EditMetabolicModelResult EditMetabolicModelResult}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public EditMetabolicModelResult editMetabolicModel(EditMetabolicModelParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<EditMetabolicModelResult>> retType = new TypeReference<List<EditMetabolicModelResult>>() {};
+        List<EditMetabolicModelResult> res = caller.jsonrpcCall("fba_tools.edit_metabolic_model", args, retType, true, true, jsonRpcContext);
+        return res.get(0);
+    }
 }
