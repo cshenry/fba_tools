@@ -309,6 +309,8 @@ sub save_objects {
     	$objecthash->{$ref} = 0;
     	if ($obj->{type} eq "model") {
     		$self->save_model($obj->{object},$ref);
+    	} elsif ($obj->{type} eq "fba") {
+    		$self->save_fba($obj->{object},$ref);
     	} elsif (defined($typetrans->{$obj->{type}})) {
     		$objecthash->{$ref} = 1;
     		$obj->{object}->parent($self);
@@ -548,7 +550,8 @@ sub transform_media_to_ws {
 
 sub save_model {
 	my ($self,$object,$ref) = @_;
-	my $array = [split(/\//,$ref)];
+	my $array = [split(/\/+/,$ref)];
+	$ref = join("/",@{$array});
 	my $name = pop(@{$array});
 	#Listing contents of any existing model folder in this location
 	my $output = $self->call_ws("ls",{
@@ -562,6 +565,7 @@ sub save_model {
 		$refpath = $1;
 		$refobject = $2;
 	}
+	$object->id($refobject);
 	my $createinput = {objects => [],createUploadNodes => 1};
 	my $exists = 0;
 	my $subobjects = {};
@@ -584,6 +588,9 @@ sub save_model {
 			}
 		}
 	}
+	$object->genome();
+	$object->genome_ref($ref."/genome||");
+	$object->genome()->_reference($ref."/genome");
 	my $objectdata = {};
 	#Adding folders and genome if not already present
 	my $listout = [];
@@ -698,6 +705,176 @@ sub load_model {
 	$objdatas->[0]->[0]->[0] = $meta->[0];
 	$objdatas->[0]->[0]->[2] = $meta->[2];
 	return $objdatas->[0];
+}
+
+sub save_fba {
+	my ($self,$object,$ref) = @_;
+	my $array = [split(/\/+/,$ref)];
+	$ref = join("/",@{$array});
+	my $name = pop(@{$array});
+	#Listing contents of any existing model folder in this location
+	my $output = $self->call_ws("ls",{
+		paths => [$ref],
+		recursive => 1,
+	});
+	#Checking what data is already present
+	my $refobject;
+	my $refpath;
+	if ($ref =~ m/^(.+)\/([^\/]+)$/) {
+		$refpath = $1;
+		$refobject = $2;
+	}
+	my $createinput = {objects => [],createUploadNodes => 1};
+	my $objectdata = {};
+	#Adding folders and genome if not already present
+	my $listout = [];
+	#Saving model JSON structure
+	my $fbameta = {
+		objective => $object->objectiveValue(),
+    	media => $object->media_ref()
+	};
+	#Checking if gapfilling
+	my $gfs = $object->gapfillingSolutions();
+	if (@{$gfs} > 0) {
+		my $gfsols = [];
+		my $gftbl = "Solution\tID\tName\tEquation\tDirection\n";
+		for (my $i=0; $i < @{$object->gapfillingSolutions()}; $i++) {
+			for (my $j=0; $j < @{$object->gapfillingSolutions()->[$i]->gapfillingSolutionReactions()}; $j++) {
+				my $rxn = $object->gapfillingSolutions()->[$i]->gapfillingSolutionReactions()->[$j];
+				$gftbl .= $i."\t".$rxn->reaction()->id()."\t".$rxn->reaction()->name()."\t".
+	    		$rxn->reaction()->definition()."\t".$rxn->direction()."\n";
+				$gfsols->[$i]->[$j] = $object->gapfillingSolutions()->[$i]->gapfillingSolutionReactions()->[$j]->serializeToDB();
+			}
+		}
+		my $solutiondata = Bio::KBase::ObjectAPI::utilities::TOJSON($gfsols);
+		$fbameta->{integrated_solution} = 0;
+		$fbameta->{integratedindex} = 0;
+		$fbameta->{solutiondata} = $solutiondata;
+		$fbameta->{integrated} = $object->parameters()->{integrate_solution};
+		push(@{$createinput->{objects}},[$ref.".gftbl","string",{
+		   description => "Tab delimited table of reactions gapfilled in metabolic model",
+		   fba => $ref,
+		   media => $object->media_ref(),
+		   model => $object->fbamodel_ref()
+		},undef]);
+		$objectdata->{$ref.".gftbl"} = $gftbl;
+	}
+	push(@{$createinput->{objects}},[$ref,"fba",$fbameta,undef]);
+	$objectdata->{$ref} = $object->toJSON();
+	if (@{$gfs} > 0) {
+		push(@{$createinput->{objects}},[$ref.".gftbl","string",{
+		   description => "Tab delimited table of reactions gapfilled in metabolic model",
+		   fba => $ref,
+		   objective => $object->objectiveValue(),
+		   media => $object->media_ref(),
+		   model => $object->fbamodel_ref()
+		},undef]);
+	}
+	#Saving fba flux table
+	my $fbatbl = "ID\tName\tEquation\tFlux\tUpper bound\tLower bound\tMax\tMin\n";
+    my $objs = $object->FBABiomassVariables();
+    for (my $i=0; $i < @{$objs}; $i++) {
+    	$fbatbl .= $objs->[$i]->biomass()->id()."\t".$objs->[$i]->biomass()->name()."\t".
+    		$objs->[$i]->biomass()->definition()."\t".
+    		$objs->[$i]->value()."\t".$objs->[$i]->upperBound()."\t".
+    		$objs->[$i]->lowerBound()."\t".$objs->[$i]->max()."\t".
+    		$objs->[$i]->min()."\t".$objs->[$i]->class()."\n";
+    }
+    $objs = $object->FBAReactionVariables();
+    for (my $i=0; $i < @{$objs}; $i++) {
+    	$fbatbl .= $objs->[$i]->modelreaction()->id()."\t".$objs->[$i]->modelreaction()->name()."\t".
+    		$objs->[$i]->modelreaction()->definition()."\t".
+    		$objs->[$i]->value()."\t".$objs->[$i]->upperBound()."\t".
+    		$objs->[$i]->lowerBound()."\t".$objs->[$i]->max()."\t".
+    		$objs->[$i]->min()."\t".$objs->[$i]->class()."\n";
+    }
+    $objs = $object->FBACompoundVariables();
+    for (my $i=0; $i < @{$objs}; $i++) {
+    	$fbatbl .= $objs->[$i]->modelcompound()->id()."\t".$objs->[$i]->modelcompound()->name()."\t".
+    		"=> ".$objs->[$i]->modelcompound()->name()."[e]\t".
+    		$objs->[$i]->value()."\t".$objs->[$i]->upperBound()."\t".
+    		$objs->[$i]->lowerBound()."\t".$objs->[$i]->max()."\t".
+    		$objs->[$i]->min()."\t".$objs->[$i]->class()."\n";
+    } 
+    push(@{$createinput->{objects}},[$ref.".fluxtbl","string",{
+	   description => "Tab delimited table containing data on reaction fluxes from flux balance analysis",
+	   fba => $ref,
+	   objective => $object->objectiveValue(),
+	   media => $object->media_ref(),
+	   model => $object->fbamodel_ref()
+	},undef]);
+	$objectdata->{$ref.".fluxtbl"} = $fbatbl;
+    #Saving essential gene lists
+    if ($object->comboDeletions() == 1) {
+	    my $esslist = [];
+	    my $ftrlist = [];
+	    my $delresults = $object->FBADeletionResults();
+	    for (my $i=0; $i < @{$delresults}; $i++) {
+	    	if ($delresults->[$i]->growthFraction < 0.00001) {
+	    		my $ftrs =  $delresults->[$i]->features();
+	    		my $aliases = $ftrs->[0]->aliases();
+	    		my $ftrid;
+	    		for (my $j=0; $j < @{$aliases}; $j++) {
+	    		 	if ($aliases->[$j] =~ m/^PATRIC\./) {
+	    		 		$ftrid = $aliases->[$j];
+	    		 		last;
+	    		 	}
+	    		}
+	    		if (!defined($ftrid)) {
+	    			$ftrid = $ftrs->[0]->id();
+	    		}
+	    		push(@{$ftrlist},$ftrid);
+	    		push(@{$esslist},$ftrs->[0]->id());
+	    	}
+	    }
+	    push(@{$createinput->{objects}},[$ref.".essentials","string",{
+		   description => "List of predicted essential genes from flux balance analysis",
+		   fba => $ref,
+		   objective => $object->objectiveValue(),
+		   media => $object->media_ref(),
+		   model => $object->fbamodel_ref()
+		},undef]);
+		$objectdata->{$ref.".essentials"} = join("\n",@{$esslist});
+	    my $ftrgroup = {
+	    	id_list => {
+	    		feature_id => $ftrlist
+	    	},
+	    	name => $object->fbamodel()->wsmeta()->[0]."-".$object->media()->wsmeta()->[0]."-essentials"
+	    };
+	    push(@{$createinput->{objects}},["/".Bio::KBase::ObjectAPI::config::username()."/home/Feature Groups/".$object->fbamodel()->wsmeta()->[0]."-".$object->media()->wsmeta()->[0]."-essentials","string",{
+		   description => "Group of essential genes predicted by metabolic models",
+		   fba => $ref,
+		   objective => $object->objectiveValue(),
+		   media => $object->media_ref(),
+		   model => $object->fbamodel_ref()
+		},undef]);
+		$objectdata->{"/".Bio::KBase::ObjectAPI::config::username()."/home/Feature Groups/".$object->fbamodel()->wsmeta()->[0]."-".$object->media()->wsmeta()->[0]."-essentials"} = Bio::KBase::ObjectAPI::utilities::TOJSON($ftrgroup);
+    }
+	#Calling create functions
+	my $createoutput = $self->call_ws("create",$createinput);
+	for (my $i=0; $i < @{$createoutput}; $i++) {
+		push(@{$listout},$createoutput->[$i]);
+	}
+	#Uploading actual files to shock
+	$output = {};
+	for (my $i=0; $i < @{$listout}; $i++) {
+		Bio::KBase::ObjectAPI::logging::log("Save fba:".$i."\t".join("\t",@{$listout->[$i]}));
+		if (defined($listout->[$i]->[11]) && length($listout->[$i]->[11]) > 0 && defined($objectdata->{$listout->[$i]->[2].$listout->[$i]->[0]})) {
+			$self->upload_to_shock($objectdata->{$listout->[$i]->[2].$listout->[$i]->[0]},$listout->[$i]->[11]);
+		}
+		if ($listout->[$i]->[0] eq "fba") {
+			$output->{$listout->[$i]->[2].$listout->[$i]->[0]} = $listout->[$i];
+			$fbameta = $listout->[$i];
+			$fbameta->[0] = $refobject;
+			$fbameta->[2] = $refpath."/";				
+			$object->wsmeta($fbameta);
+			$object->_reference($ref."||");
+			$self->cache()->{$fbameta->[2].$fbameta->[0]} = [$fbameta,$object];
+			$self->cache()->{$fbameta->[4]} = [$fbameta,$object];
+			$self->cache()->{$ref} = [$fbameta,$object];
+		}
+	}
+	return $output;
 }
 
 sub call_ws {

@@ -18,7 +18,7 @@ our $defbio = undef;
 our $globalparams = {"gapfill name" => "none"};
 our $startime = undef;
 our $classifierdata = undef;
-our $full_trace = 0;
+our $full_trace = 1;
 
 =head1 Bio::KBase::ObjectAPI::utilities
 
@@ -197,7 +197,7 @@ sub ARGS {
 	    $args = {};
 	}
 	if (ref($args) ne "HASH") {
-		Bio::KBase::ObjectAPI::utilities::ERROR("Arguments not hash");	
+		Bio::KBase::ObjectAPI::utilities::error("Arguments not hash");	
 	}
 	if (defined($substitutions) && ref($substitutions) eq "HASH") {
 		foreach my $original (keys(%{$substitutions})) {
@@ -211,7 +211,7 @@ sub ARGS {
 			}
 		}
 	}
-	Bio::KBase::ObjectAPI::utilities::ERROR("Mandatory arguments ".join("; ",@{$args->{_error}})." missing. Usage:".Bio::KBase::ObjectAPI::utilities::USAGE($mandatoryArguments,$optionalArguments,$args)) if (defined($args->{_error}));
+	Bio::KBase::ObjectAPI::utilities::error("Mandatory arguments ".join("; ",@{$args->{_error}})." missing. Usage:".Bio::KBase::ObjectAPI::utilities::USAGE($mandatoryArguments,$optionalArguments,$args)) if (defined($args->{_error}));
 	if (defined($optionalArguments)) {
 		foreach my $argument (keys(%{$optionalArguments})) {
 			if (!defined($args->{$argument})) {
@@ -330,7 +330,7 @@ Description:
 
 sub PRINTFILE {
     my ($filename,$arrayRef) = @_;
-    open ( my $fh, ">", $filename) || Bio::KBase::ObjectAPI::utilities::ERROR("Failure to open file: $filename, $!");
+    open ( my $fh, ">", $filename) || Bio::KBase::ObjectAPI::utilities::error("Failure to open file: $filename, $!");
     foreach my $Item (@{$arrayRef}) {
     	print $fh $Item."\n";
     }
@@ -380,7 +380,7 @@ Description:
 sub LOADFILE {
     my ($filename) = @_;
     my $DataArrayRef = [];
-    open (my $fh, "<", $filename) || Bio::KBase::ObjectAPI::utilities::ERROR("Couldn't open $filename: $!");
+    open (my $fh, "<", $filename) || Bio::KBase::ObjectAPI::utilities::error("Couldn't open $filename: $!");
     while (my $Line = <$fh>) {
         $Line =~ s/\r//;
         chomp($Line);
@@ -518,7 +518,7 @@ sub PRINTHTMLTABLE {
     }
 
     if ($error) {
-        ERROR("Call to PRINTHTMLTABLE failed: incorrect arguments and/or argument structure");
+        error("Call to PRINTHTMLTABLE failed: incorrect arguments and/or argument structure");
     }
 
     # now create the table
@@ -1093,10 +1093,16 @@ sub kblogin {
 
 sub classifier_data {
 	if (!defined($classifierdata)) {
-		if (!-e Bio::KBase::ObjectAPI::config::classifier()) {
-			system("curl https://raw.githubusercontent.com/kbase/KBaseFBAModeling/dev/classifier/classifier.txt > ".Bio::KBase::ObjectAPI::config::classifier());
+		my $data;
+		if (Bio::KBase::ObjectAPI::config::classifier() =~ m/^WS:(.+)/) {
+			$data = Bio::KBase::ObjectAPI::functions::util_get_object($1);
+			$data = [split(/\n/,$data)];
+		} else {
+			if (!-e Bio::KBase::ObjectAPI::config::classifier()) {
+				system("curl https://raw.githubusercontent.com/kbase/KBaseFBAModeling/dev/classifier/classifier.txt > ".Bio::KBase::ObjectAPI::config::classifier());
+			}
+			$data = Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::ObjectAPI::config::classifier());
 		}
-		my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::ObjectAPI::config::classifier());
 		my $headings = [split(/\t/,$data->[0])];
 		my $popprob = [split(/\t/,$data->[1])];
 		for (my $i=1; $i < @{$headings}; $i++) {

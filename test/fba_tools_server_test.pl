@@ -14,7 +14,7 @@ if (!defined($ENV{'KB_AUTH_TOKEN'})) {
 }
 my $tester = LocalTester->new($ENV{'KB_AUTH_TOKEN'},$ENV{'KB_DEPLOYMENT_CONFIG'},undef);
 $tester->run_tests();
-$tester->delete_test_workspace();
+#$tester->delete_test_workspace();
 
 {
 	package LocalTester;
@@ -132,13 +132,22 @@ $tester->delete_test_workspace();
 	}
 	sub run_tests {
 		my($self) = @_;
-		$self->{ws_name} = "chenry:1455131653374";
+		
 		my $output = $self->test_harness("build_metabolic_model",{
 			genome_id => "Shewanella_amazonensis_SB2B",
 			genome_workspace => "chenry:1454960620516",
 			fbamodel_output_id => "draft_no_gapfill",
 			workspace => $self->{ws_name},
 			gapfill_model => 0,
+		},"initial draft model reconstruction",[],0,undef);
+		
+		$output = $self->test_harness("build_metabolic_model",{
+			genome_id => "Shewanella_amazonensis_SB2B",
+			genome_workspace => "chenry:1454960620516",
+			fbamodel_output_id => "core_model",
+			workspace => $self->{ws_name},
+			gapfill_model => 1,
+			template_id => "core"
 		},"initial draft model reconstruction",[],0,undef);
 		
 		$output = $self->test_harness("build_metabolic_model",{

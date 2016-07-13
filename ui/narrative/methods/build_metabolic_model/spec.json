@@ -1,70 +1,18 @@
 {
    "name" : "build_metabolic_model",
+   "ver" : "1.0.0",
    "authors" : [
       "chenry"
    ],
+   "contact" : "help@kbase.us",
+   "visible" : true,
    "categories" : [
       "active",
       "metabolic_modeling"
    ],
-   "behavior" : {
-      "service-mapping" : {
-         "output_mapping" : [
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "ws"
-            },
-            {
-               "constant_value" : "KBaseFBA.FBAModel",
-               "target_property" : "type"
-            },
-            {
-               "target_property" : "obj",
-               "input_parameter" : "fbamodel_output_id"
-            }
-         ],
-         "name" : "fba_tools",
-         "url" : "",
-         "method" : "build_metabolic_model",
-         "input_mapping" : [
-            {
-               "target_property" : "workspace",
-               "narrative_system_variable" : "workspace"
-            },
-            {
-               "input_parameter" : "genome_id",
-               "target_property" : "genome_id"
-            },
-            {
-               "target_property" : "media_id",
-               "input_parameter" : "media_id"
-            },
-            {
-               "target_property" : "fbamodel_output_id",
-               "input_parameter" : "fbamodel_output_id"
-            },
-            {
-               "target_property" : "template_id",
-               "input_parameter" : "template_id"
-            },
-            {
-               "input_parameter" : "gapfill_model",
-               "target_property" : "gapfill_model"
-            },
-            {
-               "target_property" : "custom_bound_list",
-               "input_parameter" : "custom_bound_list"
-            },
-            {
-               "target_property" : "media_supplement_list",
-               "input_parameter" : "media_supplement_list"
-            },
-            {
-               "target_property" : "minimum_target_flux",
-               "input_parameter" : "minimum_target_flux"
-            }
-         ]
-      }
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
    },
    "parameters" : [
       {
@@ -142,6 +90,12 @@
                   "ui_name" : "Plant",
                   "value" : "plant",
                   "id" : "plant"
+               },
+               {
+                  "display" : "Core metabolism",
+                  "ui_name" : "Core metabolism",
+                  "value" : "core",
+                  "id" : "core"
                }
             ]
          },
@@ -230,13 +184,65 @@
          "id" : "minimum_target_flux",
          "advanced" : true
       }
-   ],
-   "visible" : true,
-   "widgets" : {
-      "output" : "kbaseTabTable",
-      "input" : null
+   ], 
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "name" : "fba_tools",
+         "method" : "build_metabolic_model",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "input_parameter" : "genome_id",
+               "target_property" : "genome_id"
+            },
+            {
+               "target_property" : "media_id",
+               "input_parameter" : "media_id"
+            },
+            {
+               "target_property" : "fbamodel_output_id",
+               "input_parameter" : "fbamodel_output_id"
+            },
+            {
+               "target_property" : "template_id",
+               "input_parameter" : "template_id"
+            },
+            {
+               "input_parameter" : "gapfill_model",
+               "target_property" : "gapfill_model"
+            },
+            {
+               "target_property" : "custom_bound_list",
+               "input_parameter" : "custom_bound_list"
+            },
+            {
+               "target_property" : "media_supplement_list",
+               "input_parameter" : "media_supplement_list"
+            },
+            {
+               "target_property" : "minimum_target_flux",
+               "input_parameter" : "minimum_target_flux"
+            }
+         ],
+         "output_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
+            },
+            {
+               "target_property" : "obj",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ]
+      }
    },
-   "contact" : "help@kbase.us",
-   "job_id_output_field" : "docker",
-   "ver" : "1.0.0"
+   "job_id_output_field" : "docker"
 }
