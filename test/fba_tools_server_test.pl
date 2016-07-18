@@ -142,6 +142,14 @@ $tester->run_tests();
 		},"initial draft model reconstruction",[],0,undef);
 		
 		$output = $self->test_harness("build_metabolic_model",{
+			genome_id => "new_genome",
+			genome_workspace => "chenry:1454960620516",
+			fbamodel_output_id => "new_genome_model",
+			workspace => $self->{ws_name},
+			gapfill_model => 0,
+		},"initial draft model reconstruction",[],0,undef);
+		
+		$output = $self->test_harness("build_metabolic_model",{
 			genome_id => "Shewanella_amazonensis_SB2B",
 			genome_workspace => "chenry:1454960620516",
 			fbamodel_output_id => "core_model",

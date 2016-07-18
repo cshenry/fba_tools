@@ -133,6 +133,15 @@ sub get_objects {
 				my $type = $2;
 				$type =~ s/^New//;
 				my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
+				if ($type eq "GenomeAnnotation") {
+					my $output = Bio::KBase::ObjectAPI::utilities::runexecutable(Bio::KBase::ObjectAPI::config::all_params()->{"DataAPICommand"}.' "'.Bio::KBase::ObjectAPI::config::workspace_url().'" "'.Bio::KBase::ObjectAPI::config::shock_url().'" "'.Bio::KBase::ObjectAPI::config::all_params()->{"handle-service"}.'" "'.Bio::KBase::ObjectAPI::config::token().'" "'.$info->[6]."/".$info->[0]."/".$info->[4].'" "'.$info->[1].'"');
+					my $last = pop(@{$output});
+					if ($last !~ m/SUCCESS/) {
+						Bio::KBase::ObjectAPI::utilities->error("Genome failed to load!");
+					}
+					$objdatas->[$i]->{data} = Bio::KBase::ObjectAPI::utilities::FROMJSON(pop(@{$output}));
+					$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
+				}
 				if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison") {
 					$self->cache()->{$newrefs->[$i]} = $objdatas->[$i]->{data};
 					$self->cache()->{$newrefs->[$i]}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];

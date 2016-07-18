@@ -26,7 +26,7 @@
          "allow_multiple" : false,
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseGenomes.Genome"
+               "KBaseGenomes.Genome","KBaseGenomeAnnotations.GenomeAnnotation"
             ]
          }
       },
