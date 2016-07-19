@@ -139,7 +139,7 @@ sub util_build_fba {
 			}
 		}
 	}
-	if (defined($model->genome_ref()) && defined($params->{feature_ko_list})) {
+	if (defined($model->genome_ref()) && defined($params->{feature_ko_list})  && $params->{feature_ko_list} ne "") {
 		my $genome = $model->genome();
 		foreach my $gene (@{$params->{feature_ko_list}}) {
 			my $geneObj = $genome->searchForFeature($gene);
@@ -148,7 +148,7 @@ sub util_build_fba {
 			}
 		}
 	}
-	if (defined($params->{reaction_ko_list})) {
+	if (defined($params->{reaction_ko_list}) && $params->{reaction_ko_list} ne "") {
 		foreach my $reaction (@{$params->{reaction_ko_list}}) {
 			my $rxnObj = $model->searchForReaction($reaction);
 			if (defined($rxnObj)) {
@@ -156,7 +156,7 @@ sub util_build_fba {
 			}
 		}
 	}
-	if (defined($params->{media_supplement_list})) {
+	if (defined($params->{media_supplement_list}) && $params->{media_supplement_list} ne "") {
 		foreach my $compound (@{$params->{media_supplement_list}}) {
 			my $cpdObj = $model->searchForCompound($compound);
 			if (defined($cpdObj)) {
@@ -164,7 +164,7 @@ sub util_build_fba {
 			}
 		}
 	}
-	if (!defined($params->{custom_bound_list})) {
+	if (!defined($params->{custom_bound_list}) || $params->{custom_bound_list} eq "") {
 		$params->{custom_bound_list} = [];
 	}
 	for (my $i=0; $i < @{$params->{custom_bound_list}}; $i++) {
