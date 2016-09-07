@@ -120,7 +120,7 @@ parameters :
         long-hint : |
             User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
     
-    gapfill_phenosim :
+    gapfill_phenotypes :
         ui-name : |
             Gapfill if zero growth?
         short-hint : |
