@@ -1410,115 +1410,18 @@ sub func_edit_metabolic_model {
 	#Getting genome
 	$handler->util_log("Loading model from workspace");
 	my $model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
-	my $added = [];
-	my $removed = [];
-	my $changed = [];
-	#Removing reactions specified for removal
-	$handler->util_log("Removing specified reactions");
-	if (defined($params->{data}->{reactions_to_remove})) {
-		for (my $i=0; $i < @{$params->{data}->{reactions_to_remove}}; $i++) {
-	    	my $rxn = $model->getObject("modelreactions",$params->{data}->{reactions_to_remove}->[$i]);
-	    	if (defined($rxn)) {
-	    		push(@{$removed},$params->{data}->{reactions_to_remove}->[$i]);
-	    		$model->remove("modelreactions",$rxn);
-	    	}
-	    }
-	}
-	#Adding reactions specified for addition
-	$handler->util_log("Adding specified reactions");
-	#($params->{reactions},my $compoundhash) = $self->util_process_reactions_list($params->{reactions},$params->{compounds});
-	if (defined($params->{data}->{reactions_to_add})) {
-		for (my $i=0; $i < @{$params->{data}->{reactions_to_add}}; $i++) {
-	    	my $rxn = $params->{data}->{reactions_to_add}->[$i];
-	    	push(@{$added},$rxn->[0]);
-		    $rxn->[0] =~ s/[^\w]/_/g;
-	    	if (defined($rxn->[8])) {
-	    		if ($rxn->[8] =~ m/^\[([A-Za-z])\]\s*:\s*(.+)/) {
-	    			$rxn->[2] = lc($1);
-	    			$rxn->[8] = $2;
-	    		}
-	    		my $eqn = "| ".$rxn->[8]." |";
-	    		my $species_array = [split(/[\s\+<>=]+/,$rxn->[8])];
-	    		my $translation = {};
-	    		for (my $j=0; $j < @{$species_array}; $j++) {
-	    			$species_array->[$j] =~ s/\[.+\]$//g;
-	    			$species_array->[$j] =~ s/^\(\d+\)\s*//g;
-	    			my $id = $species_array->[$j];
-			    	if ($id =~ m/[^\w]/) {
-			    		$species_array->[$j] =~ s/[^\w]/_/g;
-			    	}
-			    	if ($id =~ m/-/) {
-			    		$species_array->[$j] =~ s/-/_/g;
-			    	}
-			    	$translation->{$id} = $species_array->[$j];
-	    		}
-	    		foreach my $cpd (keys(%{$translation})) {
-	    			if (index($eqn,$cpd) >= 0 && $cpd ne $translation->{$cpd}) {
-	    				my $origcpd = $cpd;
-	    				$cpd =~ s/\+/\\+/g;
-	    				$cpd =~ s/\(/\\(/g;
-	    				$cpd =~ s/\)/\\)/g;
-	    				my $array = [split(/\s$cpd\s/,$eqn)];
-	    				$eqn = join(" ".$translation->{$origcpd}." ",@{$array});
-	    				$array = [split(/\s$cpd\[/,$eqn)];
-	    				$eqn = join(" ".$translation->{$origcpd}."[",@{$array});
-	    			}
-	    		}
-	    		$eqn =~ s/^\|\s//;
-	    		$eqn =~ s/\s\|$//;
-	    		while ($eqn =~ m/\[([A-Z])\]/) {
-	    			my $reqplace = "[".lc($1)."]";
-	    			$eqn =~ s/\[[A-Z]\]/$reqplace/;
-	    		}
-	    		if ($eqn =~ m/<[-=]+>/) {
-	    			if (!defined($rxn->[1])) {
-	    				$rxn->[1] = "=";
-	    			}
-	    		} elsif ($eqn =~ m/[-=]+>/) {
-	    			if (!defined($rxn->[1])) {
-	    				$rxn->[1] = ">";
-	    			}
-	    		} elsif ($eqn =~ m/<[-=]+/) {
-	    			if (!defined($rxn->[1])) {
-	    				$rxn->[1] = "<";
-	    			}
-	    		}
-	    		$rxn->[8] = $eqn;
-	    	}
-	    	$model->addModelReaction({
-			    reaction => $rxn->[0],
-			    direction => $rxn->[2],
-			    compartment => $rxn->[1],
-			    gpr => $rxn->[3],
-			    compounds => {},
-			    equation => $rxn->[8],
-			    pathway => $rxn->[4],
-			    name => $rxn->[5],
-			    reference => $rxn->[6],
-			    enzyme => $rxn->[7]
-			});
-	    }
-	}
-	#Modifying reactions specified for modification
-	$handler->util_log("Modifying specified reactions");
-	if (defined($params->{data}->{reactions_to_modify})) {
-		for (my $i=0; $i < @{$params->{data}->{reactions_to_modify}}; $i++) {
-			push(@{$changed},$params->{data}->{reactions_to_modify}->[$i]->[0]);
-	    	$model->adjustModelReaction({
-			    reaction => $params->{data}->{reactions_to_modify}->[$i]->[0],
-			    direction => $params->{data}->{reactions_to_modify}->[$i]->[1],
-			    gpr => $params->{data}->{reactions_to_modify}->[$i]->[2],
-			    pathway => $params->{data}->{reactions_to_modify}->[$i]->[3],
-			    name => $params->{data}->{reactions_to_modify}->[$i]->[4],
-			    reference => $params->{data}->{reactions_to_modify}->[$i]->[5],
-			    enzyme => $params->{data}->{reactions_to_modify}->[$i]->[6]
-			});
-	    }
-	}
+	(my $editresults,my $detaileditresults) = $model->edit_metabolic_model($params->{data});
 	#Creating message to report all modifications made
 	$handler->util_log("Saving edited model to workspace");
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
-	my $message = "Name of edited model: ".$params->{fbamodel_output_id}."\nStarting from: ".$params->{fbamodel_id}."\n\nAdded:\n".join("\n",@{$added})."\n\nRemoved:\n".join("\n",@{$removed})."\n\nChanged:\n".join("\n",@{$changed})."\n";
+	my $message = "Name of edited model: ".$params->{fbamodel_output_id}."\n";
+	$message .= "Starting from: ".$params->{fbamodel_id}."\n";
+	$message .= "Added:".join("\n",@{$editresults->{reactions_added}})."\n";
+	$message .= "Removed:".join("\n",@{$editresults->{reactions_removed}})."\n";
+	$message .= "Changed:".join("\n",@{$editresults->{reactions_modified}})."\n";
+	$message .= "Added biomass:".join("\n",@{$editresults->{biomass_added}})."\n";
+	$message .= "Removed biomass:".join("\n",@{$editresults->{biomass_removed}})."\n";
+	$message .= "Changed biomass:".join("\n",@{$editresults->{biomass_changed}})."\n";
 	$handler->util_log($message);
 	my $reportObj = {
 		'objects_created' => [],
@@ -1532,8 +1435,9 @@ sub func_edit_metabolic_model {
    	return {
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},
 		report_name => $params->{fbamodel_output_id}.".edit_metabolic_model.report",
-		ws_report_id => $params->{workspace}.'/'.$params->{fbamodel_output_id}.".edit_metabolic_model.report"
-	};
+		ws_report_id => $params->{workspace}.'/'.$params->{fbamodel_output_id}.".edit_metabolic_model.report",
+		detailed_edit_results => $detaileditresults
+   	};
 }
 
 sub func_quantitative_optimization {

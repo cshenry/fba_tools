@@ -279,8 +279,8 @@
                "target_property" : "target_reaction"
             },
             {
-               "input_parameter" : "gapfill_phenosim",
-               "target_property" : "gapfill_phenosim"
+               "input_parameter" : "gapfill_phenotypes",
+               "target_property" : "gapfill_phenotypes"
             },
             {
                "input_parameter" : "fit_phenotype_data",
