@@ -26,9 +26,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "fbamodel_workspace",
     "fbamodel_id",
     "fbamodel_output_id",
-    "data",
-    "protcomp_ref",
-    "pangenome_ref"
+    "data"
 })
 public class EditMetabolicModelParams {
 
@@ -42,10 +40,6 @@ public class EditMetabolicModelParams {
     private java.lang.String fbamodelOutputId;
     @JsonProperty("data")
     private Map<String, List<List<String>>> data;
-    @JsonProperty("protcomp_ref")
-    private java.lang.String protcompRef;
-    @JsonProperty("pangenome_ref")
-    private java.lang.String pangenomeRef;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("workspace")
@@ -123,36 +117,6 @@ public class EditMetabolicModelParams {
         return this;
     }
 
-    @JsonProperty("protcomp_ref")
-    public java.lang.String getProtcompRef() {
-        return protcompRef;
-    }
-
-    @JsonProperty("protcomp_ref")
-    public void setProtcompRef(java.lang.String protcompRef) {
-        this.protcompRef = protcompRef;
-    }
-
-    public EditMetabolicModelParams withProtcompRef(java.lang.String protcompRef) {
-        this.protcompRef = protcompRef;
-        return this;
-    }
-
-    @JsonProperty("pangenome_ref")
-    public java.lang.String getPangenomeRef() {
-        return pangenomeRef;
-    }
-
-    @JsonProperty("pangenome_ref")
-    public void setPangenomeRef(java.lang.String pangenomeRef) {
-        this.pangenomeRef = pangenomeRef;
-    }
-
-    public EditMetabolicModelParams withPangenomeRef(java.lang.String pangenomeRef) {
-        this.pangenomeRef = pangenomeRef;
-        return this;
-    }
-
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -165,7 +129,7 @@ public class EditMetabolicModelParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((("EditMetabolicModelParams"+" [workspace=")+ workspace)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", fbamodelId=")+ fbamodelId)+", fbamodelOutputId=")+ fbamodelOutputId)+", data=")+ data)+", protcompRef=")+ protcompRef)+", pangenomeRef=")+ pangenomeRef)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("EditMetabolicModelParams"+" [workspace=")+ workspace)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", fbamodelId=")+ fbamodelId)+", fbamodelOutputId=")+ fbamodelOutputId)+", data=")+ data)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

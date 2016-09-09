@@ -21,7 +21,16 @@
      }
    } ],
    "behavior" : {
-     "none" : {
+     "service-mapping": {
+            "url": "",
+            "name": "fba_tools",
+            "method": "compare_models",
+       "input_mapping": [
+       {
+			"narrative_system_variable": "workspace",
+			"target_property": "workspace"
+		}
+       ],
        "output_mapping" : [
          {
            "constant_value": "KBaseFBA.FBAModel",
@@ -37,5 +46,6 @@
          }
        ]
      }
-   }
+   },
+   "job_id_output_field": "docker"
  }

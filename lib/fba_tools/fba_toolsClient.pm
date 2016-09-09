@@ -1451,12 +1451,8 @@ EditMetabolicModelParams is a reference to a hash where the following keys are d
 	fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 	fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
 	data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
-	protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
-	pangenome_ref has a value which is a fba_tools.ws_pangenome_id
 workspace_name is a string
 ws_fbamodel_id is a string
-ws_proteomecomparison_id is a string
-ws_pangenome_id is a string
 EditMetabolicModelResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a fba_tools.ws_report_id
@@ -1477,12 +1473,8 @@ EditMetabolicModelParams is a reference to a hash where the following keys are d
 	fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 	fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
 	data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
-	protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
-	pangenome_ref has a value which is a fba_tools.ws_pangenome_id
 workspace_name is a string
 ws_fbamodel_id is a string
-ws_proteomecomparison_id is a string
-ws_pangenome_id is a string
 EditMetabolicModelResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a fba_tools.ws_report_id
@@ -3277,8 +3269,6 @@ fbamodel_workspace has a value which is a fba_tools.workspace_name
 fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
 data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
-protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
-pangenome_ref has a value which is a fba_tools.ws_pangenome_id
 
 </pre>
 
@@ -3292,8 +3282,6 @@ fbamodel_workspace has a value which is a fba_tools.workspace_name
 fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
 data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
-protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
-pangenome_ref has a value which is a fba_tools.ws_pangenome_id
 
 
 =end text
