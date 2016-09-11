@@ -101,7 +101,9 @@ sub util_build_fba {
 		reactionKO_refs => [],
 		additionalCpd_refs => [],
 		uptakeLimits => $uptakelimits,
-		parameters => {},
+		parameters => {
+			minimum_target_flux => defined $params->{minimum_target_flux} ? $params->{minimum_target_flux} : 0.01,
+		},
 		inputfiles => {},
 		FBAConstraints => [],
 		FBAReactionBounds => [],
@@ -116,10 +118,10 @@ sub util_build_fba {
 		FBAMetaboliteProductionResults => [],
 		ExpressionAlpha => defined $params->{activation_coefficient} ? $params->{activation_coefficient} : 0.5,
 		ExpressionOmega => defined $params->{omega} ? $params->{omega} : 0,
-		ExpressionKappa => defined $params->{exp_threshold_margin} ? $params->{exp_threshold_margin} : 0.1
-	});
+		ExpressionKappa => defined $params->{exp_threshold_margin} ? $params->{exp_threshold_margin} : 0.1,
+		calculateReactionKnockoutSensitivity => defined($params->{sensitivity_analysis}) ? $params->{sensitivity_analysis} : 0
+    });
 	$fbaobj->parent($handler->util_store());
-	$fbaobj->parameters()->{minimum_target_flux} = defined $params->{minimum_target_flux} ? $params->{minimum_target_flux} : 0.01;
 	if (!defined($params->{target_reaction})) {
 		$params->{target_reaction} = "bio1";
 	}
@@ -497,16 +499,12 @@ sub func_run_flux_balance_analysis {
 		max_o_uptake => undef,
 		default_max_uptake => 0,
 		notes => undef,
-		massbalance => undef
+		massbalance => undef,
+		sensitivity_analysis => 0
     });
     if (!defined($model)) {
     	$handler->util_log("Retrieving model.");
 		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
-    }
-    my $expseries;
-    if (defined($params->{expseries_id})) {
-    	$handler->util_log("Retrieving expression matrix.");
-    	$expseries = $handler->util_get_object($params->{expseries_workspace}."/".$params->{expseries_id});
     }
     if (!defined($params->{media_id})) {
     	if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
@@ -1325,7 +1323,7 @@ sub func_compare_flux_with_expression {
 
 sub func_check_model_mass_balance {
 	my ($params) = @_;
-	$params = Bio::KBase::ObjectAPI::utilities::util_validate_args($params,["workspace","fbamodel_id"],{
+	$params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id"],{
 		fbamodel_workspace => $params->{workspace},
     });
     $handler->util_log("Retrieving model.");
@@ -1352,7 +1350,7 @@ sub func_check_model_mass_balance {
 
 sub func_create_or_edit_media {
 	my ($params) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::util_validate_args($params,["workspace","media_id","data"],{
+    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","media_id","data"],{
     	media_workspace => $params->{workspace},
     	media_output_id => $params->{media_id}
     });
@@ -1403,7 +1401,7 @@ sub func_create_or_edit_media {
 
 sub func_edit_metabolic_model {
 	my ($params) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::util_validate_args($params,["workspace","fbamodel_id","data"],{
+    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id","data"],{
     	fbamodel_workspace => $params->{workspace},
     	fbamodel_output_id => $params->{fbamodel_id}
     });
@@ -1415,13 +1413,23 @@ sub func_edit_metabolic_model {
 	$handler->util_log("Saving edited model to workspace");
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	my $message = "Name of edited model: ".$params->{fbamodel_output_id}."\n";
-	$message .= "Starting from: ".$params->{fbamodel_id}."\n";
+	$message .= "Starting from: ".$params->{fbamodel_id}."\n";	
 	$message .= "Added:".join("\n",@{$editresults->{reactions_added}})."\n";
 	$message .= "Removed:".join("\n",@{$editresults->{reactions_removed}})."\n";
 	$message .= "Changed:".join("\n",@{$editresults->{reactions_modified}})."\n";
-	$message .= "Added biomass:".join("\n",@{$editresults->{biomass_added}})."\n";
-	$message .= "Removed biomass:".join("\n",@{$editresults->{biomass_removed}})."\n";
-	$message .= "Changed biomass:".join("\n",@{$editresults->{biomass_changed}})."\n";
+	$message .= "Added biomass:";
+	for (my $i=0; $i < @{$editresults->{biomass_added}}; $i++) {
+		$message .= $editresults->{biomass_added}->[$i]->[0].":".$editresults->{biomass_added}->[$i]->[1].";";
+	}
+	$message .= "\nRemoved biomass:";
+	for (my $i=0; $i < @{$editresults->{biomass_removed}}; $i++) {
+		$message .= $editresults->{biomass_removed}->[$i]->[0].":".$editresults->{biomass_removed}->[$i]->[1].";";
+	}
+	$message .= "\nChanged biomass:";
+	for (my $i=0; $i < @{$editresults->{biomass_changed}}; $i++) {
+		$message .= $editresults->{biomass_changed}->[$i]->[0].":".$editresults->{biomass_changed}->[$i]->[1].";";
+	}
+	$message .= "\n";
 	$handler->util_log($message);
 	my $reportObj = {
 		'objects_created' => [],
@@ -1442,7 +1450,7 @@ sub func_edit_metabolic_model {
 
 sub func_quantitative_optimization {
 	my ($params,$model) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::util_validate_args($params,["fbamodel_id","constraints","workspace"],{
+    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["fbamodel_id","constraints","workspace"],{
     	fbamodel_workspace => $params->{workspace},
     	fbamodel_output_id => $params->{fbamodel_id},
     	MaxBoundMult => 2,
@@ -1504,7 +1512,7 @@ sub func_quantitative_optimization {
 
 sub func_compare_models {
 	my ($params,$model) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::util_validate_args($params,["workspace","model_refs","protcomp_ref","pangenome_ref"],{
+    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","model_refs","protcomp_ref","pangenome_ref"],{
     	mc_name => "ModelComparison"
     });
 	if (@{$params->{model_refs}} < 2) {
@@ -2007,6 +2015,618 @@ sub func_compare_models {
     	'report_ref' => $metadata->[6]."/".$metadata->[0]."/".$metadata->[4], 
     	'mc_ref' => $workspace_name."/".$mc_name
     };
+}
+
+sub func_importmodel {
+	my ($params) = @_;
+    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["biomass","model_name","workspace_name"],{
+    	sbml => undef,
+    	model_file => undef,
+    	genome => undef,
+    	genome_workspace => $params->{workspace_name},
+    	compounds_file => undef,
+    	source => "External",
+    	type => "SingleOrganism",
+    	template => undef,
+    	template_workspace => $params->{workspace_name},
+    	compounds => [],
+    	reactions => []
+    });
+    #RETRIEVING THE GENOME FOR THE MODEL
+    if (!defined($params->{genome})) {
+    	$params->{genome} = "Empty";
+    	$params->{genome_workspace} = "PlantSEED";
+    }
+    my $genomeobj = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome},{});
+    #RETRIEVING THE TEMPLATE FOR THE MODEL
+    if ($params->{template_id} eq "auto") {
+		$params->{template_workspace} = "NewKBaseModelTemplates";
+    	$handler->util_log("Classifying genome in order to select template.");
+    	if ($genomeobj->template_classification() eq "plant") {
+    		$params->{template_id} = "PlantModelTemplate";
+    	} elsif ($genomeobj->template_classification() eq "Gram negative") {
+    		$params->{template_id} = "GramNegModelTemplate";
+    	} elsif ($genomeobj->template_classification() eq "Gram positive") {
+    		$params->{template_id} = "GramPosModelTemplate";
+    	}
+	} elsif ($params->{template_id} eq "grampos") {
+		$params->{template_workspace} = "NewKBaseModelTemplates";
+		$params->{template_id} = "GramPosModelTemplate";
+	} elsif ($params->{template_id} eq "gramneg") {
+		$params->{template_workspace} = "NewKBaseModelTemplates";
+		$params->{template_id} = "GramNegModelTemplate";
+	} elsif ($params->{template_id} eq "plant") {
+		$params->{template_workspace} = "NewKBaseModelTemplates";
+		$params->{template_id} = "PlantModelTemplate";
+	} elsif ($params->{template_id} eq "core") {
+		$params->{template_workspace} = "NewKBaseModelTemplates";
+		$params->{template_id} = "CoreModelTemplate";
+	}
+	my $templateobj = $handler->util_get_object($params->{template_workspace}."/".$params->{template_id},{});
+    #HANDLING SBML FILENAMES IF PROVIDED
+    if (defined($params->{model_file})) {
+    	$params->{model_file} = $handler->util_get_file_path($params->{model_file});
+    	if (!-e $params->{model_file}) {
+	    	Bio::KBase::ObjectAPI::utilities::error("SBML file ".$params->{model_file}." doesn't exist!");
+	    }
+	    $params->{sbml} = "";
+	    open(my $fh, "<", $params->{model_file}) || return;
+		while (my $line = <$fh>) {
+			$params->{sbml} .= $line;
+		}
+		close($fh);
+    }
+    #HANDLING COMPOUND FILENAMES IF PROVIDED
+    if (defined($params->{compounds_file})) {
+   		$params->{compounds_file} = $handler->util_get_file_path($params->{compounds_file});
+    	if (!-e $params->{compounds_file}) {
+	    	Bio::KBase::ObjectAPI::utilities::error("Compound file ".$params->{compounds_file}." doesn't exist!");
+	    }
+	    $params->{compound_data} = Bio::KBase::ObjectAPI::utilities::parse_input_table($params->{compounds_file},[
+			["id",1],
+			["charge",0,undef],
+			["formula",0,undef],
+			["name",1],
+			["aliases",0,undef]
+		]);
+    }
+    #PARSING SBML IF PROVIDED
+    if (defined($params->{sbml})) {
+    	$params->{compounds} = [];
+		$params->{reactions} = [];
+	    require "XML/DOM.pm";
+		my $parser = new XML::DOM::Parser;
+		my $doc = $parser->parse($params->{sbml});
+		#Parsing compartments
+	    my $cmpts = [$doc->getElementsByTagName("compartment")];
+	    my $cmptrans;
+	    my $compdata = {};
+	    my $custom_comp_index = 0;
+	    my $custom_comp_letters = [qw(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)];
+	    my $nonexactcmptrans = {
+	    	xtra => "e",
+	    	wall => "w",
+	    	peri => "p",
+	    	cyto => "c",
+	    	retic => "r",
+	    	lys => "l",
+	    	nucl => "n",
+	    	chlor => "d",
+	    	mito => "m",
+	    	perox => "x",
+	    	vacu => "v",
+	    	plast => "d",
+			golg => "g"
+	    };
+	    foreach my $cmpt (@$cmpts){
+	    	my $cmp_SEED_id;
+	    	my $cmpid;
+	    	my $cmproot;
+	    	my $cmpind = 0;
+	    	my $cmpname;
+	    	foreach my $attr ($cmpt->getAttributes()->getValues()) {
+	    		my $name = $attr->getName();
+	    		my $value = $attr->getValue();
+	    		if ($name eq "id") {
+	    			$cmpid = $value;
+	    		} elsif ($name eq "name") {
+	    			$cmpname = $value;
+	    		}
+	    	}
+	    	if (!defined($cmpname)) {
+	    		$cmpname = $cmpid;
+	    	}
+	    	$cmproot = $cmpid;
+	    	if ($cmpid =~ m/^([a-zA-Z]+)(\d+)$/) {
+	    		$cmproot = $1;
+	    		$cmpind = $2;
+	    	}
+	    	my $cmp = $templateobj->searchForCompartment($cmproot);
+	    	if (defined($cmp)) {
+	    		$cmp_SEED_id = $cmp->id();
+	    	} else {
+	    		foreach my $term (keys(%{$nonexactcmptrans})) {
+	    			if ($cmproot =~ m/$term/i) {
+	    				$cmp_SEED_id = $nonexactcmptrans->{$term};
+	    			} elsif ($cmpname =~ m/$term/i) {
+	    				$cmp_SEED_id = $nonexactcmptrans->{$term};
+	    			}
+	    		} 
+	    	}
+	    	if (!defined($cmp_SEED_id)) {
+				$cmp_SEED_id = $custom_comp_letters->[$custom_comp_index];
+				$custom_comp_index++;
+	    	}
+	    	$compdata->{$cmpid} = {
+	    		id => $cmpid,
+	    		root => $cmproot,
+	    		ind => $cmpind,
+	    		seed => $cmp_SEED_id,
+	    		name => $cmpname
+	    	};
+	    }
+		#Parsing compounds
+	    my $cpds = [$doc->getElementsByTagName("species")];
+	    my $cpdhash = {};
+	    my $cpdidhash = {};
+	    foreach my $cpd (@$cpds){
+	    	my $formula = "Unknown";
+	    	my $charge = "0";
+	    	my $sbmlid;
+	    	my $compartment = "c";
+	    	my $name;
+	    	my $id;
+	    	my $aliases;
+	    	my $boundary = 0;
+	    	foreach my $attr ($cpd->getAttributes()->getValues()) {
+	    		my $nm = $attr->getName();
+	    		my $value = $attr->getValue();
+	    		if ($nm eq "id") {
+	    			$sbmlid = $value;
+	    			$id = $value;
+	    			if ($id =~ m/^M_(.+)/) {
+	    				$id = $1;
+	    			}
+	    		} elsif ($nm eq "name") {
+	    			$name = $value;
+	    			if ($name =~ m/^M_(.+)/) {
+	    				$name = $1;
+	    			}
+	    			if ($name =~ m/(.+)_((?:[A-Z][a-z]?\d*)+)$/) {
+	    				$name = $1;
+	    				$formula = $2;
+	    			}
+	    		} elsif ($nm eq "compartment") {
+	    			$compartment = $value;
+	    			if (defined($cmptrans->{$compartment})) {
+	    				$compartment = $cmptrans->{$compartment};
+	    			}
+	    		} elsif ($nm eq "charge") {
+	    			$charge = $value;
+	    		} elsif ($nm eq "formula") {
+	    			$formula = $value;
+	    		} elsif ($nm eq "boundaryCondition" && $value =~ m/true/i) {
+	    			$boundary = 1;
+	    		}
+	    	}
+	    	foreach my $cmpid (keys(%{$compdata})) {
+    			my $size = length($cmpid)+1;
+    			if (length($id) > $size && "_".$cmpid eq substr($id,length($id)-$size,$size)) {
+    				$id = substr($id,0,length($id)-$size);
+    				if (length($name) > $size && "_".$cmpid eq substr($name,length($name)-$size,$size)) {
+    					$name = substr($name,0,length($name)-$size);
+    				}
+    				last;
+    			}
+    		}
+	        foreach my $node ($cpd->getElementsByTagName("*",0)) {
+			    foreach my $html ($node->getElementsByTagName("*",0)){
+					my $nodes = $html->getChildNodes();
+					foreach my $node (@{$nodes}) {
+					    my $text = $node->toString();
+					    if ($text =~ m/FORMULA:\s*([^<]+)/) {
+							if (length($1) > 0) {
+							    $formula = $1;
+							}
+					    } elsif ($text =~ m/CHARGE:\s*([^<]+)/) {
+							if (length($1) > 0) {
+							    $charge = $1;
+							}
+						} elsif ($text =~ m/BIOCYC:\s*([^<]+)/) {
+							if (length($1) > 0) {
+							    if (length($aliases) > 0) {
+							    	$aliases .= "|";
+							    }
+							    $aliases .= "BIOCYC:".$1;
+							}
+						} elsif ($text =~ m/INCHI:\s*([^<]+)/) {
+							if (length($1) > 0) {
+							    if (length($aliases) > 0) {
+							    	$aliases .= "|";
+							    }
+							    $aliases .= "INCHI:".$1;
+							}
+						} elsif ($text =~ m/CHEBI:\s*([^<]+)/) {
+							if (length($1) > 0) {
+							    if (length($aliases) > 0) {
+							    	$aliases .= "|";
+							    }
+							    $aliases .= "CHEBI:".$1;
+							}
+						} elsif ($text =~ m/CHEMSPIDER:\s*([^<]+)/) {
+							if (length($1) > 0) {
+							    if (length($aliases) > 0) {
+							    	$aliases .= "|";
+							    }
+							    $aliases .= "CHEMSPIDER:".$1;
+							}
+						} elsif ($text =~ m/PUBCHEM:\s*([^<]+)/) {
+							if (length($1) > 0) {
+							    if (length($aliases) > 0) {
+							    	$aliases .= "|";
+							    }
+							    $aliases .= "PUBCHEM:".$1;
+							}
+						} elsif ($text =~ m/KEGG:\s*([^<]+)/) {
+							if (length($1) > 0) {
+							    if (length($aliases) > 0) {
+							    	$aliases .= "|";
+							    }
+							    $aliases .= "KEGG:".$1;
+							}
+					    }
+					}
+			    }
+			}	
+	    	if (!defined($name)) {
+	    		$name = $id;
+	    	}
+	    	if (!defined($cpdidhash->{$id})) {
+	    		$cpdidhash->{$id} = [$id,$charge,$formula,$name,$aliases];
+	    		push(@{$params->{compounds}},$cpdidhash->{$id});
+	    	}
+	    	$cpdhash->{$sbmlid} = {
+	    		id => $sbmlid,
+	    		rootid => $id,
+	    		name => $name,
+	    		formula => $formula,
+	    		charge => $charge,
+	    		aliases => $aliases
+	    	};
+	    }
+	    #Parsing reactions
+	    my $rxns = [$doc->getElementsByTagName("reaction")];
+	    my $rxnhash = {};
+	    foreach my $rxn (@$rxns){
+	    	my $id = undef;
+	    	my $sbmlid = undef;
+	    	my $name = undef;
+	    	my $direction = "=";
+	    	my $reactants;
+	    	my $products;
+	    	my $compartment = "c";
+	    	my $gpr;
+	    	my $pathway;
+	    	my $enzyme;
+	    	my $aliases;
+	    	my $protein = "Unknown";
+	    	foreach my $attr ($rxn->getAttributes()->getValues()) {
+	    		my $nm = $attr->getName();
+	    		my $value = $attr->getValue();
+	    		if ($nm eq "id") {
+	    			$sbmlid = $value;
+	    			if ($value =~ m/^R_(.+)/) {
+	    				$value = $1;
+	    			}
+	    			$id = $value;
+	    		} elsif ($nm eq "name") {
+	    			if ($value =~ m/^R_(.+)/) {
+	    				$value = $1;
+	    			}
+	    			$value =~ s/_/-/g;
+	    			$name = $value;
+	    		} elsif ($nm eq "reversible") {
+	    			if ($value ne "true") {
+	    				$direction = ">";
+	    			}
+	    		} else {
+	    			#print $nm.":".$value."\n";
+	    		}
+	    	}
+			my %cpd_compartments;
+	    	foreach my $node ($rxn->getElementsByTagName("*",0)){
+	    		if ($node->getNodeName() eq "listOfReactants" || $node->getNodeName() eq "listOfProducts") {
+	    			foreach my $species ($node->getElementsByTagName("speciesReference",0)){
+	    				my $spec;
+	    				my $stoich = 1;
+	    				my $boundary = 0;
+	    				foreach my $attr ($species->getAttributes()->getValues()) {
+	    					if ($attr->getName() eq "species") {
+	    						$spec = $attr->getValue();
+	    						if (defined($cpdhash->{$spec})) {
+	    							$boundary = $cpdhash->{$spec}->[2];
+								my $cpt = $cpdhash->{$spec}->[1];
+	    							$spec = $cpdhash->{$spec}->[0]."[".$cpt."]";
+								$cpd_compartments{$cpt} = 1;
+	    						}
+	    					} elsif ($attr->getName() eq "stoichiometry") {
+	    						$stoich = $attr->getValue();
+	    					}
+	    				}
+	    				if ($boundary == 0) {
+		    				if ($node->getNodeName() eq "listOfReactants") {
+		    					if (length($reactants) > 0) {
+		    						$reactants .= " + ";
+		    					}
+		    					$reactants .= "(".$stoich.") ".$spec;
+		    				} else {
+		    					if (length($products) > 0) {
+		    						$products .= " + ";
+		    					}
+		    					$products .= "(".$stoich.") ".$spec;
+		    				}
+	    				}
+	    			}	
+	    		} elsif ($node->getNodeName() eq "notes") {
+	    			foreach my $html ($node->getElementsByTagName("*",0)){
+	    				my $nodes = $html->getChildNodes();
+	    				foreach my $node (@{$nodes}) {
+		    				my $text = $node->toString();
+							if ($text =~ m/GENE_ASSOCIATION:\s*([^<]+)/) {
+								if (length($1) > 0) {
+									$gpr = $1;
+								}
+							} elsif ($text =~ m/PROTEIN_ASSOCIATION:\s*([^<]+)/) {
+								if (length($1) > 0) {
+									$protein = $1;
+								}
+							} elsif ($text =~ m/PROTEIN_CLASS:\s*([^<]+)/ || $text =~ m/EC\sNumber:\s*([^<]+)/) {
+								if (length($1) > 0) {
+									my $array = [split(/\s/,$1)];
+									$enzyme = $array->[0];
+								}
+							} elsif ($text =~ m/SUBSYSTEM:\s*([^<]+)/) {
+								if (length($1) > 0) {
+									$pathway = $1;
+									$pathway =~ s/^S_//;
+								}
+							} elsif ($text =~ m/BIOCYC:\s*([^<]+)/) {
+								if (length($1) > 0) {
+									if (length($aliases) > 0) {
+								    	$aliases .= "|";
+								    }
+								    $aliases .= "BIOCYC".$1;
+								}
+							}
+	    				}
+	    			}
+	    		}
+	    	}
+	    	if (!defined($name)) {
+	    		$name = $id;
+	    	}
+	    	$rxnhash->{$sbmlid} = {
+	    		id => $sbmlid,
+	    		rootid => $id,
+	    		direction => $direction,
+	    		compartment => $compartment,
+	    		gpr => $gpr,
+	    		name => $name,
+	    		enzyme => $enzyme,
+	    		pathway => $pathway,
+	    		equation => $reactants." => ".$products,
+	    		aliases => $aliases
+	    	};
+	    	push(@{$params->{reactions}},[$id,$direction,$compartment,$gpr,$name,$enzyme,$pathway,undef,$reactants." => ".$products,$aliases]);
+	    }
+    }
+    #ENSURING THAT THERE ARE REACTIONS AND COMPOUNDS FOR THE MODEL AT THIS STAGE
+    if (!defined($params->{compounds}) || @{$params->{compounds}} == 0) {
+    	Bio::KBase::ObjectAPI::utilities::ERROR("Must have compounds for model!");
+    }
+    if (!defined($params->{reactions}) || @{$params->{reactions}} == 0) {
+    	Bio::KBase::ObjectAPI::utilities::ERROR("Must have reactions for model!");
+    }
+    #PARSING BIOMASS ARRAY IF ITS NOT ALREADY AN ARRAY
+    if (ref($params->{biomass}) ne 'ARRAY') {
+    	$params->{biomass} = [split(/;/,$params->{biomass})];
+    }
+    #CREATING EMPTY MODEL OBJECT
+    my $model = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+		id => $params->{model_name},
+		source => $params->{source},
+		source_id => $params->{model_name},
+		name => $params->{model_name},
+		type => $params->{type},
+		genome_ref => $genomeobj->_reference(),
+		template_ref => $templateobj->_reference(),
+		gapfillings => [],
+		gapgens => [],
+		biomasses => [],
+		modelcompartments => [],
+		modelcompounds => [],
+		modelreactions => []
+	});
+	$model->parent($handler->util_data_store());
+	#REPROCESSING IDS
+    my $translation = {};
+    for (my $i=0; $i < @{$params->{compounds}}; $i++) {
+    	my $cpd = $params->{compounds}->[$i];
+    	my $id = $cpd->[0];
+    	if ($id =~ m/[^\w]/) {
+    		$cpd->[0] =~ s/[^\w]/_/g;
+    	}
+    	if ($id =~ m/-/) {
+    		$cpd->[0] =~ s/-/_/g;
+    	}
+    	$translation->{$id} = $cpd->[0];
+    }
+    for (my $i=0; $i < @{$params->{reactions}}; $i++) {
+    	my $rxn = $params->{reactions}->[$i];
+    	if ($rxn->[0] =~ m/(.+)_[a-z]\d+$/) {
+    		$rxn->[0] = $1;
+    	}
+    	$rxn->[0] =~ s/[^\w]/_/g;
+    	$rxn->[0] =~ s/_/-/g;
+    	if (defined($rxn->[8])) {
+    		if ($rxn->[8] =~ m/^\[([A-Za-z])\]\s*:\s*(.+)/) {
+    			$rxn->[2] = lc($1);
+    			$rxn->[8] = $2;
+    		}
+    		my $eqn = "| ".$rxn->[8]." |";
+    		foreach my $cpd (keys(%{$translation})) {
+    			if (index($eqn,$cpd) >= 0 && $cpd ne $translation->{$cpd}) {
+    				my $origcpd = $cpd;
+    				$cpd =~ s/\+/\\+/g;
+    				$cpd =~ s/\(/\\(/g;
+    				$cpd =~ s/\)/\\)/g;
+    				my $array = [split(/\s$cpd\s/,$eqn)];
+    				$eqn = join(" ".$translation->{$origcpd}." ",@{$array});
+    				$array = [split(/\s$cpd\[/,$eqn)];
+    				$eqn = join(" ".$translation->{$origcpd}."[",@{$array});
+    			}
+    		}
+    		$eqn =~ s/^\|\s//;
+    		$eqn =~ s/\s\|$//;
+    		while ($eqn =~ m/\[([A-Z])\]/) {
+    			my $reqplace = "[".lc($1)."]";
+    			$eqn =~ s/\[[A-Z]\]/$reqplace/;
+    		}
+    		if ($eqn =~ m/<[-=]+>/) {
+    			if (!defined($rxn->[1])) {
+    				$rxn->[1] = "=";
+    			}
+    		} elsif ($eqn =~ m/[-=]+>/) {
+    			if (!defined($rxn->[1])) {
+    				$rxn->[1] = ">";
+    			}
+    		} elsif ($eqn =~ m/<[-=]+/) {
+    			if (!defined($rxn->[1])) {
+    				$rxn->[1] = "<";
+    			}
+    		}
+    		$rxn->[8] = $eqn;
+    		for (my $j=0; $j < @{$params->{biomass}}; $j++) {
+	    		my $biomass = $params->{biomass}->[$j];
+	    		$biomass =~ s/[^\w]/_/g;
+    			$biomass =~ s/_/-/g;
+	    		if ($rxn->[0] eq $biomass) {
+	    			$params->{biomass}->[$j] = $eqn;
+	    			splice(@{$params->{reactions}},$i,1);
+	    			$i--;
+	    			last;
+	    		}
+    		}
+    	}
+    }
+    for (my $i=0; $i < @{$params->{biomass}}; $i++) {
+	    my $eqn = "| ".$params->{biomass}->[$i]." |";
+	    foreach my $cpd (keys(%{$translation})) {
+	    	if (index($params->{biomass}->[$i],$cpd) >= 0 && $cpd ne $translation->{$cpd}) {
+	    		my $origcpd = $cpd;
+	    		$cpd =~ s/\+/\\+/g;
+	    		$cpd =~ s/\(/\\(/g;
+	    		$cpd =~ s/\)/\\)/g;
+	    		my $array = [split(/\s$cpd\s/,$eqn)];
+	    		$eqn = join(" ".$translation->{$origcpd}." ",@{$array});
+	    		$array = [split(/\s$cpd\[/,$eqn)];
+	    		$eqn = join(" ".$translation->{$origcpd}."[",@{$array});
+	    	}
+	    }
+	    $eqn =~ s/^\|\s//;
+	    $eqn =~ s/\s\|$//;
+	    while ($eqn =~ m/\[([A-Z])\]/) {
+	    	my $reqplace = "[".lc($1)."]";
+	    	$eqn =~ s/\[[A-Z]\]/$reqplace/;
+	    }
+	    $params->{biomass}->[$i] = $eqn;
+    }
+    #Loading reactions to model
+	my $missingGenes = {};
+	my $missingCompounds = {};
+	my $missingReactions = {};
+	my $compoundhash = {};
+	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
+		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
+	}
+	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
+		my $rxnrow = $params->{reactions}->[$i];
+		my $compartment = $rxnrow->[2];
+		my $compartmentIndex = 0;
+		# check to see if the compartment already specifies an index
+		if ($compartment =~/^(\w)(\d+)$/) {
+		    $compartment = $1;
+		    $compartmentIndex = $2;
+		}		
+		my $input = {
+		    reaction => $rxnrow->[0],
+		    direction => $rxnrow->[1],
+		    compartment => $compartment,
+		    compartmentIndex => $compartmentIndex,
+		    gpr => $rxnrow->[3],
+		    removeReaction => 0,
+		    addReaction => 1,
+		    compounds => $compoundhash
+		};
+		if (defined($rxnrow->[4])) {
+			$input->{name} = $rxnrow->[4];
+		}
+		if (defined($rxnrow->[5])) {
+			$input->{enzyme} = $rxnrow->[5];
+		}
+		if (defined($rxnrow->[6])) {
+			$input->{pathway} = $rxnrow->[6];
+		}
+		if (defined($rxnrow->[7])) {
+			$input->{reference} = $rxnrow->[7];
+		}
+		if (defined($rxnrow->[8])) {
+			$input->{equation} = $rxnrow->[8];
+		}
+		#print $input->{equation}."\n";
+		$model->addModelReaction($input);
+		#if (defined($report->{missing_genes})) {
+		#	for (my $i=0; $i < @{$report->{missing_genes}}; $i++) {
+		#		$missingGenes->{$report->{missing_genes}->[$i]} = 1;
+		#	}
+		#}
+		#if (defined($report->{missing_compounds})) {
+		#	for (my $i=0; $i < @{$report->{missing_compounds}}; $i++) {
+		#		$missingCompounds->{$report->{missing_compounds}->[$i]} = 1;
+		#	}
+		#}
+		#if (defined($report->{missing_reactions})) {
+		#	for (my $i=0; $i < @{$report->{missing_reactions}}; $i++) {
+		#		$missingReactions->{$report->{missing_reactions}->[$i]} = 1;
+		#	}
+		#}
+	}
+	my $rxns = $model->modelreactions();
+	for (my $i=0; $i < @{$rxns}; $i++) {
+		my $rxn = $rxns->[$i];
+		my $rgts = $rxn->modelReactionReagents();
+		if (@{$rgts} == 1 && $rgts->[0]->modelcompound()->id() =~ m/_e\d+$/) {
+			$handler->util_log("Removing reaction:".$rxn->definition()."\n");
+			$model->remove("modelreactions",$rxn);
+		}	
+	}
+	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
+		$handler->util_log("Biomass:".$params->{biomass}->[$i]."\n");
+		my $report = $model->adjustBiomassReaction({
+			biomass => "bio".($i+1),
+			equation => $params->{biomass}->[$i],
+			compartment => "c",
+			compartmentIndex => 0,
+		    compounds => $compoundhash
+		});
+	}
+	my $msg = "";
+	if (defined($model->{missinggenes})) {
+		$handler->util_log("Missing genes:\n".join("\n",keys(%{$model->{missinggenes}}))."\n");
+	}
+	my $wsmeta = $handler->util_save_object($model,$params->{workspace_name}."/".$params->{model_name},{type => "KBaseFBA.FBAModel"});
+    $handler->util_log("Saved new FBA Model to: ".$params->{workspace_name}."/".$params->{model_name}."\n");
+    return { ref => $wsmeta->[6]."/".$wsmeta->[0]."/".$wsmeta->[4] };
 }
 
 1;
