@@ -114,6 +114,7 @@ sub new
     	$paramhash->{$param} = $cfg->val('fba_tools',$param);
     }
     Bio::KBase::ObjectAPI::config::all_params($paramhash);
+    Bio::KBase::ObjectAPI::config::all_params()->{call_back_url} = $ENV{ SDK_CALLBACK_URL };
     Bio::KBase::ObjectAPI::functions::set_handler($self);
     Bio::KBase::ObjectAPI::logging::set_handler($self);
     

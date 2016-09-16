@@ -133,13 +133,18 @@ sub get_objects {
 				my $type = $2;
 				$type =~ s/^New//;
 				my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
-				if ($type eq "GenomeAnnotation") {
-					my $output = Bio::KBase::ObjectAPI::utilities::runexecutable(Bio::KBase::ObjectAPI::config::all_params()->{"DataAPICommand"}.' "'.Bio::KBase::ObjectAPI::config::workspace_url().'" "'.Bio::KBase::ObjectAPI::config::shock_url().'" "'.Bio::KBase::ObjectAPI::config::all_params()->{"handle-service"}.'" "'.Bio::KBase::ObjectAPI::config::token().'" "'.$info->[6]."/".$info->[0]."/".$info->[4].'" "'.$info->[1].'"');
-					my $last = pop(@{$output});
-					if ($last !~ m/SUCCESS/) {
-						Bio::KBase::ObjectAPI::utilities->error("Genome failed to load!");
-					}
-					$objdatas->[$i]->{data} = Bio::KBase::ObjectAPI::utilities::FROMJSON(pop(@{$output}));
+				if ($type eq "Genome" && Bio::KBase::ObjectAPI::config::all_params()->{use_data_api} == 1) ) {
+					require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
+					my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
+					my $gaoutput = $ga->get_genome_v1({
+						genomes => [{
+							"ref" => $info->[6]."/".$info->[0]."/".$info->[4]
+						}],
+						ignore_errors => 1,
+						no_data => 0,
+						no_metadata => 1
+					});
+					$objdatas->[$i]->{data} = $gaoutput->{genomes}->[0];
 					$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
 				}
 				if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison") {
@@ -315,6 +320,35 @@ sub save_objects {
 			$objdata->{objid} = $array->[1];
 		} else {
 			$objdata->{name} = $array->[1];
+		}
+		if ($type eq "KBaseGenomes.Genome" && Bio::KBase::ObjectAPI::config::all_params()->{use_data_api} == 1) ) {
+			require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
+			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
+			my $gaout = $ga->save_one_genome_v1({
+				workspace => $array->[0],
+		        name => $array->[1],
+		        data => $objdata->{data},
+		        provenance => $objdata->{provenance},
+		        hidden => $obj->{hidden}
+			});
+			my $info = $gaout->{info};
+	    	$self->cache()->{$gaout->{info}->[6]."/".$gaout->{info}->[0]."/".$gaout->{info}->[4]} = $obj->{object};
+	    	$self->cache()->{$gaout->{info}->[7]."/".$gaout->{info}->[1]."/".$gaout->{info}->[4]} = $obj->{object};
+		    $self->uuid_refs()->{$obj->{object}->uuid()} = $gaout->{info}->[7]."/".$gaout->{info}->[1]."/".$gaout->{info}->[4];
+		    $refobjhash->{$ref}->{object}->_reference($gaout->{info}->[6]."/".$gaout->{info}->[0]."/".$gaout->{info}->[4]);
+	    	$refobjhash->{$ref}->{object}->_wsobjid($gaout->{info}->[0]);
+			$refobjhash->{$ref}->{object}->_wsname($gaout->{info}->[1]);
+			$refobjhash->{$ref}->{object}->_wstype($gaout->{info}->[2]);
+			$refobjhash->{$ref}->{object}->_wssave_date($gaout->{info}->[3]);
+			$refobjhash->{$ref}->{object}->_wsversion($gaout->{info}->[4]);
+			$refobjhash->{$ref}->{object}->_wssaved_by($gaout->{info}->[5]);
+			$refobjhash->{$ref}->{object}->_wswsid($gaout->{info}->[6]);
+			$refobjhash->{$ref}->{object}->_wsworkspace($gaout->{info}->[7]);
+			$refobjhash->{$ref}->{object}->_wschsum($gaout->{info}->[8]);
+			$refobjhash->{$ref}->{object}->_wssize($gaout->{info}->[9]);
+			$refobjhash->{$ref}->{object}->_wsmeta($gaout->{info}->[10]);
+	    	$output->{$ref} = $gaout->{info};
+			next;
 		}
 		push(@{$wsdata->{$array->[0]}->{refs}},$ref);
 		push(@{$wsdata->{$array->[0]}->{objects}},$objdata);
