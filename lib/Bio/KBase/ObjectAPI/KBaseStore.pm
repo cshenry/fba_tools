@@ -321,7 +321,7 @@ sub save_objects {
 		} else {
 			$objdata->{name} = $array->[1];
 		}
-		if ($type eq "KBaseGenomes.Genome" && Bio::KBase::ObjectAPI::config::all_params()->{use_data_api} == 1) ) {
+		if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::ObjectAPI::config::all_params()->{use_data_api} == 1) {
 			require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
 			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
 			my $gaout = $ga->save_one_genome_v1({
