@@ -145,6 +145,7 @@ sub get_objects {
 						no_metadata => 1
 					});
 					$objdatas->[$i]->{data} = $gaoutput->{genomes}->[0];
+					print Data::Dumper->Dump([$gaoutput->{genomes}->[0]]);
 					$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
 				}
 				if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison") {
