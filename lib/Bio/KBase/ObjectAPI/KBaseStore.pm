@@ -291,6 +291,7 @@ sub save_object {
 sub save_objects {
     my ($self,$refobjhash) = @_;
     my $wsdata;
+    my $output = {};
     foreach my $ref (keys(%{$refobjhash})) {
     	my $obj = $refobjhash->{$ref};
     	my $objdata = {
@@ -371,7 +372,6 @@ sub save_objects {
     		$listout = $self->workspace()->save_objects($input);
     	}    	
 	    #Placing output into a hash of references pointing to object infos
-	    my $output = {};
 	    for (my $i=0; $i < @{$listout}; $i++) {
 	    	$self->cache()->{$listout->[$i]->[6]."/".$listout->[$i]->[0]."/".$listout->[$i]->[4]} = $refobjhash->{$wsdata->{$ws}->{refs}->[$i]}->{object};
 	    	$self->cache()->{$listout->[$i]->[7]."/".$listout->[$i]->[1]."/".$listout->[$i]->[4]} = $refobjhash->{$wsdata->{$ws}->{refs}->[$i]}->{object};
