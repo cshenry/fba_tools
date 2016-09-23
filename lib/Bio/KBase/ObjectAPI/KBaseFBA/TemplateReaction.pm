@@ -375,7 +375,7 @@ sub addRxnToModel {
 			my $cpxrole = $complexroles->[$j];
 			if (defined($roleFeatures->{$cpxrole->templaterole()->id()})) {
 				foreach my $compartment (keys(%{$roleFeatures->{$cpxrole->templaterole()->id()}})) {
-					if ($compartment eq "u" || $compartment eq $self->compartment()->id()) {
+					if ($compartment eq "u" || $compartment eq $self->templatecompartment()->id()) {
 						if ($cpxrole->triggering() == 1) {
 							$present = 1;	
 						}
