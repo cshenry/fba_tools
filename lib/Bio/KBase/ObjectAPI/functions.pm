@@ -1329,7 +1329,7 @@ sub func_check_model_mass_balance {
     $handler->util_log("Retrieving model.");
 	my $model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
     my $media = $handler->util_get_object("KBaseMedia/Complete");
-    my $fba = Bio::KBase::ObjectAPI::utilities::util_build_fba($params,$model,$media,"tempfba",0,0,undef);
+    my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,"tempfba",0,0,undef);
     $fba->parameters()->{"Mass balance atoms"} = "C;S;P;O;N";
     $handler->util_log("Checking model mass balance.");
    	my $objective = $fba->runFBA();
@@ -1541,7 +1541,7 @@ sub func_quantitative_optimization {
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");
 	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
 	$handler->util_log("Preparing flux balance analysis problem.");
-    my $fba = Bio::KBase::ObjectAPI::utilities::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef); 
+    my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef); 
     $fba->RunQuantitativeOptimization({
 		ReactionCoef => $params->{ReactionCoef},
 		DrainCoef => $params->{DrainCoef},
