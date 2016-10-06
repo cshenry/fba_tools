@@ -82,6 +82,7 @@ sub util_report {
 		message => ""
 	});
 	require "KBaseReport/KBaseReportClient.pm";
+	print "Call back URL:".Bio::KBase::ObjectAPI::config::all_params()->{call_back_url}."\n";
 	my $kr = new KBaseReport::KBaseReportClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
 	my $output = $kr->create_extended_report({
 		message => $parameters->{message},
