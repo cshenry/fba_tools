@@ -72,18 +72,29 @@ sub util_save_object {
 
 sub util_report {
 	my($self,$parameters) = @_;
-	$parameters = Bio::KBase::ObjectAPI::utilities::ARGS($parameters,["ref","message","objects"],{});
-	my $reportobj = {
-		text_message => $parameters->{"message"},
-		objects_created => []
-	};
-	for (my $i=0; $i < @{$parameters->{objects}}; $i++) {
-		push(@{$reportobj->{objects_created}},{
-			'ref' => $parameters->{objects}->[$i]->[0],
-			description => $parameters->{objects}->[$i]->[1]
-		});
-	}
-	$self->save_object($reportobj,$parameters->{"ref"},{hash => 1,type => "KBaseReport.Report",hidden => 1});
+	$parameters = Bio::KBase::ObjectAPI::utilities::ARGS($parameters,["workspace_name","report_object_name"],{
+		warnings => [],
+		html_links => [],
+		file_links => [],
+		objects_created => [],
+		direct_html_link_index => undef,
+		direct_html => undef,
+		message => ""
+	});
+	require "KBaseReport/KBaseReportClient.pm";
+	my $kr = new KBaseReport::KBaseReportClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
+	my $output = $kr->create_extended_report({
+		message => $parameters->{message},
+        objects_created => $parameters->{objects_created},
+        warnings => $parameters->{warnings},
+        html_links => $parameters->{html_links},
+        direct_html => $parameters->{direct_html},
+        direct_html_link_index => $parameters->{direct_html_link_index},
+        file_links => $parameters->{file_links},
+        report_object_name => $parameters->{report_object_name},
+        workspace_name => $parameters->{workspace_name}
+	});
+	return $output;
 }
 
 sub util_store {

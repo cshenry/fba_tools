@@ -1333,14 +1333,70 @@ sub func_check_model_mass_balance {
     $fba->parameters()->{"Mass balance atoms"} = "C;S;P;O;N";
     $handler->util_log("Checking model mass balance.");
    	my $objective = $fba->runFBA();
+   	my $htmlreport = "<p>No mass imbalance found</p>";
 	my $message = "No mass imbalance found";
     if (length($fba->MFALog) > 0) {
     	$message = $fba->MFALog();
+    	$htmlreport = "<table><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
+    	my $array = [split(/\n/,$message)];
+    	my $id;
+    	my $reactants;
+    	my $products;
+    	my $rimbal;
+    	my $pimbal;
+    	for (my $i=0; $i < @{$array}; $i++) {
+    		if ($array->[$i] =~ m/Reaction\s(.+)\simbalanced/) {
+    			if (defined($id)) {
+    				$htmlreport .= "<row><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></row>";
+    				$reactants = "";
+    				$products = "";
+    				$rimbal = "";
+    				$pimbal = "";
+    			}
+    			$id = $1;
+    		} elsif ($array->[$i] =~ m/Extra\s(.+)\s(.+)\sin\sproducts/) {
+    			if (length($reactants) > 0) {
+    				$rimbal .= "<br>";
+    			}
+    			$rimbal = $1." ".$2;
+    		} elsif ($array->[$i] =~ m/Extra\s(.+)\s(.+)\sin\sreactants/) {
+    			if (length($reactants) > 0) {
+    				$pimbal .= "<br>";
+    			}
+    			$pimbal = $1." ".$2;
+    		} elsif ($array->[$i] =~ m/Reactants:/) {
+    			$i++;
+    			while ($array->[$i] ne "Products:") {
+    				if (length($reactants) > 0) {
+    					$reactants .= "<br>";
+    				}
+    				$reactants = $array->[$i];
+    				$i++;
+    			}
+    			$i++;
+    			while (length($array->[$i]) > 0) {
+    				if (length($products) > 0) {
+    					$products .= "<br>";
+    				}
+    				$products = $array->[$i];
+    				$i++;
+    			}
+    		}
+    	}
+    	if (defined($id)) {
+			$htmlreport .= "<row><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></row>";
+		}
+    	$htmlreport .= "</table>";
     }
     $handler->util_report({
-    	'ref' => $params->{workspace}."/".$params->{fbamodel_id}.".massbalancereport",
     	message => $message,
-    	objects => []
+        objects_created => [],
+        warnings => [],
+        html_links => [],
+        direct_html => $htmlreport,
+        file_links => [],
+        report_object_name => $params->{fbamodel_id}.".massbalancereport",
+        workspace_name => $params->{workspace}
     });
    	return {
 		report_name => $params->{fbamodel_id}.".massbalancereport",
