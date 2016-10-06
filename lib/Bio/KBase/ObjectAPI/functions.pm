@@ -1339,20 +1339,16 @@ sub func_check_model_mass_balance {
     	$message = $fba->MFALog();
     	$htmlreport = "<table><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
     	my $array = [split(/\n/,$message)];
-    	my $id;
-    	my $reactants;
-    	my $products;
-    	my $rimbal;
-    	my $pimbal;
+    	my ($id,$reactants,$products,$rimbal,$pimbal);
     	for (my $i=0; $i < @{$array}; $i++) {
     		if ($array->[$i] =~ m/Reaction\s(.+)\simbalanced/) {
     			if (defined($id)) {
-    				$htmlreport .= "<row><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></row>";
-    				$reactants = "";
-    				$products = "";
-    				$rimbal = "";
-    				$pimbal = "";
+    				$htmlreport .= "<row><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></row>";	
     			}
+    			$reactants = "";
+				$products = "";
+				$rimbal = "";
+				$pimbal = "";
     			$id = $1;
     		} elsif ($array->[$i] =~ m/Extra\s(.+)\s(.+)\sin\sproducts/) {
     			if (length($reactants) > 0) {
