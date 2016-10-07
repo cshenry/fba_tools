@@ -82,15 +82,14 @@ sub util_report {
 		message => ""
 	});
 	require "KBaseReport/KBaseReportClient.pm";
-	print "Call back URL:".Bio::KBase::ObjectAPI::config::all_params()->{call_back_url}."\n";
-	my $kr = new KBaseReport::KBaseReportClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
+	my $kr = new KBaseReport::KBaseReportClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url},token => Bio::KBase::ObjectAPI::config::token());
 	my $input = {
 		message => $parameters->{message},
         objects_created => $parameters->{objects_created},
         warnings => $parameters->{warnings},
         html_links => $parameters->{html_links},
-#        direct_html => $parameters->{direct_html},
-#        direct_html_link_index => $parameters->{direct_html_link_index},
+        direct_html => $parameters->{direct_html},
+        direct_html_link_index => $parameters->{direct_html_link_index},
         file_links => $parameters->{file_links},
         report_object_name => $parameters->{report_object_name},
         workspace_name => $parameters->{workspace_name}
