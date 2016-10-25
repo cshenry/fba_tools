@@ -209,8 +209,9 @@ sub util_build_fba {
 			num_solutions => $params->{number_of_solutions},
 			add_external_rxns => $add_external_reactions,
 			make_model_rxns_reversible => $make_model_reactions_reversible,
-			activate_all_model_reactions => 0,
+			activate_all_model_reactions => $params->{comprehensive_gapfill},
 		};
+		print "activate_all_model_reactions:".$params->{comprehensive_gapfill}."\n";
 		if (defined($exp_matrix)) {
 			$input->{expsample} = $exphash;
 			$input->{expression_threshold_percentile} = $params->{exp_threshold_percentile};
@@ -1564,56 +1565,54 @@ sub func_quantitative_optimization {
 
 sub func_compare_models {
 	my ($params,$model) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","model_refs","protcomp_ref","pangenome_ref"],{
+    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","model_refs"],{
+    	protcomp_ref => undef,
+    	pangenome_ref => undef,
     	mc_name => "ModelComparison"
     });
 	if (@{$params->{model_refs}} < 2) {
 		Bio::KBase::ObjectAPI::utilities::error("Must select at least two models to compare");
     }
-
-    my $mc_name = $params->{mc_name};
-    my $protcomp_ref = $params->{protcomp_ref};
-    my $pangenome_ref = $params->{pangenome_ref};
-    my $return = {};
-
-    my $workspace_name=$params->{'workspace'};
+	if (!defined($params->{protcomp_ref}) || !defined($params->{pangenome_ref})) {
+    	Bio::KBase::ObjectAPI::utilities::error("Must provide either a pangenome or proteome comparison");
+    }
     my $wsClient = Bio::KBase::ObjectAPI::utilities::util_kbase_store->workspace();
 
     my $provenance = [{}];
     my @models;
     foreach my $model_ref (@{$params->{model_refs}}) {
-	my $model=undef;
-	eval {
-	    $model=$handler->util_get_object($model_ref,{raw => 1});
-	    $model->{model_ref} = $model_ref;
-	    push @models, $model;
-	    push @{$provenance->[0]->{'input_ws_objects'}}, $model_ref;
-	};
-	if ($@) {
-	    die "Error loading model from workspace:\n".$@;
-	}
+		my $model=undef;
+		eval {
+		    $model=$handler->util_get_object($model_ref,{raw => 1});
+		    $model->{model_ref} = $model_ref;
+		    push @models, $model;
+		    push @{$provenance->[0]->{'input_ws_objects'}}, $model_ref;
+		};
+		if ($@) {
+		    die "Error loading model from workspace:\n".$@;
+		}
     }
 
     my $protcomp;
-    if (defined $protcomp_ref) {
-	eval {
-	    $protcomp=$handler->util_get_object($protcomp_ref,{raw => 1});
-	    push @{$provenance->[0]->{'input_ws_objects'}}, $protcomp_ref;
-	};
-	if ($@) {
-	    die "Error loading protein comparison from workspace:\n".$@;
-	}
+    if (defined $params->{protcomp_ref}) {
+		eval {
+		    $protcomp=$handler->util_get_object($params->{protcomp_ref},{raw => 1});
+		    push @{$provenance->[0]->{'input_ws_objects'}}, $params->{protcomp_ref};
+		};
+		if ($@) {
+		    die "Error loading protein comparison from workspace:\n".$@;
+		}
     }
 
     my $pangenome;
-    if (defined $pangenome_ref) {
-	eval {
-	    $pangenome=$handler->util_get_object($pangenome_ref,{raw => 1});
-	    push @{$provenance->[0]->{'input_ws_objects'}}, $pangenome_ref;
-	};
-	if ($@) {
-	    die "Error loading pangenome from workspace:\n".$@;
-	}
+    if (defined $params->{pangenome_ref}) {
+		eval {
+		    $pangenome=$handler->util_get_object($params->{pangenome_ref},{raw => 1});
+		    push @{$provenance->[0]->{'input_ws_objects'}}, $params->{pangenome_ref};
+		};
+		if ($@) {
+		    die "Error loading pangenome from workspace:\n".$@;
+		}
     }
 
     $handler->util_log("All data loaded from workspace");
@@ -2042,8 +2041,8 @@ sub func_compare_models {
     }
 
     my $mc = {};
-    $mc->{id} = $mc_name;
-    $mc->{name} = $mc_name;
+    $mc->{id} = $params->{mc_name};
+    $mc->{name} = $params->{mc_name};
     $mc->{models} = $mc_models;
     $mc->{reactions} = [values %$mc_reactions];
     $mc->{core_reactions} = $core_reactions;
@@ -2053,19 +2052,19 @@ sub func_compare_models {
     $mc->{core_biomass_compounds} = $core_bcpds;
     $mc->{core_families} = $core_families;
     $mc->{families} = [values %$mc_families];
-    $mc->{protcomp_ref} = $protcomp_ref if (defined $protcomp_ref);
-    $mc->{pangenome_ref} = $pangenome_ref if (defined $pangenome_ref);
+    $mc->{protcomp_ref} = $params->{protcomp_ref} if (defined $params->{protcomp_ref});
+    $mc->{pangenome_ref} = $params->{pangenome_ref} if (defined $params->{pangenome_ref});
     
-    my $mc_metadata = $handler->util_save_object($mc,$workspace_name."/".$mc_name,{hash => 1,type => "KBaseFBA.ModelComparison"});   
+    my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});   
     my $metadata = $handler->util_report({
-    	'ref' => $workspace_name."/model_comparison_report_".$mc_name,
-    	message => "ModelComparison saved to $workspace_name/$mc_name\n",
-    	objects => [[$workspace_name."/".$mc_name,"Model Comparison"]]
+    	'ref' => $params->{workspace}."/model_comparison_report_".$params->{mc_name},
+    	message => "ModelComparison saved to ".$params->{workspace}."/".$params->{mc_name}."\n",
+    	objects => [[$params->{workspace}."/".$params->{mc_name},"Model Comparison"]]
     });
     return { 
-    	'report_name'=>'model_comparison_report_'.$mc_name,
+    	'report_name'=>'model_comparison_report_'.$params->{mc_name},
     	'report_ref' => $metadata->[6]."/".$metadata->[0]."/".$metadata->[4], 
-    	'mc_ref' => $workspace_name."/".$mc_name
+    	'mc_ref' => $params->{workspace}."/".$params->{mc_name}
     };
 }
 
