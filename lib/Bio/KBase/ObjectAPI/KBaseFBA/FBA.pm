@@ -1715,7 +1715,9 @@ sub createJobDirectory {
 	}
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file
-	#$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
+	if (defined(Bio::KBase::ObjectAPI::config::all_params()->{use_cplex}) && Bio::KBase::ObjectAPI::config::all_params()->{use_cplex} == 1) {
+		$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
+	}
 	my $exchange = "";
 	foreach my $key (keys(%{$exchangehash})) {
 		if (length($exchange) > 0) {
@@ -2259,6 +2261,27 @@ sub parseFluxFiles {
 	my ($self) = @_;
 	$self->objectiveValue(0);
 	my $directory = $self->jobDirectory();
+	my $sensitivity_hash = {};
+	if (-e $directory."/ReactionSensitivity.txt") {
+	    my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/ReactionSensitivity.txt", "\t");
+		foreach my $row (@{$tbl->{data}}) {
+			my $rxn = $row->[0];
+			my $biomass_array = [];
+			if (defined($row->[1]) && length($row->[1]) > 0) {
+				$biomass_array = [split(/;/,$row->[1])];
+				pop(@{$biomass_array});
+			}
+			my $rxn_array = [];
+			if (defined($row->[2]) && length($row->[2]) > 0) {
+				$rxn_array = [split(/;/,$row->[2])];
+				pop(@{$rxn_array});
+			}
+			$sensitivity_hash->{$rxn} = {
+				biomass => $biomass_array,
+				reactions => $rxn_array
+			};
+		}
+	}
 	if (-e $directory."/MFAOutput/SolutionCompoundData.txt") {
 		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/MFAOutput/SolutionCompoundData.txt",";");
 		my $drainCompartmentColumns = {};
@@ -2362,7 +2385,7 @@ sub parseFluxFiles {
 									$lower = $rxnid2bound->{$mdlrxn->id()}->{lower};
 									$upper = $rxnid2bound->{$mdlrxn->id()}->{upper};
 								}
-								my $rxnvar = $self->add("FBAReactionVariables",{
+								my $rxnvarinput = {
 									modelreaction_ref => "~/fbamodel/modelreactions/id/".$mdlrxn->id(),
 									variableType => "flux",
 									value => $value,
@@ -2371,7 +2394,16 @@ sub parseFluxFiles {
 									min => $lower,
 									max => $upper,
 									class => "unknown"
-								});
+								};
+								if (defined($sensitivity_hash->{$mdlrxn->id()})) {
+									$rxnvarinput->{coupled_reactions} = $sensitivity_hash->{$mdlrxn->id()}->{reactions};
+									for (my $p=0; $p < @{$sensitivity_hash->{$mdlrxn->id()}->{biomass}}; $p++) {
+										my $array = [split(/_/,$sensitivity_hash->{$mdlrxn->id()}->{biomass}->[$p])];
+										my $biomass = shift(@{$array});
+										push(@{$rxnvarinput->{biomass_dependencies}},[$biomass,join("_",@{$array})]);
+									}
+								}
+								my $rxnvar = $self->add("FBAReactionVariables",$rxnvarinput);
 								if (defined($mdlrxn->{raw_exp_score})) {
 									$rxnvar->exp_state("unknown");
 									$rxnvar->expression($mdlrxn->{raw_exp_score});

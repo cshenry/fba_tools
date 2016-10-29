@@ -72,18 +72,31 @@ sub util_save_object {
 
 sub util_report {
 	my($self,$parameters) = @_;
-	$parameters = Bio::KBase::ObjectAPI::utilities::ARGS($parameters,["ref","message","objects"],{});
-	my $reportobj = {
-		text_message => $parameters->{"message"},
-		objects_created => []
+	$parameters = Bio::KBase::ObjectAPI::utilities::ARGS($parameters,["workspace_name","report_object_name"],{
+		warnings => [],
+		html_links => [],
+		file_links => [],
+		objects_created => [],
+		direct_html_link_index => undef,
+		direct_html => undef,
+		message => ""
+	});
+	require "KBaseReport/KBaseReportClient.pm";
+	my $kr = new KBaseReport::KBaseReportClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url},token => Bio::KBase::ObjectAPI::config::token());
+	my $input = {
+		message => $parameters->{message},
+        objects_created => $parameters->{objects_created},
+        warnings => $parameters->{warnings},
+        html_links => $parameters->{html_links},
+        direct_html => $parameters->{direct_html},
+        direct_html_link_index => $parameters->{direct_html_link_index},
+        file_links => $parameters->{file_links},
+        report_object_name => $parameters->{report_object_name},
+        workspace_name => $parameters->{workspace_name}
 	};
-	for (my $i=0; $i < @{$parameters->{objects}}; $i++) {
-		push(@{$reportobj->{objects_created}},{
-			'ref' => $parameters->{objects}->[$i]->[0],
-			description => $parameters->{objects}->[$i]->[1]
-		});
-	}
-	$self->save_object($reportobj,$parameters->{"ref"},{hash => 1,type => "KBaseReport.Report",hidden => 1});
+	print Data::Dumper->Dump([$input]);
+	my $output = $kr->create_extended_report($input);
+	return $output;
 }
 
 sub util_store {
@@ -114,6 +127,7 @@ sub new
     	$paramhash->{$param} = $cfg->val('fba_tools',$param);
     }
     Bio::KBase::ObjectAPI::config::all_params($paramhash);
+    Bio::KBase::ObjectAPI::config::all_params()->{call_back_url} = $ENV{ SDK_CALLBACK_URL };
     Bio::KBase::ObjectAPI::functions::set_handler($self);
     Bio::KBase::ObjectAPI::logging::set_handler($self);
     
@@ -1341,12 +1355,8 @@ EditMetabolicModelParams is a reference to a hash where the following keys are d
 	fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 	fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
 	data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
-	protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
-	pangenome_ref has a value which is a fba_tools.ws_pangenome_id
 workspace_name is a string
 ws_fbamodel_id is a string
-ws_proteomecomparison_id is a string
-ws_pangenome_id is a string
 EditMetabolicModelResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a fba_tools.ws_report_id
@@ -1367,12 +1377,8 @@ EditMetabolicModelParams is a reference to a hash where the following keys are d
 	fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 	fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
 	data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
-	protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
-	pangenome_ref has a value which is a fba_tools.ws_pangenome_id
 workspace_name is a string
 ws_fbamodel_id is a string
-ws_proteomecomparison_id is a string
-ws_pangenome_id is a string
 EditMetabolicModelResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a fba_tools.ws_report_id
@@ -3135,8 +3141,6 @@ fbamodel_workspace has a value which is a fba_tools.workspace_name
 fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
 data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
-protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
-pangenome_ref has a value which is a fba_tools.ws_pangenome_id
 
 </pre>
 
@@ -3150,8 +3154,6 @@ fbamodel_workspace has a value which is a fba_tools.workspace_name
 fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
 data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
-protcomp_ref has a value which is a fba_tools.ws_proteomecomparison_id
-pangenome_ref has a value which is a fba_tools.ws_pangenome_id
 
 
 =end text

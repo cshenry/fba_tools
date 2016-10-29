@@ -60,7 +60,7 @@
     "behavior": {
         "service-mapping": {
             "url": "",
-            "name": "ModelComparison",
+            "name": "fba_tools",
             "method": "compare_models",
             "input_mapping": [
                 {

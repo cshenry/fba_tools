@@ -60,7 +60,6 @@ build-test-script:
 	chmod +x $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 
 deploy-mfatoolkit:
-	cp pybin/data_api_test.py $(TARGET)/pybin/
 	cp MFAToolkit/bin/libglpk.a $(TARGET)/bin/
 	$(MAKE) -C MFAToolkit
 	cp MFAToolkit/bin/mfatoolkit $(TARGET)/bin/

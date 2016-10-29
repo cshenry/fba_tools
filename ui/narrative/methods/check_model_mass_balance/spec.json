@@ -39,7 +39,7 @@
    ],
    "widgets" : {
       "input" : null,
-      "output" : "kbaseReportView"
+      "output" : null
    },
    "contact" : "help@kbase.us",
    "visible" : true,
