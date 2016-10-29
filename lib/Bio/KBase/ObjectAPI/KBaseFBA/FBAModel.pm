@@ -212,7 +212,8 @@ sub addCompoundToModel {
 		charge => undef,
 		formula => undef
 	}, @_);
-	my $mdlcpd = $self->queryObject("modelcompounds",{compound_ref => $args->{compound}->_reference(),modelcompartment_ref => "~/modelcompartments/id/".$args->{modelCompartment}->id()});
+	my $cpdid = $args->{compound}->id()."_".$args->{modelCompartment}->id();
+	my $mdlcpd = $self->getObject("modelcompounds",$cpdid);
 	if (!defined($mdlcpd)) {
 		if (!defined($args->{charge})) {
 			$args->{charge} = $args->{compound}->defaultCharge();
