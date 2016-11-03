@@ -29,22 +29,40 @@ use Bio::KBase::ObjectAPI::logging;
 #Initialization function for call
 sub util_initialize_call {
 	my ($self,$params,$ctx) = @_;
-	print("Starting ".$ctx->method()." method.\n");
+	if (defined($ctx)) {
+		Bio::KBase::utilities::initialize_call($ctx);
+	}
 	delete($self->{_kbase_store});
-	Bio::KBase::ObjectAPI::utilities::elaspedtime();
-	Bio::KBase::ObjectAPI::config::username($ctx->user_id());
-	Bio::KBase::ObjectAPI::config::token($ctx->token());
-	Bio::KBase::ObjectAPI::config::provenance($ctx->provenance());
 	return $params;
+}
+
+sub util_finalize_call {
+	my ($self,$params) = @_;
+	$params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","report_name"],{
+		output => {},
+		message => undef,
+		direct_html => undef,
+		files => [],
+		html_files => []
+	});
+	my $reportout = Bio::KBase::utilities::create_report({
+    	workspace_name => $params->{workspace},
+    	report_object_name => $params->{report_name},
+    	file_links => $params->{files},
+    	html_links => $params->{html_files},
+    	warnings => [],
+    	objects_created => $self->util_objects_created(),
+    	direct_html => $params->{direct_html},
+    	message => $params->{message}
+    });
+    $params->{output}->{report_ref} = $reportout->{"ref"};
+	$params->{output}->{report_name} = $params->{report_name};
 }
 
 sub util_kbase_store {
 	my ($self) = @_;
     if (!defined($self->{_kbase_store})) {
-    	my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token => Bio::KBase::ObjectAPI::config::token());
-    	$self->{_kbase_store} = Bio::KBase::ObjectAPI::KBaseStore->new({
-			workspace => $wsClient
-		});
+    	$self->{_kbase_store} = Bio::KBase::ObjectAPI::KBaseStore->new();
     }
 	return $self->{_kbase_store};
 }
@@ -278,6 +296,11 @@ sub build_metabolic_model
     #BEGIN build_metabolic_model
     $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
+	$self->util_finalize_call({
+		output => $return,
+		workspace => $params->{workspace},
+		report_name => $params->{fbamodel_output_id}.".report",
+	});
     #END build_metabolic_model
     my @_bad_returns;
     (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -1224,6 +1247,13 @@ sub check_model_mass_balance
     #BEGIN check_model_mass_balance
     $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
+    $self->util_finalize_call({
+		output => $results,
+		workspace => $params->{workspace},
+		report_name => $params->{fbamodel_id}.".check_mass_balance.report",
+		message => $results->{message},
+		direct_html => $results->{direct_html},
+    });
     #END check_model_mass_balance
     my @_bad_returns;
     (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");

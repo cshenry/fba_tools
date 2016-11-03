@@ -50,6 +50,7 @@ use Bio::KBase::ObjectAPI::utilities;
 
 use Class::Autouse qw(
     Bio::KBase::workspace::Client
+    Bio::KBase::utilities
     Bio::KBase::ObjectAPI::KBaseRegulation::Regulome
     Bio::KBase::ObjectAPI::KBaseBiochem::Biochemistry
     Bio::KBase::ObjectAPI::KBaseGenomes::Genome
@@ -71,7 +72,6 @@ use Module::Load;
 #***********************************************************************************************************
 # ATTRIBUTES:
 #***********************************************************************************************************
-has workspace => ( is => 'rw', isa => 'Ref', required => 1);
 has cache => ( is => 'rw', isa => 'HashRef',default => sub { return {}; });
 has uuid_refs => ( is => 'rw', isa => 'HashRef',default => sub { return {}; });
 has updated_refs => ( is => 'rw', isa => 'HashRef',default => sub { return {}; });
@@ -124,7 +124,7 @@ sub get_objects {
 			}
 			push(@{$objids},$objid);
 		}
-		my $objdatas = $self->workspace()->get_objects($objids);
+		my $objdatas = Bio::KBase::utilities::get_objects($objids);
 		for (my $i=0; $i < @{$objdatas}; $i++) {
 			my $info = $objdatas->[$i]->{info};
 			#print "Retreived:".join("|",@{$info})."\n";
@@ -206,7 +206,7 @@ sub get_objects {
 				if ($type eq "FBAModel") {
 					if (defined($self->cache()->{$newrefs->[$i]}->template_ref())) {
 						if ($self->cache()->{$newrefs->[$i]}->template_ref() =~ m/(\w+)\/(\w+)\/*\d*/) {
-							my $output = $self->workspace()->get_object_info([{
+							my $output = Bio::KBase::utilities::get_object_info([{
 								"ref" => $self->cache()->{$newrefs->[$i]}->template_ref()
 							}],0);
 							if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
@@ -225,7 +225,7 @@ sub get_objects {
 					if (defined($self->cache()->{$newrefs->[$i]}->template_refs())) {
 						my $temprefs = $self->cache()->{$newrefs->[$i]}->template_refs();
 						for (my $j=0; $j < @{$temprefs}; $j++) {
-							my $output = $self->workspace()->get_object_info([{
+							my $output = Bio::KBase::utilities::get_object_info([{
 								"ref" => $temprefs->[$j]
 							}],0);
 							if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
@@ -363,13 +363,13 @@ sub save_objects {
     	}
     	my $listout;
     	if (defined($self->user_override()) && length($self->user_override()) > 0) {
-    		$listout = $self->workspace()->administer({
+    		$listout = Bio::KBase::utilities::administer({
     			"command" => "saveObjects",
     			"user" => $self->user_override(),
     			"params" => $input
     		});
     	} else {
-    		$listout = $self->workspace()->save_objects($input);
+    		$listout = Bio::KBase::utilities::save_objects($input);
     	}    	
 	    #Placing output into a hash of references pointing to object infos
 	    for (my $i=0; $i < @{$listout}; $i++) {

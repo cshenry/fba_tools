@@ -1385,19 +1385,9 @@ sub func_check_model_mass_balance {
 		}
     	$htmlreport .= "</table>";
     }
-    $handler->util_report({
-    	message => $message,
-        objects_created => [],
-        warnings => [],
-        html_links => [],
-        direct_html => $htmlreport,
-        file_links => [],
-        report_object_name => $params->{fbamodel_id}.".massbalancereport",
-        workspace_name => $params->{workspace}
-    });
    	return {
-		report_name => $params->{fbamodel_id}.".massbalancereport",
-		ws_report_id => $params->{workspace}.'/'.$params->{fbamodel_id}.".massbalancereport"
+		direct_html => $htmlreport,
+		message => $message
 	};
 }
 
