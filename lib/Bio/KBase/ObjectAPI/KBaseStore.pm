@@ -133,7 +133,7 @@ sub get_objects {
 				my $type = $2;
 				$type =~ s/^New//;
 				my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
-				if ($type eq "Genome" && Bio::KBase::ObjectAPI::config::all_params()->{use_data_api} == 1) {
+				if ($type eq "Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
 					require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
 					my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
 					my $gaoutput = $ga->get_genome_v1({

@@ -31,6 +31,9 @@ use Bio::KBase::utilities;
 sub util_initialize_call {
 	my ($self,$params,$ctx) = @_;
 	if (defined($ctx)) {
+		Bio::KBase::utilities::read_config({
+	    	service => "fba_tools"
+	    });
 		Bio::KBase::utilities::initialize_call($ctx);
 	}
 	delete($self->{_kbase_store});
@@ -140,9 +143,6 @@ sub new
     };
     bless $self, $class;
     #BEGIN_CONSTRUCTOR
-    Bio::KBase::utilities::read_config({
-    	service => "fba_tools"
-    });
     my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
     my $cfg = Config::IniFiles->new(-file=>$config_file);
     my $wsInstance = $cfg->val('fba_tools','workspace-url');
