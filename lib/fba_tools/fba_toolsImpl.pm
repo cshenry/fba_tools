@@ -25,6 +25,7 @@ use Bio::KBase::ObjectAPI::utilities;
 use Bio::KBase::ObjectAPI::KBaseStore;
 use Bio::KBase::ObjectAPI::functions;
 use Bio::KBase::ObjectAPI::logging;
+use Bio::KBase::utilities;
 
 #Initialization function for call
 sub util_initialize_call {
@@ -120,6 +121,14 @@ sub util_report {
 sub util_store {
 	my($self) = @_;
 	return $self->util_kbase_store();
+}
+
+sub util_get_file_path {
+	my($self,$filename) = @_;
+	if (!-e $filename) {
+		$filename = Bio::KBase::utilities::conf("fba_tools","scratch")."/".$filename;
+	}
+	return $filename;
 }
 
 #END_HEADER

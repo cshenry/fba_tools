@@ -2356,7 +2356,7 @@ sub parseFluxFiles {
 			# Create a map from rxn id to bounds.
 			my $rxnid2bound = {};
 			foreach my $bound (@{$self->FBAReactionBounds()}) {
-				$rxnid2bound->{$bound->modelreaction()->msid()} = {
+				$rxnid2bound->{$bound->modelreaction()->id()} = {
 					lower => $bound->lowerBound(),
 					upper => $bound->upperBound()
 				}
