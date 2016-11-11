@@ -140,7 +140,7 @@ sub new
     };
     bless $self, $class;
     #BEGIN_CONSTRUCTOR
-    
+    $ENV{ KB_SERVICE_NAME } = "fba_tools";
     my $config_file = $ENV{ KB_DEPLOYMENT_CONFIG };
     my $cfg = Config::IniFiles->new(-file=>$config_file);
     my $wsInstance = $cfg->val('fba_tools','workspace-url');
