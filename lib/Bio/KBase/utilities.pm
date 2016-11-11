@@ -109,11 +109,11 @@ sub conf {
 #error: prints an error message
 sub error {	
 	my ($message) = @_;
-    if (Bio::KBase::utilities::utilconf("fulltrace") == 1) {
+    #if (Bio::KBase::utilities::utilconf("fulltrace") == 1) {
 		Carp::confess($message);
-    } else {
-    	die $message;
-    }
+    #} else {
+    #	die $message;
+    #}
 }
 
 sub debug {
