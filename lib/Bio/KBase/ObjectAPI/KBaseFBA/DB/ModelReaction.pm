@@ -31,6 +31,7 @@ has probability => (is => 'rw', isa => 'Num', printOrder => '8', default => '1',
 has pathway => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has aliases => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has gapfill_data => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has edits => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
 has modelReactionReagents => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(ModelReactionReagent)', metaclass => 'Typed', reader => '_modelReactionReagents', printOrder => '-1');
@@ -165,10 +166,17 @@ my $attributes = [
             'type' => 'HashRef',
             'perm' => 'rw'
           },
-
+		  {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'edits',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
+          },
         ];
 
-my $attribute_map = {protons => 0, reaction_ref => 1, direction => 2, modelcompartment_ref => 3, maxforflux => 4, reference => 5, id => 6, maxrevflux => 7, name => 8, probability => 9, pathway => 10, aliases => 11,gapfill_data => 12};
+my $attribute_map = {protons => 0, reaction_ref => 1, direction => 2, modelcompartment_ref => 3, maxforflux => 4, reference => 5, id => 6, maxrevflux => 7, name => 8, probability => 9, pathway => 10, aliases => 11,gapfill_data => 12,edits => 13};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

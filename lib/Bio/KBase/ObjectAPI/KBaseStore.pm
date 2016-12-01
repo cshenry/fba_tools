@@ -135,7 +135,7 @@ sub get_objects {
 				my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
 				if ($type eq "Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
 					require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-					my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
+					my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
 					my $gaoutput = $ga->get_genome_v1({
 						genomes => [{
 							"ref" => $info->[6]."/".$info->[0]."/".$info->[4]
@@ -295,7 +295,7 @@ sub save_objects {
     foreach my $ref (keys(%{$refobjhash})) {
     	my $obj = $refobjhash->{$ref};
     	my $objdata = {
-    		provenance => Bio::KBase::ObjectAPI::config::provenance()
+    		provenance => Bio::KBase::utilities::provenance()
     	};
     	if (defined($obj->{hash}) && $obj->{hash} == 1) {
     		$objdata->{type} = $obj->{type};
@@ -322,9 +322,9 @@ sub save_objects {
 		} else {
 			$objdata->{name} = $array->[1];
 		}
-		if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::ObjectAPI::config::all_params()->{use_data_api} == 1) {
+		if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("ModelSEED","use_data_api") == 1) {
 			require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::ObjectAPI::config::all_params()->{call_back_url});
+			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("ModelSEED","call_back_url"));
 			my $gaout = $ga->save_one_genome_v1({
 				workspace => $array->[0],
 		        name => $array->[1],

@@ -44,11 +44,11 @@ sub classify_genomes {
 	$self->print_classifier({directory => $ts->jobDirectory()});
 	system("java -jar ".Bio::KBase::ObjectAPI::utilities::CLASSIFIER_PATH()."WekaClassifierEx.jar ".$ts->jobDirectory());
 	my $cr = $self->load_classifier_result();
-	if (defined(Bio::KBase::ObjectAPI::config::FinalJobCache())) {
-		if (!-d Bio::KBase::ObjectAPI::config::FinalJobCache()) {
-			File::Path::mkpath (Bio::KBase::ObjectAPI::config::FinalJobCache());
+	if (defined(Bio::KBase::utilities::conf("ModelSEED","fbajobcache"))) {
+		if (!-d Bio::KBase::utilities::conf("ModelSEED","fbajobcache")) {
+			File::Path::mkpath (Bio::KBase::utilities::conf("ModelSEED","fbajobcache"));
 		}
-		system("cd ".$ts->jobPath().";tar -czf ".Bio::KBase::ObjectAPI::config::FinalJobCache()."/".$ts->jobID().".tgz ".$ts->jobID());
+		system("cd ".$ts->jobPath().";tar -czf ".Bio::KBase::utilities::conf("ModelSEED","fbajobcache")."/".$ts->jobID().".tgz ".$ts->jobID());
 	}
 	if ($ts->jobDirectory() =~ m/\/fbajobs\/.+/) {
 		File::Path::rmtree($ts->jobDirectory());

@@ -2,7 +2,8 @@ package Bio::KBase::ObjectAPI::functions;
 use strict;
 use warnings;
 use Data::Dumper;
-use Bio::KBase::ObjectAPI::utilities;
+use Bio::KBase::utilities;
+use Bio::KBase::constants;
 
 our $handler;#Needs: log(string),save_object,get_object
 
@@ -33,7 +34,7 @@ sub util_build_expression_hash {
 		}
 	}
 	if ($exp_sample_col < 0) {
-		Bio::KBase::ObjectAPI::utilities::error("No column named ".$exp_condition." in expression matrix.");
+		Bio::KBase::utilities::error("No column named ".$exp_condition." in expression matrix.");
 	}
 	for (my $i=0; $i < @{$float_matrix->{row_ids}}; $i++) {
 		$exphash->{$float_matrix->{row_ids}->[$i]} = $float_matrix->{values}->[$i]->[$exp_sample_col];
@@ -65,7 +66,7 @@ sub util_build_fba {
     	$handler->util_log("Retrieving expression matrix.");
     	$exp_matrix = $handler->util_get_object($params->{expseries_workspace}."/".$params->{expseries_id});
     	if (!defined($params->{expression_condition})) {
-			Bio::KBase::ObjectAPI::utilities::error("Input must specify the column to select from the expression matrix");
+			Bio::KBase::utilities::error("Input must specify the column to select from the expression matrix");
 		}
 		$exphash = Bio::KBase::ObjectAPI::functions::util_build_expression_hash($exp_matrix,$params->{expression_condition});
     }
@@ -137,7 +138,7 @@ sub util_build_fba {
 			if (defined($cpd)) {
 				$fbaobj->compoundflux_objterms()->{$cpd->id()} = 1;
 			} else {
-				Bio::KBase::ObjectAPI::utilities::error("Could not find biomass objective object:".$params->{target_reaction});
+				Bio::KBase::utilities::error("Could not find biomass objective object:".$params->{target_reaction});
 			}
 		}
 	}
@@ -293,7 +294,7 @@ sub util_process_reactions_list {
 
 sub func_build_metabolic_model {
 	my ($params,$datachannel) = @_;
-	$params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","genome_id","fbamodel_output_id"],{
+	$params = Bio::KBase::utilities::args($params,["workspace","genome_id","fbamodel_output_id"],{
     	media_id => undef,
     	template_id => "auto",
     	genome_workspace => $params->{workspace},
@@ -389,7 +390,7 @@ sub func_build_metabolic_model {
 
 sub func_gapfill_metabolic_model {
 	my ($params,$model,$source_model) = @_;
-	$params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id"],{
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
     	fbamodel_workspace => $params->{workspace},
     	media_id => undef,
     	media_workspace => $params->{workspace},
@@ -421,12 +422,12 @@ sub func_gapfill_metabolic_model {
     }
     if (!defined($params->{media_id})) {
     	if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
-			$params->{media_id} = Bio::KBase::ObjectAPI::config::default_plant_media();
+			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_plant_media");
     	} else {
 			$params->{default_max_uptake} = 100;
-			$params->{media_id} = Bio::KBase::ObjectAPI::config::default_microbial_media();
+			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_microbial_media");
 		}
-    	$params->{media_workspace} = Bio::KBase::ObjectAPI::config::default_media_workspace();
+    	$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
     }
     $handler->util_log("Retrieving ".$params->{media_id}." media.");
     my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
@@ -449,7 +450,7 @@ sub func_gapfill_metabolic_model {
 	$fba->runFBA();
 	#Error checking the FBA and gapfilling solution
 	if (!defined($fba->gapfillingSolutions()->[0])) {
-		Bio::KBase::ObjectAPI::utilities::error("Analysis completed, but no valid solutions found!");
+		Bio::KBase::utilities::error("Analysis completed, but no valid solutions found!");
 	}
     $handler->util_log("Saving gapfilled model.");
     my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
@@ -470,7 +471,7 @@ sub func_gapfill_metabolic_model {
 
 sub func_run_flux_balance_analysis {
 	my ($params,$model) = @_;
-	$params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id","fba_output_id"],{
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","fba_output_id"],{
 		fbamodel_workspace => $params->{workspace},
 		media_id => undef,
 		media_workspace => $params->{workspace},
@@ -509,12 +510,12 @@ sub func_run_flux_balance_analysis {
     }
     if (!defined($params->{media_id})) {
     	if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
-			$params->{media_id} = Bio::KBase::ObjectAPI::config::default_plant_media();
+			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_plant_media");
     	} else {
 			$params->{default_max_uptake} = 100;
-			$params->{media_id} = Bio::KBase::ObjectAPI::config::default_microbial_media();
+			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_microbial_media");
 		}
-    	$params->{media_workspace} = Bio::KBase::ObjectAPI::config::default_media_workspace();
+    	$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
     }
     $handler->util_log("Retrieving ".$params->{media_id}." media.");
     my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
@@ -530,7 +531,7 @@ sub func_run_flux_balance_analysis {
 		alarm 0;
 	#};
     if (!defined($objective)) {
-    	Bio::KBase::ObjectAPI::utilities::error("FBA failed with no solution returned!");
+    	Bio::KBase::utilities::error("FBA failed with no solution returned!");
     }    
     $handler->util_log("Saving FBA results.");
     $fba->id($params->{fba_output_id});
@@ -542,7 +543,7 @@ sub func_run_flux_balance_analysis {
 
 sub func_compare_fba_solutions {
 	my ($params) = @_;
-	$params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fba_id_list","fbacomparison_output_id"],{
+	$params = Bio::KBase::utilities::args($params,["workspace","fba_id_list","fbacomparison_output_id"],{
 		fba_workspace => $params->{workspace},
     });
     my $fbacomp = Bio::KBase::ObjectAPI::KBaseFBA::FBAComparison->new({
@@ -778,7 +779,7 @@ sub func_compare_fba_solutions {
 
 sub func_propagate_model_to_new_genome {
 	my ($params) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id","proteincomparison_id","fbamodel_output_id"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","proteincomparison_id","fbamodel_output_id"],{
     	fbamodel_workspace => $params->{workspace},
     	proteincomparison_workspace => $params->{workspace},
     	keep_nogene_rxn => 0,
@@ -852,7 +853,7 @@ sub func_propagate_model_to_new_genome {
 
 sub func_simulate_growth_on_phenotype_data {
 	my ($params,$model) = @_;
-	$params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id","phenotypeset_id","phenotypesim_output_id"],{
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","phenotypeset_id","phenotypesim_output_id"],{
 		fbamodel_workspace => $params->{workspace},
 		phenotypeset_workspace => $params->{workspace},
 		thermodynamic_constraints => 0,
@@ -895,7 +896,7 @@ sub func_simulate_growth_on_phenotype_data {
    	$fba->{"fit phenotype data"} = $params->{fit_phenotype_data};
     $fba->runFBA();
 	if (!defined($fba->{_tempphenosim})) {
-    	Bio::KBase::ObjectAPI::utilities::error("Simulation of phenotypes failed to return results from FBA! The model probably failed to grow on Complete media. Try running gapfiling first on Complete media.");
+    	Bio::KBase::utilities::error("Simulation of phenotypes failed to return results from FBA! The model probably failed to grow on Complete media. Try running gapfiling first on Complete media.");
 	}
 	my $phenoset = $fba->phenotypesimulationset();
 	if ($params->{gapfill_phenotypes} == 1 || $params->{fit_phenotype_data} == 1) {
@@ -924,7 +925,7 @@ sub func_simulate_growth_on_phenotype_data {
 
 sub func_merge_metabolic_models_into_community_model {
 	my ($params) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id_list","fbamodel_output_id"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id_list","fbamodel_output_id"],{
     	fbamodel_workspace => $params->{workspace},
     	mixed_bag_model => 0
     });
@@ -968,7 +969,7 @@ sub func_merge_metabolic_models_into_community_model {
 
 sub func_compare_flux_with_expression {
 	my ($params) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fba_id","expseries_id","expression_condition","fbapathwayanalysis_output_id"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","fba_id","expseries_id","expression_condition","fbapathwayanalysis_output_id"],{
     	fba_workspace => $params->{workspace},
     	expseries_workspace => $params->{workspace},
     	exp_threshold_percentile => 0.5,
@@ -989,7 +990,7 @@ sub func_compare_flux_with_expression {
 	if ($output->[2] < 30) {
 		$handler->util_log("Too few always-on genes recognized with nonzero expression for the reliable estimation of threshold.");
 		if ($params->{estimate_threshold} == 1) {
-			Bio::KBase::ObjectAPI::utilities::error("Threshold estimation selected, but too few always-active genes recognized to permit estimation.\n");
+			Bio::KBase::utilities::error("Threshold estimation selected, but too few always-active genes recognized to permit estimation.\n");
 		} else {
 			$handler->util_log("This is not a problem because threshold estimation was not explicitly requested in analysis.");
 		}
@@ -1324,7 +1325,7 @@ sub func_compare_flux_with_expression {
 
 sub func_check_model_mass_balance {
 	my ($params) = @_;
-	$params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id"],{
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
 		fbamodel_workspace => $params->{workspace},
     });
     $handler->util_log("Retrieving model.");
@@ -1393,7 +1394,7 @@ sub func_check_model_mass_balance {
 
 sub func_create_or_edit_media {
 	my ($params) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","media_id","data"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","media_id","data"],{
     	media_workspace => $params->{workspace},
     	media_output_id => $params->{media_id}
     });
@@ -1444,7 +1445,7 @@ sub func_create_or_edit_media {
 
 sub func_edit_metabolic_model {
 	my ($params) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","fbamodel_id","data"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","data"],{
     	fbamodel_workspace => $params->{workspace},
     	fbamodel_output_id => $params->{fbamodel_id}
     });
@@ -1493,7 +1494,7 @@ sub func_edit_metabolic_model {
 
 sub func_quantitative_optimization {
 	my ($params,$model) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["fbamodel_id","constraints","workspace"],{
+    $params = Bio::KBase::utilities::args($params,["fbamodel_id","constraints","workspace"],{
     	fbamodel_workspace => $params->{workspace},
     	fbamodel_output_id => $params->{fbamodel_id},
     	MaxBoundMult => 2,
@@ -1555,18 +1556,17 @@ sub func_quantitative_optimization {
 
 sub func_compare_models {
 	my ($params,$model) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["workspace","model_refs"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","model_refs"],{
     	protcomp_ref => undef,
     	pangenome_ref => undef,
     	mc_name => "ModelComparison"
     });
 	if (@{$params->{model_refs}} < 2) {
-		Bio::KBase::ObjectAPI::utilities::error("Must select at least two models to compare");
+		Bio::KBase::utilities::error("Must select at least two models to compare");
     }
 	if (!defined($params->{protcomp_ref}) || !defined($params->{pangenome_ref})) {
-    	Bio::KBase::ObjectAPI::utilities::error("Must provide either a pangenome or proteome comparison");
+    	Bio::KBase::utilities::error("Must provide either a pangenome or proteome comparison");
     }
-    my $wsClient = Bio::KBase::ObjectAPI::utilities::util_kbase_store->workspace();
 
     my $provenance = [{}];
     my @models;
@@ -1958,8 +1958,8 @@ sub func_compare_models {
 		    $match_id =~ s/_[a-zA-z]\d+$//g;
 		}
 		if (! defined $match_id) {
-		    Bio::KBase::ObjectAPI::utilities::error("no match possible for biomass compound:");
-		    Bio::KBase::ObjectAPI::utilities::error(Dumper($bcpd));
+		    Bio::KBase::utilities::error("no match possible for biomass compound:");
+		    Bio::KBase::utilities::error(Dumper($bcpd));
 		    next;
 		}
 		$model1bcpds{$match_id} = 0;
@@ -2060,7 +2060,7 @@ sub func_compare_models {
 
 sub func_importmodel {
 	my ($params) = @_;
-    $params = Bio::KBase::ObjectAPI::utilities::ARGS($params,["biomass","model_name","workspace_name"],{
+    $params = Bio::KBase::utilities::args($params,["biomass","model_name","workspace_name"],{
     	sbml => undef,
     	model_file => undef,
     	genome => undef,
@@ -2108,7 +2108,7 @@ sub func_importmodel {
     if (defined($params->{model_file})) {
     	$params->{model_file} = $handler->util_get_file_path($params->{model_file});
     	if (!-e $params->{model_file}) {
-	    	Bio::KBase::ObjectAPI::utilities::error("SBML file ".$params->{model_file}." doesn't exist!");
+	    	Bio::KBase::utilities::error("SBML file ".$params->{model_file}." doesn't exist!");
 	    }
 	    $params->{sbml} = "";
 	    open(my $fh, "<", $params->{model_file}) || return;
@@ -2121,9 +2121,9 @@ sub func_importmodel {
     if (defined($params->{compounds_file})) {
    		$params->{compounds_file} = $handler->util_get_file_path($params->{compounds_file});
     	if (!-e $params->{compounds_file}) {
-	    	Bio::KBase::ObjectAPI::utilities::error("Compound file ".$params->{compounds_file}." doesn't exist!");
+	    	Bio::KBase::utilities::error("Compound file ".$params->{compounds_file}." doesn't exist!");
 	    }
-	    $params->{compound_data} = Bio::KBase::ObjectAPI::utilities::parse_input_table($params->{compounds_file},[
+	    $params->{compound_data} = Bio::KBase::utilities::parse_input_table($params->{compounds_file},[
 			["id",1],
 			["charge",0,undef],
 			["formula",0,undef],
@@ -2132,6 +2132,7 @@ sub func_importmodel {
 		]);
     }
     #PARSING SBML IF PROVIDED
+    my $comptrans = Bio::KBase::constants::compartment_trans();
     if (defined($params->{sbml})) {
     	$params->{compounds} = [];
 		$params->{reactions} = [];
@@ -2182,6 +2183,14 @@ sub func_importmodel {
 	    		$cmproot = $1;
 	    		$cmpind = $2;
 	    	}
+	    	$cmpid =~ s/__/!/g;
+    		while ($cmpid =~ m/^([^\!]+)\!(\d+)\!(.*)/) {
+    			$cmpid = $1.chr($2).$3;
+    		}
+    		$cmpid =~ s/\!/__/g;
+	    	if (defined($comptrans->{$cmproot})) {
+	    		$cmproot = $comptrans->{$cmproot};
+	    	}
 	    	my $cmp = $templateobj->searchForCompartment($cmproot);
 	    	if (defined($cmp)) {
 	    		$cmp_SEED_id = $cmp->id();
@@ -2228,6 +2237,11 @@ sub func_importmodel {
 	    			if ($id =~ m/^M_(.+)/) {
 	    				$id = $1;
 	    			}
+	    			$id =~ s/__/!/g;
+	    			while ($id =~ m/^([^\!]+)\!(\d+)\!(.*)/) {
+	    				$id = $1.chr($2).$3;
+	    			}
+	    			$id =~ s/\!/__/g;
 	    		} elsif ($nm eq "name") {
 	    			$name = $value;
 	    			if ($name =~ m/^M_(.+)/) {
@@ -2239,6 +2253,11 @@ sub func_importmodel {
 	    			}
 	    		} elsif ($nm eq "compartment") {
 	    			$compartment = $value;
+	    			$compartment =~ s/__/!/g;
+	    			while ($compartment =~ m/^([^\!]+)\!(\d+)\!(.*)/) {
+	    				$compartment = $1.chr($2).$3;
+	    			}
+	    			$compartment =~ s/\!/__/g;
 	    			if (defined($cmptrans->{$compartment})) {
 	    				$compartment = $cmptrans->{$compartment};
 	    			}
@@ -2275,42 +2294,42 @@ sub func_importmodel {
 							}
 						} elsif ($text =~ m/BIOCYC:\s*([^<]+)/) {
 							if (length($1) > 0) {
-							    if (length($aliases) > 0) {
+							    if (defined($aliases) && length($aliases) > 0) {
 							    	$aliases .= "|";
 							    }
 							    $aliases .= "BIOCYC:".$1;
 							}
 						} elsif ($text =~ m/INCHI:\s*([^<]+)/) {
 							if (length($1) > 0) {
-							    if (length($aliases) > 0) {
+							    if (defined($aliases) && length($aliases) > 0) {
 							    	$aliases .= "|";
 							    }
 							    $aliases .= "INCHI:".$1;
 							}
 						} elsif ($text =~ m/CHEBI:\s*([^<]+)/) {
 							if (length($1) > 0) {
-							    if (length($aliases) > 0) {
+							    if (defined($aliases) && length($aliases) > 0) {
 							    	$aliases .= "|";
 							    }
 							    $aliases .= "CHEBI:".$1;
 							}
 						} elsif ($text =~ m/CHEMSPIDER:\s*([^<]+)/) {
 							if (length($1) > 0) {
-							    if (length($aliases) > 0) {
+							    if (defined($aliases) && length($aliases) > 0) {
 							    	$aliases .= "|";
 							    }
 							    $aliases .= "CHEMSPIDER:".$1;
 							}
 						} elsif ($text =~ m/PUBCHEM:\s*([^<]+)/) {
 							if (length($1) > 0) {
-							    if (length($aliases) > 0) {
+							    if (defined($aliases) && length($aliases) > 0) {
 							    	$aliases .= "|";
 							    }
 							    $aliases .= "PUBCHEM:".$1;
 							}
 						} elsif ($text =~ m/KEGG:\s*([^<]+)/) {
 							if (length($1) > 0) {
-							    if (length($aliases) > 0) {
+							    if (defined($aliases) && length($aliases) > 0) {
 							    	$aliases .= "|";
 							    }
 							    $aliases .= "KEGG:".$1;
@@ -2332,7 +2351,9 @@ sub func_importmodel {
 	    		name => $name,
 	    		formula => $formula,
 	    		charge => $charge,
-	    		aliases => $aliases
+	    		aliases => $aliases,
+	    		compartment => $compartment,
+	    		boundary => $boundary
 	    	};
 	    }
 	    #Parsing reactions
@@ -2343,8 +2364,8 @@ sub func_importmodel {
 	    	my $sbmlid = undef;
 	    	my $name = undef;
 	    	my $direction = "=";
-	    	my $reactants;
-	    	my $products;
+	    	my $reactants = "";
+	    	my $products = "";
 	    	my $compartment = "c";
 	    	my $gpr;
 	    	my $pathway;
@@ -2360,6 +2381,11 @@ sub func_importmodel {
 	    				$value = $1;
 	    			}
 	    			$id = $value;
+	    			$id =~ s/__/!/g;
+	    			while ($id =~ m/^([^\!]+)\!(\d+)\!(.*)/) {
+	    				$id = $1.chr($2).$3;
+	    			}
+	    			$id =~ s/\!/__/g;
 	    		} elsif ($nm eq "name") {
 	    			if ($value =~ m/^R_(.+)/) {
 	    				$value = $1;
@@ -2384,11 +2410,16 @@ sub func_importmodel {
 	    				foreach my $attr ($species->getAttributes()->getValues()) {
 	    					if ($attr->getName() eq "species") {
 	    						$spec = $attr->getValue();
+	    						#$spec =~ s/__/!/g;
+				    			#while ($spec =~ m/^([^\!]+)\!(\d+)\!(.*)/) {
+				    			#	$spec = $1.chr($2).$3;
+				    			#}
+				    			#$spec =~ s/\!/__/g;
 	    						if (defined($cpdhash->{$spec})) {
-	    							$boundary = $cpdhash->{$spec}->[2];
-								my $cpt = $cpdhash->{$spec}->[1];
-	    							$spec = $cpdhash->{$spec}->[0]."[".$cpt."]";
-								$cpd_compartments{$cpt} = 1;
+	    							$boundary = $cpdhash->{$spec}->{boundary};
+									my $cpt = $cpdhash->{$spec}->{compartment};
+	    							$spec = $cpdhash->{$spec}->{rootid}."[".$compdata->{$cpt}->{seed}."]";
+									$cpd_compartments{$cpt} = 1;
 	    						}
 	    					} elsif ($attr->getName() eq "stoichiometry") {
 	    						$stoich = $attr->getValue();
@@ -2433,7 +2464,7 @@ sub func_importmodel {
 								}
 							} elsif ($text =~ m/BIOCYC:\s*([^<]+)/) {
 								if (length($1) > 0) {
-									if (length($aliases) > 0) {
+									if (defined($aliases) && length($aliases) > 0) {
 								    	$aliases .= "|";
 								    }
 								    $aliases .= "BIOCYC".$1;
@@ -2463,10 +2494,10 @@ sub func_importmodel {
     }
     #ENSURING THAT THERE ARE REACTIONS AND COMPOUNDS FOR THE MODEL AT THIS STAGE
     if (!defined($params->{compounds}) || @{$params->{compounds}} == 0) {
-    	Bio::KBase::ObjectAPI::utilities::ERROR("Must have compounds for model!");
+    	Bio::KBase::utilities::error("Must have compounds for model!");
     }
     if (!defined($params->{reactions}) || @{$params->{reactions}} == 0) {
-    	Bio::KBase::ObjectAPI::utilities::ERROR("Must have reactions for model!");
+    	Bio::KBase::utilities::error("Must have reactions for model!");
     }
     #PARSING BIOMASS ARRAY IF ITS NOT ALREADY AN ARRAY
     if (ref($params->{biomass}) ne 'ARRAY') {
@@ -2488,7 +2519,7 @@ sub func_importmodel {
 		modelcompounds => [],
 		modelreactions => []
 	});
-	$model->parent($handler->util_data_store());
+	$model->parent($handler->util_store());
 	#REPROCESSING IDS
     my $translation = {};
     for (my $i=0; $i < @{$params->{compounds}}; $i++) {
