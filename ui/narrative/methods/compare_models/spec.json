@@ -3,9 +3,9 @@
     "authors": [
         "dejongh"
     ],
-    "contact": "help@kbase.us",
+    "contact": "http://kbase.us/contact-us/",
     "visible": true,
-    "categories": ["active"],
+    "categories": ["active","metabolic_modeling"],
     "widgets": {
         "input": null,
         "output": "kbaseFbaModelComparisonNew"
