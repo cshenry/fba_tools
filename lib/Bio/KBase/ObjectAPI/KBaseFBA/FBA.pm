@@ -491,6 +491,7 @@ sub PrepareForGapfilling {
 		use_discrete_variables => 0,
 		integrate_gapfilling_solution => 0
 	}, $args);
+	$self->parameters()->{activate_all_model_reactions} = $args->{activate_all_model_reactions};
 	$self->parameters()->{integrate_gapfilling_solution} = $args->{integrate_gapfilling_solution};
 	push(@{$self->gauranteedrxns()},@{$args->{gauranteedrxns}});
 	push(@{$self->blacklistedrxns()},@{$args->{blacklistedrxns}});
@@ -831,7 +832,6 @@ sub createJobDirectory {
 		my $direction = $rxn->direction();
 		my $rxndir = "<=>";
 		if (defined($self->parameters()->{activate_all_model_reactions}) && $self->parameters()->{activate_all_model_reactions} == 1) {
-			print "TEST!\n";
 			$actcoef->{$rxn->id()} = 1;
 		}
 		if ($direction eq ">") {

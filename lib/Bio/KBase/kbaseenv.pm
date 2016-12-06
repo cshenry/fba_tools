@@ -4,6 +4,8 @@ use warnings;
 use Bio::KBase::utilities;
 
 our $ws_client = undef;
+our $ga_client = undef;
+our $ac_client = undef;
 our $objects_created = [];
 
 #create_report: creates a report object using the KBaseReport service
@@ -22,19 +24,19 @@ sub create_report {
 		require "KBaseReport/KBaseReportImpl.pm";
 		$kr = new KBaseReport::KBaseReportImpl();
 		if (!defined($KBaseReport::KBaseReportServer::CallContext)) {
-			$KBaseReport::KBaseReportServer::CallContext = $ctx;
+			$KBaseReport::KBaseReportServer::CallContext = Bio::KBase::utilities::context();
 		}
 	} else {
 		require "KBaseReport/KBaseReportClient.pm";
-		$kr = new KBaseReport::KBaseReportClient(Bio::KBase::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+		$kr = new KBaseReport::KBaseReportClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	if (defined(Bio::KBase::utilities::utilconf("debugging")) && Bio::KBase::utilities::utilconf("debugging") == 1) {
-		push(@{$parameters->{file_links}},{
+		Bio::KBase::utilities::add_report_file({
 			path => Bio::KBase::utilities::utilconf("debugfile"),
-	        name => "Debug.txt",
-	        description => "Debug file"
+			name => "Debug.txt",
+			description => "Debug file"
 		});
-	}
+	};
 	return $kr->create_extended_report({
 		message => Bio::KBase::utilities::report_message(),
         objects_created => $objects_created,
@@ -80,6 +82,30 @@ sub ws_client {
 	return $ws_client;
 }
 
+sub ga_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($ga_client)) {
+		require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
+		$ga_client = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"));
+	}
+	return $ga_client;
+}
+
+sub ac_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($ac_client)) {
+		require "AssemblyUtil/AssemblyUtilClient.pm";
+		$ac_client = new AssemblyUtil::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"));
+	}
+	return $ac_client;
+}
+
 sub get_object {
 	my ($ws,$id) = @_;
 	my $output = Bio::KBase::kbaseenv::ws_client()->get_objects();
@@ -103,6 +129,12 @@ sub administer {
 
 sub reset_objects_created {
 	$objects_created = [];
+}
+
+sub add_object_created {
+	my ($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,["ref","description"],{});
+	push(@{$objects_created},$parameters);
 }
 
 sub save_objects {

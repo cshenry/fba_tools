@@ -109,18 +109,18 @@ sub report_html {
 
 sub add_report_file {
 	my ($args) = @_;
-	$args = Bio::KBase::utilities::args($args,["file","name","description"],{
+	$args = Bio::KBase::utilities::args($args,["path","name","description"],{
 		html => 0
 	});
 	if ($args->{html} == 1) {
 		push(@{$reporthtmlfiles},{
-			file => $args->{file},
+			path => $args->{path},
 			name => $args->{name},
 			description => $args->{description},
 		});
 	} else {
 		push(@{$reportfiles},{
-			file => $args->{file},
+			path => $args->{path},
 			name => $args->{name},
 			description => $args->{description},
 		});
