@@ -95,10 +95,11 @@ sub new
     #BEGIN_CONSTRUCTOR
     Bio::KBase::utilities::read_config({
 		filename => $ENV{KB_DEPLOYMENT_CONFIG},
-		service => $ENV{KB_SERVICE_NAME}
+		service => "fba_tools"
 	});
     Bio::KBase::utilities::setconf("fba_tools","call_back_url",$ENV{ SDK_CALLBACK_URL });
     Bio::KBase::ObjectAPI::functions::set_handler($self);
+    Bio::KBase::utilities::set_handler($self);
     #END_CONSTRUCTOR
 
     if ($self->can('_init_instance'))
@@ -1336,7 +1337,7 @@ sub compare_models
     $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_compare_models($params);
 	$self->util_finalize_call({
-		output => $results,
+		output => $return,
 		workspace => $params->{workspace},
 		report_name => $params->{mc_name}.".report",
 	});
@@ -1435,7 +1436,7 @@ sub edit_metabolic_model
     $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_edit_metabolic_model($params);
 	$self->util_finalize_call({
-		output => $results,
+		output => $return,
 		workspace => $params->{workspace},
 		report_name => $params->{fbamodel_output_id}.".report",
 	});
