@@ -80,12 +80,12 @@ sub print_report_message {
 	});
 	if ($args->{html} == 1) {
 		if ($args->{append} == 1) {
-			if (!defined($reporthtmlfiles)) {
-				$reporthtmlfiles = "";
+			if (!defined($reporthtml)) {
+				$reporthtml = "";
 			}
-			$reporthtmlfiles .= $args->{message};
+			$reporthtml .= $args->{message};
 		} else {
-			$reporthtmlfiles = $args->{message};
+			$reporthtml = $args->{message};
 		}
 	} else {
 		if ($args->{append} == 1) {

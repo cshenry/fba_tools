@@ -1133,6 +1133,8 @@ sub add_gapfilling {
 	}
 	#Integrating reaction addition information into model
 	my $solutions = $args->{object}->gapfillingSolutions();
+	my $added = 0;
+	my $reversed = 0;
 	for (my $i=0; $i < @{$solutions}; $i++) {
 		my $solution = $solutions->[$i];
 		my $integrated = 0;
@@ -1158,6 +1160,7 @@ sub add_gapfilling {
 			if (defined($mdlrxn)) {
 				$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
 				if ($rxn->direction() ne $mdlrxn->direction() && $integrated == 1) {
+					$reversed++;
 					$mdlrxn->direction("=");
 				}
 			} else {
@@ -1170,6 +1173,7 @@ sub add_gapfilling {
 				if (defined($mdlrxn)) {
 					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
 					if ($integrated == 1) {
+						$added++;
 						$self->add("modelreactions",$mdlrxn);
 						$mdlrxn->direction() = $rxn->direction();
 						$self->removed("gapfilledcandidates",$mdlrxn);
@@ -1244,6 +1248,7 @@ sub add_gapfilling {
 					$mdlrxn->parent($self);
 					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
 					if ($integrated == 1) {
+						$added++;
 						$mdlrxn = $self->add("modelreactions",$mdlrxn);
 					} else {
 						$mdlrxn = $self->add("gapfilledcandidates",$mdlrxn);
@@ -1258,12 +1263,13 @@ sub add_gapfilling {
 					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
 					if ($integrated == 0) {
 						$self->add("gapfilledcandidates",$mdlrxn);
-						$self->removed("modelreactions",$mdlrxn);
+						$self->remove("modelreactions",$mdlrxn);
 					}
 				}
 			}
 		}	
 	}
+	Bio::KBase::utilities::print_report_message({message => " During gapfilling, ".$added." new reactions were aded to the model, while ".$reversed." existing reactions were made reversible.",append => 1,html => 0});
 }
 
 =head3 searchForCompound
@@ -1972,6 +1978,7 @@ sub translate_model {
 	}, @_);
 	my $protcomp = $args->{proteome_comparison};
 	my $genome = $self->genome();
+	print $genome->id();
 	my $ftrs = $genome->features();
 	my $numftrs = @{$ftrs};
 	my $ftrhash;
