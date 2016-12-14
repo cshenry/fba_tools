@@ -2139,6 +2139,9 @@ sub translate_to_localrefs {
 
 sub update_from_old_versions {
 	my $self = shift;
+	if ($self->template_ref() eq "277/31/1") {
+		$self->template_ref("12998/4/1");
+	}
 	my $gfs = $self->gapfillings();
 	my $updated = 1;
 	for (my $i=0; $i < @{$gfs}; $i++) {
