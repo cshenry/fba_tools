@@ -21,6 +21,7 @@ our $arguments = undef;
 sub to_json {
     my ($ref,$prettyprint) = @_;
     my $JSON = JSON->new->utf8(1);
+    $JSON->allow_blessed([]);
     if (defined($prettyprint) && $prettyprint == 1) {
 		$JSON->pretty(1);
     }
