@@ -356,7 +356,7 @@ sub func_build_metabolic_model {
 	$datachannel->{fbamodel} = $model;
 	#Gapfilling model if requested
 	my $output;
-	Bio::KBase::utilities::print_report_message({message => "A new draft genome-scale metabolic model was constructed based on the annotations in genome ".$params->{genome_id}.".",append => 0,html => 0});
+	Bio::KBase::utilities::print_report_message({message => "A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".",append => 0,html => 0});
 	if ($params->{gapfill_model} == 1) {
 		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			thermodynamic_constraints => $params->{thermodynamic_constraints},
@@ -1395,10 +1395,8 @@ sub func_check_model_mass_balance {
 		}
     	$htmlreport .= "</table>";
     }
-   	return {
-		direct_html => $htmlreport,
-		message => $message
-	};
+    Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
+    Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 }
 
 sub func_create_or_edit_media {

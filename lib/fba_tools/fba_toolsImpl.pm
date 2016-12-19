@@ -39,7 +39,9 @@ sub util_finalize_call {
 	$params = Bio::KBase::utilities::args($params,["workspace","report_name"],{
 		output => {},
 	});
-	Bio::KBase::utilities::print_report_message({message => "<p>".Bio::KBase::utilities::report_message()."</p>",append => 1,html => 1});
+	if ((!defined(Bio::KBase::utilities::report_html()) || length(Bio::KBase::utilities::report_html()) == 0) && defined(Bio::KBase::utilities::report_message()) && length(Bio::KBase::utilities::report_message()) > 0) {
+		Bio::KBase::utilities::print_report_message({message => "<p>".Bio::KBase::utilities::report_message()."</p>",append => 1,html => 1});
+	}
 	my $reportout = Bio::KBase::kbaseenv::create_report({
     	workspace_name => $params->{workspace},
     	report_object_name => $params->{report_name}
