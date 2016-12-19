@@ -1264,12 +1264,14 @@ sub add_gapfilling {
 					if ($integrated == 0) {
 						$self->add("gapfilledcandidates",$mdlrxn);
 						$self->remove("modelreactions",$mdlrxn);
+					} else {
+						$added++;
 					}
 				}
 			}
 		}	
 	}
-	Bio::KBase::utilities::print_report_message({message => " During gapfilling, ".$added." new reactions were aded to the model, while ".$reversed." existing reactions were made reversible.",append => 1,html => 0});
+	Bio::KBase::utilities::print_report_message({message => " During gapfilling, ".$added." new reactions were added to the model, while ".$reversed." existing reactions were made reversible.",append => 1,html => 0});
 }
 
 =head3 searchForCompound
