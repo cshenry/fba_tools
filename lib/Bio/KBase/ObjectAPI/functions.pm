@@ -356,7 +356,7 @@ sub func_build_metabolic_model {
 	$datachannel->{fbamodel} = $model;
 	#Gapfilling model if requested
 	my $output;
-	Bio::KBase::utilities::print_report_message({message => "A new draft genome-scale metabolic model was constructed based on the annotations in genome ".$params->{genome_id}.". ",append => 0,html => 0});
+	Bio::KBase::utilities::print_report_message({message => "A new draft genome-scale metabolic model was constructed based on the annotations in genome ".$params->{genome_id}.".",append => 0,html => 0});
 	if ($params->{gapfill_model} == 1) {
 		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			thermodynamic_constraints => $params->{thermodynamic_constraints},
@@ -387,7 +387,7 @@ sub func_build_metabolic_model {
 		$output->{new_fbamodel_ref} = $params->{workspace}."/".$params->{fbamodel_output_id};
 		Bio::KBase::utilities::print_report_message({message => " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run.",append => 1,html => 0});
 	}
-	Bio::KBase::utilities::print_report_message({message => "Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.",append => 1,html => 0});
+	Bio::KBase::utilities::print_report_message({message => " Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.",append => 1,html => 0});
 	return $output;
 }
 
@@ -424,7 +424,7 @@ sub func_gapfill_metabolic_model {
 		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
     	Bio::KBase::utilities::print_report_message({message => "The genome-scale metabolic model ".$params->{fbamodel_id}." was gapfilled",append => 0,html => 0});
     } else {
-    	Bio::KBase::utilities::print_report_message({message => "The model ".$params->{fbamodel_id}." was gapfilled",append => 0,html => 0});
+    	Bio::KBase::utilities::print_report_message({message => " The model ".$params->{fbamodel_id}." was gapfilled",append => 1,html => 0});
     }
     if (!defined($params->{media_id})) {
     	if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
