@@ -1574,7 +1574,7 @@ sub func_compare_models {
 	if (@{$params->{model_refs}} < 2) {
 		Bio::KBase::utilities::error("Must select at least two models to compare");
     }
-	if (!defined($params->{protcomp_ref}) || !defined($params->{pangenome_ref})) {
+	if (!defined($params->{protcomp_ref}) && !defined($params->{pangenome_ref})) {
     	Bio::KBase::utilities::error("Must provide either a pangenome or proteome comparison");
     }
 
