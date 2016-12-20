@@ -1235,7 +1235,8 @@ sub check_model_mass_balance
     my($results);
     #BEGIN check_model_mass_balance
     $self->util_initialize_call($params,$ctx);
-	$results = Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
+	$results = {};
+	Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
     $self->util_finalize_call({
 		output => $results,
 		workspace => $params->{workspace},
