@@ -516,6 +516,7 @@ sub func_run_flux_balance_analysis {
     if (!defined($model)) {
     	$handler->util_log("Retrieving model.");
 		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+    	Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
     }
     if (!defined($params->{media_id})) {
     	if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
@@ -526,6 +527,7 @@ sub func_run_flux_balance_analysis {
 		}
     	$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
     }
+    Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
     $handler->util_log("Retrieving ".$params->{media_id}." media.");
     my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
     $handler->util_log("Preparing flux balance analysis problem.");
@@ -812,6 +814,7 @@ sub func_propagate_model_to_new_genome {
 		translation_policy => "translate_only"
     });
 	#Getting genome
+	Bio::KBase::utilities::print_report_message({message => "A new genome-scale metabolic model was constructed by propagating the existing model ".$params->{fbamodel_id}." to the genome ".$params->{genome_id}.".",append => 0,html => 0});
 	my $source_model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
 	my $rxns = $source_model->modelreactions();
 	my $model = $source_model->cloneObject();
