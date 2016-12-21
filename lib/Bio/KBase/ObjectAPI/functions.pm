@@ -2056,12 +2056,6 @@ sub func_compare_models {
     $mc->{pangenome_ref} = $params->{pangenome_ref} if (defined $params->{pangenome_ref});
     Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($mc,1));
     #my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});   
-    my $metadata = $handler->util_report({
-    	'ref' => $params->{workspace}."/model_comparison_report_".$params->{mc_name},
-    	message => "ModelComparison saved to ".$params->{workspace}."/".$params->{mc_name}."\n",
-    	#objects => [[$params->{workspace}."/".$params->{mc_name},"Model Comparison"]]
-    	objects => []
-    });
     return { 
     	'mc_ref' => $params->{workspace}."/".$params->{mc_name}
     };
