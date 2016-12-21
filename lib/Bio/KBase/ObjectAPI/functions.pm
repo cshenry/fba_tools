@@ -1584,7 +1584,7 @@ sub func_compare_models {
 		my $model=undef;
 		eval {
 		    $model=$handler->util_get_object($model_ref,{raw => 1});
-		    $model->{id} = pop(@{[split(/\//,$model->{model_ref})]});
+		    $model->{id} = pop(@{[split(/\//,$model_ref)]});
 		    $model->{model_ref} = $model_ref;
 		    push @models, $model;
 		    push @{$provenance->[0]->{'input_ws_objects'}}, $model_ref;
