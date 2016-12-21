@@ -1711,6 +1711,8 @@ sub func_compare_models {
 	}
     }
     
+    Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($model,1));
+    
     # PREPARE FEATURE COMPARISONS
     my $gene_translation;
     my %model2family;
