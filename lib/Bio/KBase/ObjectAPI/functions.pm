@@ -2054,7 +2054,7 @@ sub func_compare_models {
     $mc->{families} = [values %$mc_families];
     $mc->{protcomp_ref} = $params->{protcomp_ref} if (defined $params->{protcomp_ref});
     $mc->{pangenome_ref} = $params->{pangenome_ref} if (defined $params->{pangenome_ref});
-    Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($genome,1));
+    Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($mc,1));
     #my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});   
     my $metadata = $handler->util_report({
     	'ref' => $params->{workspace}."/model_comparison_report_".$params->{mc_name},
