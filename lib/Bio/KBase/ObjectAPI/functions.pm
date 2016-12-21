@@ -1624,94 +1624,93 @@ sub func_compare_models {
     my %ftr2reactions;
 
     foreach my $model (@models) {
-	$handler->util_log("Processing model ", $model->{id}, "");
-	foreach my $cmp (@{$model->{modelcompartments}}) {
-	    $model->{cmphash}->{$cmp->{id}} = $cmp;
-	}
-	foreach my $cpd (@{$model->{modelcompounds}}) {
-	    $cpd->{cmpkbid} = pop @{[split /\//, $cpd->{modelcompartment_ref}]};
-	    $cpd->{cpdkbid} = pop @{[split /\//, $cpd->{compound_ref}]};
-	    if (! defined $cpd->{name}) {
-			$cpd->{name} = $cpd->{id};
-	    }
-	    $cpd->{name} =~ s/_[a-zA-z]\d+$//g;
-	    
-	    $model->{cpdhash}->{$cpd->{id}} = $cpd;
-	    if ($cpd->{cpdkbid} ne "cpd00000") {
-			$model->{cpdhash}->{$cpd->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}}} = $cpd;
-	    }
-	}
-	foreach my $rxn (@{$model->{modelreactions}}) {
-	    $rxn->{rxnkbid} = pop @{[split /\//, $rxn->{reaction_ref}]};
-	    $rxn->{cmpkbid} = pop @{[split /\//, $rxn->{modelcompartment_ref}]};
-	    $rxn->{dispid} = $rxn->{id};
-	    $rxn->{dispid} =~ s/_[a-zA-z]\d+$//g;
-	    $rxn->{dispid} .= "[".$rxn->{cmpkbid}."]";
-	    if ($rxn->{name} eq "CustomReaction") {
-			$rxn->{name} = $rxn->{id};
-	    }
-	    $rxn->{name} =~ s/_[a-zA-z]\d+$//g;
-	    $model->{rxnhash}->{$rxn->{id}} = $rxn;
-	    if ($rxn->{rxnkbid} ne "rxn00000") {
-			$model->{rxnhash}->{$rxn->{rxnkbid}."_".$rxn->{cmpkbid}} = $rxn;
-			if ($rxn->{rxnkbid}."_".$rxn->{cmpkbid} ne $rxn->{id}) {
-			    $rxn->{dispid} .= "<br>(".$rxn->{rxnkbid}.")";
+		$handler->util_log("Processing model ", $model->{id}, "");
+		foreach my $cmp (@{$model->{modelcompartments}}) {
+		    $model->{cmphash}->{$cmp->{id}} = $cmp;
+		}
+		foreach my $cpd (@{$model->{modelcompounds}}) {
+		    $cpd->{cmpkbid} = pop @{[split /\//, $cpd->{modelcompartment_ref}]};
+		    $cpd->{cpdkbid} = pop @{[split /\//, $cpd->{compound_ref}]};
+		    if (! defined $cpd->{name}) {
+				$cpd->{name} = $cpd->{id};
+		    }
+		    $cpd->{name} =~ s/_[a-zA-z]\d+$//g;
+		    
+		    $model->{cpdhash}->{$cpd->{id}} = $cpd;
+		    if ($cpd->{cpdkbid} ne "cpd00000") {
+				$model->{cpdhash}->{$cpd->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}}} = $cpd;
+		    }
+		}
+		foreach my $rxn (@{$model->{modelreactions}}) {
+		    $rxn->{rxnkbid} = pop @{[split /\//, $rxn->{reaction_ref}]};
+		    $rxn->{cmpkbid} = pop @{[split /\//, $rxn->{modelcompartment_ref}]};
+		    $rxn->{dispid} = $rxn->{id};
+		    $rxn->{dispid} =~ s/_[a-zA-z]\d+$//g;
+		    $rxn->{dispid} .= "[".$rxn->{cmpkbid}."]";
+		    if ($rxn->{name} eq "CustomReaction") {
+				$rxn->{name} = $rxn->{id};
+		    }
+		    $rxn->{name} =~ s/_[a-zA-z]\d+$//g;
+		    $model->{rxnhash}->{$rxn->{id}} = $rxn;
+		    if ($rxn->{rxnkbid} ne "rxn00000") {
+				$model->{rxnhash}->{$rxn->{rxnkbid}."_".$rxn->{cmpkbid}} = $rxn;
+				if ($rxn->{rxnkbid}."_".$rxn->{cmpkbid} ne $rxn->{id}) {
+				    $rxn->{dispid} .= "<br>(".$rxn->{rxnkbid}.")";
+				}
+		    }
+		    my $reactants = "";
+		    my $products = "";
+		    my $sign = "<=>";
+		    if ($rxn->{direction} eq ">") {
+				$sign = "=>";
+		    } elsif ($rxn->{direction} eq "<") {
+				$sign = "<=";
+		    }
+		    foreach my $rgt (@{$rxn->{modelReactionReagents}}) {
+			$rgt->{cpdkbid} = pop @{[split /\//, $rgt->{modelcompound_ref}]};
+			$mcpd_refs{$rgt->{modelcompound_ref}} = $model->{cpdhash}->{$rgt->{cpdkbid}}; # keep track of model compound refs
+			if ($rgt->{coefficient} < 0) {
+			    if ($reactants ne "") {
+				$reactants .= " + ";
+			    }
+			    if ($rgt->{coefficient} != -1) {
+				my $abscoef = int(-1*100*$rgt->{coefficient})/100;
+				$reactants .= "(".$abscoef.") ";
+			    }
+			    $reactants .= $model->{cpdhash}->{$rgt->{cpdkbid}}->{name}."[".$model->{cpdhash}->{$rgt->{cpdkbid}}->{cmpkbid}."]";
+			} else {
+			    if ($products ne "") {
+				$products .= " + ";
+			    }
+			    if ($rgt->{coefficient} != 1) {
+				my $abscoef = int(100*$rgt->{coefficient})/100;
+				$products .= "(".$abscoef.") ";
+			    }
+			    $products .= $model->{cpdhash}->{$rgt->{cpdkbid}}->{name}."[".$model->{cpdhash}->{$rgt->{cpdkbid}}->{cmpkbid}."]";
 			}
-	    }
-	    my $reactants = "";
-	    my $products = "";
-	    my $sign = "<=>";
-	    if ($rxn->{direction} eq ">") {
-			$sign = "=>";
-	    } elsif ($rxn->{direction} eq "<") {
-			$sign = "<=";
-	    }
-	    foreach my $rgt (@{$rxn->{modelReactionReagents}}) {
-		$rgt->{cpdkbid} = pop @{[split /\//, $rgt->{modelcompound_ref}]};
-		$mcpd_refs{$rgt->{modelcompound_ref}} = $model->{cpdhash}->{$rgt->{cpdkbid}}; # keep track of model compound refs
-		if ($rgt->{coefficient} < 0) {
-		    if ($reactants ne "") {
-			$reactants .= " + ";
 		    }
-		    if ($rgt->{coefficient} != -1) {
-			my $abscoef = int(-1*100*$rgt->{coefficient})/100;
-			$reactants .= "(".$abscoef.") ";
+		    $rxn->{ftrhash} = {};
+		    foreach my $prot (@{$rxn->{modelReactionProteins}}) {
+			foreach my $subunit (@{$prot->{modelReactionProteinSubunits}}) {
+			    foreach my $feature (@{$subunit->{feature_refs}}) {
+				my $ef = pop @{[split /\//, $feature]};
+				$rxn->{ftrhash}->{$ef} = 1;
+				$ftr2model{$ef}->{$model->{id}} = 1;
+				$ftr2reactions{$ef}->{$rxn->{id}} = 1;
+			    }
+			}
 		    }
-		    $reactants .= $model->{cpdhash}->{$rgt->{cpdkbid}}->{name}."[".$model->{cpdhash}->{$rgt->{cpdkbid}}->{cmpkbid}."]";
-		} else {
-		    if ($products ne "") {
-			$products .= " + ";
+		    $rxn->{dispfeatures} = "";
+		    foreach my $gene (keys %{$rxn->{ftrhash}}) {
+			if ($rxn->{dispfeatures} ne "") {
+			    $rxn->{dispfeatures} .= "<br>";
+			}
+			$rxn->{dispfeatures} .= $gene;
 		    }
-		    if ($rgt->{coefficient} != 1) {
-			my $abscoef = int(100*$rgt->{coefficient})/100;
-			$products .= "(".$abscoef.") ";
-		    }
-		    $products .= $model->{cpdhash}->{$rgt->{cpdkbid}}->{name}."[".$model->{cpdhash}->{$rgt->{cpdkbid}}->{cmpkbid}."]";
+		    $rxn->{equation} = $reactants." ".$sign." ".$products;
 		}
-	    }
-	    $rxn->{ftrhash} = {};
-	    foreach my $prot (@{$rxn->{modelReactionProteins}}) {
-		foreach my $subunit (@{$prot->{modelReactionProteinSubunits}}) {
-		    foreach my $feature (@{$subunit->{feature_refs}}) {
-			my $ef = pop @{[split /\//, $feature]};
-			$rxn->{ftrhash}->{$ef} = 1;
-			$ftr2model{$ef}->{$model->{id}} = 1;
-			$ftr2reactions{$ef}->{$rxn->{id}} = 1;
-		    }
-		}
-	    }
-	    $rxn->{dispfeatures} = "";
-	    foreach my $gene (keys %{$rxn->{ftrhash}}) {
-		if ($rxn->{dispfeatures} ne "") {
-		    $rxn->{dispfeatures} .= "<br>";
-		}
-		$rxn->{dispfeatures} .= $gene;
-	    }
-	    $rxn->{equation} = $reactants." ".$sign." ".$products;
-	}
+		Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($model,1));
     }
-    
-    Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($model,1));
     
     # PREPARE FEATURE COMPARISONS
     my $gene_translation;
