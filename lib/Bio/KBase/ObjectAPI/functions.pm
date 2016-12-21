@@ -2054,16 +2054,15 @@ sub func_compare_models {
     $mc->{families} = [values %$mc_families];
     $mc->{protcomp_ref} = $params->{protcomp_ref} if (defined $params->{protcomp_ref});
     $mc->{pangenome_ref} = $params->{pangenome_ref} if (defined $params->{pangenome_ref});
-    
-    my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});   
+    Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($genome,1));
+    #my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});   
     my $metadata = $handler->util_report({
     	'ref' => $params->{workspace}."/model_comparison_report_".$params->{mc_name},
     	message => "ModelComparison saved to ".$params->{workspace}."/".$params->{mc_name}."\n",
-    	objects => [[$params->{workspace}."/".$params->{mc_name},"Model Comparison"]]
+    	#objects => [[$params->{workspace}."/".$params->{mc_name},"Model Comparison"]]
+    	objects => []
     });
     return { 
-    	'report_name'=>'model_comparison_report_'.$params->{mc_name},
-    	'report_ref' => $metadata->[6]."/".$metadata->[0]."/".$metadata->[4], 
     	'mc_ref' => $params->{workspace}."/".$params->{mc_name}
     };
 }
