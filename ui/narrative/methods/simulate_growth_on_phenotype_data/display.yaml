@@ -140,10 +140,9 @@ icon: fba-teal.png
 
 description : |
     <p>This method uses an input metabolic model to simulate growth in a set of media conditions, with a specified set of gene knockouts, and with specified media supplements. A metabolic model can be curated using phenotypic data such as Biolog growth data or gene essentiality data generated on a specific set of media conditions. The method reports differences between growth predictions and experimentally measured growth rates. This method can be applied to test the accuracy of a model in replicating experimental observations, as well as exploring the set of metabolites that an organism can utilize as nutrient sources.  The Simulate Growth on Phenotype Data  method carries out flux balance analysis (FBA) for each medium and knockout in the phenotype dataset and displays the output (growth/no growth) as a side-by-side comparison of model predictions and experimental results. To begin, the user uploads a table of phenotype data (e.g., Biolog or gene essentiality data) into the app. The user also either uploads a metabolic model or selects a model already present in KBase. KBase uses the selected model to simulate the uploaded phenotypes, presenting simulation results in a detailed exportable report. This method also conducts some reconciliation of models with phenotype data.</p>
+  
     
-    <p>Numerous Biolog and gene essentiality datasets are available for analysis through the KBase public data sets. These “PhenotypeSet” data can be imported to your narrative by the following steps: (1) click the right arrow of the “DATA” tab in the upper right corner of teh Narrative Interface, (2) navigate to the “Public” tab, (3)select the “PhenotypeSet” in the dropdown list and search for a specific dataset (4) click the “Add” button that appears on the left of each PhenotypeSet.</p>
-    
-    <p>In the near future you will be able to upload your own phenotype datasets to your Narrative from an input file.  Example data input files can be <a href="http://bioseed.mcs.anl.gov/~janakae/Phenosim/">downloaded here.</a></p>
+    <p>For information about how to upload your own phenotype data, see the <a href="http://kbase.us/data-upload-download-guide/phenotype-set/">Data Upload and Download Guide.</a></p>
     
     <p>The columns in the phenotype files are as follows:</p>   
     <ul>
