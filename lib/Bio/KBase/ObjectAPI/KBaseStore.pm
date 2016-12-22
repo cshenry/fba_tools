@@ -147,7 +147,7 @@ sub get_objects {
 					$objdatas->[$i]->{data} = $gaoutput->{genomes}->[0]->{data};
 					$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
 				}
-				if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison") {
+				if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
 					$self->cache()->{$newrefs->[$i]} = $objdatas->[$i]->{data};
 					$self->cache()->{$newrefs->[$i]}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
 				} else {
@@ -203,7 +203,7 @@ sub get_objects {
 				    	reagents => []
 					});
 				}
-				if ($type eq "FBAModel") {
+				if ($type eq "FBAModel" && $options->{raw} != 1) {
 					if (defined($self->cache()->{$newrefs->[$i]}->template_ref())) {
 						if ($self->cache()->{$newrefs->[$i]}->template_ref() =~ m/(\w+)\/(\w+)\/*\d*/) {
 							my $output = Bio::KBase::kbaseenv::get_object_info([{
@@ -259,7 +259,7 @@ sub get_objects {
 
 sub get_object {
     my ($self,$ref,$options) = @_;
-    return $self->get_objects([$ref])->[0];
+    return $self->get_objects([$ref],$options)->[0];
 }
 
 sub get_object_by_handle {

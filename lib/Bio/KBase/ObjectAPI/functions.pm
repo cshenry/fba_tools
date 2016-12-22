@@ -1579,14 +1579,14 @@ sub func_compare_models {
     }
 
     my $provenance = [{}];
-    my @models;
+    my $models;
     foreach my $model_ref (@{$params->{model_refs}}) {
 		my $model=undef;
 		eval {
-		    $model=$handler->util_get_object($model_ref,{raw => 1});
+		    $model = $handler->util_get_object($model_ref,{raw => 1});
 		    $model->{id} = pop(@{[split(/\//,$model_ref)]});
 		    $model->{model_ref} = $model_ref;
-		    push @models, $model;
+		    push @{$models}, $model;
 		    push @{$provenance->[0]->{'input_ws_objects'}}, $model_ref;
 		};
 		if ($@) {
@@ -1623,7 +1623,7 @@ sub func_compare_models {
     my %ftr2model; # hash from gene feature ids to the models they are in
     my %ftr2reactions;
 
-    foreach my $model (@models) {
+    foreach my $model (@{$models}) {
 		$handler->util_log("Processing model ", $model->{id}, "");
 		foreach my $cmp (@{$model->{modelcompartments}}) {
 		    $model->{cmphash}->{$cmp->{id}} = $cmp;
@@ -1709,7 +1709,6 @@ sub func_compare_models {
 		    }
 		    $rxn->{equation} = $reactants." ".$sign." ".$products;
 		}
-		Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($model,1));
     }
     
     # PREPARE FEATURE COMPARISONS
@@ -1742,7 +1741,7 @@ sub func_compare_models {
 	    foreach my $ortholog (@{$family->{orthologs}}) {
 		$ftr2family{$ortholog->[0]} = $family;
 		map { $gene_translation->{$ortholog->[0]}->{$_->[0]} = 1 } @{$family->{orthologs}};
-		foreach my $model (@models) {
+		foreach my $model (@{$models}) {
 		    if (exists $ftr2model{$ortholog->[0]}->{$model->{id}}) {
 			map { $in_models->{$model->{id}}->{$_} = 1 } keys $ftr2reactions{$ortholog->[0]};
 			push @{$model2family{$model->{id}}->{$family->{id}}}, $ortholog->[0];
@@ -1751,7 +1750,7 @@ sub func_compare_models {
 	    }
 	    my $num_models = scalar keys %$in_models;
 	    if ($num_models > 0) {
-		foreach my $model (@models) {
+		foreach my $model (@{$models}) {
 		    if (exists $in_models->{$model->{id}}) {
 			my @reactions = sort keys %{$in_models->{$model->{id}}};
 			$family_model_data->{$model->{id}} =  [1, \@reactions];
@@ -1765,12 +1764,12 @@ sub func_compare_models {
 		    family_id => $family->{id},
 		    function => $family->{function},
 		    number_models => $num_models,
-		    fraction_models => $num_models*1.0/@models,
-		    core => ($num_models == @models ? 1 : 0),
+		    fraction_models => $num_models*1.0/@{$models},
+		    core => ($num_models == @{$models} ? 1 : 0),
 		    family_model_data => $family_model_data
 		};
 		$mc_families->{$family->{id}} = $mc_family;
-		$core_families++ if ($num_models == @models);
+		$core_families++ if ($num_models == @{$models});
 	    }
 	}
     }
@@ -1778,7 +1777,7 @@ sub func_compare_models {
     # ACCUMULATE REACTIONS AND FAMILIES
     my %rxn2families;
 
-    foreach my $model (@models) {
+    foreach my $model (@{$models}) {
 		foreach my $rxnid (keys %{$model->{rxnhash}}) {
 		    foreach my $ftr (keys %{$model->{$rxnid}->{ftrhash}}) {
 				$rxn2families{$rxnid}->{$ftr2family{$ftr}->{id}} = $ftr2family{$ftr};
@@ -1793,7 +1792,7 @@ sub func_compare_models {
     my $mc_compounds;
     my $mc_bcpds;
 
-    foreach my $model1 (@models) {
+    foreach my $model1 (@{$models}) {
 		my $mc_model = {};
 		push @{$mc_models}, $mc_model;
 		$mc_model->{id} = $model1->{id};
@@ -1814,7 +1813,7 @@ sub func_compare_models {
 		$mc_model->{compounds} = scalar @{$model1->{modelcompounds}};
 		$mc_model->{biomasses} = scalar @{$model1->{biomasses}};
 	
-		foreach my $model2 (@models) {
+		foreach my $model2 (@{$models}) {
 		    next if $model1->{id} eq $model2->{id};		    
 		    $mc_model->{model_similarity}->{$model2->{id}} = [0,0,0,0,0];
 		}
@@ -1829,7 +1828,7 @@ sub func_compare_models {
 			    foreach my $m (keys %model2family) {
 				$conservation++ if exists $model2family{$m}->{$family->{id}};
 			    }
-			    push @$ftrs, [$ftr, $family->{id}, $conservation*1.0/@models, 0];
+			    push @$ftrs, [$ftr, $family->{id}, $conservation*1.0/@{$models}, 0];
 			}
 			# maybe families associated with reaction aren't in model
 			foreach my $familyid (keys %{$rxn2families{$rxn->{id}}}) {
@@ -1838,7 +1837,7 @@ sub func_compare_models {
 				foreach my $m (keys %model2family) {
 				    $conservation++ if exists $model2family{$m}->{$familyid};
 				}
-				push @$ftrs, ["", $familyid, $conservation*1.0/@models, 1];
+				push @$ftrs, ["", $familyid, $conservation*1.0/@{$models}, 1];
 			    }
 			}
 		    }
@@ -1857,7 +1856,7 @@ sub func_compare_models {
 			$mc_reaction->{number_models}++;
 		    }
 		    $mc_reaction->{reaction_model_data}->{$model1->{id}} = [1,$rxn->{direction},$ftrs,$rxn->{dispfeatures}];
-		    foreach my $model2 (@models) {
+		    foreach my $model2 (@{$models}) {
 			next if $model1->{id} eq $model2->{id};
 	
 			my $model2_ftrs;
@@ -1913,11 +1912,11 @@ sub func_compare_models {
 				}
 				if (exists $model2family{$model1->{id}}->{$familyid}) {
 				    foreach my $ftr (@{$model2family{$model1->{id}}->{$familyid}}) {
-					push @$ftrs, [$ftr, $familyid, $conservation*1.0/@models, 0];
+					push @$ftrs, [$ftr, $familyid, $conservation*1.0/@{$models}, 0];
 				    }
 				}
 				else {
-				    push @$ftrs, ["", $familyid, $conservation*1.0/@models, 1];
+				    push @$ftrs, ["", $familyid, $conservation*1.0/@{$models}, 1];
 				}
 			    }
 			}
@@ -1950,7 +1949,7 @@ sub func_compare_models {
 			$mc_compound->{number_models}++;
 			$cpds_registered{$match_id} = 1;
 		    }
-		    foreach my $model2 (@models) {
+		    foreach my $model2 (@{$models}) {
 			next if $model1->{id} eq $model2->{id};
 	
 			if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
@@ -1991,7 +1990,7 @@ sub func_compare_models {
 			    $mc_bcpd->{number_models}++;
 			    push @{$mc_bcpd->{model_biomass_compounds}->{$model1->{id}}}, [$cref,$bcpd->{coefficient}];
 			}
-			foreach my $model2 (@models) {
+			foreach my $model2 (@{$models}) {
 			    next if $model1->{id} eq $model2->{id};
 	
 			    if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
@@ -2004,7 +2003,7 @@ sub func_compare_models {
 		$mc_model->{biomasscpds} = scalar keys %model1bcpds;
 	
 		foreach my $family (keys %{$model2family{$model1->{id}}}) {
-		    foreach my $model2 (@models) {
+		    foreach my $model2 (@{$models}) {
 				next if $model1->{id} eq $model2->{id};
 		
 				if (exists $model2family{$model2->{id}}->{$family}) {
@@ -2017,29 +2016,29 @@ sub func_compare_models {
     # need to set 'core' and 'fraction_models'
     my $core_reactions = 0;
     foreach my $mc_reaction (values %$mc_reactions) {
-	if ($mc_reaction->{number_models} == @models) {
+	if ($mc_reaction->{number_models} == @{$models}) {
 	    $core_reactions++;
 	    $mc_reaction->{core} = 1;
 	}
-	$mc_reaction->{fraction_models} = 1.0*$mc_reaction->{number_models}/@models;
+	$mc_reaction->{fraction_models} = 1.0*$mc_reaction->{number_models}/@{$models};
     }
 
     my $core_compounds = 0;
     foreach my $mc_compound (values %$mc_compounds) {
-	if ($mc_compound->{number_models} == @models) {
+	if ($mc_compound->{number_models} == @{$models}) {
 	    $core_compounds++;
 	    $mc_compound->{core} = 1;
 	}
-	$mc_compound->{fraction_models} = 1.0*$mc_compound->{number_models}/@models;
+	$mc_compound->{fraction_models} = 1.0*$mc_compound->{number_models}/@{$models};
     }
 
     my $core_bcpds = 0;
     foreach my $mc_bcpd (values %$mc_bcpds) {
-	if ($mc_bcpd->{number_models} == @models) {
+	if ($mc_bcpd->{number_models} == @{$models}) {
 	    $core_bcpds++;
 	    $mc_bcpd->{core} = 1;
 	}
-	$mc_bcpd->{fraction_models} = 1.0*$mc_bcpd->{number_models}/@models;
+	$mc_bcpd->{fraction_models} = 1.0*$mc_bcpd->{number_models}/@{$models};
     }
 
     my $mc = {};
@@ -2056,8 +2055,9 @@ sub func_compare_models {
     $mc->{families} = [values %$mc_families];
     $mc->{protcomp_ref} = $params->{protcomp_ref} if (defined $params->{protcomp_ref});
     $mc->{pangenome_ref} = $params->{pangenome_ref} if (defined $params->{pangenome_ref});
-    Bio::KBase::utilities::debug(Bio::KBase::utilities::to_json($mc,1));
-    #my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});   
+    my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});       
+    Bio::KBase::utilities::print_report_message({message => "The compouds, reactions, genes, and biomass compositions in the following ".@{$models}." models were compared:".join("; ",@{$models}).".",append => 0,html => 0});
+    Bio::KBase::utilities::print_report_message({message => " All models shared a common set of ".$core_compounds." compounds, ".$core_reactions." reactions, ".$core_bcpds." biomass compounds, and ".$core_families." gene families.",append => 1,html => 0});
     return { 
     	'mc_ref' => $params->{workspace}."/".$params->{mc_name}
     };

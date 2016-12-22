@@ -66,7 +66,7 @@ sub util_log {
 sub util_get_object {
 	my($self,$ref,$parameters) = @_;
 	$parameters = Bio::KBase::utilities::args($parameters,[],{});
-	return $self->util_store()->get_object($ref);
+	return $self->util_store()->get_object($ref,$parameters);
 }
 
 sub util_save_object {
