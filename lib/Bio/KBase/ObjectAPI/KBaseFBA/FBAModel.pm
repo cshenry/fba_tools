@@ -465,7 +465,12 @@ sub addModelReaction {
 	my $reference = $self->template()->_reference()."/reactions/id/rxn00000_c";
 	my $coefhash = {};
 	if ($rootid =~ m/^rxn\d+$/) {
-		my $rxnobj = $self->template()->searchForReaction($rootid);
+	    my $rxnobj = undef;
+	    if( $cmp && $cmp->id() ne 'c'){
+		$rxnobj = $self->template()->searchForReaction($rootid,$cmp->id());
+	    }else{
+		$rxnobj = $self->template()->searchForReaction($rootid);
+	    }
 		if (!defined($rxnobj) && !defined($eq)) {
 			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 		} else {

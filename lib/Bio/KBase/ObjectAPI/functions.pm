@@ -548,7 +548,8 @@ sub func_run_flux_balance_analysis {
     $fba->id($params->{fba_output_id});
     my $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{fba_output_id},{type => "KBaseFBA.FBA"});
 	return {
-		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id}
+		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id},
+		objective => $fba->objectiveValue()
 	};
 }
 
