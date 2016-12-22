@@ -1,4 +1,4 @@
-package Bio::KBase::ObjectAPI::utilities;
+package Bio::KBase::logging;
 use strict;
 use warnings;
 use Carp qw(cluck);
@@ -16,72 +16,9 @@ our $report = {};
 our $source = undef;
 our $defbio = undef;
 our $globalparams = {"gapfill name" => "none"};
-
+our $startime = undef;
 our $classifierdata = undef;
 our $full_trace = 1;
-our $ssohash = undef;
-
-=head1 Bio::KBase::ObjectAPI::utilities
-
-Basic utility functions in the ModelSEED
-
-=head2 Argument Processing
-
-=head3 args
-
-    $args = args( $required, $optional, ... );
-
-Process arguments for a given function. C<required> is an ArrayRef
-of strings that correspond to required arguments for the function.
-C<optional> is a HashRef that defines arguments with default values.
-The remaining values are the arguments to the function. E.g.
-
-    sub function {
-        my $self = shift;
-        my $args = args ( [ "name" ], { phone => "867-5309" }, @_ );
-        return $args;
-    }
-    # The following calls will work
-    print Dumper function(name => "bob", phone => "555-555-5555");
-    # Prints { name => "bob", phone => "555-555-5555" }
-    print Dumper function( { name => "bob" } );
-    # Prints { name => "bob", phone => "867-5309" }
-    print Dumper function();
-    # dies, name must be defined...
-
-=head2 Warnings
-
-=head3 error
-
-    error("String");
-
-Confesses an error to stderr.
-
-=head2 Printing Verbosely
-
-There are two functions in this package that control the printing of verbose
-messages: C<verbose> and C<set_verbose>.
-
-=head3 verbose
-
-    $rtv = verbose("string one", "string two");
-
-Call with a list of strings to print a message if the verbose flag has been
-set. If the list of strings is empty, nothing is printed. Returns true if
-the verbose flag is set. Otherwise returns undef.
-
-=head3 set_verbose
-
-    $rtv = set_verbose($arg);
-
-Calling with a GLOB reference sets the filehandle that C<verbose()>
-prints to that reference and sets the verbose flag. Calling with
-the value 1 sets the verbose flag and causes C<verbose()> to print
-to C<STDERR>.  Calling with any other unsets the verbose flag.
-Returns the GLOB Reference that C<verbose()> will print to if the
-verbose flag is set. Otherwise it returns undef.
-
-=cut
 
 sub set_verbose {
     my $val = shift;
@@ -198,7 +135,7 @@ sub ARGS {
 	    $args = {};
 	}
 	if (ref($args) ne "HASH") {
-		Bio::KBase::ObjectAPI::utilities::error("Arguments not hash");	
+		Bio::KBase::utilities::error("Arguments not hash");	
 	}
 	if (defined($substitutions) && ref($substitutions) eq "HASH") {
 		foreach my $original (keys(%{$substitutions})) {
@@ -212,7 +149,7 @@ sub ARGS {
 			}
 		}
 	}
-	Bio::KBase::ObjectAPI::utilities::error("Mandatory arguments ".join("; ",@{$args->{_error}})." missing. Usage:".Bio::KBase::ObjectAPI::utilities::USAGE($mandatoryArguments,$optionalArguments,$args)) if (defined($args->{_error}));
+	Bio::KBase::utilities::error("Mandatory arguments ".join("; ",@{$args->{_error}})." missing. Usage:".Bio::KBase::utilities::USAGE($mandatoryArguments,$optionalArguments,$args)) if (defined($args->{_error}));
 	if (defined($optionalArguments)) {
 		foreach my $argument (keys(%{$optionalArguments})) {
 			if (!defined($args->{$argument})) {
@@ -226,7 +163,7 @@ sub ARGS {
 =head3 USAGE
 
 Definition:
-	string = Bio::KBase::ObjectAPI::utilities::USAGE([]:madatory arguments,{}:optional arguments);
+	string = Bio::KBase::utilities::USAGE([]:madatory arguments,{}:optional arguments);
 Description:
 	Prints the usage for the current function call.
 
@@ -236,7 +173,7 @@ sub USAGE {
 	my ($mandatoryArguments,$optionalArguments,$args) = @_;
 	my $current = 1;
 	my @calldata = caller($current);
-	while ($calldata[3] eq "Bio::KBase::ObjectAPI::utilities::ARGS") {
+	while ($calldata[3] eq "Bio::KBase::utilities::ARGS") {
 		$current++;
 		@calldata = caller($current);
 	}
@@ -281,7 +218,7 @@ sub USAGE {
 =head3 error
 
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::error();
+	void Bio::KBase::utilities::error();
 Description:	
 
 =cut
@@ -298,7 +235,7 @@ sub error {
 =head3 USEERROR
 
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::USEERROR();
+	void Bio::KBase::utilities::USEERROR();
 Description:	
 
 =cut
@@ -312,7 +249,7 @@ sub USEERROR {
 =head3 USEWARNING
 
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::USEWARNING();
+	void Bio::KBase::utilities::USEWARNING();
 Description:	
 
 =cut
@@ -324,14 +261,14 @@ sub USEWARNING {
 
 =head3 PRINTFILE
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::PRINTFILE();
+	void Bio::KBase::utilities::PRINTFILE();
 Description:	
 
 =cut
 
 sub PRINTFILE {
     my ($filename,$arrayRef) = @_;
-    open ( my $fh, ">", $filename) || Bio::KBase::ObjectAPI::utilities::error("Failure to open file: $filename, $!");
+    open ( my $fh, ">", $filename) || Bio::KBase::utilities::error("Failure to open file: $filename, $!");
     foreach my $Item (@{$arrayRef}) {
     	print $fh $Item."\n";
     }
@@ -341,7 +278,7 @@ sub PRINTFILE {
 =head3 TOJSON
 
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::TOJSON(REF);
+	void Bio::KBase::utilities::TOJSON(REF);
 Description:	
 
 =cut
@@ -358,7 +295,7 @@ sub TOJSON {
 =head3 FROMJSON
 
 Definition:
-	REF Bio::KBase::ObjectAPI::utilities::FROMJSON(string);
+	REF Bio::KBase::utilities::FROMJSON(string);
 Description:	
 
 =cut
@@ -366,14 +303,14 @@ Description:
 sub FROMJSON {
     my ($data) = @_;
     if (!defined($data)) {
-    	Bio::KBase::ObjectAPI::utilities::error("Data undefined!");
+    	Bio::KBase::utilities::error("Data undefined!");
     }
     return decode_json $data;
 }
 
 =head3 LOADFILE
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::LOADFILE();
+	void Bio::KBase::utilities::LOADFILE();
 Description:	
 
 =cut
@@ -381,7 +318,7 @@ Description:
 sub LOADFILE {
     my ($filename) = @_;
     my $DataArrayRef = [];
-    open (my $fh, "<", $filename) || Bio::KBase::ObjectAPI::utilities::error("Couldn't open $filename: $!");
+    open (my $fh, "<", $filename) || Bio::KBase::utilities::error("Couldn't open $filename: $!");
     while (my $Line = <$fh>) {
         $Line =~ s/\r//;
         chomp($Line);
@@ -393,7 +330,7 @@ sub LOADFILE {
 
 =head3 LOADTABLE
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::LOADTABLE(string:filename,string:delimiter);
+	void Bio::KBase::utilities::LOADTABLE(string:filename,string:delimiter);
 Description:	
 
 =cut
@@ -413,7 +350,7 @@ sub LOADTABLE {
     if ($delim eq "\t") {
     	$delim = "\\t";	
     }
-    my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE($filename);
+    my $data = Bio::KBase::utilities::LOADFILE($filename);
     if (defined($data->[0])) {
     	$output->{headings} = [split(/$delim/,$data->[$headingLine])];
 	    for (my $i=($headingLine+1); $i < @{$data}; $i++) {
@@ -426,7 +363,7 @@ sub LOADTABLE {
 =head3 PRINTTABLE
 
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::PRINTTABLE(string:filename,{}:table);
+	void Bio::KBase::utilities::PRINTTABLE(string:filename,{}:table);
 Description:
 
 =cut
@@ -440,7 +377,7 @@ sub PRINTTABLE {
     if ($filename eq "STDOUT") {
     	$out_fh = \*STDOUT;
     } else {
-    	open ( $out_fh, ">", $filename) || Bio::KBase::ObjectAPI::utilities::USEERROR("Failure to open file: $filename, $!");
+    	open ( $out_fh, ">", $filename) || Bio::KBase::utilities::USEERROR("Failure to open file: $filename, $!");
     }
 	print $out_fh join($delimiter,@{$table->{headings}})."\n";
 	foreach my $row (@{$table->{data}}) {
@@ -454,7 +391,7 @@ sub PRINTTABLE {
 =head3 PRINTTABLESPARSE
 
 Definition:
-	void Bio::KBase::ObjectAPI::utilities::PRINTTABLESPARSE(string:filename,table:table,string:delimiter,double:min,double:max);
+	void Bio::KBase::utilities::PRINTTABLESPARSE(string:filename,table:table,string:delimiter,double:min,double:max);
 Description:	
 
 =cut
@@ -468,7 +405,7 @@ sub PRINTTABLESPARSE {
     if ($filename eq "STDOUT") {
     	$out_fh = \*STDOUT;
     } else {
-    	open ( $out_fh, ">", $filename) || Bio::KBase::ObjectAPI::utilities::USEERROR("Failure to open file: $filename, $!");
+    	open ( $out_fh, ">", $filename) || Bio::KBase::utilities::USEERROR("Failure to open file: $filename, $!");
     }
     for (my $i=1; $i < @{$table->{data}};$i++) {
     	for (my $j=1; $j < @{$table->{headings}};$j++) {
@@ -489,13 +426,13 @@ sub PRINTTABLESPARSE {
 =head3 PRINTHTMLTABLE
 
 Definition:
-    string = Bio::KBase::ObjectAPI::utilities::PRINTHTMLTABLE( array[string]:headers, array[array[string]]:data, string:table_class );
+    string = Bio::KBase::utilities::PRINTHTMLTABLE( array[string]:headers, array[array[string]]:data, string:table_class );
 Description:
     Utility method to print html table
 Example:
     my $headers = ['Column 1', 'Column 2', 'Column 3'];
     my $data = [['1.1', '1.2', '1.3'], ['2.1', '2.2', '2.3'], ['3.1', '3.2', '3.3']];
-    my $html = Bio::KBase::ObjectAPI::utilities::PRINTHTMLTABLE( $headers, $data, 'my-class');
+    my $html = Bio::KBase::utilities::PRINTHTMLTABLE( $headers, $data, 'my-class');
 
 =cut
 
@@ -553,7 +490,7 @@ sub PRINTHTMLTABLE {
 =head3 CLASSIFIER_BINARY
 
 Definition:
-	string = Bio::KBase::ObjectAPI::utilities::CLASSIFIER_BINARY(string input);
+	string = Bio::KBase::utilities::CLASSIFIER_BINARY(string input);
 Description:
 	Getter setter for where the classifier binary is located
 Example:
@@ -571,7 +508,7 @@ sub CLASSIFIER_PATH {
 =head3 CurrentJobID
 
 Definition:
-	string = Bio::KBase::ObjectAPI::utilities::CurrentJobID(string input);
+	string = Bio::KBase::utilities::CurrentJobID(string input);
 Description:
 	Getter setter for the current job id to be used as directory name for MFAToolkit jobs
 Example:
@@ -589,7 +526,7 @@ sub CurrentJobID {
 =head3 source
 
 Definition:
-	string = Bio::KBase::ObjectAPI::utilities::source(string input);
+	string = Bio::KBase::utilities::source(string input);
 Description:
 	Getter setter for the source reported for reconstructed models
 Example:
@@ -615,7 +552,7 @@ sub default_biochemistry {
 =head3 parseArrayString
 
 Definition:
-	string = Bio::KBase::ObjectAPI::utilities::parseArrayString({
+	string = Bio::KBase::utilities::parseArrayString({
 		string => string(none),
 		delimiter => string(|),
 		array => [](undef)	
@@ -628,7 +565,7 @@ Example:
 
 sub parseArrayString {
 	my ($args) = @_;
-	$args = Bio::KBase::ObjectAPI::utilities::ARGS($args,[],{
+	$args = Bio::KBase::utilities::ARGS($args,[],{
 		string => "none",
 		delimiter => "|",
 	});
@@ -646,7 +583,7 @@ sub parseArrayString {
 =head3 translateArrayOptions
 
 Definition:
-	string = Bio::KBase::ObjectAPI::utilities::translateArrayOptions({
+	string = Bio::KBase::utilities::translateArrayOptions({
 		option => string|[],
 		delimiter => string:|
 	});
@@ -658,7 +595,7 @@ Example:
 
 sub translateArrayOptions {
 	my ($args) = @_;
-	$args = Bio::KBase::ObjectAPI::utilities::ARGS($args,["option"],{
+	$args = Bio::KBase::utilities::ARGS($args,["option"],{
 		delimiter => "|"
 	});
 	if ($args->{delimiter} eq "|") {
@@ -680,7 +617,7 @@ sub translateArrayOptions {
 
 =head3 convertRoleToSearchRole
 Definition:
-	string:searchrole = Bio::KBase::ObjectAPI::Utilities::convertRoleToSearchRole->(string rolename);
+	string:searchrole = Bio::KBase::utilities::convertRoleToSearchRole->(string rolename);
 Description:
 	Converts the input role name into a search name by removing spaces, capitalization, EC numbers, and some punctuation.
 
@@ -831,14 +768,14 @@ sub translateGPRHash {
 			$proteins->[0]->[0] = $proteinItems
 		} else {
 			foreach my $item (@{$proteinItems}) {
-				push(@{$proteins},Bio::KBase::ObjectAPI::utilities::parseSingleProtein($item,$gprHash));
+				push(@{$proteins},Bio::KBase::utilities::parseSingleProtein($item,$gprHash));
 			}
 		}
 	} elsif ($root =~ m/\+/) {
-		$proteins->[0] = Bio::KBase::ObjectAPI::utilities::parseSingleProtein($root,$gprHash);
+		$proteins->[0] = Bio::KBase::utilities::parseSingleProtein($root,$gprHash);
 	} elsif (defined($gprHash->{$root})) {
 		$gprHash->{root} = $gprHash->{$root};
-		return Bio::KBase::ObjectAPI::utilities::translateGPRHash($gprHash);
+		return Bio::KBase::utilities::translateGPRHash($gprHash);
 	} else {
 		$proteins->[0]->[0]->[0] = $root;
 	}
@@ -906,7 +843,7 @@ sub parseSingleProtein {
 			}
 		}
 	} elsif (defined($gprHash->{$node})) {
-		return Bio::KBase::ObjectAPI::utilities::parseSingleProtein($gprHash->{$node},$gprHash)
+		return Bio::KBase::utilities::parseSingleProtein($gprHash->{$node},$gprHash)
 	} else {
 		$subunits->[0]->[0] = $node;
 	}
@@ -1016,18 +953,18 @@ sub get_global {
 
 sub load_config {
 	my ($args) = @_;
-	$args = Bio::KBase::ObjectAPI::utilities::ARGS($args,[],{
+	$args = Bio::KBase::utilities::ARGS($args,[],{
 		filename => $ENV{KB_DEPLOYMENT_CONFIG},
 		service => $ENV{KB_SERVICE_NAME},
 	});
 	if (!defined($args->{service})) {
-		Bio::KBase::ObjectAPI::utilities::error("No service specified!");
+		Bio::KBase::utilities::error("No service specified!");
 	}
 	if (!defined($args->{filename})) {
-		Bio::KBase::ObjectAPI::utilities::error("No config file specified!");
+		Bio::KBase::utilities::error("No config file specified!");
 	}
 	if (!-e $args->{filename}) {
-		Bio::KBase::ObjectAPI::utilities::error("Specified config file ".$args->{filename}." doesn't exist!");
+		Bio::KBase::utilities::error("Specified config file ".$args->{filename}." doesn't exist!");
 	}
 	my $c = Config::Simple->new();
 	$c->read($args->{filename});
@@ -1046,7 +983,7 @@ sub load_config {
 
 sub rest_download {
 	my ($args,$params) = @_;
-	$args = Bio::KBase::ObjectAPI::utilities::ARGS($args,["url"],{
+	$args = Bio::KBase::utilities::ARGS($args,["url"],{
 		retry => 5,
 		token => undef
 	});
@@ -1060,11 +997,18 @@ sub rest_download {
 			if (defined($res->{_headers}->{"content-range"}) && $res->{_headers}->{"content-range"} =~ m/\/(.+)/) {
 				$params->{count} = $1;
 			}
-			return Bio::KBase::ObjectAPI::utilities::FROMJSON($res->{_content});
+			return Bio::KBase::utilities::FROMJSON($res->{_content});
 		} else {
 		}
 	}
-	Bio::KBase::ObjectAPI::utilities::error("REST download failed at URL:".$args->{url});
+	Bio::KBase::utilities::error("REST download failed at URL:".$args->{url});
+}
+
+sub elaspedtime {
+	if (!defined($startime)) {
+		$startime = time();
+	}
+	return time()-$startime;
 }
 
 sub kblogin {
@@ -1079,7 +1023,7 @@ sub kblogin {
 	my $ua = LWP::UserAgent->new();
 	my $res = $ua->post($url,$content);
 	if (!$res->is_success) {
-    	Bio::KBase::ObjectAPI::utilities::error("KBase login failed!");
+    	Bio::KBase::utilities::error("KBase login failed!");
 	}
 	my $data = decode_json $res->content;
 	return $data->{token};
@@ -1088,14 +1032,14 @@ sub kblogin {
 sub classifier_data {
 	if (!defined($classifierdata)) {
 		my $data;
-		if (Bio::KBase::utilities::conf("ModelSEED","classifier") =~ m/^WS:(.+)/) {
+		if (Bio::KBase::ObjectAPI::config::classifier() =~ m/^WS:(.+)/) {
 			$data = Bio::KBase::ObjectAPI::functions::util_get_object($1);
 			$data = [split(/\n/,$data)];
 		} else {
-			if (!-e Bio::KBase::utilities::conf("ModelSEED","classifier")) {
-				system("curl https://raw.githubusercontent.com/kbase/KBaseFBAModeling/dev/classifier/classifier.txt > ".Bio::KBase::utilities::conf("ModelSEED","classifier"));
+			if (!-e Bio::KBase::ObjectAPI::config::classifier()) {
+				system("curl https://raw.githubusercontent.com/kbase/KBaseFBAModeling/dev/classifier/classifier.txt > ".Bio::KBase::ObjectAPI::config::classifier());
 			}
-			$data = Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","classifier"));
+			$data = Bio::KBase::utilities::LOADFILE(Bio::KBase::ObjectAPI::config::classifier());
 		}
 		my $headings = [split(/\t/,$data->[0])];
 		my $popprob = [split(/\t/,$data->[1])];
@@ -1108,7 +1052,7 @@ sub classifier_data {
 		my $cfRoleHash = {};
 		for (my $i=2;$i < @{$data}; $i++) {
 			my $row = [split(/\t/,$data->[$i])];
-			my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($row->[0]);
+			my $searchrole = Bio::KBase::utilities::convertRoleToSearchRole($row->[0]);
 			$classifierdata->{classifierRoles}->{$searchrole} = {
 				classificationProbabilities => {},
 				role => $row->[0]
@@ -1119,26 +1063,6 @@ sub classifier_data {
 		}
 	}
 	return $classifierdata;
-}
-
-sub get_SSO {
-	#if (!defined($ssohash)) {
-		#Getting the seed ontology dictionary
-		#my $output = $ws->get_objects([{
-		#	workspace => "KBaseOntology",
-		#	name => "seed_subsystem_ontology"
-		#}]);
-		#Building a hash of standardized seed function strings
-		#my $funchash = {};
-		#foreach my $term (keys(%{$output->[0]->{data}->{term_hash}})) {
-		#	my $rolename = lc($output->[0]->{data}->{term_hash}->{$term}->{name});
-		#	$rolename =~ s/[\d\-]+\.[\d\-]+\.[\d\-]+\.[\d\-]+//g;
-		#	$rolename =~ s/\s//g;
-		#	$rolename =~ s/\#.*$//g;
-		 # 	$funchash->{$rolename} = $output->[0]->{data}->{term_hash}->{$term};
-		#}
-	#}
-	#return $ssohash;
 }
 
 1;

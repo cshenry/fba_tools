@@ -118,7 +118,7 @@ sub _buildjobid {
 
 sub _buildjobpath {
 	my ($self) = @_;
-	my $path = Bio::KBase::ObjectAPI::config::mfatoolkit_job_dir();
+	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir");
 	if (!defined($path) || length($path) == 0) {
 		$path = "/tmp/fbajobs/";
 	}
@@ -138,14 +138,14 @@ sub _buildjobdirectory {
 sub _buildmfatoolkitBinary {
 	my ($self) = @_;
 	my $bin;
-	if (defined(Bio::KBase::ObjectAPI::config::mfatoolkit_binary()) && length(Bio::KBase::ObjectAPI::config::mfatoolkit_binary()) > 0 && -e Bio::KBase::ObjectAPI::config::mfatoolkit_binary()) {
-		$bin = Bio::KBase::ObjectAPI::config::mfatoolkit_binary();
+	if (defined(Bio::KBase::utilities::conf("ModelSEED","mfatoolkitbin")) && length(Bio::KBase::utilities::conf("ModelSEED","mfatoolkitbin")) > 0 && -e Bio::KBase::utilities::conf("ModelSEED","mfatoolkitbin")) {
+		$bin = Bio::KBase::utilities::conf("ModelSEED","mfatoolkitbin");
 	} else {
 		$bin = `which mfatoolkit 2>/dev/null`;
 		chomp $bin;
 	}
 	if ((! defined $bin) || (!-e $bin)) {
-		Bio::KBase::ObjectAPI::utilities::error("MFAToolkit binary could not be found at ".Bio::KBase::ObjectAPI::config::mfatoolkit_binary()."!");
+		Bio::KBase::ObjectAPI::utilities::error("MFAToolkit binary could not be found at ".Bio::KBase::utilities::conf("ModelSEED","mfatoolkitbin")."!");
 	}
 	return $bin;
 }
@@ -370,17 +370,17 @@ sub runFBA {
 	}
 	system($self->command());
 	$self->loadMFAToolkitResults();
-	if (defined(Bio::KBase::ObjectAPI::config::FinalJobCache())) {
-		if (Bio::KBase::ObjectAPI::config::FinalJobCache() eq "SHOCK") {
+	if (defined(Bio::KBase::utilities::conf("ModelSEED","fbajobcache"))) {
+		if (Bio::KBase::utilities::conf("ModelSEED","fbajobcache") eq "SHOCK") {
 			system("cd ".$self->jobPath().";tar -czf ".$self->jobPath().$self->jobID().".tgz ".$self->jobID());
 			my $node = Bio::KBase::ObjectAPI::utilities::LoadToShock($self->jobPath().$self->jobID().".tgz");
 			unlink($self->jobPath().$self->jobID().".tgz");
 			$self->jobnode($node);
-		} elsif (Bio::KBase::ObjectAPI::config::FinalJobCache() ne "none") {
-			if (!-d Bio::KBase::ObjectAPI::config::FinalJobCache()) {
-				File::Path::mkpath (Bio::KBase::ObjectAPI::config::FinalJobCache());
+		} elsif (Bio::KBase::utilities::conf("ModelSEED","fbajobcache") ne "none") {
+			if (!-d Bio::KBase::utilities::conf("ModelSEED","fbajobcache")) {
+				File::Path::mkpath (Bio::KBase::utilities::conf("ModelSEED","fbajobcache"));
 			}
-			system("cd ".$self->jobPath().";tar -czf ".Bio::KBase::ObjectAPI::config::FinalJobCache()."/".$self->jobID().".tgz ".$self->jobID());
+			system("cd ".$self->jobPath().";tar -czf ".Bio::KBase::utilities::conf("ModelSEED","fbajobcache")."/".$self->jobID().".tgz ".$self->jobID());
 		}
 	}
 	if ($self->jobDirectory() =~ m/\/fbajobs\/.+/) {
@@ -491,6 +491,7 @@ sub PrepareForGapfilling {
 		use_discrete_variables => 0,
 		integrate_gapfilling_solution => 0
 	}, $args);
+	$self->parameters()->{activate_all_model_reactions} = $args->{activate_all_model_reactions};
 	$self->parameters()->{integrate_gapfilling_solution} = $args->{integrate_gapfilling_solution};
 	push(@{$self->gauranteedrxns()},@{$args->{gauranteedrxns}});
 	push(@{$self->blacklistedrxns()},@{$args->{blacklistedrxns}});
@@ -1715,7 +1716,7 @@ sub createJobDirectory {
 	}
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file
-	if (defined(Bio::KBase::ObjectAPI::config::all_params()->{use_cplex}) && Bio::KBase::ObjectAPI::config::all_params()->{use_cplex} == 1) {
+	if (defined(Bio::KBase::utilities::conf("ModelSEED","use_cplex")) && Bio::KBase::utilities::conf("ModelSEED","use_cplex") == 1) {
 		$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
 	}
 	my $exchange = "";
@@ -2356,7 +2357,7 @@ sub parseFluxFiles {
 			# Create a map from rxn id to bounds.
 			my $rxnid2bound = {};
 			foreach my $bound (@{$self->FBAReactionBounds()}) {
-				$rxnid2bound->{$bound->modelreaction()->msid()} = {
+				$rxnid2bound->{$bound->modelreaction()->id()} = {
 					lower => $bound->lowerBound(),
 					upper => $bound->upperBound()
 				}

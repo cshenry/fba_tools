@@ -293,7 +293,7 @@ sub _buildIndex {
 		Bio::KBase::ObjectAPI::utilities::error("Bad call to _buildIndex!");
 	}
 	my $method = "_$att";
-	if ($method eq "_genome" && $self->_class() eq "Genome") {
+	if ($method eq "_modelreactions" && $self->_class() eq "FBA") {
 		Bio::KBase::ObjectAPI::utilities::error("Call to nonexistant method!");
 	}
 	my $subobjs = $self->$method();

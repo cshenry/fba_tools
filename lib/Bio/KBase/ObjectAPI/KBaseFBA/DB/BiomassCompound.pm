@@ -19,7 +19,7 @@ has _reference => (is => 'rw', lazy => 1, isa => 'Str', type => 'msdata', metacl
 has modelcompound_ref => (is => 'rw', isa => 'Str', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
 has coefficient => (is => 'rw', isa => 'Num', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
 has gapfill_data => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
-
+has edits => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 
 # LINKS:
 has modelcompound => (is => 'rw', type => 'link(FBAModel,modelcompounds,modelcompound_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_modelcompound', clearer => 'clear_modelcompound', isa => 'Bio::KBase::ObjectAPI::KBaseFBA::ModelCompound', weak_ref => 1);
@@ -65,10 +65,18 @@ my $attributes = [
             'type' => 'HashRef',
             'description' => undef,
             'perm' => 'rw'
+          },
+		  {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'edits',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {modelcompound_ref => 0, coefficient => 1, gapfill_data => 2};
+my $attribute_map = {modelcompound_ref => 0, coefficient => 1, gapfill_data => 2, edits => 3};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

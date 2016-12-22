@@ -37,7 +37,7 @@ sub _buildjobid {
 
 sub _buildjobpath {
 	my ($self) = @_;
-	my $path = Bio::KBase::ObjectAPI::config::mfatoolkit_job_dir();
+	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir");
 	if (!defined($path) || length($path) == 0) {
 		$path = "/tmp/fbajobs/";
 	}
@@ -136,11 +136,11 @@ sub runjob {
 	$self->create_job_directory();
 	system("java -jar ".Bio::KBase::ObjectAPI::utilities::CLASSIFIER_PATH()."WekaClassifierCreator.jar ".$self->jobDirectory()." ".$args->{classifier});
 	my $cf = $self->load_classifier({type => $args->{classifier}});
-	if (defined(Bio::KBase::ObjectAPI::config::FinalJobCache())) {
-		if (!-d Bio::KBase::ObjectAPI::config::FinalJobCache()) {
-			File::Path::mkpath (Bio::KBase::ObjectAPI::config::FinalJobCache());
+	if (defined(Bio::KBase::utilities::conf("ModelSEED","fbajobcache"))) {
+		if (!-d Bio::KBase::utilities::conf("ModelSEED","fbajobcache")) {
+			File::Path::mkpath (Bio::KBase::utilities::conf("ModelSEED","fbajobcache"));
 		}
-		system("cd ".$self->jobPath().";tar -czf ".Bio::KBase::ObjectAPI::config::FinalJobCache()."/".$self->jobID().".tgz ".$self->jobID());
+		system("cd ".$self->jobPath().";tar -czf ".Bio::KBase::utilities::conf("ModelSEED","fbajobcache")."/".$self->jobID().".tgz ".$self->jobID());
 	}
 	if ($self->jobDirectory() =~ m/\/fbajobs\/.+/) {
 		File::Path::rmtree($self->jobDirectory());

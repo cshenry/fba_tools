@@ -319,6 +319,18 @@
          "url" : "",
          "output_mapping" : [
             {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			},
+            {
                "target_property" : "ws",
                "narrative_system_variable" : "workspace"
             },
