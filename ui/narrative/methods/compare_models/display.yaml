@@ -21,7 +21,7 @@ suggestions:
         related:
             []
         next:
-            []
+            [build_metabolic_model]
 
 #
 # Configure the display and description of parameters
@@ -48,4 +48,4 @@ parameters :
         short-hint : |
             A Pangenome to use in comparing reaction-associated proteins among two or more models
 description : |
-    <p>This is a method to compare FBA Models based on reactions, compounds, biomass and proteins.</p>
+    <p>This app compares FBA Models based on reactions, compounds, biomass and proteins.</p>
