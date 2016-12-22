@@ -121,7 +121,7 @@ sub buildModel {
 	my $genome = $args->{genome};
 	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		id => $args->{modelid},
-		source => Bio::KBase::ObjectAPI::config::source(),
+		source => Bio::KBase::utilities::conf("ModelSEED","source"),
 		source_id => $args->{modelid},
 		type => $self->type(),
 		name => $genome->scientific_name(),

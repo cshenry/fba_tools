@@ -4,6 +4,7 @@ use Test::More;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::utilities;
+use Bio::KBase::kbaseenv;
 use fba_tools::fba_toolsImpl;
 
 my $tester = LocalTester->new($ENV{'KB_DEPLOYMENT_CONFIG'});
@@ -15,7 +16,9 @@ $tester->run_tests();
 	use Test::More;
     sub new {
         my ($class,$configfile) = @_;
-        Bio::KBase::utilities::create_context_from_client_config();
+        Bio::KBase::kbaseenv::create_context_from_client_config({
+        	filename => "/Users/chenry/.kbase_config"
+        });
         my $c = Bio::KBase::utilities::read_config({
         	filename => $configfile,
 			service => 'fba_tools'
@@ -26,7 +29,7 @@ $tester->run_tests();
             config_file => $configfile,
             config => $c->{fba_tools},
             user_id => Bio::KBase::utilities::user_id(),
-            ws_client => Bio::KBase::utilities::ws_client(),
+            ws_client => Bio::KBase::kbaseenv::ws_client(),
             obj => $object,
             testcount => 0,
             completetestcount => 0,
@@ -110,31 +113,8 @@ $tester->run_tests();
 	}
 	sub run_tests {
 		my($self) = @_;
-		my $wsname = "chenry:1456989658583";
-		my $return = Bio::KBase::ObjectAPI::functions::func_importmodel({
-			template_id => "auto",
-			biomass => "RXN-13805",
-			model_name => "hl91",
-			workspace_name => $wsname,
-			model_file => "/Users/chenry/workspace/HotLakes/PathwayToolsModels/hl91.sbml",
-			genome => "Bin05-Roseibaca_calidilacus_HL-91.kbase.genome",
-			genome_workspace => $wsname,
-			#compounds_file => ,
-		});
-		exit;
-		my $output = $self->test_harness("propagate_model_to_new_genome",{
-			fbamodel_id => "iMR1_799",
-			fbamodel_workspace => $wsname,
-			proteincomparison_id => "MR1_SB2B_comparison",
-			proteincomparison_workspace => $wsname,
-			fbamodel_output_id => "translated_SB2B_gapfilled_model",
-			workspace => $wsname,
-			keep_nogene_rxn => 0,
-			gapfill_model => 1,
-			media_id => "LactateMinimalMedia",
-			media_workspace => $wsname
-		},"propagating published shewanella model to new genome with built in minimal media gapfilling",[],0,undef);
-		exit;
+		#my $wsname = "chenry:1456989658583";
+		my $wsname = "chenry:1454960620516";
 		my $output = $self->test_harness("build_metabolic_model",{
 			genome_id => "Shewanella_amazonensis_SB2B",
 			genome_workspace => $wsname,

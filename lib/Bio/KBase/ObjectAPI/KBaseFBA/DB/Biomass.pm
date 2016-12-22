@@ -27,7 +27,8 @@ has protein => (is => 'rw', isa => 'Num', printOrder => '5', default => '0.5', t
 has other => (is => 'rw', isa => 'Num', printOrder => '2', default => '0', type => 'attribute', metaclass => 'Typed');
 has lipid => (is => 'rw', isa => 'Num', printOrder => '7', default => '0.05', type => 'attribute', metaclass => 'Typed');
 has id => (is => 'rw', isa => 'Str', printOrder => '0', default => '', type => 'attribute', metaclass => 'Typed');
-
+has edits => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has deleted_compounds => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
 has biomasscompounds => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(BiomassCompound)', metaclass => 'Typed', reader => '_biomasscompounds', printOrder => '-1');
@@ -137,10 +138,26 @@ my $attributes = [
             'type' => 'Str',
             'description' => undef,
             'perm' => 'rw'
+          },
+		  {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'edits',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'deleted_compounds',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {energy => 0, cofactor => 1, rna => 2, dna => 3, name => 4, cellwall => 5, protein => 6, other => 7, lipid => 8, id => 9};
+my $attribute_map = {energy => 0, cofactor => 1, rna => 2, dna => 3, name => 4, cellwall => 5, protein => 6, other => 7, lipid => 8, id => 9,edits => 10,deleted_compounds => 11};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

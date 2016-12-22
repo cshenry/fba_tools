@@ -6,11 +6,139 @@ use Config::Simple;
 use DateTime;
 
 our $config = undef;
-our $ws_client = undef;
 our $ctx = undef;
 our $timestamp = undef;
 our $debugfile = undef;
-our $objects_created = [];
+our $reportmessage = undef;
+our $reporthtml = undef;
+our $reportfiles = [];
+our $reporthtmlfiles = [];
+our $processid = undef;
+our $loghandler;
+our $starttime = undef;
+our $arguments = undef;
+
+sub to_json {
+    my ($ref,$prettyprint) = @_;
+    my $JSON = JSON->new->utf8(1);
+    $JSON->allow_blessed([]);
+    if (defined($prettyprint) && $prettyprint == 1) {
+		$JSON->pretty(1);
+    }
+    return $JSON->encode($ref);
+}
+
+sub arguments {
+	my ($input) = @_;
+	if (defined($input)) {
+		$arguments = $input;
+	}
+	return $arguments;
+}
+
+sub start_time {
+	my ($reset) = @_;
+	if (!defined($starttime) || (defined($reset) && $reset == 1)) {
+		$starttime = time();
+	}
+	return $starttime;
+}
+
+sub start_time_stamp {
+	return DateTime->from_epoch( epoch => Bio::KBase::utilities::start_time() )->datetime();
+}
+
+sub elapsedtime {
+	return time()-Bio::KBase::utilities::start_time();
+}
+
+sub set_handler {
+	my ($input_handler) = @_;
+	$loghandler = $input_handler;
+}
+
+sub processid {
+	my ($input) = @_;
+	if (defined($input)) {
+		$processid = $input;
+	}
+	if (!defined($processid)) {
+    	$processid = Data::UUID->new()->create_str();
+    }
+    return $processid;
+}
+
+sub log {
+	my ($msg,$type) = @_;
+	$loghandler->util_log($msg,$type,Bio::KBase::utilities::processid());
+}
+
+sub print_report_message {
+	my ($args) = @_;
+	$args = Bio::KBase::utilities::args($args,["message"],{
+		append => 1,
+		html => 0
+	});
+	if ($args->{html} == 1) {
+		if ($args->{append} == 1) {
+			if (!defined($reporthtml)) {
+				$reporthtml = "";
+			}
+			$reporthtml .= $args->{message};
+		} else {
+			$reporthtml = $args->{message};
+		}
+	} else {
+		if ($args->{append} == 1) {
+			if (!defined($reportmessage)) {
+				$reportmessage = "";
+			}
+			$reportmessage .= $args->{message};
+		} else {
+			$reportmessage = $args->{message};
+		}
+	}
+}
+
+sub report_message {
+	return $reportmessage;
+}
+
+sub report_html {
+	return $reporthtml;
+}
+
+sub add_report_file {
+	my ($args) = @_;
+	$args = Bio::KBase::utilities::args($args,["path","name","description"],{
+		html => 0
+	});
+	if ($args->{html} == 1) {
+		push(@{$reporthtmlfiles},{
+			path => $args->{path},
+			name => $args->{name},
+			description => $args->{description},
+		});
+	} else {
+		push(@{$reportfiles},{
+			path => $args->{path},
+			name => $args->{name},
+			description => $args->{description},
+		});
+	}
+}
+
+sub report_files {
+	return $reportfiles;
+}
+
+sub report_html_files {
+	return $reporthtmlfiles;
+}
+
+sub config_hash {
+	return $config;
+}
 
 #read_config: an all purpose general method for reading in service configurations and setting mandatory/optional values
 sub read_config {
@@ -44,7 +172,76 @@ sub read_config {
 		call_back_url =>  $ENV{ SDK_CALLBACK_URL },
 		token => undef
 	});
+	#print "Loading config file:".$args->{filename}.":\n".Data::Dumper->Dump([$config])."\n";
 	return $config;
+}
+
+sub parse_input_table {
+	my $filename = shift;
+	my $columns = shift;#[name,required?(0/1),default,delimiter]
+	if (!-e $filename) {
+		print "Could not find input file:".$filename."!\n";
+		exit();
+	}
+	if($filename !~ /\.([ct]sv|txt)$/){
+    	die("$filename does not have correct suffix (.txt or .csv or .tsv)");
+	}
+	open(my $fh, "<", $filename) || return;
+	my $headingline = <$fh>;
+	$headingline =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+	my $delim = undef;
+	if ($headingline =~ m/\t/) {
+		$delim = "\\t";
+	} elsif ($headingline =~ m/,/) {
+		$delim = ",";
+	}
+	if (!defined($delim)) {
+		die("$filename either does not use commas or tabs as a separator!");
+	}
+	my $headings = [split(/$delim/,$headingline)];
+	my $data = [];
+	while (my $line = <$fh>) {
+		$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+		push(@{$data},[split(/$delim/,$line)]);
+	}
+	close($fh);
+	my $headingColums;
+	for (my $i=0;$i < @{$headings}; $i++) {
+		$headingColums->{$headings->[$i]} = $i;
+	}
+	my $error = 0;
+	for (my $j=0;$j < @{$columns}; $j++) {
+		if (!defined($headingColums->{$columns->[$j]->[0]}) && defined($columns->[$j]->[1]) && $columns->[$j]->[1] == 1) {
+			$error = 1;
+			print "Model file missing required column '".$columns->[$j]->[0]."'!\n";
+		}
+	}
+	if ($error == 1) {
+		exit();
+	}
+	my $objects = [];
+	foreach my $item (@{$data}) {
+		my $object = [];
+		for (my $j=0;$j < @{$columns}; $j++) {
+			$object->[$j] = undef;
+			if (defined($columns->[$j]->[2])) {
+				$object->[$j] = $columns->[$j]->[2];
+			}
+			if (defined($headingColums->{$columns->[$j]->[0]}) && defined($item->[$headingColums->{$columns->[$j]->[0]}])) {
+				$object->[$j] = $item->[$headingColums->{$columns->[$j]->[0]}];
+			}
+			if (defined($columns->[$j]->[3])) {
+				if (defined($object->[$j]) && length($object->[$j]) > 0) {
+					my $d = $columns->[$j]->[3];
+					$object->[$j] = [split(/$d/,$object->[$j])];
+				} else {
+					$object->[$j] = [];
+				}
+			}
+		}
+		push(@{$objects},$object);
+	}
+	return $objects;
 }
 
 #args: a function for validating argument hashes that checks for mandatory keys and sets default values on optional keys
@@ -109,11 +306,11 @@ sub conf {
 #error: prints an error message
 sub error {	
 	my ($message) = @_;
-    #if (Bio::KBase::utilities::utilconf("fulltrace") == 1) {
+    if (defined($config) && Bio::KBase::utilities::utilconf("fulltrace") == 1) {
 		Carp::confess($message);
-    #} else {
-    #	die $message;
-    #}
+    } else {
+    	die $message;
+    }
 }
 
 sub debug {
@@ -125,50 +322,10 @@ sub debug {
 }
 
 sub close_debug {
-	close($debugfile);
-	$debugfile = undef;
-}
-
-#create_report: creates a report object using the KBaseReport service
-sub create_report {
-	my($parameters) = @_;
-	$parameters = Bio::KBase::utilities::args($parameters,["workspace_name","report_object_name"],{
-		warnings => [],
-		html_links => [],
-		file_links => [],
-		direct_html_link_index => undef,
-		direct_html => undef,
-		message => ""
-	});
-	my $kr;
-	if (Bio::KBase::utilities::utilconf("reportimpl") == 1) {
-		require "KBaseReport/KBaseReportImpl.pm";
-		$kr = new KBaseReport::KBaseReportImpl();
-		if (!defined($KBaseReport::KBaseReportServer::CallContext)) {
-			$KBaseReport::KBaseReportServer::CallContext = $ctx;
-		}
-	} else {
-		require "KBaseReport/KBaseReportClient.pm";
-		$kr = new KBaseReport::KBaseReportClient(Bio::KBase::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+	if (defined($debugfile)) {
+		close($debugfile);
+		$debugfile = undef;
 	}
-	if (defined(Bio::KBase::utilities::utilconf("debugging")) && Bio::KBase::utilities::utilconf("debugging") == 1) {
-		push(@{$parameters->{file_links}},{
-			path => Bio::KBase::utilities::utilconf("debugfile"),
-	        name => "Debug.txt",
-	        description => "Debug file"
-		});
-	}
-	return $kr->create_extended_report({
-		message => $parameters->{message},
-        objects_created => $objects_created,
-        warnings => $parameters->{warnings},
-        html_links => $parameters->{html_links},
-        direct_html => $parameters->{direct_html},
-        direct_html_link_index => $parameters->{direct_html_link_index},
-        file_links => $parameters->{file_links},
-        report_object_name => $parameters->{report_object_name},
-        workspace_name => $parameters->{workspace_name}
-	});
 }
 
 sub create_context {	
@@ -185,82 +342,13 @@ sub create_context {
 	return $context;
 }
 
-sub create_context_from_client_config {
-	my($parameters) = @_;
-	$parameters = Bio::KBase::utilities::args($parameters,[],{
-		filename => $ENV{ KB_CLIENT_CONFIG },
-		setcontext => 1,
-		method => "unknown",
-		provenance => []
-	});
-	my $config = Bio::KBase::utilities::read_config({
-		filename => $parameters->{filename},
-		service => "authentication"
-	});
-	my $context = LocalCallContext->new($config->{authentication}->{token},$config->{authentication}->{user_id},$parameters->{provenance},$parameters->{method});
-	if ($parameters->{setcontext} == 1) {
-		Bio::KBase::utilities::set_context($context);
-	}
-	return $context;
-}
-
 sub set_context {
 	my($context) = @_;
 	$ctx = $context;
 }
 
-sub ws_client {
-	my($parameters) = @_;
-	$parameters = Bio::KBase::utilities::args($parameters,[],{
-		refresh => 0
-	});
-	if ($parameters->{refresh} == 1 || !defined($ws_client)) {
-		$ws_client = new Bio::KBase::workspace::Client(Bio::KBase::utilities::utilconf("workspace-url"),token => Bio::KBase::utilities::token());
-	}
-	return $ws_client;
-}
-
-sub get_object {
-	my ($ws,$id) = @_;
-	my $output = Bio::KBase::utilities::ws_client()->get_objects();
-	print "Getting object: ".$ws."/".$id."\n";
-	return $output->[0]->{data};
-}
-
-sub get_objects {
-	my ($args) = @_;
-	return Bio::KBase::utilities::ws_client()->get_objects($args);
-}
-
-sub get_object_info {
-	my ($argone,$argtwo) = @_;
-	return Bio::KBase::utilities::ws_client()->get_object_info($argone,$argtwo);
-}
-
-sub administer {
-	my ($args) = @_;
-	return Bio::KBase::utilities::ws_client()->administer($args);
-}
-
-sub reset_objects_created {
-	$objects_created = [];
-}
-
-sub save_objects {
-	my ($args) = @_;
-	my $output = Bio::KBase::utilities::ws_client()->save_objects($args);
-	for (my $i=0; $i < @{$output}; $i++) {
-		my $array = [split(/\./,$output->[$i]->[2])];
-		my $description = $array->[1]." ".$output->[$i]->[1];
-		if (defined($output->[$i]->[10]) && defined($output->[$i]->[10]->{description})) {
-			$description = $output->[$i]->[10]->{description};
-		}
-		push(@{$objects_created},{
-			"ref" => $output->[$i]->[6]."/".$output->[$i]->[0]."/".$output->[$i]->[4],
-			description => $description
-		});
-	}
-	return $output;
+sub context {
+	return $ctx;
 }
 
 sub token {
@@ -279,37 +367,12 @@ sub user_id {
 	return $ctx->user_id();
 }
 
-sub configure_ws_id {
-	my ($ws,$id) = @_;
-	my $input = {};
- 	if ($ws =~ m/^\d+$/) {
- 		$input->{wsid} = $ws;
-	} else {
-		$input->{workspace} = $ws;
-	}
-	if ($id =~ m/^\d+$/) {
-		$input->{objid} = $id;
-	} else {
-		$input->{name} = $id;
-	}
-	return $input;
-}
-
 sub timestamp {
 	my ($reset) = @_;
 	if (defined($reset) && $reset == 1) {
 		$timestamp = DateTime->now()->datetime();
 	}
 	return $timestamp;	
-}
-
-sub initialize_call {
-	my ($ctx) = @_;
-	Bio::KBase::utilities::reset_objects_created();
-	Bio::KBase::utilities::timestamp(1);
-	Bio::KBase::utilities::set_context($ctx);
-	Bio::KBase::utilities::ws_client({refresh => 1});
-	print("Starting ".Bio::KBase::utilities::method()." method.\n");
 }
 
 {

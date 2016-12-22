@@ -25,5 +25,7 @@ env_push PERL5LIB /kb/runtime/lib/perl5/$ARCHNAME
 env_push PERL5LIB /kb/runtime/lib/perl5/$ARCHNAME/auto
 env_push PERL5LIB /kb/runtime/lib/perl5
 env_push PERL5LIB $SCRIPT_DIR/../KBaseClient/lib
+env_push PERL5LIB $SCRIPT_DIR/../KBaseReport/lib
+env_push PERL5LIB $SCRIPT_DIR/../handle_service/lib
 env_push PERL5LIB $SCRIPT_DIR/lib
 export PERL5LIB
