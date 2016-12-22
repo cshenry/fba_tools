@@ -2,9 +2,9 @@
    "name" : "Edit Metabolic Model",
    "ver" : "1.0.0",
    "authors" : ["nconrad@anl.gov"],
-   "contact" : "http://kbase.us/contact-us/",
+   "contact" : "http://kbase.us/contact-us"",
    "visble" : true,
-   "categories" : ["active","metabolic_model"],
+   "categories" : ["active","metabolic_modeling"],
    "widgets" : {
      "input" : "kbaseEditModel",
      "output" : "null"
