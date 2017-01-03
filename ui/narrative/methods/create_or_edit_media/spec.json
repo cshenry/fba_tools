@@ -2,9 +2,9 @@
    "name" : "Create or Edit Media",
    "ver" : "1.0.0",
    "authors" : ["nconrad@anl.gov"],
-   "contact" : "help@kbase.us",
+   "contact" : "http://kbase.us/contact-us/",
    "visble" : true,
-   "categories" : ["active"],
+   "categories" : ["active","metabolic_modeling"],
    "widgets" : {
      "input" : "kbaseEditMedia",
      "output" : "kbaseMediaViewer"
