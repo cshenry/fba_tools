@@ -29,6 +29,55 @@ extends 'Bio::KBase::ObjectAPI::KBasePhenotypes::DB::PhenotypeSimulationSet';
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub export {
+    my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["format"], {file => 0,path => undef}, @_);
+	if (lc($args->{format}) eq "tsv") {
+		return $self->printTSV($args);
+	} elsif (lc($args->{format}) eq "excel") {
+		return $self->printExcel($args);
+	}
+	Bio::KBase::ObjectAPI::utilities::error("Unrecognized type for export: ".$args->{format});
+}
+
+sub printTSV {
+    my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tgrowth\tsimulated growth\tsimulated growth fraction\tgapfilled reaction count\tgapfilled reactions"];
+	my $phenotypes = $self->phenotypeSimulations();
+	for (my $i=0; $i < @{$phenotypes}; $i++) {
+		push(@{$output},$phenotypes->[$i]->phenotype()->geneKOString()."\t".$phenotypes->[$i]->phenotype()->media()->_wsworkspace()."\t".$phenotypes->[$i]->phenotype()->media()->_wsname()."\t".$phenotypes->[$i]->phenotype()->additionalCpdString()."\t".$phenotypes->[$i]->phenotype()->normalizedGrowth()."\t".$phenotypes->[$i]->simulatedGrowth()."\t".$phenotypes->[$i]->simulatedGrowthFraction()."\t".$phenotypes->[$i]->numGapfilledReactions()."\t".join(";",@{$phenotypes->[$i]->gapfilledReactions()}));
+	}
+	if ($args->{file} == 1) {
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id().".tsv",$output);
+		return [$args->{path}."/".$self->id().".tsv"];
+	}
+	return $output;
+}
+
+sub printExcel {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $output = $self->printTSV();	
+	require "Spreadsheet/WriteExcel.pm";
+	my $wkbk = Spreadsheet::WriteExcel->new($args->{path}."/".$self->id().".xls") or die "can not create workbook: $!";
+	my $sheet = $wkbk->add_worksheet("Phenotypes");
+	for (my $i=0; $i < @{$output}; $i++) {
+		my $row = [split(/\t/,$output->[$i])];
+		for (my $j=0; $j < @{$row}; $j++) {
+			if (defined($row->[$j])) {
+				$row->[$j] =~ s/=/-/g;
+			}
+		}
+		$sheet->write_row($i,0,$row);
+	}
+	$wkbk->close();
+	if ($args->{file} == 0) {
+		Bio::KBase::error("Export to excel is only supported as a file output!");
+	}
+	return [$args->{path}."/".$self->id().".xls"];
+}
+
 sub export_text {	
 	my $self = shift;
 	my $output = "Phenosim ID\tPheno ID\tMedia\tKO\tAdditional compounds\tObserved growth\tSimulated growth\tSimulated growth fraction\tClass\n";

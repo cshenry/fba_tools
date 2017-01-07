@@ -437,6 +437,16 @@ sub addModelReaction {
     	$args->{compartment} = lc($2);
     	$args->{compartmentIndex} = $3;
     }
+    #Standardizing and fetching compartment
+    if ($args->{compartment} =~ m/^([a-z]+)(\d+)$/ || $args->{compartment} =~ m/(.+)_(\d+)/) {
+    	$args->{compartment} = $1;
+    	$args->{compartmentIndex} = $2;
+    }
+    my $cmp = $self->template()->searchForCompartment($args->{compartment});
+    if (!defined($cmp)) {
+    	Bio::KBase::ObjectAPI::utilities::error("Unrecognized compartment ".$args->{compartment}." in reaction: ".$args->{reaction});
+    }
+    $args->{compartment} = $cmp->id();
     my $eq;
     if (defined($args->{equation})) {
     	$eq = $args->{equation};
@@ -450,27 +460,14 @@ sub addModelReaction {
     if (defined($self->getObject("modelreactions",$fullid))) {
     	Bio::KBase::ObjectAPI::utilities::error("Reaction with specified ID ".$rootid." already in model. Remove reaction before attempting to add again!");
     }
-    #Standardizing and fetching compartment
-    if ($args->{compartment} =~ m/^([a-z]+)(\d+)$/) {
-    	$args->{compartment} = $1;
-    	$args->{compartmentIndex} = $2;
-    }
-	my $cmp = $self->template()->searchForCompartment($args->{compartment});
-    if (!defined($cmp)) {
-    	Bio::KBase::ObjectAPI::utilities::error("Unrecognized compartment ".$args->{compartment}." in reaction: ".$args->{reaction});
-    }
+    
     #Fetching or adding model compartment
     my $mdlcmp = $self->addCompartmentToModel({compartment => $cmp,pH => 7,potential => 0,compartmentIndex => $args->{compartmentIndex}});
 	#Finding reaction reference
 	my $reference = $self->template()->_reference()."/reactions/id/rxn00000_c";
 	my $coefhash = {};
 	if ($rootid =~ m/^rxn\d+$/) {
-	    my $rxnobj = undef;
-	    if( $cmp && $cmp->id() ne 'c'){
-		$rxnobj = $self->template()->searchForReaction($rootid,$cmp->id());
-	    }else{
-		$rxnobj = $self->template()->searchForReaction($rootid);
-	    }
+		my $rxnobj = $self->template()->searchForReaction($rootid);
 		if (!defined($rxnobj) && !defined($eq)) {
 			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 		} else {
@@ -628,38 +625,63 @@ sub LoadExternalReactionEquation {
 	    		my $mdlcpd;
 	    		if (defined($cpdobj)) {
 	    			$mdlcpd = $self->searchForCompound($cpdobj->id()."_".$compartment.$index);
-	    			if (!defined($mdlcpd)) {
-	    				$mdlcpd = $self->add("modelcompounds",{
-	    					id => $cpdobj->id()."_".$compartment.$index,
-							compound_ref => $cpdobj->_reference(),
-							name => $cpdobj->name()."_".$compartment.$index,
-							charge => $cpdobj->defaultCharge(),
-							formula => $cpdobj->formula(),
-							modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
-							aliases => ["mdlid:".$cpd]
-	    				});
-	    			} else {
+	    			my $newcpd = 1;
+	    			my $newcpdid = $cpdobj->id();
+	    			my $formula = $cpdobj->formula();
+	    			my $charge = $cpdobj->defaultCharge();
+	    			my $name = $cpdobj->name();
+	    			my $reference = $cpdobj->_reference();
+	    			if (defined($mdlcpd)) {
+	    				$newcpd = 0;
 	    				my $aliases = $mdlcpd->aliases();
 	    				foreach my $alias (@{$aliases}) {
 	    					if ($alias =~ m/^mdlid:(.+)/) {
 	    						if ($1 ne $cpd) {
-	    							print STDERR "Possibly erroneously consolidating ".$cpd." with ".$1."\n";
+	    							$newcpd = 1;
+	    							$newcpdid = $cpd;
+	    							$name = $newcpdid;
+	    							$formula = "";
+	    							$charge = 0;
+	    							$reference = $self->template()->_reference()."/compounds/id/cpd00000";
 	    						}
 	    					}
 	    				}
+	    			}
+	    			if ($newcpd == 1) {
+	    				$mdlcpd = $self->add("modelcompounds",{
+	    					id => $newcpdid."_".$compartment.$index,
+							compound_ref => $reference,
+							name => $name."_".$compartment.$index,
+							charge => $charge,
+							formula => $formula,
+							modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
+							aliases => ["mdlid:".$cpd]
+	    				});
 	    			}
 	    		} else {
 	    			#print $cpd." not found!\n";
 	    			$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
 	    			if (!defined($mdlcpd)) {
 	    				if (!defined($args->{compounds}->{$cpd})) {
-	    					print STDERR "Ill defined compound:".$cpd."!\n";
+	    					Bio::KBase::utilities::log("Ill defined compound:".$cpd."!");
 	    					$cpd =~ s/[^\w]/_/g;
 	    					$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
 	    					#Bio::KBase::ObjectAPI::utilities::error("Ill defined compound:".$cpd."!");
 	    				}
-	    				if (!defined($mdlcpd)) {
-		    				$mdlcpd = $self->add("modelcompounds",{
+	    				my $newcpd = 1;
+		    			if (defined($mdlcpd)) {
+		    				$newcpd = 0;
+		    				my $aliases = $mdlcpd->aliases();
+		    				foreach my $alias (@{$aliases}) {
+		    					if ($alias =~ m/^mdlid:(.+)/) {
+		    						if ($1 ne $cpd) {
+		    							$newcpd = 1;
+		    						}
+		    					}
+		    				}
+		    			}
+		    			if ($newcpd == 1) {
+	    					$mdlcpd = $self->add("modelcompounds",{
 		    					id => $cpd."_".$compartment.$index,
 								compound_ref => $self->template()->_reference()."/compounds/id/cpd00000",
 								name => $cpd."_".$compartment.$index,
@@ -668,16 +690,7 @@ sub LoadExternalReactionEquation {
 								modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
 		    					aliases => ["mdlid:".$cpd]
 		    				});
-	    				} else {
-		    				my $aliases = $mdlcpd->aliases();
-		    				foreach my $alias (@{$aliases}) {
-		    					if ($alias =~ m/^mdlid:(.+)/) {
-		    						if ($1 ne $cpd) {
-		    							print STDERR "Possibly erroneously consolidating ".$cpd." with ".$1."\n";
-		    						}
-		    					}
-		    				}
-		    			}
+	    				}
 	    			}
 	    		}
 	    		if (!defined($compoundhash->{$mdlcpd->id()})) {
@@ -731,6 +744,7 @@ Description:
 
 sub printSBML {
     my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
 	# convert ids to SIds
     my $idToSId = sub {
         my $id = shift @_;
@@ -861,7 +875,7 @@ sub printSBML {
 			$obj = 1;
 		}
 		my $reversibility = "false";
-		push(@{$output},'<reaction '.$self->CleanNames("id","biomass".$i).' '.$self->CleanNames("name",$rxn->name()).' '.$self->CleanNames("reversible",$reversibility).'>');
+		push(@{$output},'<reaction '.$self->CleanNames("id",$bios->[$i]->id()).' '.$self->CleanNames("name",$rxn->name()).' '.$self->CleanNames("reversible",$reversibility).'>');
 		push(@{$output},"<notes>");
 		push(@{$output},"<html:p>GENE_ASSOCIATION: </html:p>");
 		push(@{$output},"<html:p>PROTEIN_ASSOCIATION: </html:p>");
@@ -938,17 +952,98 @@ sub printSBML {
 			push(@{$output},"\t\t".'</listOfParameters>');
 			push(@{$output},"\t".'</kineticLaw>');
 			push(@{$output},'</reaction>');
-		}	
+		}
 	}
 	#Closing out the file
 	push(@{$output},'</listOfReactions>');
 	push(@{$output},'</model>');
 	push(@{$output},'</sbml>');
+	if ($args->{file} == 1) {
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id().".sbml",$output);
+		return [$args->{path}."/".$self->id().".sbml"]
+	}
 	return join("\n",@{$output});
+}
+
+sub printTSV {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $output = {
+		compounds_table => ["id\tname\tformula\tcharge\taliases"],
+		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tenzyme\tpathway\treference\tequation\tdefinition"]
+	};
+	my $compounds = $self->modelcompounds();
+	for (my $i=0; $i < @{$compounds}; $i++) {
+		push(@{$output->{compounds_table}},$compounds->[$i]->id()."\t".$compounds->[$i]->name()."\t".$compounds->[$i]->formula()."\t".$compounds->[$i]->charge()."\t");
+	}
+	my $reactions = $self->modelreactions();
+	for (my $i=0; $i < @{$reactions}; $i++) {
+		my $pathway = "";
+		if (defined($reactions->[$i]->pathway())) {
+			$pathway = $reactions->[$i]->pathway();
+		}
+		my $reference = "";
+		if (defined($reactions->[$i]->reference())) {
+			$reference = $reactions->[$i]->reference();
+		}
+		my $equation = $reactions->[$i]->equation();
+		$equation =~ s/\)/) /g;
+		my $definition = $reactions->[$i]->definition();
+		$definition =~ s/\)/) /g;
+		push(@{$output->{reactions_table}},$reactions->[$i]->id()."\t".$reactions->[$i]->direction()."\t".$reactions->[$i]->modelcompartment()->label()."\t".$reactions->[$i]->gprString()."\t".$reactions->[$i]->name()."\t".""."\t".$pathway."\t".$reference."\t".$equation."\t".$definition);
+	}
+	$reactions = $self->biomasses();
+	for (my $i=0; $i < @{$reactions}; $i++) {
+		my $equation = $reactions->[$i]->equation();
+		$equation =~ s/\)/) /g;
+		my $definition = $reactions->[$i]->definition();
+		$definition =~ s/\)/) /g;
+		push(@{$output->{reactions_table}},$reactions->[$i]->id()."\t=>\tc0\t\t".$reactions->[$i]->name()."\t\t\t\t".$equation."\t".$definition);
+	}
+	if ($args->{file} == 1) {
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id()."-compounds.tsv",$output->{compounds_table});
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id()."-reactions.tsv",$output->{reactions_table});
+		return [$args->{path}."/".$self->id()."-compounds.tsv",$args->{path}."/".$self->id()."-reactions.tsv"];
+	}
+	return $output;
+}
+
+sub printExcel {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $output = $self->printTSV();	
+	require "Spreadsheet/WriteExcel.pm";
+	my $wkbk = Spreadsheet::WriteExcel->new($args->{path}."/".$self->id().".xls") or die "can not create workbook: $!";
+	my $sheet = $wkbk->add_worksheet("ModelCompounds");
+	for (my $i=0; $i < @{$output->{compounds_table}}; $i++) {
+		my $row = [split(/\t/,$output->{compounds_table}->[$i])];
+		for (my $j=0; $j < @{$row}; $j++) {
+			if (defined($row->[$j])) {
+				$row->[$j] =~ s/=/-/g;
+			}
+		}
+		$sheet->write_row($i,0,$row);
+	}
+	$sheet = $wkbk->add_worksheet("ModelReactions");
+	for (my $i=0; $i < @{$output->{reactions_table}}; $i++) {
+		my $row = [split(/\t/,$output->{reactions_table}->[$i])];
+		for (my $j=0; $j < @{$row}; $j++) {
+			if (defined($row->[$j])) {
+				$row->[$j] =~ s/=/-/g;
+			}
+		}
+		$sheet->write_row($i,0,$row);
+	}
+	$wkbk->close();
+	if ($args->{file} == 0) {
+		Bio::KBase::error("Export to excel is only supported as a file output!");
+	}
+	return [$args->{path}."/".$self->id().".xls"];
 }
 
 sub CleanNames {
 		my ($self,$name,$value) = @_;
+		$value =~ s/\+/_plus_/g;
 		$value =~ s/[\s:,-]/_/g;
 		$value =~ s/\W//g;
 		return $name.'="'.$value.'"';
@@ -965,27 +1060,13 @@ Description:
 
 sub export {
     my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args(["format"], {}, @_);
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["format"], {file => 0,path => undef}, @_);
 	if (lc($args->{format}) eq "sbml") {
-		return $self->printSBML();
-	} elsif (lc($args->{format}) eq "exchange") {
-		return $self->printExchange();
-	} elsif (lc($args->{format}) eq "genes") {
-		return $self->printGenes();
-	} elsif (lc($args->{format}) eq "readable") {
-		return $self->toReadableString();
-	} elsif (lc($args->{format}) eq "html") {
-		return $self->createHTML();
-	} elsif (lc($args->{format}) eq "json") {
-		return $self->toJSON({pp => 1});
-	} elsif (lc($args->{format}) eq "cytoseed") {
-		return $self->printCytoSEED($args->{fbas});
-	} elsif (lc($args->{format}) eq "modelseed") {
-		return $self->printModelSEED();
+		return $self->printSBML($args);
 	} elsif (lc($args->{format}) eq "excel") {
-		return $self->printExcel();
-	} elsif (lc($args->{format}) eq "condensed") {
-		return $self->toCondensed();
+		return $self->printExcel($args);
+	} elsif (lc($args->{format}) eq "tsv") {
+		return $self->printTSV($args);
 	}
 	Bio::KBase::ObjectAPI::utilities::error("Unrecognized type for export: ".$args->{format});
 }

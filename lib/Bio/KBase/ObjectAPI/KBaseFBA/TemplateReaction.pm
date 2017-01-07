@@ -222,7 +222,10 @@ sub createEquation {
 
 	    if($args->{format} eq "name"){
 		$printId = $cpd->name();
-	    } elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
+	    } elsif ($args->{format} eq "msid"){
+	    $printId = $cpd->msid();
+	    }elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
+		print $args->{format}."\n";
 		$printId = $cpd->getAlias($args->{format});
 	    }elsif($args->{format} eq "formula"){
 		$printId = $cpd->formula();

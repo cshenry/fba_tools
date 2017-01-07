@@ -1,0 +1,20 @@
+{
+    "name" : "Get Media Condition as an Excel file",
+    "short_description" : 
+        "Get Media Condition as an Excel file",
+
+    "long_description" : 
+        "",
+
+    "tags" : {
+        "categories" : [],
+        "input": {
+            "file_types": ["KBaseBiochem.Media"],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": ["excel"]
+        }
+    }
+}

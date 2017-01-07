@@ -6,7 +6,31 @@ use Bio::KBase::utilities;
 our $ws_client = undef;
 our $ga_client = undef;
 our $ac_client = undef;
+our $data_file_client = undef;
 our $objects_created = [];
+
+sub log {
+	my ($msg,$tag) = @_;
+	if (defined($tag) && $tag eq "debugging") {
+		if (defined(Bio::KBase::utilities::utilconf("debugging")) && Bio::KBase::utilities::utilconf("debugging") == 1) {
+			print $msg."\n";
+		}
+	} else {
+		print $msg."\n";
+	}
+}
+
+sub data_file_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($data_file_client)) {
+		require "DataFileUtil/DataFileUtilClient.pm";
+		$data_file_client = new DataFileUtil::DataFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"));
+	}
+	return $data_file_client;
+}
 
 #create_report: creates a report object using the KBaseReport service
 sub create_report {
@@ -115,6 +139,11 @@ sub get_object {
 sub get_objects {
 	my ($args) = @_;
 	return Bio::KBase::kbaseenv::ws_client()->get_objects($args);
+}
+
+sub list_objects {
+	my ($args) = @_;
+	return Bio::KBase::kbaseenv::ws_client()->list_objects($args);
 }
 
 sub get_object_info {

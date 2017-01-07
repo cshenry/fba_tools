@@ -1,0 +1,20 @@
+{
+    "name" : "Get PhenotypeSimulationSet as an Excel File",
+    "short_description" : 
+        "Get PhenotypeSimulationSet as an Excel File",
+
+    "long_description" : 
+        "",
+
+    "tags" : {
+        "categories" : [],
+        "input": {
+            "file_types": ["excel"],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": ["KBasePhenotypes.PhenotypeSimulationSet"]
+        }
+    }
+}

@@ -115,22 +115,130 @@ $tester->run_tests();
 		my($self) = @_;
 		#my $wsname = "chenry:1456989658583";
 		my $wsname = "chenry:1454960620516";
-		my $output = $self->test_harness("build_metabolic_model",{
+		
+		my $output = $self->test_harness("export_phenotype_set_as_tsv_file",{
+			input_ref => "chenry:1454960620516/shewy_phenotypes"
+		},"export phenotypes as tsv",[],0,undef);
+		$output = $self->test_harness("tsv_file_to_phenotype_set",{
+			phenotype_set_file => {path => "/Users/chenry/temp/test_phenosim.tsv"},
+	        phenotype_set_name => "tsv_phenotypeset",
+	        workspace_name => "chenry:1454960620516",
+	        genome => "211586.9.KBase"
+		},"import phenotype set from tsv",[],0,undef);
+		$output = $self->test_harness("export_model_as_sbml_file",{
+			input_ref => "chenry:1454960620516/New211586.9.gf"
+		},"export model as tsv",[],0,undef);
+		$output = $self->test_harness("sbml_file_to_model",{
+			model_file => {path => "/Users/chenry/temp/New211586.9.gf.sbml"},
+	        model_name => "sbml_import",
+	        workspace_name => "chenry:1454960620516",
+	        genome => "211586.9.KBase",
+	        biomass => ["bio1"]
+		},"import model from SBML",[],0,undef);
+		$output = $self->test_harness("export_model_as_excel_file",{
+			input_ref => "chenry:1454960620516/New211586.9.gf"
+		},"export model as tsv",[],0,undef);
+		$output = $self->test_harness("excel_file_to_model",{
+			model_file => {path => "/Users/chenry/temp/New211586.9.gf.xls"},
+	        model_name => "excel_import",
+	        workspace_name => "chenry:1454960620516",
+	        genome => "211586.9.KBase",
+	        biomass => ["bio1"]
+		},"import model from excel",[],0,undef);
+		$output = $self->test_harness("export_model_as_tsv_file",{
+			input_ref => "chenry:1454960620516/New211586.9.gf"
+		},"export model as tsv",[],0,undef);
+		$output = $self->test_harness("tsv_file_to_model",{
+			model_file => {path => "/Users/chenry/temp/New211586.9.gf-reactions.tsv"},
+	        model_name => "tsv_import",
+	        workspace_name => "chenry:1454960620516",
+	        genome => "211586.9.KBase",
+	        biomass => ["bio1"],
+	        compounds_file => {path => "/Users/chenry/temp/New211586.9.gf-compounds.tsv"}
+		},"import model from tsv",[],0,undef);
+		$output = $self->test_harness("export_media_as_excel_file",{
+			input_ref => "chenry:1454960620516/test_media"
+		},"export media as excel",[],0,undef);
+		$output = $self->test_harness("excel_file_to_media",{
+			media_file => {path => "/Users/chenry/temp/test_media.xls"},
+	        media_name => "xls_media",
+	        workspace_name => "chenry:1454960620516",
+		},"import media from excel",[],0,undef);
+		$output = $self->test_harness("export_media_as_tsv_file",{
+			input_ref => "chenry:1454960620516/test_media"
+		},"export media as tsv",[],0,undef);		
+		$output = $self->test_harness("tsv_file_to_media",{
+			media_file => {path => "/Users/chenry/temp/test_media.tsv"},
+	        media_name => "tsv_media",
+	        workspace_name => "chenry:1454960620516",
+		},"import media from tsv",[],0,undef);		
+		$output = $self->test_harness("media_to_tsv_file",{
+			media_name => "test_media",
+			workspace_name => "chenry:1454960620516"
+		},"export media as tsv",[],0,undef);
+		$output = $self->test_harness("media_to_excel_file",{
+			media_name => "test_media",
+			workspace_name => "chenry:1454960620516"
+		},"export media as excel",[],0,undef);
+		$output = $self->test_harness("model_to_excel_file",{
+			model_name => "New211586.9.gf",
+			workspace_name => "chenry:1454960620516"
+		},"export model as excel",[],0,undef);
+		$output = $self->test_harness("model_to_tsv_file",{
+			model_name => "New211586.9.gf",
+			workspace_name => "chenry:1454960620516"
+		},"export model as tsv",[],0,undef);
+		$output = $self->test_harness("model_to_sbml_file",{
+			model_name => "New211586.9.gf",
+			workspace_name => "chenry:1454960620516"
+		},"export model as sbml",[],0,undef);
+		$output = $self->test_harness("export_fba_as_excel_file",{
+			input_ref => "chenry:1454960620516/211586.9.single_ko_fba"
+		},"export fba as excel",[],0,undef);
+		$output = $self->test_harness("export_fba_as_tsv_file",{
+			input_ref => "chenry:1454960620516/211586.9.single_ko_fba"
+		},"export fba as tsv",[],0,undef);
+		$output = $self->test_harness("fba_to_excel_file",{
+			fba_name => "211586.9.single_ko_fba",
+			workspace_name => "chenry:1454960620516"
+		},"export fba as excel",[],0,undef);
+		$output = $self->test_harness("fba_to_tsv_file",{
+			fba_name => "211586.9.single_ko_fba",
+			workspace_name => "chenry:1454960620516"
+		},"export fba as tsv",[],0,undef);
+		$output = $self->test_harness("phenotype_set_to_tsv_file",{
+			phenotype_set_name => "shewy_phenotypes",
+			workspace_name => "chenry:1454960620516"
+		},"export phenotypes as tsv",[],0,undef);
+		$output = $self->test_harness("export_phenotype_simulation_set_as_excel_file",{
+			input_ref => "chenry:1454960620516/test_phenosim"
+		},"export phenosim as excel",[],0,undef);
+		$output = $self->test_harness("export_phenotype_simulation_set_as_tsv_file",{
+			input_ref => "chenry:1454960620516/test_phenosim"
+		},"export phenosim as tsv",[],0,undef);
+		$output = $self->test_harness("phenotype_simulation_set_to_excel_file",{
+			phenotype_simulation_set_name => "test_phenosim",
+			workspace_name => "chenry:1454960620516"
+		},"export phenosim as excel",[],0,undef);
+		$output = $self->test_harness("phenotype_simulation_set_to_tsv_file",{
+			phenotype_simulation_set_name => "test_phenosim",
+			workspace_name => "chenry:1454960620516"
+		},"export phenosim as tsv",[],0,undef);
+		exit();
+		$output = $self->test_harness("build_metabolic_model",{
 			genome_id => "Shewanella_amazonensis_SB2B",
 			genome_workspace => $wsname,
 			fbamodel_output_id => "draft_no_gapfill",
 			workspace => $wsname,
 			gapfill_model => 0,
 		},"initial draft model reconstruction",[],0,undef);
-		
 		$output = $self->test_harness("build_metabolic_model",{
 			genome_id => "new_genome",
 			genome_workspace => $wsname,
 			fbamodel_output_id => "new_genome_model",
 			workspace => $wsname,
 			gapfill_model => 0,
-		},"initial draft model reconstruction",[],0,undef);
-		
+		},"initial draft model reconstruction",[],0,undef);		
 		$output = $self->test_harness("build_metabolic_model",{
 			genome_id => "Shewanella_amazonensis_SB2B",
 			genome_workspace => $wsname,
@@ -139,7 +247,6 @@ $tester->run_tests();
 			gapfill_model => 1,
 			template_id => "core"
 		},"initial draft model reconstruction",[],0,undef);
-		
 		$output = $self->test_harness("build_metabolic_model",{
 			genome_id => "Shewanella_oneidensus_MR1_NCBI.kbase",
 			genome_workspace => $wsname,
@@ -156,7 +263,13 @@ $tester->run_tests();
 			exp_threshold_margin => 0.1,
 			activation_coefficient => 0.1
 		},"initial draft model reconstruction with built-in expression-based gapfilling in complete media",[],0,undef);
-		
+		$output = $self->test_harness("compare_models",{
+			mc_name => "model_comparison",
+	        model_refs => [$wsname."/draft_complete_gapfill", $wsname."/draft_no_gapfill"],
+	        protcomp_ref => $wsname."/test_comparison",
+	        pangenome_ref => undef,
+	        workspace => $wsname
+		},"model comparison",[],0,undef);
 		$output = $self->test_harness("run_flux_balance_analysis",{
 			fbamodel_id => "draft_complete_gapfill",
 			target_reaction => "bio1",
@@ -168,7 +281,6 @@ $tester->run_tests();
 			find_min_media => 0,
 			all_reversible => 0
 		},"running flux balance analysis in complete media",[],0,"initial draft model reconstruction with built-in expression-based gapfilling in complete media");
-		
 		$output = $self->test_harness("run_flux_balance_analysis",{
 			fbamodel_id => "draft_complete_gapfill",
 			target_reaction => "bio1",
@@ -185,8 +297,7 @@ $tester->run_tests();
 			exp_threshold_percentile => 0.5,
 			exp_threshold_margin => 0.1,
 			activation_coefficient => 0.1
-		},"expression-based flux balance analysis in complete media",[],0,"initial draft model reconstruction with built-in expression-based gapfilling in complete media");
-		
+		},"expression-based flux balance analysis in complete media",[],0,"initial draft model reconstruction with built-in expression-based gapfilling in complete media");		
 		$output = $self->test_harness("propagate_model_to_new_genome",{
 			fbamodel_id => "iMR1_799",
 			fbamodel_workspace => $wsname,
@@ -199,7 +310,6 @@ $tester->run_tests();
 			media_id => "Lactate_minimal_media",
 			media_workspace => $wsname
 		},"propagating published shewanella model to new genome with built in minimal media gapfilling",[],0,undef);
-		
 		$output = $self->test_harness("gapfill_metabolic_model",{
 			fbamodel_id => "iMR1_799",
 			fbamodel_workspace => $wsname,
@@ -212,8 +322,7 @@ $tester->run_tests();
 			exp_threshold_percentile => 0.5,
 			exp_threshold_margin => 0.1,
 			activation_coefficient => 0.1
-		},"expression-based gapfilling of published model in complete media",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");
-		
+		},"expression-based gapfilling of published model in complete media",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");		
 		$output = $self->test_harness("run_flux_balance_analysis",{
 			fbamodel_id => "iMR1_799",
 			fbamodel_workspace => $wsname,
@@ -231,8 +340,7 @@ $tester->run_tests();
 			exp_threshold_percentile => 0.5,
 			exp_threshold_margin => 0.1,
 			activation_coefficient => 0.1
-		},"expression-based flux balance analysis of published model in complete media",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");
-		
+		},"expression-based flux balance analysis of published model in complete media",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");		
 		$output = $self->test_harness("simulate_growth_on_phenotype_data",{
 			fbamodel_id => "translated_SB2B_gapfilled_model",
 			phenotypeset_id => "shewy_phenotypes",
@@ -240,14 +348,12 @@ $tester->run_tests();
 			phenotypesim_output_id => "shewy_phenotype_simulations",
 			workspace => $wsname
 		},"simulating phenotypes with propagated model",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");
-		
 		$output = $self->test_harness("merge_metabolic_models_into_community_model",{
 			fbamodel_id_list => ["translated_SB2B_gapfilled_model","draft_complete_gapfill"],
 			fbamodel_output_id => "Community_model",
 			workspace => $wsname,
 			mixed_bag_model => 1
-		},"merging draft and propated model into community model",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");
-		
+		},"merging draft and propated model into community model",[],0,"propagating published shewanella model to new genome with built in minimal media gapfilling");		
 		$output = $self->test_harness("gapfill_metabolic_model",{
 			fbamodel_id => "Community_model",
 			target_reaction => "bio1",
@@ -255,8 +361,7 @@ $tester->run_tests();
 			media_workspace => $wsname,
 			fbamodel_output_id => "gapfilled_community_model",
 			workspace => $wsname,
-		},"gapfilling community model in minimal media",[],0,"merging draft and propated model into community model");
-		
+		},"gapfilling community model in minimal media",[],0,"merging draft and propated model into community model");		
 		$output = $self->test_harness("run_flux_balance_analysis",{
 			fbamodel_id => "Community_model",
 			target_reaction => "bio1",
@@ -269,8 +374,7 @@ $tester->run_tests();
 			simulate_ko => 0,
 			find_min_media => 0,
 			all_reversible => 0,
-		},"running flux balance analysis in minimal media with community model",[],0,"gapfilling community model in minimal media");
-		
+		},"running flux balance analysis in minimal media with community model",[],0,"gapfilling community model in minimal media");		
 		$output = $self->test_harness("compare_fba_solutions",{
 			fba_id_list => ["iMR1799_exp_fba","draft_complete_gapfill_fba"],
 			fbacomparison_output_id => "fba_comparison",

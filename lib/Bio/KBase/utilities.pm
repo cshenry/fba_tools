@@ -69,8 +69,8 @@ sub processid {
 }
 
 sub log {
-	my ($msg,$type) = @_;
-	$loghandler->util_log($msg,$type,Bio::KBase::utilities::processid());
+	my ($msg,$tag) = @_;
+	$loghandler->util_log($msg,$tag,Bio::KBase::utilities::processid());
 }
 
 sub print_report_message {

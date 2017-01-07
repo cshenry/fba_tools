@@ -500,7 +500,10 @@ sub createEquation {
 
 	    if($args->{format} eq "name"){
 		$printId = $cpd->name();
-	    } elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
+	    } elsif ($args->{format} eq "msid"){
+	    $printId = $cpd->msid();
+	    }elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
+		print $args->{format}."\n";
 		$printId = $cpd->getAlias($args->{format});
 	    }elsif($args->{format} eq "formula"){
 		$printId = $cpd->formula();
@@ -745,12 +748,12 @@ sub ImportExternalEquation {
     		}
     	}	
     } else {
-    	print "Not found:".$self->id()."\n";
+    	Bio::KBase::utilities::log("Not found:".$self->id(),"debugging");
     	my $array = [split(/_/,$self->id())];
     	my $rxn = $self->parent()->template()->searchForReaction($array->[0]);
     	if (defined($rxn)) {
-    		print $rxn->createEquation({format=>"msid",protons=>0,direction=>0})."\n";
-    		print $self->createEquation({indecies => 0,format=>"msid",hashed=>0,protons=>0,direction=>0})."\n";
+    		Bio::KBase::utilities::log($rxn->createEquation({format=>"msid",protons=>0,direction=>0}),"debugging");
+    		Bio::KBase::utilities::log($self->createEquation({indecies => 0,format=>"msid",hashed=>0,protons=>0,direction=>0}),"debugging");
     	}
     	$self->reaction_ref($self->parent()->template()->_reference()."/reactions/id/rxn00000_c");
     }

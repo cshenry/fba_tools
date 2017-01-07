@@ -1,0 +1,44 @@
+name     : FBA MODEL FROM TSV FILE
+subtitle : none
+tooltip  : Upload a Flux Balance Analysis Model from TSV file(s) into your Narrative.
+
+screenshots :
+    []
+
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+parameters :
+    reactionFile :
+        ui-name : REACTIONS TSV FILE
+        short-hint : File with reactions in TSV format
+        long-hint  : File with reactions in TSV format (filename should end with ".tsv")
+
+    compoundFile :
+        ui-name : COMPOUNDS TSV FILE
+        short-hint : File with compounds in TSV format
+        long-hint  : File with compounds in TSV format (filename should end with ".tsv")
+
+    outputObject :
+        ui-name : NAME OF FBA MODEL
+        short-hint : Provide the name for the Flux Balance Analysis Model object that will be created by this upload
+        long-hint  : Provide the name for the Flux Balance Analysis Model object that will be created by this upload
+
+    genomeObject :
+        ui-name : GENOME
+        short-hint : Select the Genome object that contains features referenced by the FBAModel
+        long-hint  : Select the Genome object that contains features referenced by the FBAModel
+
+    biomass :
+        ui-name : BIOMASS
+        short-hint : Provide the biomass reaction identifier in Reaction TSV file
+        long-hint  : Provide the biomass reaction identifier in Reaction TSV file
+
+description : |
+    <p>Please see <a href="http://kbase.us/data-upload-download-guide/fba-model/" target="_blank">http://kbase.us/data-upload-download-guide/fba-model/</a>
+    for more information about how to format your FBA model input file.</p>
+
+technical-description : none

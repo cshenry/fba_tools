@@ -1,0 +1,70 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : [ "importers" ],
+  "widgets" : {
+    "input" : "kbaseNarrativeMethodInput"
+  },
+  "parameters" : [ {
+    "id" : "csvFile",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "file",
+    "text_options" : {
+      "valid_ws_types" : [ ]
+    }
+  }, {
+    "id" : "outputObject",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBasePhenotypes.PhenotypeSet" ],
+      "is_output_name" : true
+    }
+  }, {
+    "id" : "genomeObject",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseGenomes.Genome" ]
+    }
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "FBAFileUtil",
+      "method" : "tsv_file_to_phenotype_set",
+      "input_mapping" : [
+          {
+              "narrative_system_variable": "workspace",
+              "target_property": "workspace_name"
+          },
+          {
+              "input_parameter": "genomeObject",
+              "target_property": "genome"
+          },
+          {
+              "input_parameter": "outputObject",
+              "target_property": "phenotype_set_name"
+          },
+          {
+              "input_parameter": "csvFile",
+              "target_property": "phenotype_set_file/shock_id"
+          }
+      ],
+      "output_mapping" : [
+      ]
+    }
+  },
+  "job_id_output_field": "docker"
+}
