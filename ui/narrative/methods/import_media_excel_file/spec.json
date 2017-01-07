@@ -32,7 +32,7 @@
   "behavior" : {
     "service-mapping" : {
       "url" : "",
-      "name" : "FBAFileUtil",
+      "name" : "fba_tools",
       "method" : "excel_file_to_media",
       "input_mapping" : [
           {

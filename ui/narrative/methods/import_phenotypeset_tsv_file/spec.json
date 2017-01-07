@@ -42,7 +42,7 @@
   "behavior" : {
     "service-mapping" : {
       "url" : "",
-      "name" : "FBAFileUtil",
+      "name" : "fba_tools",
       "method" : "tsv_file_to_phenotype_set",
       "input_mapping" : [
           {

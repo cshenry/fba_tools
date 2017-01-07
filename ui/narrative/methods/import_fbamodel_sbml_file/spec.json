@@ -59,7 +59,7 @@
   "behavior" : {
     "service-mapping" : {
       "url" : "",
-      "name" : "FBAFileUtil",
+      "name" : "fba_tools",
       "method" : "sbml_file_to_model",
       "input_mapping" : [
           {
