@@ -2017,7 +2017,7 @@ sub printTSV {
 	}
 	my $reactions = $self->FBAReactionVariables();
 	for (my $i=0; $i < @{$reactions}; $i++) {
-		push(@{$output->{reactions_table}},$reactions->[$i]->modelreaction()->id()."\t".$reactions->[$i]->modelreaction()->direction()."\t".$reactions->[$i]->modelreaction()->modelcompartment()->label()."\t".$reactions->[$i]->modelreaction()->gprString()."\t".$reactions->[$i]->modelreaction()->name()."\t".$reactions->[$i]->modelreaction()->pathway()."\t".$reactions->[$i]->modelreaction()->equation()."\t".$reactions->[$i]->modelreaction()->definition()."\t".$reactions->[$i]->value()."\t".$reactions->[$i]->min()."\t".$reactions->[$i]->lowerBound()."\t".$reactions->[$i]->max()."\t".$reactions->[$i]->upperBound());
+		push(@{$output->{reactions_table}},$reactions->[$i]->modelreaction()->id()."\t".$reactions->[$i]->modelreaction()->direction()."\t".$reactions->[$i]->modelreaction()->modelcompartment()->label()."\t".$reactions->[$i]->modelreaction()->gprString()."\t".$reactions->[$i]->modelreaction()->name()."\t".""."\t".$reactions->[$i]->modelreaction()->equation()."\t".$reactions->[$i]->modelreaction()->definition()."\t".$reactions->[$i]->value()."\t".$reactions->[$i]->min()."\t".$reactions->[$i]->lowerBound()."\t".$reactions->[$i]->max()."\t".$reactions->[$i]->upperBound());
 	}
 	$reactions = $self->FBABiomassVariables();
 	for (my $i=0; $i < @{$reactions}; $i++) {
