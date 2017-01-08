@@ -381,6 +381,36 @@ class fba_tools(object):
             'fba_tools.edit_metabolic_model',
             [params], self._service_ver, context)
 
+    def edit_media(self, params, context=None):
+        """
+        Edit models
+        :param params: instance of type "EditMediaParams" (EditMediaParams
+           object: arguments for the edit model function) -> structure:
+           parameter "workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "media_id" of type
+           "media_id" (A string representing a Media id.), parameter
+           "media_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "compounds_to_remove" of list of
+           type "compound_id" (A string representing a compound id.),
+           parameter "compounds_to_change" of list of tuple of size 4: type
+           "compound_id" (A string representing a compound id.), parameter
+           "concentration" of Double, parameter "min_flux" of Double,
+           parameter "max_flux" of Double, parameter "compounds_to_add" of
+           list of tuple of size 4: type "compound_id" (A string representing
+           a compound id.), parameter "concentration" of Double, parameter
+           "min_flux" of Double, parameter "max_flux" of Double, parameter
+           "media_output_id" of type "media_id" (A string representing a
+           Media id.)
+        :returns: instance of type "EditMediaResult" -> structure: parameter
+           "report_name" of String, parameter "report_ref" of type
+           "ws_report_id" (The workspace ID for a Report object @id ws
+           KBaseReport.Report), parameter "new_media_id" of type "media_id"
+           (A string representing a Media id.)
+        """
+        return self._client.call_method(
+            'fba_tools.edit_media',
+            [params], self._service_ver, context)
+
     def excel_file_to_model(self, p, context=None):
         """
         :param p: instance of type "ModelCreationParams" (compounds_file is

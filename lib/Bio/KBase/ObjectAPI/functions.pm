@@ -1404,48 +1404,118 @@ sub func_check_model_mass_balance {
 
 sub func_create_or_edit_media {
 	my ($params) = @_;
-    $params = Bio::KBase::utilities::args($params,["workspace","media_id","data"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","media_output_id"],{
+    	media_id => undef,
+    	compounds_to_remove => [],
+    	compounds_to_change => [],
+    	compounds_to_add => [],
     	media_workspace => $params->{workspace},
-    	media_output_id => $params->{media_id}
+    	pH_data => undef,
+    	temperature => undef,
+    	source_id => undef,
+    	source => undef,
+    	type => undef,
+    	isDefined => undef
     });
-	#Getting genome
-	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
-	my $newmedia = Bio::KBase::ObjectAPI::Biochem::Media->new($params->{data});
-	my $wsmeta = $handler->util_save_object($newmedia,$params->{workspace}."/".$params->{media_output_id},{type => "KBaseBiochem.Meda"});
-	my $oldmediacpd = $media->mediacompounds();
-	my $newmediacpd = $newmedia->mediacompounds();
-	my $added = [];
-	my $removed = [];
-	my $changed = [];
-	for (my $i=0; $i < @{$oldmediacpd}; $i++) {
-		my $qcpd = $newmedia->queryObject("mediacompounds",{compound_ref => $oldmediacpd->[$i]->compound_ref()});
-		if (!defined($qcpd)) {
-			push(@{$removed},$oldmediacpd->[$i]->compound()->name()." (".$oldmediacpd->[$i]->compound()->id().")");
-		} else {
-			if ($oldmediacpd->[$i]->concentration() != $qcpd->concentration()) {
-				push(@{$changed},$oldmediacpd->[$i]->compound()->name()." (".$oldmediacpd->[$i]->compound()->id().") concentration changed: ".$oldmediacpd->[$i]->concentration()." => ".$qcpd->concentration())
+    $params->{pH_data} .= "";
+    my $media;
+	if (defined($params->{media_id})) {
+		$media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+		my $list = ["source","source_id","type","isDefined","temperature","pH_data"];
+		for (my $i=0; $i < @{$list}; $i++) {
+			my $item = $list->[$i];
+			if (defined($params->{$item})) {
+				$media->$item($params->{$item});
 			}
-			if ($oldmediacpd->[$i]->maxFlux() != $qcpd->maxFlux()) {
-				push(@{$changed},$oldmediacpd->[$i]->compound()->name()." (".$oldmediacpd->[$i]->compound()->id().") max flux changed: ".$oldmediacpd->[$i]->maxFlux()." => ".$qcpd->maxFlux())
-			}
-			if ($oldmediacpd->[$i]->minFlux() != $qcpd->minFlux()) {
-				push(@{$changed},$oldmediacpd->[$i]->compound()->name()." (".$oldmediacpd->[$i]->compound()->id().") min flux changed: ".$oldmediacpd->[$i]->minFlux()." => ".$qcpd->minFlux())
+		}
+	} else {
+		$media = Bio::KBase::ObjectAPI::Biochem::Media->new({
+			source => $params->{source},
+			pH_data => $params->{pH_data},
+			id => $params->{media_output_id},
+			temperature => $params->{temperature},
+			isAerobic => 0,
+			source_id => $params->{source_id},
+			isMinimal => 0,
+			name => $params->{media_output_id},
+			type => $params->{type},
+			isDefined => $params->{isDefined},
+			mediacompounds => []
+		});
+	}
+	my $mediacpds = $media->mediacompounds();
+	my $count = @{$mediacpds};
+	my $removed_list;
+	for (my $i=0; $i < @{$params->{compounds_to_remove}}; $i++) {
+		for (my $j=0; $j < @{$mediacpds}; $j++) {
+			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+				if ($1 eq $params->{compounds_to_remove}->[$i]) {
+					push(@{$removed_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_remove}->[$i].")");
+					$media->remove("mediacompounds",$mediacpds->[$j]);
+					$mediacpds = $media->mediacompounds();
+					last;
+				}
 			}
 		}
 	}
-	for (my $i=0; $i < @{$newmediacpd}; $i++) {
-		my $qcpd = $media->queryObject("mediacompounds",{compound_ref => $newmediacpd->[$i]->compound_ref()});
-		if (!defined($qcpd)) {
-			push(@{$added},$newmediacpd->[$i]->compound()->name()." (".$newmediacpd->[$i]->compound()->id().")");
+	if (@{$removed_list} == 0) {
+		Bio::KBase::utilities::print_report_message({message => "No compounds removed from the media.",append => 0,html => 0});
+	} else {
+		my $count = @{$removed_list};
+		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});
+		
+	}
+	my $change_list;
+	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
+		for (my $j=0; $j < @{$mediacpds}; $j++) {
+			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+				if ($1 eq $params->{compounds_to_change}->[$i]->[0]) {
+					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->[0].")");
+					$mediacpds->[$j]->concentration($params->{compounds_to_change}->[$i]->[1]);
+					$mediacpds->[$j]->minFlux($params->{compounds_to_change}->[$i]->[2]);
+					$mediacpds->[$j]->maxFlux($params->{compounds_to_change}->[$i]->[3]);
+				}
+			}
 		}
 	}
-	my $message = "New media created: ".$params->{media_output_id}."\nStarting from: ".$params->{media_id}."\n\nAdded:\n".join("\n",@{$added})."\n\nRemoved:\n".join("\n",@{$removed})."\n\nChanges:\n".join("\n",@{$changed})."\n";
-	$handler->util_log($message);
-	$handler->util_report({
-    	'ref' => $params->{workspace}."/".$params->{media_output_id}.".create_or_edit_media.report",
-    	message => $message,
-    	objects => [$wsmeta->[6]."/".$wsmeta->[0]."/".$wsmeta->[4],"Edited media"]
-    });
+	if (@{$change_list} == 0) {
+		Bio::KBase::utilities::print_report_message({message => " No compounds changed in the media.",append => 1,html => 0});
+	} else {
+		my $count = @{$change_list};
+		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds changed in the media: ".join("; ",@{$change_list}).".",append => 1,html => 0});
+		
+	}
+	my $add_list;
+	for (my $i=0; $i < @{$params->{compounds_to_add}}; $i++) {
+		my $found = 0;
+		for (my $j=0; $j < @{$mediacpds}; $j++) {
+			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+				if ($1 eq $params->{compounds_to_add}->[$i]->[0]) {
+					$mediacpds->[$j]->concentration($params->{compounds_to_add}->[$i]->[1]);
+					$mediacpds->[$j]->minFlux($params->{compounds_to_add}->[$i]->[2]);
+					$mediacpds->[$j]->maxFlux($params->{compounds_to_add}->[$i]->[3]);
+					$found = 1;
+				}
+			}
+		}
+		if ($found == 0) {
+			my $newcpd = $media->add("mediacompounds",{
+				compound_ref => "kbase/default/compounds/id/".$params->{compounds_to_add}->[$i]->[0],
+				concentration => $params->{compounds_to_add}->[$i]->[1],
+				minFlux => $params->{compounds_to_add}->[$i]->[2],
+				maxFlux => $params->{compounds_to_add}->[$i]->[3]
+			});
+			push(@{$add_list},$newcpd->compound()->name()." (".$params->{compounds_to_change}->[$i]->[0].")");
+			$mediacpds = $media->mediacompounds();
+		}
+	}
+	my $wsmeta = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_output_id});
+	if (@{$add_list} == 0) {
+		Bio::KBase::utilities::print_report_message({message => " No compounds added to the media.",append => 1,html => 0});
+	} else {
+		my $count = @{$add_list};
+		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds added to the media: ".join("; ",@{$add_list}).".",append => 1,html => 0});	
+	}
    	return {
 		new_media_ref => $params->{workspace}."/".$params->{media_output_id},
 		report_name => $params->{media_output_id}.".create_or_edit_media.report",

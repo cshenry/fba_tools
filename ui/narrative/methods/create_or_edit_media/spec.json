@@ -1,49 +1,404 @@
  {
    "name" : "Create or Edit Media",
    "ver" : "1.0.0",
-   "authors" : ["nconrad@anl.gov"],
+   "authors" : ["chenry@mcs.anl.gov"],
    "contact" : "help@kbase.us",
    "visble" : true,
    "categories" : ["active"],
    "widgets" : {
-     "input" : "kbaseEditMedia",
+     "input" : null,
      "output" : "kbaseMediaViewer"
    },
-   "parameters" : [ {
-     "id" : "param0",
-     "optional" : false,
-     "advanced" : false,
-     "allow_multiple" : false,
-     "default_values" : [ "" ],
-     "field_type" : "text",
-     "text_options" : {
-       "valid_ws_types" : [ "KBaseBiochem.Media" ]
-     }
-   } ],
+   "parameter-groups": [
+        {
+            "id": "compounds_to_change",
+            "parameters": [
+                "change_id",
+                "change_concentration",
+                "change_minflux",
+                "change_maxflux"
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        },
+        {
+            "id": "compounds_to_add",
+            "parameters": [
+                "add_id",
+                "add_concentration",
+                "add_minflux",
+                "add_maxflux"
+            ],
+            "optional": true,
+            "allow_multiple": true,
+            "advanced": true,
+            "with_border": true
+        }
+    ],
+   "parameters" : [
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseBiochem.Media"
+            ]
+         },
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "media_id",
+         "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text"
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "id" : "media_output_id",
+         "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseBiochem.Media"
+            ],
+            "is_output_name" : true
+         }
+      },
+      {
+         "id" : "compounds_to_remove",
+         "field_type" : "textsubdata",
+         "allow_multiple" : true,
+         "optional" : true,
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : true,
+            "multiselection" : false,
+            "subdata_selection" : {
+               "additional_options" : [],
+               "subdata_included" : [
+                  "mediacompounds/[*]/compound_ref"
+               ],
+               "selection_description" : [
+                  "compound_ref"
+               ],
+               "selection_id" : "compound_ref",
+               "path_to_subdata" : [
+                  "mediacompounds"
+               ],
+               "parameter_id" : "media_id",
+               "description_template" : ""
+            }
+         }
+      },
+      {
+         "id" : "change_id",
+         "field_type" : "textsubdata",
+         "allow_multiple" : false,
+         "optional" : true,
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : true,
+            "multiselection" : false,
+            "subdata_selection" : {
+               "additional_options" : [],
+               "subdata_included" : [
+                  "mediacompounds/[*]/compound_ref"
+               ],
+               "selection_description" : [
+                  "compound_ref"
+               ],
+               "selection_id" : "compound_ref",
+               "path_to_subdata" : [
+                  "mediacompounds"
+               ],
+               "parameter_id" : "media_id",
+               "description_template" : ""
+            }
+         }
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "id" : "change_concentration",
+         "default_values" : [
+            "0.001"
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "id" : "change_minflux",
+         "default_values" : [
+            "-100"
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "id" : "change_maxflux",
+         "default_values" : [
+            "100"
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "cpd00027",
+                  "display" : "Glucose",
+                  "ui_name" : "Glucose",
+                  "value" : "cpd00027"
+               },
+               {
+                  "value" : "cpd00033",
+                  "ui_name" : "Glycine",
+                  "display" : "Glycine",
+                  "id" : "cpd00033"
+               }
+            ]
+         },
+         "id" : "add_id",
+         "advanced" : false,
+         "default_values" : [
+            "cpd00027"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "id" : "add_concentration",
+         "default_values" : [
+            "0.001"
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "id" : "add_minflux",
+         "default_values" : [
+            "-100"
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "id" : "add_maxflux",
+         "default_values" : [
+            "100"
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
+      },
+      {
+         "text_options" : {
+            "validate_as" : "float"
+         },
+         "id" : "pH_data",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "id" : "temperature",
+         "advanced" : true,
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "unknown",
+                  "display" : "Unknown",
+                  "ui_name" : "Unknown",
+                  "value" : "unknown"
+               },
+               {
+                  "value" : "biolog",
+                  "ui_name" : "Biolog",
+                  "display" : "Biolog",
+                  "id" : "biolog"
+               },
+               {
+                  "id" : "undefined",
+                  "value" : "undefined",
+                  "ui_name" : "Undefined",
+                  "display" : "Undefined"
+               },
+               {
+                  "display" : "Defined",
+                  "ui_name" : "Defined",
+                  "value" : "defined",
+                  "id" : "defined"
+               }
+            ]
+         },
+         "id" : "type",
+         "advanced" : true,
+         "default_values" : [
+            "unknown"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "default_values" : [
+            "1"
+         ],
+         "advanced" : true,
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "allow_multiple" : false,
+         "optional" : false,
+         "field_type" : "checkbox",
+         "id" : "isDefined"
+      }
+   ],
    "behavior" : {
      "service-mapping": {
             "url": "",
             "name": "fba_tools",
-            "method": "compare_models",
+            "method": "edit_media",
        "input_mapping": [
        	{
 			"narrative_system_variable": "workspace",
 			"target_property": "workspace"
+		},
+		{
+			"target_property" : "add_id",
+			"input_parameter" : "add_id"
+		},
+		{
+			"target_property" : "change_id",
+			"input_parameter" : "change_id"
+		},
+		{
+			"target_property" : "media_id",
+			"input_parameter" : "media_id"
+		},
+		{
+			"target_property" : "media_output_id",
+			"input_parameter" : "media_output_id"
+		},
+		{
+			"target_property" : "compounds_to_remove",
+			"input_parameter" : "compounds_to_remove"
+		},
+		{
+			"target_property" : "pH_data",
+			"input_parameter" : "pH_data"
+		},
+		{
+			"target_property" : "temperature",
+			"input_parameter" : "temperature"
+		},
+		{
+			"target_property": "isDefined",
+			"input_parameter": "isDefined"
+		},
+		{
+			"target_property" : "type",
+			"input_parameter" : "type"
 		}
        ],
        "output_mapping" : [
-         {
-           "constant_value": "KBaseBiochem.Media",
-           "target_property": "type"
-         },
-         {
-           "input_parameter": "param0",
-           "target_property": "obj"
-         },
-         {
-           "narrative_system_variable": "workspace",
-           "target_property": "ws"
-         }
+			{
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			},
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
+            },
+            {
+               "constant_value" : "KBaseBiochem.Media",
+               "target_property" : "type"
+            },
+            {
+               "input_parameter" : "media_output_id",
+               "target_property" : "obj"
+            }
        ]
      }
    },

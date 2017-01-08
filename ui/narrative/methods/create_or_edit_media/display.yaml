@@ -31,12 +31,110 @@ suggestions :
 # Configure the display and description of the parameters
 #
 parameters :
-    param0 :
+    media_id :
         ui-name : |
             Media to edit
         short-hint : |
             Media specifies the set of chemical compounds organism can use for its growth
         long-hint  : |
             Media specifies the set of chemical compounds organism can use for its growth
+    compounds_to_remove :
+        ui-name : |
+            Compounds to remove
+        short-hint : |
+            Compounds to remove
+        long-hint  : |
+            Compounds to remove
+    change_id :
+        ui-name : |
+            Compound ID
+        short-hint : |
+            ID of compound to change
+        long-hint  : |
+            ID of compound to change
+    change_concentration :
+        ui-name : |
+            Concentration
+        short-hint : |
+            Concentration in mmol
+        long-hint  : |
+            Concentration in mmol
+    change_minflux :
+        ui-name : |
+            Min flux
+        short-hint : |
+            Min flux in mmol/gm CDW hr
+        long-hint  : |
+            Min flux in mmol/gm CDW hr
+    change_maxflux :
+        ui-name : |
+            Max flux
+        short-hint : |
+            Max flux in mmol/gm CDW hr
+        long-hint  : |
+            Max flux in mmol/gm CDW hr
+    add_id :
+        ui-name : |
+            Compound ID
+        short-hint : |
+            ID of compound to add
+        long-hint  : |
+            ID of compound to add
+    add_concentration :
+        ui-name : |
+            Concentration
+        short-hint : |
+            Concentration in mmol
+        long-hint  : |
+            Concentration in mmol
+    add_minflux :
+        ui-name : |
+            Min flux
+        short-hint : |
+            Min flux in mmol/gm CDW hr
+        long-hint  : |
+            Min flux in mmol/gm CDW hr
+    add_maxflux :
+        ui-name : |
+            Max flux
+        short-hint : |
+            Max flux in mmol/gm CDW hr
+        long-hint  : |
+            Max flux in mmol/gm CDW hr
+    media_output_id :
+        ui-name : |
+            Output media ID
+        short-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth
+        long-hint  : |
+            Media specifies the set of chemical compounds organism can use for its growth
+    pH_data :
+        ui-name : |
+            pH
+        short-hint : |
+            pH of media
+        long-hint  : |
+            pH of media
+    temperature :
+        ui-name : |
+            Temperature
+        short-hint : |
+            Temperature of media
+        long-hint  : |
+            Temperature of media
+    isDefined :
+        ui-name : |
+            Defined media
+        short-hint : |
+            Check if media is defined
+        long-hint  : |
+            Check if media is defined
+    type :
+        ui-name : |
+            Type of media
+        short-hint : |
+            Type of media
+        long-hint  : |
+            Type of media        
 description : |
     <p>Create or edit a media formulation by adding or removing compounds, changing concentrations, or adjusting flux bounds.</p>

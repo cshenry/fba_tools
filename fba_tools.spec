@@ -415,6 +415,30 @@ module fba_tools {
     */
     funcdef edit_metabolic_model(EditMetabolicModelParams params) returns (EditMetabolicModelResult) authentication required;
 
+	/*
+    EditMediaParams object: arguments for the edit model function
+    */
+    typedef structure {
+		workspace_name workspace;
+		media_id media_id;
+		workspace_name media_workspace;
+		list<compound_id> compounds_to_remove;
+		list<tuple<compound_id,float concentration,float min_flux,float max_flux>> compounds_to_change;
+		list<tuple<compound_id,float concentration,float min_flux,float max_flux>> compounds_to_add;
+		media_id media_output_id;
+    } EditMediaParams;
+    
+    typedef structure {
+		string report_name;
+		ws_report_id report_ref;
+		media_id new_media_id;
+    } EditMediaResult;
+
+    /*
+    Edit models
+    */
+    funcdef edit_media(EditMediaParams params) returns (EditMediaResult) authentication required;
+
 	/* A boolean - 0 for false, 1 for true.
        @range (0, 1)
     */

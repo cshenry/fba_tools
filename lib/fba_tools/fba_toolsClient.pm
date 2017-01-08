@@ -1550,6 +1550,140 @@ Edit models
  
 
 
+=head2 edit_media
+
+  $return = $obj->edit_media($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.EditMediaParams
+$return is a fba_tools.EditMediaResult
+EditMediaParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+	compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	media_output_id has a value which is a fba_tools.media_id
+workspace_name is a string
+media_id is a string
+compound_id is a string
+EditMediaResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	new_media_id has a value which is a fba_tools.media_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.EditMediaParams
+$return is a fba_tools.EditMediaResult
+EditMediaParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+	compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	media_output_id has a value which is a fba_tools.media_id
+workspace_name is a string
+media_id is a string
+compound_id is a string
+EditMediaResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	new_media_id has a value which is a fba_tools.media_id
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+Edit models
+
+=back
+
+=cut
+
+ sub edit_media
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function edit_media (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to edit_media:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'edit_media');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.edit_media",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'edit_media',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method edit_media",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'edit_media',
+				       );
+    }
+}
+ 
+
+
 =head2 excel_file_to_model
 
   $return = $obj->excel_file_to_model($p)
@@ -5869,6 +6003,107 @@ a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a fba_tools.ws_report_id
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+
+=end text
+
+=back
+
+
+
+=head2 EditMediaParams
+
+=over 4
+
+
+
+=item Description
+
+EditMediaParams object: arguments for the edit model function
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+media_output_id has a value which is a fba_tools.media_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+media_output_id has a value which is a fba_tools.media_id
+
+
+=end text
+
+=back
+
+
+
+=head2 EditMediaResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+new_media_id has a value which is a fba_tools.media_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+new_media_id has a value which is a fba_tools.media_id
 
 
 =end text

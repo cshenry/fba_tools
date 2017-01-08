@@ -362,6 +362,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: edit_media</p>
+     * <pre>
+     * Edit models
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.EditMediaParams EditMediaParams}
+     * @return   instance of type {@link us.kbase.fbatools.EditMediaResult EditMediaResult}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public EditMediaResult editMedia(EditMediaParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<EditMediaResult>> retType = new TypeReference<List<EditMediaResult>>() {};
+        List<EditMediaResult> res = caller.jsonrpcCall("fba_tools.edit_media", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: excel_file_to_model</p>
      * <pre>
      * </pre>
