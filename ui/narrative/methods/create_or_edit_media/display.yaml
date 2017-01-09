@@ -135,6 +135,17 @@ parameters :
         short-hint : |
             Type of media
         long-hint  : |
-            Type of media        
+            Type of media
+parameter-groups:
+  compounds_to_change: 
+    ui-name: |
+      Compounds to change in media
+    short-hint: |
+      Compounds to change in media
+  compounds_to_add:
+    ui-name: |
+      Compounds to add to media
+    short-hint: |
+      Compounds to add to media  
 description : |
     <p>Create or edit a media formulation by adding or removing compounds, changing concentrations, or adjusting flux bounds.</p>
