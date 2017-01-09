@@ -1712,6 +1712,7 @@ sub edit_media
     my($return);
     #BEGIN edit_media
     $self->util_initialize_call($params,$ctx);
+	print Bio::KBase::utilities::to_json($params,1);
 	$return = Bio::KBase::ObjectAPI::functions::func_create_or_edit_media($params);
 	$self->util_finalize_call({
 		output => $return,

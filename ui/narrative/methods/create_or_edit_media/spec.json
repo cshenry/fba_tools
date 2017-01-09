@@ -33,7 +33,7 @@
             ],
             "optional": true,
             "allow_multiple": true,
-            "advanced": true,
+            "advanced": false,
             "with_border": true
         }
     ],
@@ -90,15 +90,12 @@
                "subdata_included" : [
                   "mediacompounds/[*]/compound_ref"
                ],
-               "selection_description" : [
-                  "compound_ref"
-               ],
+               "selection_description" : [],
                "selection_id" : "compound_ref",
                "path_to_subdata" : [
                   "mediacompounds"
                ],
-               "parameter_id" : "media_id",
-               "description_template" : ""
+               "parameter_id" : "media_id"
             }
          }
       },
