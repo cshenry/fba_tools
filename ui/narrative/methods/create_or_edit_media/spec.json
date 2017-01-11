@@ -70,66 +70,61 @@
          }
       },
       {
-         "id" : "compounds_to_remove",
-         "field_type" : "textsubdata",
-         "allow_multiple" : true,
          "optional" : true,
+         "allow_multiple" : true,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "cpd00007",
+                  "display" : "O2",
+                  "ui_name" : "O2",
+                  "value" : "cpd00007"
+               },
+               {
+                  "value" : "cpd00030",
+                  "ui_name" : "Mn2+",
+                  "display" : "Mn2+",
+                  "id" : "cpd00030"
+               }
+            ]
+         },
+         "id" : "compounds_to_remove",
          "advanced" : false,
          "default_values" : [
-            ""
+            "cpd00007"
          ],
          "text_options" : {
             "valid_ws_types" : []
-         },
-         "textsubdata_options" : {
-            "show_src_obj" : true,
-            "allow_custom" : true,
-            "multiselection" : false,
-            "subdata_selection" : {
-               "additional_options" : [],
-               "subdata_included" : [
-                  "mediacompounds/[*]/compound_ref"
-               ],
-               "selection_description" : [],
-               "selection_id" : "compound_ref",
-               "path_to_subdata" : [
-                  "mediacompounds"
-               ],
-               "parameter_id" : "media_id"
-            }
          }
       },
       {
-         "id" : "change_id",
-         "field_type" : "textsubdata",
-         "allow_multiple" : false,
          "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "cpd00007",
+                  "display" : "O2",
+                  "ui_name" : "O2",
+                  "value" : "cpd00007"
+               },
+               {
+                  "value" : "cpd00030",
+                  "ui_name" : "Mn2+",
+                  "display" : "Mn2+",
+                  "id" : "cpd00030"
+               }
+            ]
+         },
+         "id" : "change_id",
          "advanced" : false,
          "default_values" : [
-            ""
+            "cpd00007"
          ],
          "text_options" : {
             "valid_ws_types" : []
-         },
-         "textsubdata_options" : {
-            "show_src_obj" : true,
-            "allow_custom" : true,
-            "multiselection" : false,
-            "subdata_selection" : {
-               "additional_options" : [],
-               "subdata_included" : [
-                  "mediacompounds/[*]/compound_ref"
-               ],
-               "selection_description" : [
-                  "compound_ref"
-               ],
-               "selection_id" : "compound_ref",
-               "path_to_subdata" : [
-                  "mediacompounds"
-               ],
-               "parameter_id" : "media_id",
-               "description_template" : ""
-            }
          }
       },
       {
