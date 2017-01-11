@@ -1,4 +1,4 @@
-name     : FBA MODEL FROM EXCEL FILE
+name     : Model from excel
 subtitle : none
 tooltip  : Upload a Flux Balance Analysis Model from Excel file into your Narrative.
 
@@ -13,22 +13,22 @@ method-suggestions :
 
 parameters :
     inputFile :
-        ui-name : EXCEL FILE
+        ui-name : Excel file
         short-hint : File with model in Excel format
         long-hint  : File with model in Excel format
 
     outputObject :
-        ui-name : NAME OF FBA MODEL
+        ui-name : Name of FBA model
         short-hint : Provide the name for the Flux Balance Analysis Model object that will be created by this upload
         long-hint  : Provide the name for the Flux Balance Analysis Model object that will be created by this upload
 
     genomeObject :
-        ui-name : GENOME
+        ui-name : Genome
         short-hint : Select the Genome object that contains features referenced by the FBAModel
         long-hint  : Select the Genome object that contains features referenced by the FBAModel
 
     biomass :
-        ui-name : BIOMASS
+        ui-name : Biomass
         short-hint : Provide the biomass reaction identifier in Excel file
         long-hint  : Provide the biomass reaction identifier in Excel file
 

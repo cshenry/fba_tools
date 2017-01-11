@@ -4,7 +4,7 @@
    "authors" : ["chenry@mcs.anl.gov"],
    "contact" : "help@kbase.us",
    "visble" : true,
-   "categories" : ["active"],
+   "categories" : ["active","metabolic_modeling"],
    "widgets" : {
      "input" : null,
      "output" : "kbaseMediaViewer"
