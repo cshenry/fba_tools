@@ -7,7 +7,7 @@
    "categories" : ["active","metabolic_modeling"],
    "widgets" : {
      "input" : null,
-     "output" : "kbaseMediaViewer"
+     "output" : "kbaseTabTable"
    },
    "parameter-groups": [
         {
