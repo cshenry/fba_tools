@@ -1469,11 +1469,11 @@ sub func_create_or_edit_media {
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
 			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
-				if ($1 eq $params->{compounds_to_change}->[$i]->[0]) {
-					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->[0].")");
-					$mediacpds->[$j]->concentration($params->{compounds_to_change}->[$i]->[1]);
-					$mediacpds->[$j]->minFlux($params->{compounds_to_change}->[$i]->[2]);
-					$mediacpds->[$j]->maxFlux($params->{compounds_to_change}->[$i]->[3]);
+				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}) {
+					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->{change_id}.")");
+					$mediacpds->[$j]->concentration($params->{compounds_to_change}->[$i]->{change_concentration});
+					$mediacpds->[$j]->minFlux($params->{compounds_to_change}->[$i]->{change_minflux});
+					$mediacpds->[$j]->maxFlux($params->{compounds_to_change}->[$i]->{change_maxflux});
 				}
 			}
 		}
@@ -1490,22 +1490,22 @@ sub func_create_or_edit_media {
 		my $found = 0;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
 			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
-				if ($1 eq $params->{compounds_to_add}->[$i]->[0]) {
-					$mediacpds->[$j]->concentration($params->{compounds_to_add}->[$i]->[1]);
-					$mediacpds->[$j]->minFlux($params->{compounds_to_add}->[$i]->[2]);
-					$mediacpds->[$j]->maxFlux($params->{compounds_to_add}->[$i]->[3]);
+				if ($1 eq $params->{compounds_to_add}->[$i]->{add_id}) {
+					$mediacpds->[$j]->concentration($params->{compounds_to_add}->[$i]->{add_concentration});
+					$mediacpds->[$j]->minFlux($params->{compounds_to_add}->[$i]->{add_minflux});
+					$mediacpds->[$j]->maxFlux($params->{compounds_to_add}->[$i]->{add_maxflux});
 					$found = 1;
 				}
 			}
 		}
 		if ($found == 0) {
 			my $newcpd = $media->add("mediacompounds",{
-				compound_ref => "kbase/default/compounds/id/".$params->{compounds_to_add}->[$i]->[0],
-				concentration => $params->{compounds_to_add}->[$i]->[1],
-				minFlux => $params->{compounds_to_add}->[$i]->[2],
-				maxFlux => $params->{compounds_to_add}->[$i]->[3]
+				compound_ref => "kbase/default/compounds/id/".$params->{compounds_to_add}->[$i]->{add_id},
+				concentration => $params->{compounds_to_add}->[$i]->{add_concentration},
+				minFlux => $params->{compounds_to_add}->[$i]->{add_minflux},
+				maxFlux => $params->{compounds_to_add}->[$i]->{add_maxflux}
 			});
-			push(@{$add_list},$newcpd->compound()->name()." (".$params->{compounds_to_change}->[$i]->[0].")");
+			push(@{$add_list},$newcpd->compound()->name()." (".$params->{compounds_to_add}->[$i]->{add_id}.")");
 			$mediacpds = $media->mediacompounds();
 		}
 	}
