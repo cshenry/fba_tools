@@ -330,12 +330,12 @@
 			"target_property": "workspace"
 		},
 		{
-			"target_property" : "add_id",
-			"input_parameter" : "add_id"
+			"target_property" : "compounds_to_add",
+			"input_parameter" : "compounds_to_add"
 		},
 		{
-			"target_property" : "change_id",
-			"input_parameter" : "change_id"
+			"target_property" : "compounds_to_change",
+			"input_parameter" : "compounds_to_change"
 		},
 		{
 			"target_property" : "media_id",
