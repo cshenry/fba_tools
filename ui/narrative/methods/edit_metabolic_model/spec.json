@@ -59,7 +59,7 @@
             "parameters": [
                 "biomass_id",
                 "biomass_compound_id",
-				"biomass_coefficient",
+				"biomass_coefficient"
             ],
             "optional": true,
             "advanced": false,
@@ -108,7 +108,7 @@
             "parameters": [
                 "stoich_reaction_id",
                 "stoich_compound_id",
-                "stoich_coefficient",
+                "stoich_coefficient"
             ],
             "optional": true,
             "advanced": false,
