@@ -139,7 +139,7 @@ public:
 	int CheckIndividualMetaboliteProduction(Data* InData, OptimizationParameter* InParameters, string InMetaboliteList, bool DoFindTightBounds, bool MinimizeForeignReactions, string Note, bool SubProblem);
 	int RunDeletionExperiments(Data* InData, OptimizationParameter* InParameters,bool GapfillPhenosim = false);
 	int RunMediaExperiments(Data* InData, OptimizationParameter* InParameters, double WildTypeObjective, bool DoOptimizeSingleObjective, bool DoFindTightBounds, bool MinimizeForeignReactions, bool OptimizeMetaboliteProduction);
-	int DetermineMinimalFeasibleMedia(Data* InData,OptimizationParameter* InParameters,bool augment_only = false);
+	int DetermineMinimalFeasibleMedia(Data* InData,OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution,bool augment_only = false);
 	int OptimizeSingleObjective(Data* InData, OptimizationParameter* InParameters, string InObjective, bool FindTightBounds, bool MinimizeForeignReactions, double &ObjectiveValue, string Note);
 	int OptimizeSingleObjective(Data* InData, OptimizationParameter* InParameters, bool FindTightBounds, bool MinimizeForeignReactions, double &ObjectiveValue, string Note, bool SubProblem);
 	int CheckPotentialConstraints(Data* InData, OptimizationParameter* InParameters, double &ObjectiveValue, string Note);
@@ -179,7 +179,7 @@ public:
 	int AddUptakeLimitConstraints();
 	int FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationParameter* InParameters);
 	int QuantitativeModelOptimization(Data* InData, OptimizationParameter* InParameters);
-	bool SolveGapfillingProblem(int currentround,OptSolutionData*& CurrentSolution,string label,OptimizationParameter* InParameters);
+	bool SolveGapfillingProblem(int currentround,OptSolutionData*& CurrentSolution,string label,OptimizationParameter* InParameters,string OutputFilename);
 
 	//FBA extension studies
 	int CombinatorialKO(int maxDeletions,Data* InData, bool reactions);

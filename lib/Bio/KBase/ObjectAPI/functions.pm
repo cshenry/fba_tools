@@ -539,6 +539,7 @@ sub func_run_flux_balance_analysis {
 		local $SIG{ALRM} = sub { die "FBA timed out! Model likely contains numerical instability!" };
 		alarm 86400;
 		$objective = $fba->runFBA();
+		$fba->toJSON({pp => 1});
 		alarm 0;
 	#};
     if (!defined($objective)) {

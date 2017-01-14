@@ -1,35 +1,839 @@
 {
    "name" : "Edit Metabolic Model",
    "ver" : "1.0.0",
-   "authors" : ["nconrad@anl.gov"],
+   "authors" : ["chenry@mcs.anl.gov"],
    "contact" : "http://kbase.us/contact-us",
    "visble" : true,
    "categories" : ["active","metabolic_modeling"],
    "widgets" : {
-     "input" : "kbaseEditModel",
-     "output" : "null"
+     "input" : null,
+     "output" : "kbaseTabTable"
    },
-   "parameters" : [ {
-     "id" : "param0",
-     "optional" : false,
-     "advanced" : false,
-     "allow_multiple" : false,
-     "default_values" : [ "" ],
-     "field_type" : "text",
-     "text_options" : {
-       "valid_ws_types" : [ "KBaseFBA.FBAModel" ]
-     }
-   } ],
+   "parameter-groups": [
+        {
+            "id": "compounds_to_add",
+            "parameters": [
+                "add_compound_id",
+                "add_compartment_id",
+                "add_compound_name",
+                "add_compound_charge",
+                "add_compound_formula"
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        },
+        {
+            "id": "compounds_to_change",
+            "parameters": [
+                "compound_id",
+                "compound_name",
+                "compound_charge",
+                "compound_formula"
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        },
+        {
+            "id": "biomasses_to_add",
+            "parameters": [
+                "biomass_name",
+				"biomass_dna",
+				"biomass_rna",
+				"biomass_protein",
+				"biomass_cellwall",
+				"biomass_lipid",
+				"biomass_cofactor",
+				"biomass_energy"
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        },
+        {
+            "id": "biomass_compounds_to_change",
+            "parameters": [
+                "biomass_id",
+                "biomass_compound_id",
+				"biomass_coefficient",
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        },
+        {
+            "id": "reactions_to_remove",
+            "parameters": [
+                "remove_reaction_id"
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        },
+        {
+            "id": "reactions_to_change",
+            "parameters": [
+                "change_reaction_id",
+                "change_reaction_name",
+                "change_reaction_direction",
+				"change_reaction_gpr"
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        },
+        {
+            "id": "reactions_to_add",
+            "parameters": [
+                "add_reaction_id",
+                "reaction_compartment_id",
+                "add_reaction_name",
+                "add_reaction_direction",
+				"add_reaction_gpr"
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        },
+        {
+            "id": "edit_compound_stoichiometry",
+            "parameters": [
+                "stoich_reaction_id",
+                "stoich_compound_id",
+                "stoich_coefficient",
+            ],
+            "optional": true,
+            "advanced": false,
+            "allow_multiple": true,
+            "with_border": true
+        }
+   ],
+	"parameters" : [ 
+		{
+			"text_options" : {
+				"valid_ws_types" : [
+					"KBaseFBA.FBAModel"
+				]
+			},
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"id" : "fbamodel_id",
+			"optional" : false,
+			"allow_multiple" : false,
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "fbamodel_output_id",
+			"optional" : false,
+			"allow_multiple" : false,
+			"field_type" : "text",
+			"text_options" : {
+				"valid_ws_types" : [
+					"KBaseFBA.FBAModel"
+				],
+				"is_output_name" : true
+			}
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "add_compound_id",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "add_compound_name",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "add_compound_charge",
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "add_compound_formula",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "compound_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelcompounds"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"name"
+					],
+					"subdata_included" : [
+						"modelcompounds/[*]/id",
+						"modelcompounds/[*]/name"
+					],
+					"description_template" : "- {{name}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "compound_name",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "compound_charge",
+			"default_values" : [
+				"0.001"
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "compound_formula",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "biomass_name",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "biomass_dna",
+			"default_values" : [
+				"0.026"
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "biomass_rna",
+			"default_values" : [
+				"0.0655"
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "biomass_protein",
+			"default_values" : [
+				"0.5284"
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "biomass_cellwall",
+			"default_values" : [
+				"0.25"
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "biomass_lipid",
+			"default_values" : [
+				"0.075"
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "biomass_cofactor",
+			"default_values" : [
+				"0.1"
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "biomass_energy",
+			"default_values" : [
+				"40"
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "biomass_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"biomasses"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"name"
+					],
+					"subdata_included" : [
+						"biomasses/[*]/id",
+						"biomasses/[*]/name"
+					],
+					"description_template" : "- {{name}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "biomass_compound_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelcompounds"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"name"
+					],
+					"subdata_included" : [
+						"modelcompounds/[*]/id",
+						"modelcompounds/[*]/name"
+					],
+					"description_template" : "- {{name}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "biomass_coefficient",
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "remove_reaction_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelreactions"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"name"
+					],
+					"subdata_included" : [
+						"modelreactions/[*]/id",
+						"modelreactions/[*]/name"
+					],
+					"description_template" : "- {{name}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "change_reaction_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelreactions"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"name"
+					],
+					"subdata_included" : [
+						"modelreactions/[*]/id",
+						"modelreactions/[*]/name"
+					],
+					"description_template" : "- {{name}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "change_reaction_name",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : ">",
+                  "display" : "=>",
+                  "ui_name" : "=>",
+                  "value" : ">"
+               },
+               {
+                  "value" : "=",
+                  "ui_name" : "<=>",
+                  "display" : "<=>",
+                  "id" : "="
+               },
+               {
+                  "id" : "<",
+                  "value" : "<",
+                  "ui_name" : "<=",
+                  "display" : "<="
+               }
+            ]
+         },
+         "id" : "change_reaction_direction",
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      	},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "change_reaction_gpr",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "add_reaction_id",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : ">",
+                  "display" : "=>",
+                  "ui_name" : "=>",
+                  "value" : ">"
+               },
+               {
+                  "value" : "=",
+                  "ui_name" : "<=>",
+                  "display" : "<=>",
+                  "id" : "="
+               },
+               {
+                  "id" : "<",
+                  "value" : "<",
+                  "ui_name" : "<=",
+                  "display" : "<="
+               }
+            ]
+         },
+         "id" : "add_reaction_direction",
+         "advanced" : false,
+         "default_values" : [
+            "="
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      	},
+		{
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"id" : "add_reaction_gpr",
+			"field_type" : "text",
+			"allow_multiple" : false,
+			"optional" : true,
+			"text_options" : {
+				"valid_ws_types" : []
+			}
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "add_compartment_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelcompartments"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"label"
+					],
+					"subdata_included" : [
+						"modelcompartments/[*]/id",
+						"modelcompartments/[*]/label"
+					],
+					"description_template" : "- {{label}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "reaction_compartment_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelcompartments"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"label"
+					],
+					"subdata_included" : [
+						"modelcompartments/[*]/id",
+						"modelcompartments/[*]/label"
+					],
+					"description_template" : "- {{label}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "stoich_reaction_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : true,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelreactions"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"name"
+					],
+					"subdata_included" : [
+						"modelreactions/[*]/id",
+						"modelreactions/[*]/name"
+					],
+					"description_template" : "- {{name}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : true,
+			"field_type" : "textsubdata",
+			"id" : "stoich_compound_id",
+			"advanced" : false,
+			"default_values" : [
+				""
+			],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : true,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelcompounds"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"name"
+					],
+					"subdata_included" : [
+						"modelcompounds/[*]/id",
+						"modelcompounds/[*]/name"
+					],
+					"description_template" : "- {{name}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
+			"text_options" : {
+				"validate_as" : "float"
+			},
+			"id" : "stoich_coefficient",
+			"default_values" : [
+				""
+			],
+			"advanced" : false,
+			"field_type" : "text",
+			"optional" : true,
+			"allow_multiple" : false
+		}
+	],
    "behavior" : {
      "service-mapping": {
             "url": "",
             "name": "fba_tools",
-            "method": "compare_models",
+            "method": "edit_metabolic_model",
        "input_mapping": [
-       {
-			"narrative_system_variable": "workspace",
-			"target_property": "workspace"
-		}
+			{
+				"input_parameter": "fbamodel_id",
+				"target_property": "fbamodel_id"
+			},
+			{
+				"input_parameter": "fbamodel_output_id",
+				"target_property": "fbamodel_output_id"
+			},
+			{
+				"input_parameter": "compounds_to_change",
+				"target_property": "compounds_to_change"
+			},
+			{
+				"input_parameter": "biomasses_to_add",
+				"target_property": "biomasses_to_add"
+			},
+			{
+				"input_parameter": "biomass_compounds_to_change",
+				"target_property": "biomass_compounds_to_change"
+			},
+			{
+				"input_parameter": "reactions_to_remove",
+				"target_property": "reactions_to_remove"
+			},
+			{
+				"input_parameter": "reactions_to_change",
+				"target_property": "reactions_to_change"
+			},
+			{
+				"input_parameter": "reactions_to_add",
+				"target_property": "reactions_to_add"
+			},
+			{
+				"input_parameter": "custom_reactions_to_add",
+				"target_property": "custom_reactions_to_add"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace"
+			}
        ],
        "output_mapping" : [
          {
@@ -37,7 +841,7 @@
            "target_property": "type"
          },
          {
-           "input_parameter": "param0",
+           "input_parameter": "fbamodel_id",
            "target_property": "obj"
          },
          {
