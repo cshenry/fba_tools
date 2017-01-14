@@ -1587,6 +1587,7 @@ sub edit_metabolic_model
     my($return);
     #BEGIN edit_metabolic_model
     $self->util_initialize_call($params,$ctx);
+    print Bio::KBase::utilities::to_json($params,1);
 	$return = Bio::KBase::ObjectAPI::functions::func_edit_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $return,
