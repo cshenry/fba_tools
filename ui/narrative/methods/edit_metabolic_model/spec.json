@@ -129,7 +129,7 @@
 			],
 			"id" : "fbamodel_id",
 			"optional" : false,
-			"allow_multiple" : false,
+			"allow_multiple" : false
 		},
 		{
 			"default_values" : [
