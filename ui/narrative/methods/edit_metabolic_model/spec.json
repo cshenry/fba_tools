@@ -817,6 +817,10 @@
 				"target_property": "fbamodel_output_id"
 			},
 			{
+				"input_parameter": "compounds_to_add",
+				"target_property": "compounds_to_add"
+			},
+			{
 				"input_parameter": "compounds_to_change",
 				"target_property": "compounds_to_change"
 			},
@@ -841,8 +845,8 @@
 				"target_property": "reactions_to_add"
 			},
 			{
-				"input_parameter": "custom_reactions_to_add",
-				"target_property": "custom_reactions_to_add"
+				"input_parameter": "edit_compound_stoichiometry",
+				"target_property": "edit_compound_stoichiometry"
 			},
 			{
 				"narrative_system_variable": "workspace",
