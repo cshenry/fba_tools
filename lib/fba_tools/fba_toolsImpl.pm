@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '1.1.0';
 our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = 'e7208e9045cb41668a881f65d521ca1e4be74b00';
+our $GIT_COMMIT_HASH = '7b245bd0625977772ab0bd74032d045272db26d9';
 
 =head1 NAME
 
@@ -25,6 +25,7 @@ use Bio::KBase::ObjectAPI::KBaseStore;
 use Bio::KBase::ObjectAPI::functions;
 use Bio::KBase::utilities;
 use Bio::KBase::kbaseenv;
+use DataFileUtil::DataFileUtilClient;
 
 #Initialization function for call
 sub util_initialize_call {
@@ -79,6 +80,11 @@ sub util_save_object {
 		hidden => 0
 	});
 	return $self->util_store()->save_object($object,$ref,$parameters);
+}
+
+sub util_list_objects {
+	my($self,$args) = @_;
+	return Bio::KBase::kbaseenv::list_objects($args);
 }
 
 sub util_get_file_path {
@@ -4089,6 +4095,120 @@ sub export_phenotype_simulation_set_as_tsv_file
 
 
 
+=head2 bulk_export_objects
+
+  $output = $obj->bulk_export_objects($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.BulkExportObjectsParams
+$output is a fba_tools.BulkExportObjectsResult
+BulkExportObjectsParams is a reference to a hash where the following keys are defined:
+	refs has a value which is a reference to a list where each element is a string
+	all_models has a value which is a fba_tools.bool
+	all_fba has a value which is a fba_tools.bool
+	all_media has a value which is a fba_tools.bool
+	all_phenotypes has a value which is a fba_tools.bool
+	all_phenosims has a value which is a fba_tools.bool
+	model_format has a value which is a string
+	fba_format has a value which is a string
+	media_format has a value which is a string
+	phenotype_format has a value which is a string
+	phenosim_format has a value which is a string
+bool is an int
+BulkExportObjectsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.BulkExportObjectsParams
+$output is a fba_tools.BulkExportObjectsResult
+BulkExportObjectsParams is a reference to a hash where the following keys are defined:
+	refs has a value which is a reference to a list where each element is a string
+	all_models has a value which is a fba_tools.bool
+	all_fba has a value which is a fba_tools.bool
+	all_media has a value which is a fba_tools.bool
+	all_phenotypes has a value which is a fba_tools.bool
+	all_phenosims has a value which is a fba_tools.bool
+	model_format has a value which is a string
+	fba_format has a value which is a string
+	media_format has a value which is a string
+	phenotype_format has a value which is a string
+	phenosim_format has a value which is a string
+bool is an int
+BulkExportObjectsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub bulk_export_objects
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to bulk_export_objects:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'bulk_export_objects');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN bulk_export_objects
+    $self->util_initialize_call($params,$ctx);
+	$output = Bio::KBase::ObjectAPI::functions::func_bulk_export($params,{});
+	Bio::KBase::utilities::add_report_file({
+		path => $output->{path},
+		name => $output->{name},
+		description => $output->{description},
+	});
+	$self->util_finalize_call({
+		output => $output,
+		workspace => $params->{workspace},
+		report_name => Data::UUID->new()->create_str(),
+	});
+    #END bulk_export_objects
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to bulk_export_objects:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'bulk_export_objects');
+    }
+    return($output);
+}
+
+
+
+
 =head2 status 
 
   $return = $obj->status()
@@ -6476,6 +6596,90 @@ a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 phenotype_simulation_set_name has a value which is a string
 save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 BulkExportObjectsParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+refs has a value which is a reference to a list where each element is a string
+all_models has a value which is a fba_tools.bool
+all_fba has a value which is a fba_tools.bool
+all_media has a value which is a fba_tools.bool
+all_phenotypes has a value which is a fba_tools.bool
+all_phenosims has a value which is a fba_tools.bool
+model_format has a value which is a string
+fba_format has a value which is a string
+media_format has a value which is a string
+phenotype_format has a value which is a string
+phenosim_format has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+refs has a value which is a reference to a list where each element is a string
+all_models has a value which is a fba_tools.bool
+all_fba has a value which is a fba_tools.bool
+all_media has a value which is a fba_tools.bool
+all_phenotypes has a value which is a fba_tools.bool
+all_phenosims has a value which is a fba_tools.bool
+model_format has a value which is a string
+fba_format has a value which is a string
+media_format has a value which is a string
+phenotype_format has a value which is a string
+phenosim_format has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 BulkExportObjectsResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
 
 
 =end text

@@ -2,6 +2,7 @@ package Bio::KBase::ObjectAPI::functions;
 use strict;
 use warnings;
 use Data::Dumper;
+use Data::UUID;
 use Bio::KBase::utilities;
 use Bio::KBase::constants;
 
@@ -1358,7 +1359,7 @@ sub func_check_model_mass_balance {
     	for (my $i=0; $i < @{$array}; $i++) {
     		if ($array->[$i] =~ m/Reaction\s(.+)\simbalanced/) {
     			if (defined($id)) {
-    				$htmlreport .= "<row><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></row>";	
+    				$htmlreport .= "<tr><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></tr>";	
     			}
     			$reactants = "";
 				$products = "";
@@ -1399,7 +1400,7 @@ sub func_check_model_mass_balance {
 		}
     	$htmlreport .= "</table>";
     }
-    Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
+    #Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
     Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 }
 
@@ -2875,7 +2876,8 @@ sub func_export {
 		save_to_shock => 0
     });
     $args = Bio::KBase::utilities::args($args,["format","object"],{
-		file_util => 0
+		file_util => 0,
+		path => Bio::KBase::utilities::conf("fba_tools","scratch")
     });
     my $ref;
     if ($args->{file_util} == 1) {
@@ -2890,7 +2892,7 @@ sub func_export {
     } else {
     	$ref = $params->{input_ref};
     }
-    my $export_dir = Bio::KBase::utilities::conf("fba_tools","scratch");
+    my $export_dir = $args->{path};
     my $object = $handler->util_get_object($ref,{});
     my $files = $object->export({format => $args->{format},file => 1,path => $export_dir});
     if ($args->{file_util} == 1) {
@@ -2940,4 +2942,85 @@ sub func_export {
 		});	
     }
 }
+
+sub func_bulk_export {
+	my ($params,$args) = @_;
+    $params = Bio::KBase::utilities::args($params,["workspace"],{
+		refs => [],
+		all_models => 0,
+		all_fba => 0,
+        all_media => 0,
+        all_phenotypes => 0,
+        all_phenosims => 0,
+        model_format => "sbml",
+        fba_format => "tsv",
+        media_format => "tsv",
+        phenotype_format => "tsv",
+        phenosim_format => "tsv",
+    });
+    my $translation = {
+    	"KBaseFBA.FBA" => "fba",
+    	"KBaseBiochem.Media" => "media",
+    	"KBasePhenotypes.PhenotypeSet" => "phenotype",
+    	"KBasePhenotypes.PhenotypeSimulationSet" => "phenosim",
+    	"KBaseFBA.FBAModel" => "model"
+    };
+    my $hash = {};
+    for (my $i=0; $i < @{$params->{refs}}; $i++) {
+    	$hash->{$params->{refs}->[$i]} = 1;
+    }
+    my $input;
+    if ($params->{workspace} =~ m/^\d+$/) {
+    	$input->{ids} = [$params->{workspace}];
+    } else {
+    	$input->{workspaces} = [$params->{workspace}];
+    }
+    my $typehash = {
+    	all_models => "KBaseFBA.FBAModel",
+    	all_fba => "KBaseFBA.FBA",
+    	all_media => "KBaseBiochem.Media",
+    	all_phenotypes => "KBasePhenotypes.PhenotypeSet",
+    	all_phenosims => "KBasePhenotypes.PhenotypeSimulationSet"
+    };
+    foreach my $field (keys(%{$typehash})) {
+    	if ($params->{$field} == 1) {
+	    	$input->{type} = $typehash->{$field};
+	    	my $objects = $handler->util_list_objects($input);
+	    	for (my $i=0; $i < @{$objects}; $i++) {
+	    		$hash->{$objects->[$i]->[1]} = 1;
+	    	}
+	    }
+    }
+    my $export_dir = Bio::KBase::utilities::conf("fba_tools","scratch")."/model_objects";
+    if (-d $export_dir) {
+    	File::Path::rmtree ($export_dir);
+    }
+    File::Path::mkpath ($export_dir);
+    my $count = keys(%{$hash});
+    foreach my $item (keys(%{$hash})) {
+    	my $object = $handler->util_get_object($params->{workspace}."/".$item,{});
+    	my $input = {workspace_name => $params->{workspace}};
+    	if ($translation->{$object->_type()} eq "phenosim") {
+    		$input->{phenotype_simulation_set_name} = $item;
+    	} elsif ($translation->{$object->_type()} eq "phenotype") {
+    		$input->{phenotype_set_name} = $item;
+    	} else {
+    		$input->{$translation->{$object->_type()}."_name"} = $item;
+    	}
+    	func_export($input,{
+    		file_util => 1,
+    		format => $params->{$translation->{$object->_type()}."_format"},
+    		object => $translation->{$object->_type()},
+    		path => $export_dir
+    	});
+    }
+    chdir(Bio::KBase::utilities::conf("fba_tools","scratch"));
+    system("tar -czf model_objects.tgz model_objects");
+    return {
+    	name => "model_objects.tgz",
+    	description => "Zip archive of ".$count." model objects.",
+    	path => Bio::KBase::utilities::conf("fba_tools","scratch")."/model_objects.tgz"
+    };
+}
+
 1;

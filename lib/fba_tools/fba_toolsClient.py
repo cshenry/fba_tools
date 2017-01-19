@@ -768,6 +768,27 @@ class fba_tools(object):
             'fba_tools.export_phenotype_simulation_set_as_tsv_file',
             [params], self._service_ver, context)
 
+    def bulk_export_objects(self, params, context=None):
+        """
+        :param params: instance of type "BulkExportObjectsParams" ->
+           structure: parameter "refs" of list of String, parameter
+           "all_models" of type "bool" (A binary boolean), parameter
+           "all_fba" of type "bool" (A binary boolean), parameter "all_media"
+           of type "bool" (A binary boolean), parameter "all_phenotypes" of
+           type "bool" (A binary boolean), parameter "all_phenosims" of type
+           "bool" (A binary boolean), parameter "model_format" of String,
+           parameter "fba_format" of String, parameter "media_format" of
+           String, parameter "phenotype_format" of String, parameter
+           "phenosim_format" of String
+        :returns: instance of type "BulkExportObjectsResult" -> structure:
+           parameter "report_name" of String, parameter "report_ref" of type
+           "ws_report_id" (The workspace ID for a Report object @id ws
+           KBaseReport.Report), parameter "ref" of String
+        """
+        return self._client.call_method(
+            'fba_tools.bulk_export_objects',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('fba_tools.status',
                                         [], self._service_ver, context)

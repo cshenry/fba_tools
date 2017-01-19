@@ -584,4 +584,26 @@ module fba_tools {
     funcdef export_phenotype_simulation_set_as_excel_file(ExportParams params) returns (ExportOutput output) authentication required;
     funcdef export_phenotype_simulation_set_as_tsv_file(ExportParams params) returns (ExportOutput output) authentication required;
     
+	typedef structure {
+        list<string> refs;
+        bool all_models;
+        bool all_fba;
+        bool all_media;
+        bool all_phenotypes;
+        bool all_phenosims;
+        string model_format;
+        string fba_format;
+        string media_format;
+        string phenotype_format;
+        string phenosim_format;
+    } BulkExportObjectsParams;
+    
+    typedef structure {
+		string report_name;
+		ws_report_id report_ref;
+		string ref;
+    } BulkExportObjectsResult;
+    
+    funcdef bulk_export_objects(BulkExportObjectsParams params) returns (BulkExportObjectsResult output) authentication required;
+    
 };

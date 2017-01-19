@@ -821,6 +821,23 @@ public class FbaToolsClient {
         return res.get(0);
     }
 
+    /**
+     * <p>Original spec-file function name: bulk_export_objects</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.BulkExportObjectsParams BulkExportObjectsParams}
+     * @return   parameter "output" of type {@link us.kbase.fbatools.BulkExportObjectsResult BulkExportObjectsResult}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public BulkExportObjectsResult bulkExportObjects(BulkExportObjectsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<BulkExportObjectsResult>> retType = new TypeReference<List<BulkExportObjectsResult>>() {};
+        List<BulkExportObjectsResult> res = caller.jsonrpcCall("fba_tools.bulk_export_objects", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};

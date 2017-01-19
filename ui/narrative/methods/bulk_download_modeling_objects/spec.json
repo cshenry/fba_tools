@@ -1,0 +1,333 @@
+{
+   "name" : "bulk_download_modeling_objects",
+   "ver" : "1.0.0",
+   "authors" : [
+      "chenry"
+   ],
+   "contact" : "http://kbase.us/contact-us/",
+   "visible" : true,
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "widgets" : {
+      "output" : "no-display",
+      "input" : null
+   },
+   "parameters" : [
+      {
+         "id" : "refs",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : true,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel","KBaseFBA.FBA","KBaseBiochem.Media","KBasePhenotypes.PhenotypeSet","KBasePhenotypes.PhenotypeSimulationSet"
+            ]
+         }
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "value" : "sbml",
+                  "ui_name" : "SBML",
+                  "display" : "SBML",
+                  "id" : "sbml"
+               },
+               {
+                  "id" : "excel",
+                  "value" : "excel",
+                  "ui_name" : "Excel",
+                  "display" : "Excel"
+               },
+               {
+                  "display" : "TSV",
+                  "ui_name" : "TSV",
+                  "value" : "tsv",
+                  "id" : "tsv"
+               }
+            ]
+         },
+         "id" : "model_format",
+         "advanced" : true,
+         "default_values" : [
+            "sbml"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "excel",
+                  "value" : "excel",
+                  "ui_name" : "Excel",
+                  "display" : "Excel"
+               },
+               {
+                  "display" : "TSV",
+                  "ui_name" : "TSV",
+                  "value" : "tsv",
+                  "id" : "tsv"
+               }
+            ]
+         },
+         "id" : "fba_format",
+         "advanced" : true,
+         "default_values" : [
+            "excel"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },{
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "excel",
+                  "value" : "excel",
+                  "ui_name" : "Excel",
+                  "display" : "Excel"
+               },
+               {
+                  "display" : "TSV",
+                  "ui_name" : "TSV",
+                  "value" : "tsv",
+                  "id" : "tsv"
+               }
+            ]
+         },
+         "id" : "media_format",
+         "advanced" : true,
+         "default_values" : [
+            "excel"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },{
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "display" : "TSV",
+                  "ui_name" : "TSV",
+                  "value" : "tsv",
+                  "id" : "tsv"
+               }
+            ]
+         },
+         "id" : "phenotype_format",
+         "advanced" : true,
+         "default_values" : [
+            "tsv"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },{
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "excel",
+                  "value" : "excel",
+                  "ui_name" : "Excel",
+                  "display" : "Excel"
+               },
+               {
+                  "display" : "TSV",
+                  "ui_name" : "TSV",
+                  "value" : "tsv",
+                  "id" : "tsv"
+               }
+            ]
+         },
+         "id" : "phenosim_format",
+         "advanced" : true,
+         "default_values" : [
+            "excel"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "all_models",
+         "advanced" : false,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "all_fba",
+         "advanced" : false,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "all_media",
+         "advanced" : false,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "all_phenotypes",
+         "advanced" : false,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "all_phenosims",
+         "advanced" : false,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      }
+   ], 
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "name" : "fba_tools",
+         "method" : "bulk_export_objects",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "input_parameter" : "refs",
+               "target_property" : "refs"
+            },
+            {
+               "target_property" : "model_format",
+               "input_parameter" : "model_format"
+            },
+            {
+               "target_property" : "fba_format",
+               "input_parameter" : "fba_format"
+            },
+            {
+               "target_property" : "media_format",
+               "input_parameter" : "media_format"
+            },
+            {
+               "input_parameter" : "phenotype_format",
+               "target_property" : "phenotype_format"
+            },
+            {
+               "target_property" : "phenosim_format",
+               "input_parameter" : "phenosim_format"
+            },
+            {
+               "target_property" : "all_models",
+               "input_parameter" : "all_models"
+            },
+            {
+               "target_property" : "all_fba",
+               "input_parameter" : "all_fba"
+            },
+            {
+               "target_property" : "all_media",
+               "input_parameter" : "all_media"
+            },
+            {
+               "target_property" : "all_phenotypes",
+               "input_parameter" : "all_phenotypes"
+            },
+            {
+               "target_property" : "all_phenosim",
+               "input_parameter" : "all_phenosim"
+            }
+         ],
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			}
+         ]
+      }
+   },
+   "job_id_output_field" : "docker"
+}
