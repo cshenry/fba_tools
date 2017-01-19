@@ -309,8 +309,8 @@
                "input_parameter" : "all_phenotypes"
             },
             {
-               "target_property" : "all_phenosim",
-               "input_parameter" : "all_phenosim"
+               "target_property" : "all_phenosims",
+               "input_parameter" : "all_phenosims"
             }
          ],
          "output_mapping" : [
