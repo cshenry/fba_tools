@@ -66,6 +66,7 @@ our %return_counts = (
         'phenotype_simulation_set_to_tsv_file' => 1,
         'export_phenotype_simulation_set_as_excel_file' => 1,
         'export_phenotype_simulation_set_as_tsv_file' => 1,
+        'bulk_export_objects' => 1,
         'status' => 1,
 );
 
@@ -108,6 +109,7 @@ our %method_authentication = (
         'phenotype_simulation_set_to_tsv_file' => 'required',
         'export_phenotype_simulation_set_as_excel_file' => 'required',
         'export_phenotype_simulation_set_as_tsv_file' => 'required',
+        'bulk_export_objects' => 'required',
 );
 
 sub _build_valid_methods
@@ -152,6 +154,7 @@ sub _build_valid_methods
         'phenotype_simulation_set_to_tsv_file' => 1,
         'export_phenotype_simulation_set_as_excel_file' => 1,
         'export_phenotype_simulation_set_as_tsv_file' => 1,
+        'bulk_export_objects' => 1,
         'status' => 1,
     };
     return $methods;

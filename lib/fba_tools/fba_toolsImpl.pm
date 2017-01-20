@@ -113,7 +113,7 @@ sub util_get_file_path {
 	my($self,$file,$target_dir) = @_;
     if(exists $file->{shock_id} && $file->{shock_id} ne "") {
         # file has a shock id, so try to fetch it 
-        my $dataUtil = DataFileUtil::DataFileUtilClient->new($self->{callbackURL});
+        my $dataUtil = Bio::KBase::kbaseenv::data_file_client();
         my $f = $dataUtil->shock_to_file({ 
 			shock_id=>$file->{shock_id},
 			file_path=>$target_dir,
