@@ -1958,13 +1958,15 @@ sub sbml_file_to_model
 	close($fh);
 	if (defined($p->{compounds_file})) {
 		my $cpd_file_path = $self->util_get_file_path($p->{compounds_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
-		$input->{compounds} = $self->util_parse_input_table($cpd_file_path,[
-			["id",1],
-			["charge",0,undef],
-			["formula",0,undef],
-			["name",1],
-			["aliases",0,undef]
-		]);
+		if (-e $cpd_file_path) {
+			$input->{compounds} = $self->util_parse_input_table($cpd_file_path,[
+				["id",1],
+				["charge",0,undef],
+				["formula",0,undef],
+				["name",1],
+				["aliases",0,undef]
+			]);
+		}
 	}
     $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
     #END sbml_file_to_model
