@@ -1528,13 +1528,30 @@ sub func_create_or_edit_media {
 sub func_edit_metabolic_model {
 	my ($params) = @_;
     $params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","data"],{
+    	compounds_to_add => [],
+    	compounds_to_change => [],
+    	biomasses_to_add => [],
+    	biomass_compounds_to_change => [],
+    	reactions_to_remove => [],
+    	reactions_to_change => [],
+    	reactions_to_add => [],
+    	edit_compound_stoichiometry => [],
     	fbamodel_workspace => $params->{workspace},
     	fbamodel_output_id => $params->{fbamodel_id}
     });
 	#Getting genome
 	$handler->util_log("Loading model from workspace");
 	my $model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
-	(my $editresults,my $detaileditresults) = $model->edit_metabolic_model($params->{data});
+	(my $editresults,my $detaileditresults) = $model->edit_metabolic_model({
+		compounds_to_add => $params->{compounds_to_add},
+		compounds_to_change => $params->{compounds_to_change},
+		biomasses_to_add => $params->{biomasses_to_add},
+		biomass_compounds_to_change => $params->{biomass_compounds_to_change},
+		reactions_to_remove => $params->{reactions_to_remove},
+		reactions_to_change => $params->{reactions_to_change},
+		reactions_to_add => $params->{reactions_to_add},
+		edit_compound_stoichiometry => $params->{edit_compound_stoichiometry}
+	});
 	#Creating message to report all modifications made
 	$handler->util_log("Saving edited model to workspace");
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
@@ -1556,20 +1573,9 @@ sub func_edit_metabolic_model {
 		$message .= $editresults->{biomass_changed}->[$i]->[0].":".$editresults->{biomass_changed}->[$i]->[1].";";
 	}
 	$message .= "\n";
-	$handler->util_log($message);
-	my $reportObj = {
-		'objects_created' => [],
-		'text_message' => $message
-	};
-    my $metadata = $handler->util_report({
-    	'ref' => $params->{workspace}.'/'.$params->{fbamodel_output_id}.".edit_metabolic_model.report",
-    	message => $message,
-    	objects => [[$params->{workspace}."/".$params->{fbamodel_output_id},"Edited model"]]
-    });
+	Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
    	return {
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},
-		report_name => $params->{fbamodel_output_id}.".edit_metabolic_model.report",
-		ws_report_id => $params->{workspace}.'/'.$params->{fbamodel_output_id}.".edit_metabolic_model.report",
 		detailed_edit_results => $detaileditresults
    	};
 }

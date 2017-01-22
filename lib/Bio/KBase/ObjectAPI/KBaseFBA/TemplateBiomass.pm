@@ -261,6 +261,7 @@ sub addBioToModel {
 			});
 		}
 	}
+	return $bio;
 }
 
 __PACKAGE__->meta->make_immutable;
