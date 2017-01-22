@@ -2426,6 +2426,7 @@ sub func_importmodel {
 	    				$name = $1;
 	    				$formula = $2;
 	    			}
+	    			$name =~ s/_/ /g;
 	    		} elsif ($nm eq "compartment") {
 	    			$compartment = $value;
 	    			$compartment =~ s/__/!/g;
@@ -2436,9 +2437,9 @@ sub func_importmodel {
 	    			if (defined($cmptrans->{$compartment})) {
 	    				$compartment = $cmptrans->{$compartment};
 	    			}
-	    		} elsif ($nm eq "charge") {
+	    		} elsif ($nm eq "charge" || $nm eq "fbc:charge") {
 	    			$charge = $value;
-	    		} elsif ($nm eq "formula") {
+	    		} elsif ($nm eq "formula" || $nm eq "fbc:chemicalFormula") {
 	    			$formula = $value;
 	    		} elsif ($nm eq "boundaryCondition" && $value =~ m/true/i) {
 	    			$boundary = 1;
@@ -2515,6 +2516,9 @@ sub func_importmodel {
 			}	
 	    	if (!defined($name)) {
 	    		$name = $id;
+	    	}
+	    	if (!defined($aliases)) {
+	    		$aliases = [];
 	    	}
 	    	if (!defined($cpdidhash->{$id})) {
 	    		$cpdidhash->{$id} = [$id,$charge,$formula,$name,$aliases];
