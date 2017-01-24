@@ -2,6 +2,7 @@ package Bio::KBase::ObjectAPI::functions;
 use strict;
 use warnings;
 use Data::Dumper;
+use Data::UUID;
 use Bio::KBase::utilities;
 use Bio::KBase::constants;
 
@@ -539,6 +540,7 @@ sub func_run_flux_balance_analysis {
 		local $SIG{ALRM} = sub { die "FBA timed out! Model likely contains numerical instability!" };
 		alarm 86400;
 		$objective = $fba->runFBA();
+		$fba->toJSON({pp => 1});
 		alarm 0;
 	#};
     if (!defined($objective)) {
@@ -548,8 +550,7 @@ sub func_run_flux_balance_analysis {
     $fba->id($params->{fba_output_id});
     my $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{fba_output_id},{type => "KBaseFBA.FBA"});
 	return {
-		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id},
-		objective => $fba->objectiveValue()
+		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id}
 	};
 }
 
@@ -1358,7 +1359,7 @@ sub func_check_model_mass_balance {
     	for (my $i=0; $i < @{$array}; $i++) {
     		if ($array->[$i] =~ m/Reaction\s(.+)\simbalanced/) {
     			if (defined($id)) {
-    				$htmlreport .= "<row><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></row>";	
+    				$htmlreport .= "<tr><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></tr>";	
     			}
     			$reactants = "";
 				$products = "";
@@ -1399,54 +1400,124 @@ sub func_check_model_mass_balance {
 		}
     	$htmlreport .= "</table>";
     }
-    Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
+    #Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
     Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 }
 
 sub func_create_or_edit_media {
 	my ($params) = @_;
-    $params = Bio::KBase::utilities::args($params,["workspace","media_id","data"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","media_output_id"],{
+    	media_id => undef,
+    	compounds_to_remove => [],
+    	compounds_to_change => [],
+    	compounds_to_add => [],
     	media_workspace => $params->{workspace},
-    	media_output_id => $params->{media_id}
+    	pH_data => undef,
+    	temperature => undef,
+    	source_id => undef,
+    	source => undef,
+    	type => undef,
+    	isDefined => undef
     });
-	#Getting genome
-	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
-	my $newmedia = Bio::KBase::ObjectAPI::Biochem::Media->new($params->{data});
-	my $wsmeta = $handler->util_save_object($newmedia,$params->{workspace}."/".$params->{media_output_id},{type => "KBaseBiochem.Meda"});
-	my $oldmediacpd = $media->mediacompounds();
-	my $newmediacpd = $newmedia->mediacompounds();
-	my $added = [];
-	my $removed = [];
-	my $changed = [];
-	for (my $i=0; $i < @{$oldmediacpd}; $i++) {
-		my $qcpd = $newmedia->queryObject("mediacompounds",{compound_ref => $oldmediacpd->[$i]->compound_ref()});
-		if (!defined($qcpd)) {
-			push(@{$removed},$oldmediacpd->[$i]->compound()->name()." (".$oldmediacpd->[$i]->compound()->id().")");
-		} else {
-			if ($oldmediacpd->[$i]->concentration() != $qcpd->concentration()) {
-				push(@{$changed},$oldmediacpd->[$i]->compound()->name()." (".$oldmediacpd->[$i]->compound()->id().") concentration changed: ".$oldmediacpd->[$i]->concentration()." => ".$qcpd->concentration())
+    $params->{pH_data} .= "";
+    my $media;
+	if (defined($params->{media_id})) {
+		$media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+		my $list = ["source","source_id","type","isDefined","temperature","pH_data"];
+		for (my $i=0; $i < @{$list}; $i++) {
+			my $item = $list->[$i];
+			if (defined($params->{$item})) {
+				$media->$item($params->{$item});
 			}
-			if ($oldmediacpd->[$i]->maxFlux() != $qcpd->maxFlux()) {
-				push(@{$changed},$oldmediacpd->[$i]->compound()->name()." (".$oldmediacpd->[$i]->compound()->id().") max flux changed: ".$oldmediacpd->[$i]->maxFlux()." => ".$qcpd->maxFlux())
-			}
-			if ($oldmediacpd->[$i]->minFlux() != $qcpd->minFlux()) {
-				push(@{$changed},$oldmediacpd->[$i]->compound()->name()." (".$oldmediacpd->[$i]->compound()->id().") min flux changed: ".$oldmediacpd->[$i]->minFlux()." => ".$qcpd->minFlux())
+		}
+	} else {
+		$media = Bio::KBase::ObjectAPI::Biochem::Media->new({
+			source => $params->{source},
+			pH_data => $params->{pH_data},
+			id => $params->{media_output_id},
+			temperature => $params->{temperature},
+			isAerobic => 0,
+			source_id => $params->{source_id},
+			isMinimal => 0,
+			name => $params->{media_output_id},
+			type => $params->{type},
+			isDefined => $params->{isDefined},
+			mediacompounds => []
+		});
+	}
+	my $mediacpds = $media->mediacompounds();
+	my $count = @{$mediacpds};
+	my $removed_list;
+	for (my $i=0; $i < @{$params->{compounds_to_remove}}; $i++) {
+		for (my $j=0; $j < @{$mediacpds}; $j++) {
+			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+				if ($1 eq $params->{compounds_to_remove}->[$i]) {
+					push(@{$removed_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_remove}->[$i].")");
+					$media->remove("mediacompounds",$mediacpds->[$j]);
+					$mediacpds = $media->mediacompounds();
+					last;
+				}
 			}
 		}
 	}
-	for (my $i=0; $i < @{$newmediacpd}; $i++) {
-		my $qcpd = $media->queryObject("mediacompounds",{compound_ref => $newmediacpd->[$i]->compound_ref()});
-		if (!defined($qcpd)) {
-			push(@{$added},$newmediacpd->[$i]->compound()->name()." (".$newmediacpd->[$i]->compound()->id().")");
+	if (@{$removed_list} == 0) {
+		Bio::KBase::utilities::print_report_message({message => "No compounds removed from the media.",append => 0,html => 0});
+	} else {
+		my $count = @{$removed_list};
+		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});
+		
+	}
+	my $change_list;
+	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
+		for (my $j=0; $j < @{$mediacpds}; $j++) {
+			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}) {
+					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->{change_id}.")");
+					$mediacpds->[$j]->concentration($params->{compounds_to_change}->[$i]->{change_concentration});
+					$mediacpds->[$j]->minFlux($params->{compounds_to_change}->[$i]->{change_minflux});
+					$mediacpds->[$j]->maxFlux($params->{compounds_to_change}->[$i]->{change_maxflux});
+				}
+			}
 		}
 	}
-	my $message = "New media created: ".$params->{media_output_id}."\nStarting from: ".$params->{media_id}."\n\nAdded:\n".join("\n",@{$added})."\n\nRemoved:\n".join("\n",@{$removed})."\n\nChanges:\n".join("\n",@{$changed})."\n";
-	$handler->util_log($message);
-	$handler->util_report({
-    	'ref' => $params->{workspace}."/".$params->{media_output_id}.".create_or_edit_media.report",
-    	message => $message,
-    	objects => [$wsmeta->[6]."/".$wsmeta->[0]."/".$wsmeta->[4],"Edited media"]
-    });
+	if (@{$change_list} == 0) {
+		Bio::KBase::utilities::print_report_message({message => " No compounds changed in the media.",append => 1,html => 0});
+	} else {
+		my $count = @{$change_list};
+		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds changed in the media: ".join("; ",@{$change_list}).".",append => 1,html => 0});
+		
+	}
+	my $add_list;
+	for (my $i=0; $i < @{$params->{compounds_to_add}}; $i++) {
+		my $found = 0;
+		for (my $j=0; $j < @{$mediacpds}; $j++) {
+			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+				if ($1 eq $params->{compounds_to_add}->[$i]->{add_id}) {
+					$mediacpds->[$j]->concentration($params->{compounds_to_add}->[$i]->{add_concentration});
+					$mediacpds->[$j]->minFlux($params->{compounds_to_add}->[$i]->{add_minflux});
+					$mediacpds->[$j]->maxFlux($params->{compounds_to_add}->[$i]->{add_maxflux});
+					$found = 1;
+				}
+			}
+		}
+		if ($found == 0) {
+			my $newcpd = $media->add("mediacompounds",{
+				compound_ref => "kbase/default/compounds/id/".$params->{compounds_to_add}->[$i]->{add_id},
+				concentration => $params->{compounds_to_add}->[$i]->{add_concentration},
+				minFlux => $params->{compounds_to_add}->[$i]->{add_minflux},
+				maxFlux => $params->{compounds_to_add}->[$i]->{add_maxflux}
+			});
+			push(@{$add_list},$newcpd->compound()->name()." (".$params->{compounds_to_add}->[$i]->{add_id}.")");
+			$mediacpds = $media->mediacompounds();
+		}
+	}
+	my $wsmeta = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_output_id});
+	if (@{$add_list} == 0) {
+		Bio::KBase::utilities::print_report_message({message => " No compounds added to the media.",append => 1,html => 0});
+	} else {
+		my $count = @{$add_list};
+		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds added to the media: ".join("; ",@{$add_list}).".",append => 1,html => 0});	
+	}
    	return {
 		new_media_ref => $params->{workspace}."/".$params->{media_output_id},
 		report_name => $params->{media_output_id}.".create_or_edit_media.report",
@@ -1457,13 +1528,30 @@ sub func_create_or_edit_media {
 sub func_edit_metabolic_model {
 	my ($params) = @_;
     $params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","data"],{
+    	compounds_to_add => [],
+    	compounds_to_change => [],
+    	biomasses_to_add => [],
+    	biomass_compounds_to_change => [],
+    	reactions_to_remove => [],
+    	reactions_to_change => [],
+    	reactions_to_add => [],
+    	edit_compound_stoichiometry => [],
     	fbamodel_workspace => $params->{workspace},
     	fbamodel_output_id => $params->{fbamodel_id}
     });
 	#Getting genome
 	$handler->util_log("Loading model from workspace");
 	my $model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
-	(my $editresults,my $detaileditresults) = $model->edit_metabolic_model($params->{data});
+	(my $editresults,my $detaileditresults) = $model->edit_metabolic_model({
+		compounds_to_add => $params->{compounds_to_add},
+		compounds_to_change => $params->{compounds_to_change},
+		biomasses_to_add => $params->{biomasses_to_add},
+		biomass_compounds_to_change => $params->{biomass_compounds_to_change},
+		reactions_to_remove => $params->{reactions_to_remove},
+		reactions_to_change => $params->{reactions_to_change},
+		reactions_to_add => $params->{reactions_to_add},
+		edit_compound_stoichiometry => $params->{edit_compound_stoichiometry}
+	});
 	#Creating message to report all modifications made
 	$handler->util_log("Saving edited model to workspace");
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
@@ -1485,20 +1573,9 @@ sub func_edit_metabolic_model {
 		$message .= $editresults->{biomass_changed}->[$i]->[0].":".$editresults->{biomass_changed}->[$i]->[1].";";
 	}
 	$message .= "\n";
-	$handler->util_log($message);
-	my $reportObj = {
-		'objects_created' => [],
-		'text_message' => $message
-	};
-    my $metadata = $handler->util_report({
-    	'ref' => $params->{workspace}.'/'.$params->{fbamodel_output_id}.".edit_metabolic_model.report",
-    	message => $message,
-    	objects => [[$params->{workspace}."/".$params->{fbamodel_output_id},"Edited model"]]
-    });
+	Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
    	return {
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},
-		report_name => $params->{fbamodel_output_id}.".edit_metabolic_model.report",
-		ws_report_id => $params->{workspace}.'/'.$params->{fbamodel_output_id}.".edit_metabolic_model.report",
 		detailed_edit_results => $detaileditresults
    	};
 }
@@ -2066,6 +2143,94 @@ sub func_compare_models {
     };
 }
 
+sub func_import_media {
+	my ($params) = @_;
+    $params = Bio::KBase::utilities::args($params,["compounds","media_id","workspace"],{
+    	name => $params->{media_id},
+    	isDefined => 0,
+    	isMinimal => 0,
+    	type => "custom",
+    	concentrations => [],
+    	maxflux => [],
+    	minflux => []
+    });
+    #Creating the media object from the specifications
+    my $bio = $handler->util_get_object("kbase/default",{});
+    my $media = Bio::KBase::ObjectAPI::KBaseBiochem::Media->new({
+    	id => $params->{media_id},
+    	name => $params->{name},
+    	isDefined => $params->{isDefined},
+    	isMinimal => $params->{isMinimal},
+    	type => $params->{type},
+    	source_id => $params->{media_id}
+    });
+    my $missing = [];
+    my $found = [];
+    for (my $i=0; $i < @{$params->{compounds}}; $i++) {
+    	my $name = $params->{compounds}->[$i];
+    	my $cpdobj = $bio->searchForCompound($name);
+    	if (defined($cpdobj)) {
+	    	my $data = {
+	    		compound_ref => $bio->_reference()."/compounds/id/".$cpdobj->id(),
+	    		concentration => 0.001,
+	    		maxFlux => 1000,
+	    		minFlux => -1000
+	    	};
+	    	if (defined($params->{concentrations}->[$i])) {
+	    		$data->{concentration} = $params->{concentrations}->[$i];
+	    	}
+	    	if (defined($params->{maxflux}->[$i])) {
+	    		$data->{maxFlux} = $params->{maxflux}->[$i];
+	    	}
+	    	if (defined($params->{minflux}->[$i])) {
+	    		$data->{minFlux} = $params->{minflux}->[$i];
+	    	}
+	    	$media->add("mediacompounds",$data);
+	    	push(@{$found},$cpdobj->id());
+    	} else {
+    		push(@{$missing},$params->{compounds}->[$i]);
+    	}
+    }
+    #Checking that all compounds specified for media were found
+	if (defined($missing->[0])) {
+		Bio::KBase::utilities::error("Compounds specified for media not found: ".join(";",@{$missing}),'addmedia');
+	}
+    #Saving media in database
+    $media->parent($handler->util_store());
+	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media"});  
+	return { ref => $mc_metadata->[6]."/".$mc_metadata->[0]."/".$mc_metadata->[4] };
+}
+
+sub func_import_phenotype_set {
+	my ($params) = @_;
+    $params = Bio::KBase::utilities::args($params,["data","phenotypeset_id","workspace","genome",],{
+    	genome_workspace => $params->{workspace},
+    	source => "KBase",
+    	name => $params->{phenotypeset_id},
+    	type => "unspecified",
+    	ignore_errors => 0
+    });
+    my $genomeobj = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome},{});
+    my $phenoset = Bio::KBase::ObjectAPI::KBasePhenotypes::PhenotypeSet->new({
+		id => $params->{phenotypeset_id},
+		source_id => $params->{phenotypeset_id},
+		source => $params->{source},
+		name => $params->{name},
+		genome_ref => $genomeobj->_reference(),
+		phenotypes => [],
+		importErrors => "",
+		type => $params->{type}
+	});
+	$phenoset->parent($handler->util_store());
+	my $bio = $handler->util_get_object("kbase/default",{});
+	$phenoset->import_phenotype_table({
+		data => $params->{data},
+		biochem => $bio
+	});
+	my $mc_metadata = $handler->util_save_object($phenoset,$params->{workspace}."/".$params->{phenotypeset_id},{type => "KBasePhenotypes.PhenotypeSet"});
+	return { ref => $mc_metadata->[6]."/".$mc_metadata->[0]."/".$mc_metadata->[4] };
+}
+
 sub func_importmodel {
 	my ($params) = @_;
     $params = Bio::KBase::utilities::args($params,["biomass","model_name","workspace_name"],{
@@ -2076,7 +2241,7 @@ sub func_importmodel {
     	compounds_file => undef,
     	source => "External",
     	type => "SingleOrganism",
-    	template => undef,
+    	template_id => "auto",
     	template_workspace => $params->{workspace_name},
     	compounds => [],
     	reactions => []
@@ -2085,6 +2250,7 @@ sub func_importmodel {
     if (!defined($params->{genome})) {
     	$params->{genome} = "Empty";
     	$params->{genome_workspace} = "PlantSEED";
+    	$params->{template_id} = "GramNegModelTemplate";
     }
     my $genomeobj = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome},{});
     #RETRIEVING THE TEMPLATE FOR THE MODEL
@@ -2097,7 +2263,7 @@ sub func_importmodel {
     		$params->{template_id} = "GramNegModelTemplate";
     	} elsif ($genomeobj->template_classification() eq "Gram positive") {
     		$params->{template_id} = "GramPosModelTemplate";
-    	}
+    	} 
 	} elsif ($params->{template_id} eq "grampos") {
 		$params->{template_workspace} = "NewKBaseModelTemplates";
 		$params->{template_id} = "GramPosModelTemplate";
@@ -2252,6 +2418,7 @@ sub func_importmodel {
 	    			$id =~ s/\!/__/g;
 	    		} elsif ($nm eq "name") {
 	    			$name = $value;
+	    			$name =~ s/_plus_/+/g;
 	    			if ($name =~ m/^M_(.+)/) {
 	    				$name = $1;
 	    			}
@@ -2259,6 +2426,7 @@ sub func_importmodel {
 	    				$name = $1;
 	    				$formula = $2;
 	    			}
+	    			$name =~ s/_/ /g;
 	    		} elsif ($nm eq "compartment") {
 	    			$compartment = $value;
 	    			$compartment =~ s/__/!/g;
@@ -2269,9 +2437,9 @@ sub func_importmodel {
 	    			if (defined($cmptrans->{$compartment})) {
 	    				$compartment = $cmptrans->{$compartment};
 	    			}
-	    		} elsif ($nm eq "charge") {
+	    		} elsif ($nm eq "charge" || $nm eq "fbc:charge") {
 	    			$charge = $value;
-	    		} elsif ($nm eq "formula") {
+	    		} elsif ($nm eq "formula" || $nm eq "fbc:chemicalFormula") {
 	    			$formula = $value;
 	    		} elsif ($nm eq "boundaryCondition" && $value =~ m/true/i) {
 	    			$boundary = 1;
@@ -2348,6 +2516,9 @@ sub func_importmodel {
 			}	
 	    	if (!defined($name)) {
 	    		$name = $id;
+	    	}
+	    	if (!defined($aliases)) {
+	    		$aliases = [];
 	    	}
 	    	if (!defined($cpdidhash->{$id})) {
 	    		$cpdidhash->{$id} = [$id,$charge,$formula,$name,$aliases];
@@ -2446,7 +2617,29 @@ sub func_importmodel {
 		    					$products .= "(".$stoich.") ".$spec;
 		    				}
 	    				}
-	    			}	
+	    			}
+	    		} elsif ($node->getNodeName() eq "fbc:geneProductAssociation") {
+	    			my @newnode = $node->getElementsByTagName("fbc:and",0);
+	    			my $genes = [];
+	    			if (defined($newnode[0])) {
+		    			foreach my $species ($newnode[0]->getElementsByTagName("fbc:geneProductRef",0)){
+		    				foreach my $attr ($species->getAttributes()->getValues()) {
+		    					if ($attr->getName() eq "fbc:geneProduct") {
+		    						push(@{$genes},$attr->getValue());
+		    					}	
+		    				}
+		    			}
+		    			$gpr = "(".join(" and ",@{$genes}).")";
+	    			} else {
+	    				foreach my $species ($node->getElementsByTagName("fbc:geneProductRef",0)){
+		    				foreach my $attr ($species->getAttributes()->getValues()) {
+		    					if ($attr->getName() eq "fbc:geneProduct") {
+		    						push(@{$genes},$attr->getValue());
+		    					}	
+		    				}
+		    			}
+	    				$gpr = "(".join(" or ",@{$genes}).")";
+	    			}
 	    		} elsif ($node->getNodeName() eq "notes") {
 	    			foreach my $html ($node->getElementsByTagName("*",0)){
 	    				my $nodes = $html->getChildNodes();
@@ -2685,13 +2878,13 @@ sub func_importmodel {
 	for (my $i=0; $i < @{$rxns}; $i++) {
 		my $rxn = $rxns->[$i];
 		my $rgts = $rxn->modelReactionReagents();
-		if (@{$rgts} == 1 && $rgts->[0]->modelcompound()->id() =~ m/_e\d+$/) {
-			$handler->util_log("Removing reaction:".$rxn->definition()."\n");
+		if (@{$rgts} == 1 && ($rgts->[0]->modelcompound()->id() =~ m/_e\d+$/ || $rgts->[0]->modelcompound()->id() =~ m/cpd08636_c0/ || $rgts->[0]->modelcompound()->id() =~ m/cpd15302_c0/ || $rgts->[0]->modelcompound()->id() =~ m/cpd11416_c0/)) {
+			Bio::KBase::utilities::log("Removing reaction:".$rxn->definition(),"debugging");
 			$model->remove("modelreactions",$rxn);
 		}	
 	}
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
-		$handler->util_log("Biomass:".$params->{biomass}->[$i]."\n");
+		Bio::KBase::utilities::log("Biomass:".$params->{biomass}->[$i],"debugging");
 		my $report = $model->adjustBiomassReaction({
 			biomass => "bio".($i+1),
 			equation => $params->{biomass}->[$i],
@@ -2702,11 +2895,164 @@ sub func_importmodel {
 	}
 	my $msg = "";
 	if (defined($model->{missinggenes})) {
-		$handler->util_log("Missing genes:\n".join("\n",keys(%{$model->{missinggenes}}))."\n");
+		Bio::KBase::utilities::log("Missing genes:\n".join("\n",keys(%{$model->{missinggenes}}))."\n");
 	}
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace_name}."/".$params->{model_name},{type => "KBaseFBA.FBAModel"});
-    $handler->util_log("Saved new FBA Model to: ".$params->{workspace_name}."/".$params->{model_name}."\n");
+    Bio::KBase::utilities::log("Saved new FBA Model to: ".$params->{workspace_name}."/".$params->{model_name}."\n");
     return { ref => $wsmeta->[6]."/".$wsmeta->[0]."/".$wsmeta->[4] };
+}
+
+sub func_export {
+	my ($params,$args) = @_;
+    $params = Bio::KBase::utilities::args($params,[],{
+		save_to_shock => 0
+    });
+    $args = Bio::KBase::utilities::args($args,["format","object"],{
+		file_util => 0,
+		path => Bio::KBase::utilities::conf("fba_tools","scratch")
+    });
+    my $ref;
+    if ($args->{file_util} == 1) {
+    	$ref = $params->{workspace_name}."/";
+    	if ($args->{object} eq "phenosim") {
+    		$ref .= $params->{phenotype_simulation_set_name};
+    	} elsif ($args->{object} eq "phenotype") {
+    		$ref .= $params->{phenotype_set_name};
+    	} else {
+    		$ref .= $params->{$args->{object}."_name"};
+    	}
+    } else {
+    	$ref = $params->{input_ref};
+    }
+    my $export_dir = $args->{path};
+    my $object = $handler->util_get_object($ref,{});
+    my $files = $object->export({format => $args->{format},file => 1,path => $export_dir});
+    if ($args->{file_util} == 1) {
+    	if ($params->{save_to_shock} == 1) {
+    		if ($args->{format} eq "tsv" && ($args->{object} eq "model" || $args->{object} eq "fba")) {
+    			my $output;
+    			$output->[0] = $handler->util_file_to_shock({
+	    			file_path=>$files->[0],
+					gzip=>0,
+					make_handle=>0
+	    		});
+	    		$output->[1] = $handler->util_file_to_shock({
+	    			file_path=>$files->[1],
+					gzip=>0,
+					make_handle=>0
+	    		});
+    			return {
+    				compounds_file => {shock_id => $output->[0]->{shock_id}},
+    				reactions_file => {shock_id => $output->[1]->{shock_id}}
+    			};
+    		} else {
+    			my $output = $handler->util_file_to_shock({
+	    			file_path=>$files->[0],
+					gzip=>0,
+					make_handle=>0
+	    		});
+	    		return {
+	    			shock_id => $output->{shock_id}
+	    		};
+    		}
+    	} else {
+    		if ($args->{format} eq "tsv" && ($args->{object} eq "model" || $args->{object} eq "fba")) {
+    			return {
+    				compounds_file => {path => $files->[0]},
+    				reactions_file => {path => $files->[1]}
+    			};
+    		} else {
+	    		return {
+	    			path => $files->[0]
+	    		};
+    		}
+    	}
+    } else {
+    	return $handler->util_package_for_download({ 
+			file_path => $export_dir,
+			ws_refs   => [ $params->{input_ref} ]
+		});	
+    }
+}
+
+sub func_bulk_export {
+	my ($params,$args) = @_;
+    $params = Bio::KBase::utilities::args($params,["workspace"],{
+		refs => [],
+		all_models => 0,
+		all_fba => 0,
+        all_media => 0,
+        all_phenotypes => 0,
+        all_phenosims => 0,
+        model_format => "sbml",
+        fba_format => "tsv",
+        media_format => "tsv",
+        phenotype_format => "tsv",
+        phenosim_format => "tsv",
+    });
+    my $translation = {
+    	"KBaseFBA.FBA" => "fba",
+    	"KBaseBiochem.Media" => "media",
+    	"KBasePhenotypes.PhenotypeSet" => "phenotype",
+    	"KBasePhenotypes.PhenotypeSimulationSet" => "phenosim",
+    	"KBaseFBA.FBAModel" => "model"
+    };
+    my $hash = {};
+    for (my $i=0; $i < @{$params->{refs}}; $i++) {
+    	$hash->{$params->{refs}->[$i]} = 1;
+    }
+    my $input;
+    if ($params->{workspace} =~ m/^\d+$/) {
+    	$input->{ids} = [$params->{workspace}];
+    } else {
+    	$input->{workspaces} = [$params->{workspace}];
+    }
+    my $typehash = {
+    	all_models => "KBaseFBA.FBAModel",
+    	all_fba => "KBaseFBA.FBA",
+    	all_media => "KBaseBiochem.Media",
+    	all_phenotypes => "KBasePhenotypes.PhenotypeSet",
+    	all_phenosims => "KBasePhenotypes.PhenotypeSimulationSet"
+    };
+    foreach my $field (keys(%{$typehash})) {
+    	if ($params->{$field} == 1) {
+	    	$input->{type} = $typehash->{$field};
+	    	my $objects = $handler->util_list_objects($input);
+	    	for (my $i=0; $i < @{$objects}; $i++) {
+	    		$hash->{$objects->[$i]->[1]} = 1;
+	    	}
+	    }
+    }
+    my $export_dir = Bio::KBase::utilities::conf("fba_tools","scratch")."/model_objects";
+    if (-d $export_dir) {
+    	File::Path::rmtree ($export_dir);
+    }
+    File::Path::mkpath ($export_dir);
+    my $count = keys(%{$hash});
+    foreach my $item (keys(%{$hash})) {
+    	my $object = $handler->util_get_object($params->{workspace}."/".$item,{});
+    	my $input = {workspace_name => $params->{workspace}};
+    	if ($translation->{$object->_type()} eq "phenosim") {
+    		$input->{phenotype_simulation_set_name} = $item;
+    	} elsif ($translation->{$object->_type()} eq "phenotype") {
+    		$input->{phenotype_set_name} = $item;
+    	} else {
+    		$input->{$translation->{$object->_type()}."_name"} = $item;
+    	}
+    	func_export($input,{
+    		file_util => 1,
+    		format => $params->{$translation->{$object->_type()}."_format"},
+    		object => $translation->{$object->_type()},
+    		path => $export_dir
+    	});
+    }
+    chdir(Bio::KBase::utilities::conf("fba_tools","scratch"));
+    system("tar -czf model_objects.tgz model_objects");
+    return {
+    	name => "model_objects.tgz",
+    	description => "Zip archive of ".$count." model objects.",
+    	path => Bio::KBase::utilities::conf("fba_tools","scratch")."/model_objects.tgz"
+    };
 }
 
 1;

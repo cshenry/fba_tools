@@ -90,13 +90,17 @@ has user_override => ( is => 'rw', isa => 'Str',default => "");
 #***********************************************************************************************************
 sub get_objects {
 	my ($self,$refs,$options) = @_;
+	$options = Bio::KBase::utilities::args($options,[],{
+		refreshcache => 0,
+		raw => 0
+    });
 	#Checking cache for objects
 	my $newrefs = [];
 	for (my $i=0; $i < @{$refs}; $i++) {
 		if ($refs->[$i] =~ m/^489\/6\/\d+$/ || $refs->[$i] =~ m/^kbase\/default\/\d+$/) {
 			$refs->[$i] = "kbase/default";
 		}
-		if (!defined($self->cache()->{$refs->[$i]}) || defined($options->{refreshcache})) {
+		if (!defined($self->cache()->{$refs->[$i]}) || $options->{refreshcache} == 1) {
     		push(@{$newrefs},$refs->[$i]);
     	}
 	}
@@ -397,6 +401,11 @@ sub save_objects {
 	    }
 	    return $output;
     }
+}
+
+sub list_objects {
+	my ($self,$input) = @_;
+	return Bio::KBase::kbaseenv::list_objects($input);
 }
 
 sub uuid_to_ref {

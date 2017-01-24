@@ -29,6 +29,29 @@ extends 'Bio::KBase::ObjectAPI::KBasePhenotypes::DB::PhenotypeSet';
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub export {
+    my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["format"], {file => 0,path => undef}, @_);
+	if (lc($args->{format}) eq "tsv") {
+		return $self->printTSV($args);
+	}
+	Bio::KBase::ObjectAPI::utilities::error("Unrecognized type for export: ".$args->{format});
+}
+
+sub printTSV {
+    my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tgrowth"];
+	my $phenotypes = $self->phenotypes();
+	for (my $i=0; $i < @{$phenotypes}; $i++) {
+		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString()."\t".$phenotypes->[$i]->normalizedGrowth());
+	}
+	if ($args->{file} == 1) {
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id().".tsv",$output);
+		return [$args->{path}."/".$self->id().".tsv"];
+	}
+	return $output;
+}
 
 sub import_phenotype_table {
 	my $self = shift;
@@ -59,7 +82,7 @@ sub import_phenotype_table {
     for (my $i=0; $i < @{$data}; $i++) {
     	$mediaHash->{$data->[$i]->[2]}->{$data->[$i]->[1]} = 0;
     }
-    my $output = $self->parent()->workspace()->list_objects({
+    my $output = $self->parent()->list_objects({
     	workspaces => [keys(%{$mediaHash})],
 		type => "KBaseBiochem.Media",
     });

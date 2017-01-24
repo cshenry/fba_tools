@@ -1,0 +1,81 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : [ "importers" ],
+  "widgets" : {
+    "input" : "kbaseNarrativeMethodInput"
+  },
+  "parameters" : [ {
+    "id" : "inputFile",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "file",
+    "text_options" : {
+      "valid_ws_types" : [ ]
+    }
+  }, {
+    "id" : "outputObject",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseFBA.FBAModel" ],
+      "is_output_name" : true
+    }
+  }, {
+    "id" : "genomeObject",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseGenomes.Genome" ]
+    }
+  }, {
+    "id" : "biomass",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : true,
+    "default_values" : [ "" ],
+    "field_type" : "text"
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "fba_tools",
+      "method" : "excel_file_to_model",
+      "input_mapping" : [
+          {
+              "narrative_system_variable": "workspace",
+              "target_property": "workspace_name"
+          },
+          {
+              "input_parameter": "outputObject",
+              "target_property": "model_name"
+          },
+          {
+              "input_parameter": "biomass",
+              "target_property": "biomass"
+          },
+          {
+              "input_parameter": "genomeObject",
+              "target_property": "genome"
+          },
+          {
+              "input_parameter": "inputFile",
+              "target_property": "model_file/shock_id"
+          }
+      ],
+      "output_mapping" : [
+      ]
+    }
+  },
+  "job_id_output_field": "docker"
+}

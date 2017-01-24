@@ -247,9 +247,10 @@ Build a genome-scale metabolic model based on annotations in an input genome typ
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.build_metabolic_model",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.build_metabolic_model",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -410,9 +411,10 @@ Gapfills a metabolic model to induce flux in a specified reaction
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.gapfill_metabolic_model",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.gapfill_metabolic_model",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -585,9 +587,10 @@ Run flux balance analysis and return ID of FBA object with results
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.run_flux_balance_analysis",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.run_flux_balance_analysis",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -688,9 +691,10 @@ Compares multiple FBA solutions and saves comparison as a new object in the work
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.compare_fba_solutions",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.compare_fba_solutions",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -847,9 +851,10 @@ Translate the metabolic model of one organism to another, using a mapping of sim
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.propagate_model_to_new_genome",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.propagate_model_to_new_genome",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -974,9 +979,10 @@ Use Flux Balance Analysis (FBA) to simulate multiple growth phenotypes.
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.simulate_growth_on_phenotype_data",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.simulate_growth_on_phenotype_data",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -1079,9 +1085,10 @@ Merge two or more metabolic models into a compartmentalized community model
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.merge_metabolic_models_into_community_model",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.merge_metabolic_models_into_community_model",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -1198,9 +1205,10 @@ Merge two or more metabolic models into a compartmentalized community model
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.compare_flux_with_expression",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.compare_flux_with_expression",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -1297,9 +1305,10 @@ Identifies reactions in the model that are not mass balanced
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.check_model_mass_balance",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.check_model_mass_balance",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -1408,9 +1417,10 @@ Compare models
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.compare_models",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.compare_models",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -1515,9 +1525,10 @@ Edit models
 	}
     }
 
-    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-	method => "fba_tools.edit_metabolic_model",
-	params => \@args,
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.edit_metabolic_model",
+	    params => \@args,
     });
     if ($result) {
 	if ($result->is_error) {
@@ -1537,7 +1548,2801 @@ Edit models
     }
 }
  
+
+
+=head2 edit_media
+
+  $return = $obj->edit_media($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.EditMediaParams
+$return is a fba_tools.EditMediaResult
+EditMediaParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+	compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	media_output_id has a value which is a fba_tools.media_id
+workspace_name is a string
+media_id is a string
+compound_id is a string
+EditMediaResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	new_media_id has a value which is a fba_tools.media_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.EditMediaParams
+$return is a fba_tools.EditMediaResult
+EditMediaParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+	compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	media_output_id has a value which is a fba_tools.media_id
+workspace_name is a string
+media_id is a string
+compound_id is a string
+EditMediaResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	new_media_id has a value which is a fba_tools.media_id
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+Edit models
+
+=back
+
+=cut
+
+ sub edit_media
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function edit_media (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to edit_media:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'edit_media');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.edit_media",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'edit_media',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method edit_media",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'edit_media',
+				       );
+    }
+}
+ 
+
+
+=head2 excel_file_to_model
+
+  $return = $obj->excel_file_to_model($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub excel_file_to_model
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function excel_file_to_model (received $n, expecting 1)");
+    }
+    {
+	my($p) = @args;
+
+	my @_bad_arguments;
+        (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"p\" (value was \"$p\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to excel_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'excel_file_to_model');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.excel_file_to_model",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'excel_file_to_model',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method excel_file_to_model",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'excel_file_to_model',
+				       );
+    }
+}
+ 
+
+
+=head2 sbml_file_to_model
+
+  $return = $obj->sbml_file_to_model($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub sbml_file_to_model
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function sbml_file_to_model (received $n, expecting 1)");
+    }
+    {
+	my($p) = @args;
+
+	my @_bad_arguments;
+        (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"p\" (value was \"$p\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to sbml_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'sbml_file_to_model');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.sbml_file_to_model",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'sbml_file_to_model',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method sbml_file_to_model",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'sbml_file_to_model',
+				       );
+    }
+}
+ 
+
+
+=head2 tsv_file_to_model
+
+  $return = $obj->tsv_file_to_model($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub tsv_file_to_model
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function tsv_file_to_model (received $n, expecting 1)");
+    }
+    {
+	my($p) = @args;
+
+	my @_bad_arguments;
+        (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"p\" (value was \"$p\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to tsv_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'tsv_file_to_model');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.tsv_file_to_model",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'tsv_file_to_model',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method tsv_file_to_model",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'tsv_file_to_model',
+				       );
+    }
+}
+ 
+
+
+=head2 model_to_excel_file
+
+  $f = $obj->model_to_excel_file($model)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$model is a fba_tools.ModelObjectSelectionParams
+$f is a fba_tools.File
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$model is a fba_tools.ModelObjectSelectionParams
+$f is a fba_tools.File
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub model_to_excel_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function model_to_excel_file (received $n, expecting 1)");
+    }
+    {
+	my($model) = @args;
+
+	my @_bad_arguments;
+        (ref($model) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"model\" (value was \"$model\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to model_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'model_to_excel_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.model_to_excel_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'model_to_excel_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method model_to_excel_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'model_to_excel_file',
+				       );
+    }
+}
+ 
+
+
+=head2 model_to_sbml_file
+
+  $f = $obj->model_to_sbml_file($model)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$model is a fba_tools.ModelObjectSelectionParams
+$f is a fba_tools.File
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$model is a fba_tools.ModelObjectSelectionParams
+$f is a fba_tools.File
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub model_to_sbml_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function model_to_sbml_file (received $n, expecting 1)");
+    }
+    {
+	my($model) = @args;
+
+	my @_bad_arguments;
+        (ref($model) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"model\" (value was \"$model\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to model_to_sbml_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'model_to_sbml_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.model_to_sbml_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'model_to_sbml_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method model_to_sbml_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'model_to_sbml_file',
+				       );
+    }
+}
+ 
+
+
+=head2 model_to_tsv_file
+
+  $files = $obj->model_to_tsv_file($model)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$model is a fba_tools.ModelObjectSelectionParams
+$files is a fba_tools.ModelTsvFiles
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+ModelTsvFiles is a reference to a hash where the following keys are defined:
+	compounds_file has a value which is a fba_tools.File
+	reactions_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$model is a fba_tools.ModelObjectSelectionParams
+$files is a fba_tools.ModelTsvFiles
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+ModelTsvFiles is a reference to a hash where the following keys are defined:
+	compounds_file has a value which is a fba_tools.File
+	reactions_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub model_to_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function model_to_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($model) = @args;
+
+	my @_bad_arguments;
+        (ref($model) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"model\" (value was \"$model\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to model_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'model_to_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.model_to_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'model_to_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method model_to_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'model_to_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_model_as_excel_file
+
+  $output = $obj->export_model_as_excel_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_model_as_excel_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_model_as_excel_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_model_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_model_as_excel_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_model_as_excel_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_model_as_excel_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_model_as_excel_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_model_as_excel_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_model_as_tsv_file
+
+  $output = $obj->export_model_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_model_as_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_model_as_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_model_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_model_as_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_model_as_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_model_as_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_model_as_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_model_as_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_model_as_sbml_file
+
+  $output = $obj->export_model_as_sbml_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_model_as_sbml_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_model_as_sbml_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_model_as_sbml_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_model_as_sbml_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_model_as_sbml_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_model_as_sbml_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_model_as_sbml_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_model_as_sbml_file',
+				       );
+    }
+}
+ 
+
+
+=head2 fba_to_excel_file
+
+  $f = $obj->fba_to_excel_file($fba)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$fba is a fba_tools.FBAObjectSelectionParams
+$f is a fba_tools.File
+FBAObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	fba_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$fba is a fba_tools.FBAObjectSelectionParams
+$f is a fba_tools.File
+FBAObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	fba_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub fba_to_excel_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function fba_to_excel_file (received $n, expecting 1)");
+    }
+    {
+	my($fba) = @args;
+
+	my @_bad_arguments;
+        (ref($fba) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"fba\" (value was \"$fba\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to fba_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'fba_to_excel_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.fba_to_excel_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'fba_to_excel_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method fba_to_excel_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'fba_to_excel_file',
+				       );
+    }
+}
+ 
+
+
+=head2 fba_to_tsv_file
+
+  $files = $obj->fba_to_tsv_file($fba)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$fba is a fba_tools.FBAObjectSelectionParams
+$files is a fba_tools.FBATsvFiles
+FBAObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	fba_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+FBATsvFiles is a reference to a hash where the following keys are defined:
+	compounds_file has a value which is a fba_tools.File
+	reactions_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$fba is a fba_tools.FBAObjectSelectionParams
+$files is a fba_tools.FBATsvFiles
+FBAObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	fba_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+FBATsvFiles is a reference to a hash where the following keys are defined:
+	compounds_file has a value which is a fba_tools.File
+	reactions_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub fba_to_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function fba_to_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($fba) = @args;
+
+	my @_bad_arguments;
+        (ref($fba) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"fba\" (value was \"$fba\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to fba_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'fba_to_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.fba_to_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'fba_to_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method fba_to_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'fba_to_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_fba_as_excel_file
+
+  $output = $obj->export_fba_as_excel_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_fba_as_excel_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_fba_as_excel_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_fba_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_fba_as_excel_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_fba_as_excel_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_fba_as_excel_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_fba_as_excel_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_fba_as_excel_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_fba_as_tsv_file
+
+  $output = $obj->export_fba_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_fba_as_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_fba_as_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_fba_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_fba_as_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_fba_as_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_fba_as_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_fba_as_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_fba_as_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 tsv_file_to_media
+
+  $return = $obj->tsv_file_to_media($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.MediaCreationParams
+$return is a fba_tools.WorkspaceRef
+MediaCreationParams is a reference to a hash where the following keys are defined:
+	media_file has a value which is a fba_tools.File
+	media_name has a value which is a string
+	workspace_name has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.MediaCreationParams
+$return is a fba_tools.WorkspaceRef
+MediaCreationParams is a reference to a hash where the following keys are defined:
+	media_file has a value which is a fba_tools.File
+	media_name has a value which is a string
+	workspace_name has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub tsv_file_to_media
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function tsv_file_to_media (received $n, expecting 1)");
+    }
+    {
+	my($p) = @args;
+
+	my @_bad_arguments;
+        (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"p\" (value was \"$p\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to tsv_file_to_media:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'tsv_file_to_media');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.tsv_file_to_media",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'tsv_file_to_media',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method tsv_file_to_media",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'tsv_file_to_media',
+				       );
+    }
+}
+ 
+
+
+=head2 excel_file_to_media
+
+  $return = $obj->excel_file_to_media($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.MediaCreationParams
+$return is a fba_tools.WorkspaceRef
+MediaCreationParams is a reference to a hash where the following keys are defined:
+	media_file has a value which is a fba_tools.File
+	media_name has a value which is a string
+	workspace_name has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.MediaCreationParams
+$return is a fba_tools.WorkspaceRef
+MediaCreationParams is a reference to a hash where the following keys are defined:
+	media_file has a value which is a fba_tools.File
+	media_name has a value which is a string
+	workspace_name has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub excel_file_to_media
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function excel_file_to_media (received $n, expecting 1)");
+    }
+    {
+	my($p) = @args;
+
+	my @_bad_arguments;
+        (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"p\" (value was \"$p\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to excel_file_to_media:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'excel_file_to_media');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.excel_file_to_media",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'excel_file_to_media',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method excel_file_to_media",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'excel_file_to_media',
+				       );
+    }
+}
+ 
+
+
+=head2 media_to_tsv_file
+
+  $f = $obj->media_to_tsv_file($media)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$media is a fba_tools.MediaObjectSelectionParams
+$f is a fba_tools.File
+MediaObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	media_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$media is a fba_tools.MediaObjectSelectionParams
+$f is a fba_tools.File
+MediaObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	media_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub media_to_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function media_to_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($media) = @args;
+
+	my @_bad_arguments;
+        (ref($media) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"media\" (value was \"$media\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to media_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'media_to_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.media_to_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'media_to_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method media_to_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'media_to_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 media_to_excel_file
+
+  $f = $obj->media_to_excel_file($media)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$media is a fba_tools.MediaObjectSelectionParams
+$f is a fba_tools.File
+MediaObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	media_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$media is a fba_tools.MediaObjectSelectionParams
+$f is a fba_tools.File
+MediaObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	media_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub media_to_excel_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function media_to_excel_file (received $n, expecting 1)");
+    }
+    {
+	my($media) = @args;
+
+	my @_bad_arguments;
+        (ref($media) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"media\" (value was \"$media\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to media_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'media_to_excel_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.media_to_excel_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'media_to_excel_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method media_to_excel_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'media_to_excel_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_media_as_excel_file
+
+  $output = $obj->export_media_as_excel_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_media_as_excel_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_media_as_excel_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_media_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_media_as_excel_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_media_as_excel_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_media_as_excel_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_media_as_excel_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_media_as_excel_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_media_as_tsv_file
+
+  $output = $obj->export_media_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_media_as_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_media_as_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_media_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_media_as_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_media_as_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_media_as_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_media_as_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_media_as_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 tsv_file_to_phenotype_set
+
+  $return = $obj->tsv_file_to_phenotype_set($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.PhenotypeSetCreationParams
+$return is a fba_tools.WorkspaceRef
+PhenotypeSetCreationParams is a reference to a hash where the following keys are defined:
+	phenotype_set_file has a value which is a fba_tools.File
+	phenotype_set_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.PhenotypeSetCreationParams
+$return is a fba_tools.WorkspaceRef
+PhenotypeSetCreationParams is a reference to a hash where the following keys are defined:
+	phenotype_set_file has a value which is a fba_tools.File
+	phenotype_set_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub tsv_file_to_phenotype_set
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function tsv_file_to_phenotype_set (received $n, expecting 1)");
+    }
+    {
+	my($p) = @args;
+
+	my @_bad_arguments;
+        (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"p\" (value was \"$p\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to tsv_file_to_phenotype_set:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'tsv_file_to_phenotype_set');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.tsv_file_to_phenotype_set",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'tsv_file_to_phenotype_set',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method tsv_file_to_phenotype_set",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'tsv_file_to_phenotype_set',
+				       );
+    }
+}
+ 
+
+
+=head2 phenotype_set_to_tsv_file
+
+  $f = $obj->phenotype_set_to_tsv_file($phenotype_set)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$phenotype_set is a fba_tools.PhenotypeSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$phenotype_set is a fba_tools.PhenotypeSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub phenotype_set_to_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function phenotype_set_to_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($phenotype_set) = @args;
+
+	my @_bad_arguments;
+        (ref($phenotype_set) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"phenotype_set\" (value was \"$phenotype_set\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to phenotype_set_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'phenotype_set_to_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.phenotype_set_to_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'phenotype_set_to_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method phenotype_set_to_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'phenotype_set_to_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_phenotype_set_as_tsv_file
+
+  $output = $obj->export_phenotype_set_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_phenotype_set_as_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_phenotype_set_as_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_phenotype_set_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_phenotype_set_as_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_phenotype_set_as_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_phenotype_set_as_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_phenotype_set_as_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_phenotype_set_as_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 phenotype_simulation_set_to_excel_file
+
+  $f = $obj->phenotype_simulation_set_to_excel_file($pss)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$pss is a fba_tools.PhenotypeSimulationSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSimulationSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_simulation_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$pss is a fba_tools.PhenotypeSimulationSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSimulationSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_simulation_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub phenotype_simulation_set_to_excel_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function phenotype_simulation_set_to_excel_file (received $n, expecting 1)");
+    }
+    {
+	my($pss) = @args;
+
+	my @_bad_arguments;
+        (ref($pss) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"pss\" (value was \"$pss\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to phenotype_simulation_set_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'phenotype_simulation_set_to_excel_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.phenotype_simulation_set_to_excel_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'phenotype_simulation_set_to_excel_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method phenotype_simulation_set_to_excel_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'phenotype_simulation_set_to_excel_file',
+				       );
+    }
+}
+ 
+
+
+=head2 phenotype_simulation_set_to_tsv_file
+
+  $f = $obj->phenotype_simulation_set_to_tsv_file($pss)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$pss is a fba_tools.PhenotypeSimulationSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSimulationSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_simulation_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$pss is a fba_tools.PhenotypeSimulationSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSimulationSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_simulation_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub phenotype_simulation_set_to_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function phenotype_simulation_set_to_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($pss) = @args;
+
+	my @_bad_arguments;
+        (ref($pss) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"pss\" (value was \"$pss\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to phenotype_simulation_set_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'phenotype_simulation_set_to_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.phenotype_simulation_set_to_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'phenotype_simulation_set_to_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method phenotype_simulation_set_to_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'phenotype_simulation_set_to_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_phenotype_simulation_set_as_excel_file
+
+  $output = $obj->export_phenotype_simulation_set_as_excel_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_phenotype_simulation_set_as_excel_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_phenotype_simulation_set_as_excel_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_phenotype_simulation_set_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_phenotype_simulation_set_as_excel_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_phenotype_simulation_set_as_excel_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_phenotype_simulation_set_as_excel_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_phenotype_simulation_set_as_excel_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_phenotype_simulation_set_as_excel_file',
+				       );
+    }
+}
+ 
+
+
+=head2 export_phenotype_simulation_set_as_tsv_file
+
+  $output = $obj->export_phenotype_simulation_set_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub export_phenotype_simulation_set_as_tsv_file
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_phenotype_simulation_set_as_tsv_file (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_phenotype_simulation_set_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_phenotype_simulation_set_as_tsv_file');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.export_phenotype_simulation_set_as_tsv_file",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_phenotype_simulation_set_as_tsv_file',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_phenotype_simulation_set_as_tsv_file",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_phenotype_simulation_set_as_tsv_file',
+				       );
+    }
+}
+ 
+
+
+=head2 bulk_export_objects
+
+  $output = $obj->bulk_export_objects($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.BulkExportObjectsParams
+$output is a fba_tools.BulkExportObjectsResult
+BulkExportObjectsParams is a reference to a hash where the following keys are defined:
+	refs has a value which is a reference to a list where each element is a string
+	all_models has a value which is a fba_tools.bool
+	all_fba has a value which is a fba_tools.bool
+	all_media has a value which is a fba_tools.bool
+	all_phenotypes has a value which is a fba_tools.bool
+	all_phenosims has a value which is a fba_tools.bool
+	model_format has a value which is a string
+	fba_format has a value which is a string
+	media_format has a value which is a string
+	phenotype_format has a value which is a string
+	phenosim_format has a value which is a string
+bool is an int
+BulkExportObjectsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.BulkExportObjectsParams
+$output is a fba_tools.BulkExportObjectsResult
+BulkExportObjectsParams is a reference to a hash where the following keys are defined:
+	refs has a value which is a reference to a list where each element is a string
+	all_models has a value which is a fba_tools.bool
+	all_fba has a value which is a fba_tools.bool
+	all_media has a value which is a fba_tools.bool
+	all_phenotypes has a value which is a fba_tools.bool
+	all_phenosims has a value which is a fba_tools.bool
+	model_format has a value which is a string
+	fba_format has a value which is a string
+	media_format has a value which is a string
+	phenotype_format has a value which is a string
+	phenosim_format has a value which is a string
+bool is an int
+BulkExportObjectsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub bulk_export_objects
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function bulk_export_objects (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to bulk_export_objects:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'bulk_export_objects');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.bulk_export_objects",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'bulk_export_objects',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method bulk_export_objects",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'bulk_export_objects',
+				       );
+    }
+}
+ 
   
+sub status
+{
+    my($self, @args) = @_;
+    if ((my $n = @args) != 0) {
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+                                   "Invalid argument count for function status (received $n, expecting 0)");
+    }
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+        method => "fba_tools.status",
+        params => \@args,
+    });
+    if ($result) {
+        if ($result->is_error) {
+            Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+                           code => $result->content->{error}->{code},
+                           method_name => 'status',
+                           data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+                          );
+        } else {
+            return wantarray ? @{$result->result} : $result->result->[0];
+        }
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method status",
+                        status_line => $self->{client}->status_line,
+                        method_name => 'status',
+                       );
+    }
+}
+   
 
 sub version {
     my ($self) = @_;
@@ -1550,16 +4355,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'edit_metabolic_model',
+                method_name => 'bulk_export_objects',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method edit_metabolic_model",
+            error => "Error invoking method bulk_export_objects",
             status_line => $self->{client}->status_line,
-            method_name => 'edit_metabolic_model',
+            method_name => 'bulk_export_objects',
         );
     }
 }
@@ -3316,6 +6121,714 @@ a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a fba_tools.ws_report_id
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+
+=end text
+
+=back
+
+
+
+=head2 EditMediaParams
+
+=over 4
+
+
+
+=item Description
+
+EditMediaParams object: arguments for the edit model function
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+media_output_id has a value which is a fba_tools.media_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+media_output_id has a value which is a fba_tools.media_id
+
+
+=end text
+
+=back
+
+
+
+=head2 EditMediaResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+new_media_id has a value which is a fba_tools.media_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+new_media_id has a value which is a fba_tools.media_id
+
+
+=end text
+
+=back
+
+
+
+=head2 boolean
+
+=over 4
+
+
+
+=item Description
+
+A boolean - 0 for false, 1 for true.
+@range (0, 1)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+an int
+</pre>
+
+=end html
+
+=begin text
+
+an int
+
+=end text
+
+=back
+
+
+
+=head2 File
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 WorkspaceRef
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ExportParams
+
+=over 4
+
+
+
+=item Description
+
+input and output structure functions for standard downloaders
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+input_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+input_ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ExportOutput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+shock_id has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelCreationParams
+
+=over 4
+
+
+
+=item Description
+
+compounds_file is not used for excel file creations
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+model_file has a value which is a fba_tools.File
+model_name has a value which is a string
+workspace_name has a value which is a string
+genome has a value which is a string
+biomass has a value which is a reference to a list where each element is a string
+compounds_file has a value which is a fba_tools.File
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+model_file has a value which is a fba_tools.File
+model_name has a value which is a string
+workspace_name has a value which is a string
+genome has a value which is a string
+biomass has a value which is a reference to a list where each element is a string
+compounds_file has a value which is a fba_tools.File
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelObjectSelectionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+model_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+model_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelTsvFiles
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+compounds_file has a value which is a fba_tools.File
+reactions_file has a value which is a fba_tools.File
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+compounds_file has a value which is a fba_tools.File
+reactions_file has a value which is a fba_tools.File
+
+
+=end text
+
+=back
+
+
+
+=head2 FBAObjectSelectionParams
+
+=over 4
+
+
+
+=item Description
+
+****** FBA Result Converters ******
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+fba_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+fba_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 FBATsvFiles
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+compounds_file has a value which is a fba_tools.File
+reactions_file has a value which is a fba_tools.File
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+compounds_file has a value which is a fba_tools.File
+reactions_file has a value which is a fba_tools.File
+
+
+=end text
+
+=back
+
+
+
+=head2 MediaCreationParams
+
+=over 4
+
+
+
+=item Description
+
+****** Media Converters *********
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+media_file has a value which is a fba_tools.File
+media_name has a value which is a string
+workspace_name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+media_file has a value which is a fba_tools.File
+media_name has a value which is a string
+workspace_name has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 MediaObjectSelectionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+media_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+media_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 PhenotypeSetCreationParams
+
+=over 4
+
+
+
+=item Description
+
+****** Phenotype Data Converters *******
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+phenotype_set_file has a value which is a fba_tools.File
+phenotype_set_name has a value which is a string
+workspace_name has a value which is a string
+genome has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+phenotype_set_file has a value which is a fba_tools.File
+phenotype_set_name has a value which is a string
+workspace_name has a value which is a string
+genome has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 PhenotypeSetObjectSelectionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+phenotype_set_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+phenotype_set_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 PhenotypeSimulationSetObjectSelectionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+phenotype_simulation_set_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+phenotype_simulation_set_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 BulkExportObjectsParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+refs has a value which is a reference to a list where each element is a string
+all_models has a value which is a fba_tools.bool
+all_fba has a value which is a fba_tools.bool
+all_media has a value which is a fba_tools.bool
+all_phenotypes has a value which is a fba_tools.bool
+all_phenosims has a value which is a fba_tools.bool
+model_format has a value which is a string
+fba_format has a value which is a string
+media_format has a value which is a string
+phenotype_format has a value which is a string
+phenosim_format has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+refs has a value which is a reference to a list where each element is a string
+all_models has a value which is a fba_tools.bool
+all_fba has a value which is a fba_tools.bool
+all_media has a value which is a fba_tools.bool
+all_phenotypes has a value which is a fba_tools.bool
+all_phenosims has a value which is a fba_tools.bool
+model_format has a value which is a string
+fba_format has a value which is a string
+media_format has a value which is a string
+phenotype_format has a value which is a string
+phenosim_format has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 BulkExportObjectsResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
 
 
 =end text

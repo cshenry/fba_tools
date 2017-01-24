@@ -684,25 +684,34 @@ sub getLinkedObject {
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
 		my $linkedobject = $1;
 		my $otherlinkedobject = $2;
-		return $self->topparent()->$linkedobject()->$otherlinkedobject()->queryObject($3,{$4 => $5});
+		my $field = $3;
+    	my $query = {$4 => $5};
+		return $self->topparent()->$linkedobject()->$otherlinkedobject()->queryObject($field,$query);
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
 		my $linkedobject = $1;
-		return $self->topparent()->$linkedobject()->queryObject($2,{$3 => $4});
+		my $field = $2;
+    	my $query = {$3 => $4};
+		return $self->topparent()->$linkedobject()->queryObject($field,$query);
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
 		return $self->topparent()->queryObject($1,{$2 => $3});
 	} elsif ($ref =~ m/^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$/) {
 		return $self->store()->getObjectByUUID($ref);
 	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-]+)$/) {
 		Bio::KBase::ObjectAPI::utilities::error("FAILED!");
-		return $self->store()->getObjectByUUID($1)->queryObject($2,{$3 => $4});
 	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-]+$/) {
     	return $self->store()->get_object($ref);
     } elsif ($ref =~ m/^([:\w]+\/\w+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
-    	return $self->store()->get_object($1)->queryObject($2,{$3 => $4});
+    	my $field = $2;
+    	my $query = {$3 => $4};
+    	my $object = $self->store()->get_object($1);
+    	return $object->queryObject($field,$query);
     } elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+$/) {
     	return $self->store()->get_object($ref);
     } elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
-    	return $self->store()->get_object($1)->queryObject($2,{$3 => $4});
+    	my $field = $2;
+    	my $query = {$3 => $4};
+    	my $object = $self->store()->get_object($1);
+    	return $object->queryObject($field,$query);
     }
     Bio::KBase::ObjectAPI::utilities::error("Unrecognized reference format:".$ref);
 }

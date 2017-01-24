@@ -1,0 +1,108 @@
+#
+# Define basic display information
+#
+name     : Bulk Download Modeling Objects
+
+tooltip  : |
+    Bulk download many modeling objects at once
+
+screenshots :
+
+    - build_metabolic_model_input.png
+    - build_metabolic_model_output.png
+
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    refs :
+        ui-name : |
+            Objects to export
+        short-hint : |
+            Select all objects to export
+
+    model_format :
+        ui-name : |
+            Format for model exports
+        short-hint : |
+            Format for model exports
+
+    fba_format :
+        ui-name : |
+            Format for fba exports
+        short-hint : |
+            Format for fba exports
+
+    media_format :
+        ui-name : |
+            Format for media exports
+        short-hint : |
+            Format for media exports
+            
+    phenotype_format :
+        ui-name : |
+            Format for phenotype exports
+        short-hint : |
+            Format for phenotype exports
+
+    phenosim_format :
+        ui-name : |
+            Format for phenotype simulation exports
+        short-hint : |
+            Format for phenotype simulation exports
+
+    all_models :
+        ui-name : |
+            Export all models
+        short-hint : |
+            Export all models
+
+    all_fba :
+        ui-name : |
+            Export all FBA
+        short-hint : |
+            Export all FBA
+
+    all_media :
+        ui-name : |
+            Export all media
+        short-hint : |
+            Export all media
+
+    all_phenotypes :
+        ui-name : |
+            Export all phenotypes
+        short-hint : |
+            Export all phenotypes
+    
+    all_phenosims :
+        ui-name : |
+            Export all phenotype simulations
+        short-hint : |
+            Export all phenotype simulations
+
+icon: fba-teal.png
+
+description : |
+
+    <p>This app enables the bulk download of any model-related object in KBase.</p>
+
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Christopher Henry. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>

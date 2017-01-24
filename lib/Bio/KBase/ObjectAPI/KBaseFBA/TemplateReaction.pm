@@ -34,11 +34,11 @@ has reaction_ref => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msda
 #***********************************************************************************************************
 sub _buildequationcode {
 	my ($self) = @_;
-	return $self->createEquation({format=>"id",hashed=>1,protons=>0,direction=>0});
+	return $self->createEquation({format=>"codeid",hashed=>1,protons=>0,direction=>0});
 }
 sub _buildrevequationcode {
 	my ($self) = @_;
-	return $self->createEquation({format=>"id",hashed=>1,protons=>0,reverse=>1,direction=>0});
+	return $self->createEquation({format=>"codeid",hashed=>1,protons=>0,reverse=>1,direction=>0});
 }
 sub _builddefinition {
 	my ($self) = @_;
@@ -168,6 +168,7 @@ sub createEquation {
 	
 	my $rgts = $self->templateReactionReagents();
 	my $rgtHash;
+	my $objhash;
     my $rxnCompID = $self->templatecompartment()->id();
     my $hcpd = $self->parent()->checkForProton();
  	if (!defined($hcpd) && $args->{hashed}==1) {
@@ -192,6 +193,7 @@ sub createEquation {
 			$rgtHash->{$id}->{$rgt->templatecompcompound()->templatecompartment()->id()} = 0;
 		}
 		$rgtHash->{$id}->{$rgt->templatecompcompound()->templatecompartment()->id()} += $rgt->coefficient();
+		$objhash->{$id}->{$rgt->templatecompcompound()->templatecompartment()->id()} = $rgt;
 		$rgtHash->{$id}->{"name"} = $rgt->templatecompcompound()->templatecompound()->name();
 	}
 
@@ -200,8 +202,8 @@ sub createEquation {
     my $sign = " <=> ";
 
     if($args->{direction}==1){
-	$sign = " => " if $self->direction() eq ">";
-	$sign = " <= " if $self->direction() eq "<";
+		$sign = " => " if $self->direction() eq ">";
+		$sign = " <= " if $self->direction() eq "<";
     }
 	
     my %FoundComps=();
@@ -209,71 +211,68 @@ sub createEquation {
 
     my $sortedCpd = [sort(keys(%{$rgtHash}))];
     for (my $i=0; $i < @{$sortedCpd}; $i++) {
-
-	#Cpds sorted on original modelseed identifiers
-	#But representative strings collected here (if not 'id')
-	my $printId=$sortedCpd->[$i];
-
-	if($args->{format} ne "id"){
-	    my $cpd = ( grep { $printId eq $_->templatecompcompound()->templatecompound()->id() } @{$self->templateReactionReagents()} )[0]->templatecompcompound()->templatecompound();
-	    if(!$cpd){
-		$cpd = ( grep { $printId eq $_->templatecompcompound()->id() } @{$self->templateReactionReagents()} )[0]->templatecompcompound()->templatecompound();
-	    }
-
-	    if($args->{format} eq "name"){
-		$printId = $cpd->name();
-	    } elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
-		$printId = $cpd->getAlias($args->{format});
-	    }elsif($args->{format} eq "formula"){
-		$printId = $cpd->formula();
-	    }
-	}
-
-	my $comps = [sort(keys(%{$rgtHash->{$sortedCpd->[$i]}}))];
-	for (my $j=0; $j < @{$comps}; $j++) {
-	    if ($comps->[$j] =~ m/([a-z])(\d+)/) {
-		my $comp = $1;
-		my $index = $2;
-		my $compartment = $comp;
-
-		if($args->{generalized} && !exists($FoundComps{$comp})){
-		    $compartment = $CompCount;
-		    $FoundComps{$comp}=$CompCount;
-		    $CompCount++;
-		}elsif($args->{generalized} && exists($FoundComps{$comp})){
-		    $compartment = $FoundComps{$comp};
-		}
-		
-		if ($args->{indecies} == 0) {
-		    $compartment = "[".$compartment."]" if !$args->{stoichiometry};
-		}else{
-		    $compartment = "[".$compartment.$index."]" if !$args->{stoichiometry};
-		}
-
-		$compartment= "" if !$args->{compts};
-
-		if ($rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]} < 0) {
-		    my $coef = -1*$rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
-		    my $reactcode = "(".$coef.") ".$printId.$compartment;
-			if($args->{stoichiometry}==1){
-		    	my $name = $rgtHash->{$sortedCpd->[$i]}->{name};
-			    $coef = $rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
-			    $reactcode = join(":",($coef,$printId,$compartment,'0',"\"".$name."\""));
-			}
-		    push(@reactcode,$reactcode);
-
-		} elsif ($rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]} > 0) {
-		    my $coef = $rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
+		#No matter what "print ID" is selected, the reagents will be sorted by cpd ID first
+		my $comps = [sort(keys(%{$rgtHash->{$sortedCpd->[$i]}}))];
+		for (my $j=0; $j < @{$comps}; $j++) {
+		    if ($comps->[$j] =~ m/([a-z])/ && $comps->[$j] ne "name") {
+			    my $printId = $sortedCpd->[$i];
+			    my $cpd = $objhash->{$sortedCpd->[$i]}->{$comps->[$j]}->templatecompcompound()->templatecompound();
+			    if($args->{format} ne "id") {
+				    if($args->{format} eq "name"){
+						$printId = $cpd->name();
+				    } elsif ($args->{format} eq "msid"){
+				    	$printId = $cpd->msid();
+				     } elsif ($args->{format} eq "codeid"){
+				    	$printId = $cpd->codeid();
+				    }elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
+						$printId = $cpd->getAlias($args->{format});
+				    }elsif($args->{format} eq "formula"){
+						$printId = $cpd->formula();
+				    }
+				}
 		    
-		    my $productcode .= "(".$coef.") ".$printId.$compartment;
-			if($args->{stoichiometry}==1){
-			    my $name = $rgtHash->{$sortedCpd->[$i]}->{name};
-			    $productcode = join(":",($coef,$printId,$compartment,'0',"\"".$name."\""));
-			}
-		    push(@productcode, $productcode);
+				my $comp = $1;
+				my $index = 0;
+				my $compartment = $comp;
+		
+				if($args->{generalized} && !exists($FoundComps{$comp})){
+				    $compartment = $CompCount;
+				    $FoundComps{$comp}=$CompCount;
+				    $CompCount++;
+				}elsif($args->{generalized} && exists($FoundComps{$comp})){
+				    $compartment = $FoundComps{$comp};
+				}
+				
+				#if ($args->{indecies} == 0) {
+				    $compartment = "[".$compartment."]" if !$args->{stoichiometry};
+				#}else{
+				#    $compartment = "[".$compartment.$index."]" if !$args->{stoichiometry};
+				#}
+		
+				$compartment= "" if !$args->{compts};
+		
+				if ($rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]} < 0) {
+				    my $coef = -1*$rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
+				    my $reactcode = "(".$coef.") ".$printId.$compartment;
+					if($args->{stoichiometry}==1){
+				    	my $name = $rgtHash->{$sortedCpd->[$i]}->{name};
+					    $coef = $rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
+					    $reactcode = join(":",($coef,$printId,$compartment,'0',"\"".$name."\""));
+					}
+				    push(@reactcode,$reactcode);
+		
+				} elsif ($rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]} > 0) {
+				    my $coef = $rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
+				    
+				    my $productcode .= "(".$coef.") ".$printId.$compartment;
+					if($args->{stoichiometry}==1){
+					    my $name = $rgtHash->{$sortedCpd->[$i]}->{name};
+					    $productcode = join(":",($coef,$printId,$compartment,'0',"\"".$name."\""));
+					}
+				    push(@productcode, $productcode);
+				}
+		    }
 		}
-	    }
-	}
     }
     
 

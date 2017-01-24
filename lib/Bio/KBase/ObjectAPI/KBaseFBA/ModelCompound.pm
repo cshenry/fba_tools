@@ -23,7 +23,7 @@ has mapped_uuid  => ( is => 'rw', isa => 'ModelSEED::uuid',printOrder => '-1', t
 has formula  => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildformula' );
 has msid => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmsid' );
 has msname => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmsname' );
-
+has codeid  => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcodeid' );
 has compound => (is => 'rw', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_compound', clearer => 'clear_compound', isa => 'Ref', weak_ref => 1);
 
 #***********************************************************************************************************
@@ -88,9 +88,18 @@ sub _buildmsid {
 	my ($self) = @_;
 	return $self->compound()->id();
 }
-sub _buildmsname {
+sub _buildcodeid {
 	my ($self) = @_;
-	return $self->compound()->name();
+	if ($self->compound_ref() =~ m/(cpd\d+)/) {
+		my $id = $1;
+		if ($id ne "cpd00000") {
+			return $id;
+		}
+	}
+	if ($self->id() =~ m/(.+)_([a-z]\d+)/) {
+		return $1;
+	}
+	return $self->id();
 }
 
 #***********************************************************************************************************

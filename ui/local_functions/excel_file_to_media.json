@@ -1,0 +1,20 @@
+{
+    "name" : "Save Media Condition from Excel File",
+    "short_description" : 
+        "Save Media Condition from Excel File",
+
+    "long_description" : 
+        "",
+
+    "tags" : {
+        "categories" : [],
+        "input": {
+            "file_types": ["excel"],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": ["KBaseBiochem.Media"]
+        }
+    }
+}

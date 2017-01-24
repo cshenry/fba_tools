@@ -1996,8 +1996,72 @@ sub export {
 		return $self->toReadableString();
 	} elsif (lc($args->{format}) eq "json") {
 		return $self->toJSON({pp => 1});
+	} elsif (lc($args->{format}) eq "excel") {
+		return $self->printExcel($args);
+	} elsif (lc($args->{format}) eq "tsv") {
+		return $self->printTSV($args);
 	}
 	Bio::KBase::ObjectAPI::utilities::error("Unrecognized type for export: ".$args->{format});
+}
+
+sub printTSV {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $output = {
+		compounds_table => ["id\tname\tformula\tcharge\tcompartment\tuptake\tmin_uptake\tlowerbound\tmax_uptake\tupperbound"],
+		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tpathway\tequation\tdefinition\tflux\tmin_flux\tlowerbound\tmax_flux\tupperbound"]
+	};
+	my $compounds = $self->FBACompoundVariables();
+	for (my $i=0; $i < @{$compounds}; $i++) {
+		push(@{$output->{compounds_table}},$compounds->[$i]->modelcompound()->id()."\t".$compounds->[$i]->modelcompound()->name()."\t".$compounds->[$i]->modelcompound()->formula()."\t".$compounds->[$i]->modelcompound()->charge()."\t"."\t".$compounds->[$i]->value()."\t".$compounds->[$i]->min()."\t".$compounds->[$i]->lowerBound()."\t".$compounds->[$i]->max()."\t".$compounds->[$i]->upperBound());
+	}
+	my $reactions = $self->FBAReactionVariables();
+	for (my $i=0; $i < @{$reactions}; $i++) {
+		push(@{$output->{reactions_table}},$reactions->[$i]->modelreaction()->id()."\t".$reactions->[$i]->modelreaction()->direction()."\t".$reactions->[$i]->modelreaction()->modelcompartment()->label()."\t".$reactions->[$i]->modelreaction()->gprString()."\t".$reactions->[$i]->modelreaction()->name()."\t".""."\t".$reactions->[$i]->modelreaction()->equation()."\t".$reactions->[$i]->modelreaction()->definition()."\t".$reactions->[$i]->value()."\t".$reactions->[$i]->min()."\t".$reactions->[$i]->lowerBound()."\t".$reactions->[$i]->max()."\t".$reactions->[$i]->upperBound());
+	}
+	$reactions = $self->FBABiomassVariables();
+	for (my $i=0; $i < @{$reactions}; $i++) {
+		push(@{$output->{reactions_table}},$reactions->[$i]->biomass()->id()."\t=>\tc0\t\t".$reactions->[$i]->biomass()->name()."\t\t".$reactions->[$i]->biomass()->equation()."\t".$reactions->[$i]->biomass()->definition()."\t".$reactions->[$i]->value()."\t".$reactions->[$i]->min()."\t".$reactions->[$i]->lowerBound()."\t".$reactions->[$i]->max()."\t".$reactions->[$i]->upperBound());
+	}
+	if ($args->{file} == 1) {
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id()."-compounds.tsv",$output->{compounds_table});
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id()."-reactions.tsv",$output->{reactions_table});
+		return [$args->{path}."/".$self->id()."-compounds.tsv",$args->{path}."/".$self->id()."-reactions.tsv"];
+	}
+	return $output;
+}
+
+sub printExcel {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $output = $self->printTSV();	
+	require "Spreadsheet/WriteExcel.pm";
+	my $wkbk = Spreadsheet::WriteExcel->new($args->{path}."/".$self->id().".xls") or die "can not create workbook: $!";
+	my $sheet = $wkbk->add_worksheet("ModelCompounds");
+	for (my $i=0; $i < @{$output->{compounds_table}}; $i++) {
+		my $row = [split(/\t/,$output->{compounds_table}->[$i])];
+		for (my $j=0; $j < @{$row}; $j++) {
+			if (defined($row->[$j])) {
+				$row->[$j] =~ s/=/-/g;
+			}
+		}
+		$sheet->write_row($i,0,$row);
+	}
+	$sheet = $wkbk->add_worksheet("ModelReactions");
+	for (my $i=0; $i < @{$output->{reactions_table}}; $i++) {
+		my $row = [split(/\t/,$output->{reactions_table}->[$i])];
+		for (my $j=0; $j < @{$row}; $j++) {
+			if (defined($row->[$j])) {
+				$row->[$j] =~ s/=/-/g;
+			}
+		}
+		$sheet->write_row($i,0,$row);
+	}
+	$wkbk->close();
+	if ($args->{file} == 0) {
+		Bio::KBase::error("Export to excel is only supported as a file output!");
+	}
+	return [$args->{path}."/".$self->id().".xls"];
 }
 
 =head3 buildFromOptSolution

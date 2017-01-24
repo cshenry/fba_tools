@@ -3,7 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = "0.1.0";
+our $VERSION = '1.1.0';
+our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
+our $GIT_COMMIT_HASH = '7b245bd0625977772ab0bd74032d045272db26d9';
 
 =head1 NAME
 
@@ -23,6 +25,7 @@ use Bio::KBase::ObjectAPI::KBaseStore;
 use Bio::KBase::ObjectAPI::functions;
 use Bio::KBase::utilities;
 use Bio::KBase::kbaseenv;
+use DataFileUtil::DataFileUtilClient;
 
 #Initialization function for call
 sub util_initialize_call {
@@ -59,8 +62,8 @@ sub util_store {
 }
 
 sub util_log {
-	my($self,$message) = @_;
-	print $message."\n";
+	my($self,$message,$tag) = @_;
+	Bio::KBase::kbaseenv::log($message,$tag);
 }
 
 sub util_get_object {
@@ -79,12 +82,156 @@ sub util_save_object {
 	return $self->util_store()->save_object($object,$ref,$parameters);
 }
 
+sub util_list_objects {
+	my($self,$args) = @_;
+	return Bio::KBase::kbaseenv::list_objects($args);
+}
+
+sub util_package_for_download {
+	my($self,$params) = @_;
+	my $dataUtil = Bio::KBase::kbaseenv::data_file_client();
+	my $package_details = $dataUtil->package_for_download($params);
+    return { shock_id => $package_details->{shock_id} };
+}
+
+sub util_file_to_shock {
+	my($self,$params) = @_;
+	my $dataUtil = Bio::KBase::kbaseenv::data_file_client();
+	my $f = $dataUtil->file_to_shock($params);
+    return $f;
+}
+
 sub util_get_file_path {
-	my($self,$filename) = @_;
+	my($self,$file,$target_dir) = @_;
+    if(exists $file->{shock_id} && $file->{shock_id} ne "") {
+        # file has a shock id, so try to fetch it 
+        my $dataUtil = Bio::KBase::kbaseenv::data_file_client();
+        my $f = $dataUtil->shock_to_file({ 
+			shock_id=>$file->{shock_id},
+			file_path=>$target_dir,
+			unpack=>0
+		});
+        return $target_dir.'/'.$f->{node_file_name};
+    }
+    return $file->{path};
+}
+
+sub util_parse_input_table {
+	my($self,$filename,$columns) = @_;
 	if (!-e $filename) {
-		$filename = Bio::KBase::utilities::conf("fba_tools","scratch")."/".$filename;
+		Bio::KBase::utilities::error("Could not find input file:".$filename."!\n");
 	}
-	return $filename;
+	open(my $fh, "<", $filename) || return;
+	my $headingline = <$fh>;
+	$headingline =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+	my $delim = undef;
+	if ($headingline =~ m/\t/) {
+		$delim = "\\t";
+	} elsif ($headingline =~ m/,/) {
+		$delim = ",";
+	}
+	if (!defined($delim)) {
+		Bio::KBase::utilities::error("$filename either does not use commas or tabs as a separator!");
+	}
+	my $headings = [split(/$delim/,$headingline)];
+	my $data = [];
+	while (my $line = <$fh>) {
+		$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+		push(@{$data},[split(/$delim/,$line)]);
+	}
+	close($fh);
+	my $headingColums;
+	for (my $i=0;$i < @{$headings}; $i++) {
+		$headingColums->{$headings->[$i]} = $i;
+	}
+	my $error = 0;
+	for (my $j=0;$j < @{$columns}; $j++) {
+		if (!defined($headingColums->{$columns->[$j]->[0]}) && defined($columns->[$j]->[1]) && $columns->[$j]->[1] == 1) {
+			$error = 1;
+			print "Model file missing required column '".$columns->[$j]->[0]."'!\n";
+		}
+	}
+	if ($error == 1) {
+		exit();
+	}
+	my $objects = [];
+	foreach my $item (@{$data}) {
+		my $object = [];
+		for (my $j=0;$j < @{$columns}; $j++) {
+			$object->[$j] = undef;
+			if (defined($columns->[$j]->[2])) {
+				$object->[$j] = $columns->[$j]->[2];
+			}
+			if (defined($headingColums->{$columns->[$j]->[0]}) && defined($item->[$headingColums->{$columns->[$j]->[0]}])) {
+				$object->[$j] = $item->[$headingColums->{$columns->[$j]->[0]}];
+			}
+			if (defined($columns->[$j]->[3])) {
+				if (defined($object->[$j]) && length($object->[$j]) > 0) {
+					my $d = $columns->[$j]->[3];
+					$object->[$j] = [split(/$d/,$object->[$j])];
+				} else {
+					$object->[$j] = [];
+				}
+			}
+		}
+		push(@{$objects},$object);
+	}
+	return $objects;
+}
+
+sub util_parse_excel {
+	my($self,$filename) = @_;
+    if(!$filename || !-f $filename){
+		Bio::KBase::utilities::error("Cannot find $filename");
+    }
+    if($filename !~ /\.xlsx?$/){
+		Bio::KBase::utilities::error("$filename does not have excel suffix (.xls or .xlsx)");
+    }
+
+    my $excel = '';
+    if($filename =~ /\.xlsx$/){
+    	require "Spreadsheet/ParseXLSX.pm";
+		$excel = Spreadsheet::ParseXLSX->new();
+    }else{
+    	require "Spreadsheet/ParseExcel.pm";
+		$excel = Spreadsheet::ParseExcel->new();
+    }	
+
+    my $workbook = $excel->parse($filename);
+    if(!defined $workbook){
+		Bio::KBase::utilities::error("Unable to parse $filename\n");
+    }
+
+    $filename =~ s/\.xlsx?//;
+
+    my @worksheets = $workbook->worksheets();
+    my $sheets = {};
+    foreach my $sheet (@worksheets){
+		my $File="";
+		my $Filename = $filename;
+		foreach my $row ($sheet->{MinRow}..$sheet->{MaxRow}){
+		    my $rowData = [];
+		    foreach my $col ($sheet->{MinCol}..$sheet->{MaxCol}) {
+				my $cell = $sheet->{Cells}[$row][$col];
+				if(!$cell || !defined($cell->{Val})){
+				    push(@{$rowData},"");
+				}else{
+				    push(@{$rowData},$cell->{Val});
+				}
+		    }
+		    $File .= join("\t",@$rowData)."\n";
+		}
+	
+		$Filename.="_".$sheet->{Name};
+		$Filename.="_".join("",localtime()).".txt";
+	
+		open(OUT, "> $Filename");
+		print OUT $File;
+		close(OUT);
+	
+		$sheets->{$sheet->{Name}}=$Filename;
+    }
+    return $sheets;
 }
 
 #END_HEADER
@@ -1438,6 +1585,7 @@ sub edit_metabolic_model
     my($return);
     #BEGIN edit_metabolic_model
     $self->util_initialize_call($params,$ctx);
+    print Bio::KBase::utilities::to_json($params,1);
 	$return = Bio::KBase::ObjectAPI::functions::func_edit_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $return,
@@ -1458,9 +1606,2606 @@ sub edit_metabolic_model
 
 
 
-=head2 version 
+=head2 edit_media
 
-  $return = $obj->version()
+  $return = $obj->edit_media($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.EditMediaParams
+$return is a fba_tools.EditMediaResult
+EditMediaParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+	compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	media_output_id has a value which is a fba_tools.media_id
+workspace_name is a string
+media_id is a string
+compound_id is a string
+EditMediaResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	new_media_id has a value which is a fba_tools.media_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.EditMediaParams
+$return is a fba_tools.EditMediaResult
+EditMediaParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+	compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+		0: a fba_tools.compound_id
+		1: (concentration) a float
+		2: (min_flux) a float
+		3: (max_flux) a float
+
+	media_output_id has a value which is a fba_tools.media_id
+workspace_name is a string
+media_id is a string
+compound_id is a string
+EditMediaResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	new_media_id has a value which is a fba_tools.media_id
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Edit models
+
+=back
+
+=cut
+
+sub edit_media
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to edit_media:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'edit_media');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN edit_media
+    $self->util_initialize_call($params,$ctx);
+	print Bio::KBase::utilities::to_json($params,1);
+	$return = Bio::KBase::ObjectAPI::functions::func_create_or_edit_media($params);
+	$self->util_finalize_call({
+		output => $return,
+		workspace => $params->{workspace},
+		report_name => $params->{media_output_id}.".report",
+	});
+    #END edit_media
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to edit_media:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'edit_media');
+    }
+    return($return);
+}
+
+
+
+
+=head2 excel_file_to_model
+
+  $return = $obj->excel_file_to_model($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub excel_file_to_model
+{
+    my $self = shift;
+    my($p) = @_;
+
+    my @_bad_arguments;
+    (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"p\" (value was \"$p\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to excel_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'excel_file_to_model');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN excel_file_to_model
+    $self->util_initialize_call($p,$ctx);
+    my $input = {
+		model_name => $p->{model_name},
+		workspace_name => $p->{workspace_name},
+		genome_workspace => $p->{workspace_name},
+		genome => $p->{genome},
+		reactions => [],
+		compounds => [],
+		biomass => $p->{biomass},
+	};
+	my $file_path = $self->util_get_file_path($p->{model_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+    my $sheets = $self->util_parse_excel($file_path);
+	my $compounds = (grep { $_ =~ /Compound/ } keys %$sheets)[0];
+	my $reactions = (grep { $_ =~ /Reaction/ } keys %$sheets)[0];
+    $input->{reactions} = $self->util_parse_input_table($sheets->{$reactions},[
+		["id",1],
+		["direction",0,"="],
+		["compartment",0,"c"],
+		["gpr",1],
+		["name",0,undef],
+		["enzyme",0,undef],
+		["pathway",0,undef],
+		["reference",0,undef],
+		["equation",0,undef],
+	]);
+	$input->{compounds} = $self->util_parse_input_table($sheets->{$compounds},[
+		["id",1],
+		["charge",0,undef],
+		["formula",0,undef],
+		["name",1],
+		["aliases",0,undef]
+	]);
+    $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
+    #END excel_file_to_model
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to excel_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'excel_file_to_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 sbml_file_to_model
+
+  $return = $obj->sbml_file_to_model($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub sbml_file_to_model
+{
+    my $self = shift;
+    my($p) = @_;
+
+    my @_bad_arguments;
+    (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"p\" (value was \"$p\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to sbml_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'sbml_file_to_model');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN sbml_file_to_model
+    $self->util_initialize_call($p,$ctx);
+    my $file_path = $self->util_get_file_path($p->{model_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+    my $input = {
+		sbml => "",
+		model_name => $p->{model_name},
+		workspace_name => $p->{workspace_name},
+		genome_workspace => $p->{workspace_name},
+		genome => $p->{genome},
+		reactions => [],
+		compounds => [],
+		biomass => $p->{biomass},
+	};
+	open(my $fh, "<", $file_path);
+	while (my $line = <$fh>) {
+		$input->{sbml} .= $line;
+	}
+	close($fh);
+	if (defined($p->{compounds_file})) {
+		my $cpd_file_path = $self->util_get_file_path($p->{compounds_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+		if (-e $cpd_file_path) {
+			$input->{compounds} = $self->util_parse_input_table($cpd_file_path,[
+				["id",1],
+				["charge",0,undef],
+				["formula",0,undef],
+				["name",1],
+				["aliases",0,undef]
+			]);
+		}
+	}
+    $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
+    #END sbml_file_to_model
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to sbml_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'sbml_file_to_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 tsv_file_to_model
+
+  $return = $obj->tsv_file_to_model($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.ModelCreationParams
+$return is a fba_tools.WorkspaceRef
+ModelCreationParams is a reference to a hash where the following keys are defined:
+	model_file has a value which is a fba_tools.File
+	model_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+	biomass has a value which is a reference to a list where each element is a string
+	compounds_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub tsv_file_to_model
+{
+    my $self = shift;
+    my($p) = @_;
+
+    my @_bad_arguments;
+    (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"p\" (value was \"$p\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to tsv_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'tsv_file_to_model');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN tsv_file_to_model
+    $self->util_initialize_call($p,$ctx);
+    my $input = {
+		model_name => $p->{model_name},
+		workspace_name => $p->{workspace_name},
+		genome_workspace => $p->{workspace_name},
+		genome => $p->{genome},
+		reactions => [],
+		compounds => [],
+		biomass => $p->{biomass},
+	};
+	my $file_path = $self->util_get_file_path($p->{model_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+    my $cpd_file_path = $self->util_get_file_path($p->{compounds_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+	$input->{reactions} = $self->util_parse_input_table($file_path,[
+		["id",1],
+		["direction",0,"="],
+		["compartment",0,"c"],
+		["gpr",1],
+		["name",0,undef],
+		["enzyme",0,undef],
+		["pathway",0,undef],
+		["reference",0,undef],
+		["equation",0,undef],
+	]);
+	$input->{compounds} = $self->util_parse_input_table($cpd_file_path,[
+		["id",1],
+		["charge",0,undef],
+		["formula",0,undef],
+		["name",1],
+		["aliases",0,undef]
+	]);
+    $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
+    #END tsv_file_to_model
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to tsv_file_to_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'tsv_file_to_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 model_to_excel_file
+
+  $f = $obj->model_to_excel_file($model)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$model is a fba_tools.ModelObjectSelectionParams
+$f is a fba_tools.File
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$model is a fba_tools.ModelObjectSelectionParams
+$f is a fba_tools.File
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub model_to_excel_file
+{
+    my $self = shift;
+    my($model) = @_;
+
+    my @_bad_arguments;
+    (ref($model) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"model\" (value was \"$model\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to model_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'model_to_excel_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($f);
+    #BEGIN model_to_excel_file
+    $self->util_initialize_call($model,$ctx);
+    $f = Bio::KBase::ObjectAPI::functions::func_export($model,{
+		object => "model",
+		format => "excel",
+		file_util => 1
+	});
+    #END model_to_excel_file
+    my @_bad_returns;
+    (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to model_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'model_to_excel_file');
+    }
+    return($f);
+}
+
+
+
+
+=head2 model_to_sbml_file
+
+  $f = $obj->model_to_sbml_file($model)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$model is a fba_tools.ModelObjectSelectionParams
+$f is a fba_tools.File
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$model is a fba_tools.ModelObjectSelectionParams
+$f is a fba_tools.File
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub model_to_sbml_file
+{
+    my $self = shift;
+    my($model) = @_;
+
+    my @_bad_arguments;
+    (ref($model) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"model\" (value was \"$model\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to model_to_sbml_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'model_to_sbml_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($f);
+    #BEGIN model_to_sbml_file
+    $self->util_initialize_call($model,$ctx);
+    $f = Bio::KBase::ObjectAPI::functions::func_export($model,{
+		object => "model",
+		format => "sbml",
+		file_util => 1
+	});
+    #END model_to_sbml_file
+    my @_bad_returns;
+    (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to model_to_sbml_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'model_to_sbml_file');
+    }
+    return($f);
+}
+
+
+
+
+=head2 model_to_tsv_file
+
+  $files = $obj->model_to_tsv_file($model)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$model is a fba_tools.ModelObjectSelectionParams
+$files is a fba_tools.ModelTsvFiles
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+ModelTsvFiles is a reference to a hash where the following keys are defined:
+	compounds_file has a value which is a fba_tools.File
+	reactions_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$model is a fba_tools.ModelObjectSelectionParams
+$files is a fba_tools.ModelTsvFiles
+ModelObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	model_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+ModelTsvFiles is a reference to a hash where the following keys are defined:
+	compounds_file has a value which is a fba_tools.File
+	reactions_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub model_to_tsv_file
+{
+    my $self = shift;
+    my($model) = @_;
+
+    my @_bad_arguments;
+    (ref($model) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"model\" (value was \"$model\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to model_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'model_to_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($files);
+    #BEGIN model_to_tsv_file
+    $self->util_initialize_call($model,$ctx);
+    $files = Bio::KBase::ObjectAPI::functions::func_export($model,{
+		object => "model",
+		format => "tsv",
+		file_util => 1
+	});
+    #END model_to_tsv_file
+    my @_bad_returns;
+    (ref($files) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"files\" (value was \"$files\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to model_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'model_to_tsv_file');
+    }
+    return($files);
+}
+
+
+
+
+=head2 export_model_as_excel_file
+
+  $output = $obj->export_model_as_excel_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_model_as_excel_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_model_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_model_as_excel_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_model_as_excel_file
+    $self->util_initialize_call($params,$ctx);
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "model",
+		format => "excel"
+	});
+    #END export_model_as_excel_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_model_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_model_as_excel_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 export_model_as_tsv_file
+
+  $output = $obj->export_model_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_model_as_tsv_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_model_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_model_as_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_model_as_tsv_file
+    $self->util_initialize_call($params,$ctx);
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "model",
+		format => "tsv"
+	});
+    #END export_model_as_tsv_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_model_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_model_as_tsv_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 export_model_as_sbml_file
+
+  $output = $obj->export_model_as_sbml_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_model_as_sbml_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_model_as_sbml_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_model_as_sbml_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_model_as_sbml_file
+    $self->util_initialize_call($params,$ctx);
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "model",
+		format => "sbml"
+	});
+    #END export_model_as_sbml_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_model_as_sbml_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_model_as_sbml_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 fba_to_excel_file
+
+  $f = $obj->fba_to_excel_file($fba)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$fba is a fba_tools.FBAObjectSelectionParams
+$f is a fba_tools.File
+FBAObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	fba_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$fba is a fba_tools.FBAObjectSelectionParams
+$f is a fba_tools.File
+FBAObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	fba_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub fba_to_excel_file
+{
+    my $self = shift;
+    my($fba) = @_;
+
+    my @_bad_arguments;
+    (ref($fba) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"fba\" (value was \"$fba\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to fba_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'fba_to_excel_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($f);
+    #BEGIN fba_to_excel_file
+    $self->util_initialize_call($fba,$ctx);
+    $f = Bio::KBase::ObjectAPI::functions::func_export($fba,{
+		object => "fba",
+		format => "excel",
+		file_util => 1
+	});
+    #END fba_to_excel_file
+    my @_bad_returns;
+    (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to fba_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'fba_to_excel_file');
+    }
+    return($f);
+}
+
+
+
+
+=head2 fba_to_tsv_file
+
+  $files = $obj->fba_to_tsv_file($fba)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$fba is a fba_tools.FBAObjectSelectionParams
+$files is a fba_tools.FBATsvFiles
+FBAObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	fba_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+FBATsvFiles is a reference to a hash where the following keys are defined:
+	compounds_file has a value which is a fba_tools.File
+	reactions_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$fba is a fba_tools.FBAObjectSelectionParams
+$files is a fba_tools.FBATsvFiles
+FBAObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	fba_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+FBATsvFiles is a reference to a hash where the following keys are defined:
+	compounds_file has a value which is a fba_tools.File
+	reactions_file has a value which is a fba_tools.File
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub fba_to_tsv_file
+{
+    my $self = shift;
+    my($fba) = @_;
+
+    my @_bad_arguments;
+    (ref($fba) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"fba\" (value was \"$fba\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to fba_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'fba_to_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($files);
+    #BEGIN fba_to_tsv_file
+    $self->util_initialize_call($fba,$ctx);
+    $files = Bio::KBase::ObjectAPI::functions::func_export($fba,{
+		object => "fba",
+		format => "tsv",
+		file_util => 1
+	});
+    #END fba_to_tsv_file
+    my @_bad_returns;
+    (ref($files) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"files\" (value was \"$files\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to fba_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'fba_to_tsv_file');
+    }
+    return($files);
+}
+
+
+
+
+=head2 export_fba_as_excel_file
+
+  $output = $obj->export_fba_as_excel_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_fba_as_excel_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_fba_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_fba_as_excel_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_fba_as_excel_file
+    $self->util_initialize_call($params,$ctx);
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "fba",
+		format => "excel"
+	});
+    #END export_fba_as_excel_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_fba_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_fba_as_excel_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 export_fba_as_tsv_file
+
+  $output = $obj->export_fba_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_fba_as_tsv_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_fba_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_fba_as_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_fba_as_tsv_file
+    $self->util_initialize_call($params,$ctx);
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "fba",
+		format => "tsv"
+	});
+    #END export_fba_as_tsv_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_fba_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_fba_as_tsv_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 tsv_file_to_media
+
+  $return = $obj->tsv_file_to_media($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.MediaCreationParams
+$return is a fba_tools.WorkspaceRef
+MediaCreationParams is a reference to a hash where the following keys are defined:
+	media_file has a value which is a fba_tools.File
+	media_name has a value which is a string
+	workspace_name has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.MediaCreationParams
+$return is a fba_tools.WorkspaceRef
+MediaCreationParams is a reference to a hash where the following keys are defined:
+	media_file has a value which is a fba_tools.File
+	media_name has a value which is a string
+	workspace_name has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub tsv_file_to_media
+{
+    my $self = shift;
+    my($p) = @_;
+
+    my @_bad_arguments;
+    (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"p\" (value was \"$p\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to tsv_file_to_media:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'tsv_file_to_media');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN tsv_file_to_media
+    $self->util_initialize_call($p,$ctx);
+    my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+    my $mediadata = $self->util_parse_input_table($file_path,[
+		["compounds",1],
+		["concentrations",0,"0.001"],
+		["minflux",0,"-100"],
+		["maxflux",0,"100"],
+	]);
+	my $input = {media_id => $p->{media_name},workspace => $p->{workspace_name}};
+	for (my $i=0; $i < @{$mediadata}; $i++) {
+		push(@{$input->{compounds}},$mediadata->[$i]->[0]);
+		push(@{$input->{maxflux}},$mediadata->[$i]->[3]);
+		push(@{$input->{minflux}},$mediadata->[$i]->[2]);
+		push(@{$input->{concentrations}},$mediadata->[$i]->[1]);
+	}
+    $return = Bio::KBase::ObjectAPI::functions::func_import_media($input);
+    #END tsv_file_to_media
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to tsv_file_to_media:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'tsv_file_to_media');
+    }
+    return($return);
+}
+
+
+
+
+=head2 excel_file_to_media
+
+  $return = $obj->excel_file_to_media($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.MediaCreationParams
+$return is a fba_tools.WorkspaceRef
+MediaCreationParams is a reference to a hash where the following keys are defined:
+	media_file has a value which is a fba_tools.File
+	media_name has a value which is a string
+	workspace_name has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.MediaCreationParams
+$return is a fba_tools.WorkspaceRef
+MediaCreationParams is a reference to a hash where the following keys are defined:
+	media_file has a value which is a fba_tools.File
+	media_name has a value which is a string
+	workspace_name has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub excel_file_to_media
+{
+    my $self = shift;
+    my($p) = @_;
+
+    my @_bad_arguments;
+    (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"p\" (value was \"$p\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to excel_file_to_media:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'excel_file_to_media');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN excel_file_to_media
+    $self->util_initialize_call($p,$ctx);
+    my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+    my $sheets = $self->util_parse_excel($file_path);
+	my $Media = (grep { $_ =~ /[Mm]edia/ } keys %$sheets)[0];
+    my $mediadata = $self->util_parse_input_table($sheets->{$Media},[
+		["compounds",1],
+		["concentrations",0,"0.001"],
+		["minflux",0,"-100"],
+		["maxflux",0,"100"],
+	]);
+	my $input = {media_id => $p->{media_name},workspace => $p->{workspace_name}};
+	for (my $i=0; $i < @{$mediadata}; $i++) {
+		push(@{$input->{compounds}},$mediadata->[$i]->[0]);
+		push(@{$input->{maxflux}},$mediadata->[$i]->[3]);
+		push(@{$input->{minflux}},$mediadata->[$i]->[2]);
+		push(@{$input->{concentrations}},$mediadata->[$i]->[1]);
+	}
+    $return = Bio::KBase::ObjectAPI::functions::func_import_media($input);
+    #END excel_file_to_media
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to excel_file_to_media:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'excel_file_to_media');
+    }
+    return($return);
+}
+
+
+
+
+=head2 media_to_tsv_file
+
+  $f = $obj->media_to_tsv_file($media)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$media is a fba_tools.MediaObjectSelectionParams
+$f is a fba_tools.File
+MediaObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	media_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$media is a fba_tools.MediaObjectSelectionParams
+$f is a fba_tools.File
+MediaObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	media_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub media_to_tsv_file
+{
+    my $self = shift;
+    my($media) = @_;
+
+    my @_bad_arguments;
+    (ref($media) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"media\" (value was \"$media\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to media_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'media_to_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($f);
+    #BEGIN media_to_tsv_file
+    $self->util_initialize_call($media,$ctx);
+    $f = Bio::KBase::ObjectAPI::functions::func_export($media,{
+		object => "media",
+		format => "tsv",
+		file_util => 1
+	});
+    #END media_to_tsv_file
+    my @_bad_returns;
+    (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to media_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'media_to_tsv_file');
+    }
+    return($f);
+}
+
+
+
+
+=head2 media_to_excel_file
+
+  $f = $obj->media_to_excel_file($media)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$media is a fba_tools.MediaObjectSelectionParams
+$f is a fba_tools.File
+MediaObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	media_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$media is a fba_tools.MediaObjectSelectionParams
+$f is a fba_tools.File
+MediaObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	media_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub media_to_excel_file
+{
+    my $self = shift;
+    my($media) = @_;
+
+    my @_bad_arguments;
+    (ref($media) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"media\" (value was \"$media\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to media_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'media_to_excel_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($f);
+    #BEGIN media_to_excel_file
+    $self->util_initialize_call($media,$ctx);
+    $f = Bio::KBase::ObjectAPI::functions::func_export($media,{
+		object => "media",
+		format => "excel",
+		file_util => 1
+	});
+    #END media_to_excel_file
+    my @_bad_returns;
+    (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to media_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'media_to_excel_file');
+    }
+    return($f);
+}
+
+
+
+
+=head2 export_media_as_excel_file
+
+  $output = $obj->export_media_as_excel_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_media_as_excel_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_media_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_media_as_excel_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_media_as_excel_file
+    $self->util_initialize_call($params,$ctx);
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "media",
+		format => "excel"
+	});
+    #END export_media_as_excel_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_media_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_media_as_excel_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 export_media_as_tsv_file
+
+  $output = $obj->export_media_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_media_as_tsv_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_media_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_media_as_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_media_as_tsv_file
+    $self->util_initialize_call($params,$ctx);
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "media",
+		format => "tsv"
+	});
+    #END export_media_as_tsv_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_media_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_media_as_tsv_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 tsv_file_to_phenotype_set
+
+  $return = $obj->tsv_file_to_phenotype_set($p)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$p is a fba_tools.PhenotypeSetCreationParams
+$return is a fba_tools.WorkspaceRef
+PhenotypeSetCreationParams is a reference to a hash where the following keys are defined:
+	phenotype_set_file has a value which is a fba_tools.File
+	phenotype_set_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$p is a fba_tools.PhenotypeSetCreationParams
+$return is a fba_tools.WorkspaceRef
+PhenotypeSetCreationParams is a reference to a hash where the following keys are defined:
+	phenotype_set_file has a value which is a fba_tools.File
+	phenotype_set_name has a value which is a string
+	workspace_name has a value which is a string
+	genome has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+WorkspaceRef is a reference to a hash where the following keys are defined:
+	ref has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub tsv_file_to_phenotype_set
+{
+    my $self = shift;
+    my($p) = @_;
+
+    my @_bad_arguments;
+    (ref($p) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"p\" (value was \"$p\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to tsv_file_to_phenotype_set:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'tsv_file_to_phenotype_set');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN tsv_file_to_phenotype_set
+    $self->util_initialize_call($p,$ctx);
+    my $file_path = $self->util_get_file_path($p->{phenotype_set_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+    my $phenodata = $self->util_parse_input_table($file_path,[
+		["geneko",0,"",";"],
+		["media",1,""],
+		["mediaws",1,""],
+		["addtlCpd",0,"",";"],
+		["growth",1]
+	]);
+	for (my $i=0; $i < @{$phenodata}; $i++) {
+		if (defined($phenodata->[$i]->[0]->[0]) && $phenodata->[$i]->[0]->[0] eq "none") {
+			$phenodata->[$i]->[0] = [];
+		}
+		if (defined($phenodata->[$i]->[3]->[0]) && $phenodata->[$i]->[3]->[0] eq "none") {
+			$phenodata->[$i]->[3] = [];
+		}
+	}
+    $return = Bio::KBase::ObjectAPI::functions::func_import_phenotype_set({
+    	data => $phenodata,
+    	phenotypeset_id => $p->{phenotype_set_name},
+    	workspace => $p->{workspace_name},
+    	genome => $p->{genome},
+    });
+    #END tsv_file_to_phenotype_set
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to tsv_file_to_phenotype_set:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'tsv_file_to_phenotype_set');
+    }
+    return($return);
+}
+
+
+
+
+=head2 phenotype_set_to_tsv_file
+
+  $f = $obj->phenotype_set_to_tsv_file($phenotype_set)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$phenotype_set is a fba_tools.PhenotypeSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$phenotype_set is a fba_tools.PhenotypeSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub phenotype_set_to_tsv_file
+{
+    my $self = shift;
+    my($phenotype_set) = @_;
+
+    my @_bad_arguments;
+    (ref($phenotype_set) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"phenotype_set\" (value was \"$phenotype_set\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to phenotype_set_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'phenotype_set_to_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($f);
+    #BEGIN phenotype_set_to_tsv_file
+    $self->util_initialize_call($phenotype_set,$ctx);
+    $f = Bio::KBase::ObjectAPI::functions::func_export($phenotype_set,{
+		object => "phenotype",
+		format => "tsv",
+		file_util => 1
+	});
+    #END phenotype_set_to_tsv_file
+    my @_bad_returns;
+    (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to phenotype_set_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'phenotype_set_to_tsv_file');
+    }
+    return($f);
+}
+
+
+
+
+=head2 export_phenotype_set_as_tsv_file
+
+  $output = $obj->export_phenotype_set_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_phenotype_set_as_tsv_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_phenotype_set_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_phenotype_set_as_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_phenotype_set_as_tsv_file
+    $self->util_initialize_call($params,$ctx);
+	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "phenotype",
+		format => "tsv"
+	});
+    #END export_phenotype_set_as_tsv_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_phenotype_set_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_phenotype_set_as_tsv_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 phenotype_simulation_set_to_excel_file
+
+  $f = $obj->phenotype_simulation_set_to_excel_file($pss)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$pss is a fba_tools.PhenotypeSimulationSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSimulationSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_simulation_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$pss is a fba_tools.PhenotypeSimulationSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSimulationSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_simulation_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub phenotype_simulation_set_to_excel_file
+{
+    my $self = shift;
+    my($pss) = @_;
+
+    my @_bad_arguments;
+    (ref($pss) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"pss\" (value was \"$pss\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to phenotype_simulation_set_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'phenotype_simulation_set_to_excel_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($f);
+    #BEGIN phenotype_simulation_set_to_excel_file
+    $self->util_initialize_call($pss,$ctx);
+    $f = Bio::KBase::ObjectAPI::functions::func_export($pss,{
+		object => "phenosim",
+		format => "excel",
+		file_util => 1
+	});
+    #END phenotype_simulation_set_to_excel_file
+    my @_bad_returns;
+    (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to phenotype_simulation_set_to_excel_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'phenotype_simulation_set_to_excel_file');
+    }
+    return($f);
+}
+
+
+
+
+=head2 phenotype_simulation_set_to_tsv_file
+
+  $f = $obj->phenotype_simulation_set_to_tsv_file($pss)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$pss is a fba_tools.PhenotypeSimulationSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSimulationSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_simulation_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$pss is a fba_tools.PhenotypeSimulationSetObjectSelectionParams
+$f is a fba_tools.File
+PhenotypeSimulationSetObjectSelectionParams is a reference to a hash where the following keys are defined:
+	workspace_name has a value which is a string
+	phenotype_simulation_set_name has a value which is a string
+	save_to_shock has a value which is a fba_tools.boolean
+boolean is an int
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub phenotype_simulation_set_to_tsv_file
+{
+    my $self = shift;
+    my($pss) = @_;
+
+    my @_bad_arguments;
+    (ref($pss) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"pss\" (value was \"$pss\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to phenotype_simulation_set_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'phenotype_simulation_set_to_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($f);
+    #BEGIN phenotype_simulation_set_to_tsv_file
+    $self->util_initialize_call($pss,$ctx);
+    $f = Bio::KBase::ObjectAPI::functions::func_export($pss,{
+		object => "phenosim",
+		format => "tsv",
+		file_util => 1
+	});
+    #END phenotype_simulation_set_to_tsv_file
+    my @_bad_returns;
+    (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to phenotype_simulation_set_to_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'phenotype_simulation_set_to_tsv_file');
+    }
+    return($f);
+}
+
+
+
+
+=head2 export_phenotype_simulation_set_as_excel_file
+
+  $output = $obj->export_phenotype_simulation_set_as_excel_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_phenotype_simulation_set_as_excel_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_phenotype_simulation_set_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_phenotype_simulation_set_as_excel_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_phenotype_simulation_set_as_excel_file
+    $self->util_initialize_call($params,$ctx);
+	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "phenosim",
+		format => "excel"
+	});
+    #END export_phenotype_simulation_set_as_excel_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_phenotype_simulation_set_as_excel_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_phenotype_simulation_set_as_excel_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 export_phenotype_simulation_set_as_tsv_file
+
+  $output = $obj->export_phenotype_simulation_set_as_tsv_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ExportParams
+$output is a fba_tools.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub export_phenotype_simulation_set_as_tsv_file
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to export_phenotype_simulation_set_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_phenotype_simulation_set_as_tsv_file');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN export_phenotype_simulation_set_as_tsv_file
+    $self->util_initialize_call($params,$ctx);
+	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+		object => "phenosim",
+		format => "tsv"
+	});
+    #END export_phenotype_simulation_set_as_tsv_file
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to export_phenotype_simulation_set_as_tsv_file:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'export_phenotype_simulation_set_as_tsv_file');
+    }
+    return($output);
+}
+
+
+
+
+=head2 bulk_export_objects
+
+  $output = $obj->bulk_export_objects($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.BulkExportObjectsParams
+$output is a fba_tools.BulkExportObjectsResult
+BulkExportObjectsParams is a reference to a hash where the following keys are defined:
+	refs has a value which is a reference to a list where each element is a string
+	all_models has a value which is a fba_tools.bool
+	all_fba has a value which is a fba_tools.bool
+	all_media has a value which is a fba_tools.bool
+	all_phenotypes has a value which is a fba_tools.bool
+	all_phenosims has a value which is a fba_tools.bool
+	model_format has a value which is a string
+	fba_format has a value which is a string
+	media_format has a value which is a string
+	phenotype_format has a value which is a string
+	phenosim_format has a value which is a string
+bool is an int
+BulkExportObjectsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.BulkExportObjectsParams
+$output is a fba_tools.BulkExportObjectsResult
+BulkExportObjectsParams is a reference to a hash where the following keys are defined:
+	refs has a value which is a reference to a list where each element is a string
+	all_models has a value which is a fba_tools.bool
+	all_fba has a value which is a fba_tools.bool
+	all_media has a value which is a fba_tools.bool
+	all_phenotypes has a value which is a fba_tools.bool
+	all_phenosims has a value which is a fba_tools.bool
+	model_format has a value which is a string
+	fba_format has a value which is a string
+	media_format has a value which is a string
+	phenotype_format has a value which is a string
+	phenosim_format has a value which is a string
+bool is an int
+BulkExportObjectsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub bulk_export_objects
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to bulk_export_objects:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'bulk_export_objects');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN bulk_export_objects
+    $self->util_initialize_call($params,$ctx);
+	$output = Bio::KBase::ObjectAPI::functions::func_bulk_export($params,{});
+	Bio::KBase::utilities::add_report_file({
+		path => $output->{path},
+		name => $output->{name},
+		description => $output->{description},
+	});
+	$self->util_finalize_call({
+		output => $output,
+		workspace => $params->{workspace},
+		report_name => Data::UUID->new()->create_str(),
+	});
+    #END bulk_export_objects
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to bulk_export_objects:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'bulk_export_objects');
+    }
+    return($output);
+}
+
+
+
+
+=head2 status 
+
+  $return = $obj->status()
 
 =over 4
 
@@ -1482,14 +4227,19 @@ $return is a string
 
 =item Description
 
-Return the module version. This is a Semantic Versioning number.
+Return the module status. This is a structure including Semantic Versioning number, state and git info.
 
 =back
 
 =cut
 
-sub version {
-    return $VERSION;
+sub status {
+    my($return);
+    #BEGIN_STATUS
+    $return = {"state" => "OK", "message" => "", "version" => $VERSION,
+               "git_url" => $GIT_URL, "git_commit_hash" => $GIT_COMMIT_HASH};
+    #END_STATUS
+    return($return);
 }
 
 =head1 TYPES
@@ -3216,6 +5966,714 @@ a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a fba_tools.ws_report_id
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+
+=end text
+
+=back
+
+
+
+=head2 EditMediaParams
+
+=over 4
+
+
+
+=item Description
+
+EditMediaParams object: arguments for the edit model function
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+media_output_id has a value which is a fba_tools.media_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+compounds_to_remove has a value which is a reference to a list where each element is a fba_tools.compound_id
+compounds_to_change has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+compounds_to_add has a value which is a reference to a list where each element is a reference to a list containing 4 items:
+	0: a fba_tools.compound_id
+	1: (concentration) a float
+	2: (min_flux) a float
+	3: (max_flux) a float
+
+media_output_id has a value which is a fba_tools.media_id
+
+
+=end text
+
+=back
+
+
+
+=head2 EditMediaResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+new_media_id has a value which is a fba_tools.media_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+new_media_id has a value which is a fba_tools.media_id
+
+
+=end text
+
+=back
+
+
+
+=head2 boolean
+
+=over 4
+
+
+
+=item Description
+
+A boolean - 0 for false, 1 for true.
+@range (0, 1)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+an int
+</pre>
+
+=end html
+
+=begin text
+
+an int
+
+=end text
+
+=back
+
+
+
+=head2 File
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 WorkspaceRef
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ExportParams
+
+=over 4
+
+
+
+=item Description
+
+input and output structure functions for standard downloaders
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+input_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+input_ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ExportOutput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+shock_id has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelCreationParams
+
+=over 4
+
+
+
+=item Description
+
+compounds_file is not used for excel file creations
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+model_file has a value which is a fba_tools.File
+model_name has a value which is a string
+workspace_name has a value which is a string
+genome has a value which is a string
+biomass has a value which is a reference to a list where each element is a string
+compounds_file has a value which is a fba_tools.File
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+model_file has a value which is a fba_tools.File
+model_name has a value which is a string
+workspace_name has a value which is a string
+genome has a value which is a string
+biomass has a value which is a reference to a list where each element is a string
+compounds_file has a value which is a fba_tools.File
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelObjectSelectionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+model_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+model_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelTsvFiles
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+compounds_file has a value which is a fba_tools.File
+reactions_file has a value which is a fba_tools.File
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+compounds_file has a value which is a fba_tools.File
+reactions_file has a value which is a fba_tools.File
+
+
+=end text
+
+=back
+
+
+
+=head2 FBAObjectSelectionParams
+
+=over 4
+
+
+
+=item Description
+
+****** FBA Result Converters ******
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+fba_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+fba_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 FBATsvFiles
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+compounds_file has a value which is a fba_tools.File
+reactions_file has a value which is a fba_tools.File
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+compounds_file has a value which is a fba_tools.File
+reactions_file has a value which is a fba_tools.File
+
+
+=end text
+
+=back
+
+
+
+=head2 MediaCreationParams
+
+=over 4
+
+
+
+=item Description
+
+****** Media Converters *********
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+media_file has a value which is a fba_tools.File
+media_name has a value which is a string
+workspace_name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+media_file has a value which is a fba_tools.File
+media_name has a value which is a string
+workspace_name has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 MediaObjectSelectionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+media_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+media_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 PhenotypeSetCreationParams
+
+=over 4
+
+
+
+=item Description
+
+****** Phenotype Data Converters *******
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+phenotype_set_file has a value which is a fba_tools.File
+phenotype_set_name has a value which is a string
+workspace_name has a value which is a string
+genome has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+phenotype_set_file has a value which is a fba_tools.File
+phenotype_set_name has a value which is a string
+workspace_name has a value which is a string
+genome has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 PhenotypeSetObjectSelectionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+phenotype_set_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+phenotype_set_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 PhenotypeSimulationSetObjectSelectionParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+phenotype_simulation_set_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace_name has a value which is a string
+phenotype_simulation_set_name has a value which is a string
+save_to_shock has a value which is a fba_tools.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 BulkExportObjectsParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+refs has a value which is a reference to a list where each element is a string
+all_models has a value which is a fba_tools.bool
+all_fba has a value which is a fba_tools.bool
+all_media has a value which is a fba_tools.bool
+all_phenotypes has a value which is a fba_tools.bool
+all_phenosims has a value which is a fba_tools.bool
+model_format has a value which is a string
+fba_format has a value which is a string
+media_format has a value which is a string
+phenotype_format has a value which is a string
+phenosim_format has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+refs has a value which is a reference to a list where each element is a string
+all_models has a value which is a fba_tools.bool
+all_fba has a value which is a fba_tools.bool
+all_media has a value which is a fba_tools.bool
+all_phenotypes has a value which is a fba_tools.bool
+all_phenosims has a value which is a fba_tools.bool
+model_format has a value which is a string
+fba_format has a value which is a string
+media_format has a value which is a string
+phenotype_format has a value which is a string
+phenosim_format has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 BulkExportObjectsResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
 
 
 =end text

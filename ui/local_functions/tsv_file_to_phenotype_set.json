@@ -1,0 +1,20 @@
+{
+    "name" : "Save PhenotypeSet from TSV File",
+    "short_description" : 
+        "Save PhenotypeSet from TSV File",
+
+    "long_description" : 
+        "",
+
+    "tags" : {
+        "categories" : [],
+        "input": {
+            "file_types": ["tsv"],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": ["KBasePhenotypes.PhenotypeSet"]
+        }
+    }
+}
