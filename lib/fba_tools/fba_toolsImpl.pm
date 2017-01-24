@@ -87,14 +87,6 @@ sub util_list_objects {
 	return Bio::KBase::kbaseenv::list_objects($args);
 }
 
-sub util_get_file_path {
-	my($self,$filename) = @_;
-	if (!-e $filename) {
-		$filename = Bio::KBase::utilities::conf("fba_tools","scratch")."/".$filename;
-	}
-	return $filename;
-}
-
 sub util_package_for_download {
 	my($self,$params) = @_;
 	my $dataUtil = Bio::KBase::kbaseenv::data_file_client();

@@ -2617,7 +2617,29 @@ sub func_importmodel {
 		    					$products .= "(".$stoich.") ".$spec;
 		    				}
 	    				}
-	    			}	
+	    			}
+	    		} elsif ($node->getNodeName() eq "fbc:geneProductAssociation") {
+	    			my @newnode = $node->getElementsByTagName("fbc:and",0);
+	    			my $genes = [];
+	    			if (defined($newnode[0])) {
+		    			foreach my $species ($newnode[0]->getElementsByTagName("fbc:geneProductRef",0)){
+		    				foreach my $attr ($species->getAttributes()->getValues()) {
+		    					if ($attr->getName() eq "fbc:geneProduct") {
+		    						push(@{$genes},$attr->getValue());
+		    					}	
+		    				}
+		    			}
+		    			$gpr = "(".join(" and ",@{$genes}).")";
+	    			} else {
+	    				foreach my $species ($node->getElementsByTagName("fbc:geneProductRef",0)){
+		    				foreach my $attr ($species->getAttributes()->getValues()) {
+		    					if ($attr->getName() eq "fbc:geneProduct") {
+		    						push(@{$genes},$attr->getValue());
+		    					}	
+		    				}
+		    			}
+	    				$gpr = "(".join(" or ",@{$genes}).")";
+	    			}
 	    		} elsif ($node->getNodeName() eq "notes") {
 	    			foreach my $html ($node->getElementsByTagName("*",0)){
 	    				my $nodes = $html->getChildNodes();
