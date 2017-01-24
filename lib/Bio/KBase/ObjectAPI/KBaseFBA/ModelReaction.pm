@@ -38,8 +38,8 @@ has genEquationCode => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass =
 has revGenEquationCode => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildgenrevequationcode' );
 has equationFormula => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildequationformula' );
 has complexString => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcomplexString' );
+has gapfillString => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildgapfillString' );
 has stoichiometry => ( is => 'rw', isa => 'ArrayRef', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstoichiometry' );
-
 has reaction => (is => 'rw', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_reaction', clearer => 'clear_reaction', isa => 'Ref', weak_ref => 1);
 
 #***********************************************************************************************************
@@ -168,6 +168,19 @@ sub _buildgprString {
 		$gpr = "Unknown";
 	}
 	return $gpr;
+}
+sub _buildgapfillString {
+	my ($self) = @_;
+	my $output = "";
+	foreach my $key (@{$self->gapfill_data()}) {
+		if ($self->gapfill_data()->{$key}->{0}->[1] == 1) {
+			if (length($output) > 0) {
+				$gpr .= "|";	
+			}
+			$output .= $self->gapfill_data()->{$key}->{0}->[0]."(".$key.")";
+		}
+	}
+	return $output;
 }
 sub _buildexchangeGPRString {
 	my ($self) = @_;
