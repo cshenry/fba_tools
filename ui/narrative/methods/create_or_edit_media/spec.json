@@ -2,7 +2,7 @@
    "name" : "Create or Edit Media",
    "ver" : "1.0.0",
    "authors" : ["chenry@mcs.anl.gov"],
-   "contact" : "help@kbase.us",
+   "contact" : "http://kbase.us/contact-us/",
    "visble" : true,
    "categories" : ["active","metabolic_modeling"],
    "widgets" : {
