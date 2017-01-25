@@ -175,7 +175,7 @@ sub _buildgapfillString {
 	foreach my $key (@{$self->gapfill_data()}) {
 		if ($self->gapfill_data()->{$key}->{0}->[1] == 1) {
 			if (length($output) > 0) {
-				$gpr .= "|";	
+				$output .= "|";	
 			}
 			$output .= $self->gapfill_data()->{$key}->{0}->[0]."(".$key.")";
 		}
