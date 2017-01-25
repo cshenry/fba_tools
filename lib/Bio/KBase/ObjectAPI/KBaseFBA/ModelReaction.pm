@@ -172,7 +172,7 @@ sub _buildgprString {
 sub _buildgapfillString {
 	my ($self) = @_;
 	my $output = "";
-	foreach my $key (@{$self->gapfill_data()}) {
+	foreach my $key (keys(%{$self->gapfill_data()})) {
 		if ($self->gapfill_data()->{$key}->{0}->[1] == 1) {
 			if (length($output) > 0) {
 				$output .= "|";	
