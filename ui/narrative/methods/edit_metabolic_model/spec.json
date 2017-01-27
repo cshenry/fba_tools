@@ -805,7 +805,7 @@
            "target_property": "type"
          },
          {
-           "input_parameter": "fbamodel_id",
+           "input_parameter": "fbamodel_output_id",
            "target_property": "obj"
          },
          {
