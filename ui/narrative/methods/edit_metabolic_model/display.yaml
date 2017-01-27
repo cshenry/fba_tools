@@ -234,9 +234,9 @@ parameter-groups:
       Use this interface to alter an existing reaction in the model           
   reactions_to_add:
     ui-name: |
-      Alter existing reactions in model
+      Add new reaction to model
     short-hint: |
-      Use this interface to alter an existing reaction in the model           
+      Use this interface to add a new reaction to the model       
   edit_compound_stoichiometry:
     ui-name: |
       Alter the stoichiometry of reactions

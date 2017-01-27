@@ -1786,6 +1786,11 @@ sub edit_metabolic_model {
 	}
 	Bio::KBase::utilities::log("Changing specified compounds");
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
+		if (defined($params->{compounds_to_change}->[$i]->{compound_id})) {
+			if (ref($params->{compounds_to_change}->[$i]->{compound_id}) eq "ARRAY") {
+				$params->{compounds_to_change}->[$i]->{compound_id} = $params->{compounds_to_change}->[$i]->{compound_id}->[0];
+			}
+		}
 		my $id = $params->{compounds_to_change}->[$i]->{compound_id};
 		if (defined($translation->{$id})) {
 			$id = $translation->{$id};
@@ -1828,6 +1833,16 @@ sub edit_metabolic_model {
 	}
 	Bio::KBase::utilities::log("Changing specified biomass compounds");
 	for (my $i=0; $i < @{$params->{biomass_compounds_to_change}}; $i++) {
+		if (defined($params->{biomass_compounds_to_change}->[$i]->{biomass_id})) {
+			if (ref($params->{biomass_compounds_to_change}->[$i]->{biomass_id}) eq "ARRAY") {
+				$params->{biomass_compounds_to_change}->[$i]->{biomass_id} = $params->{biomass_compounds_to_change}->[$i]->{biomass_id}->[0];
+			}
+		}
+		if (defined($params->{biomass_compounds_to_change}->[$i]->{biomass_compound_id})) {
+			if (ref($params->{biomass_compounds_to_change}->[$i]->{biomass_compound_id}) eq "ARRAY") {
+				$params->{biomass_compounds_to_change}->[$i]->{biomass_compound_id} = $params->{biomass_compounds_to_change}->[$i]->{biomass_compound_id}->[0];
+			}
+		}
 		my $biocpd = $params->{biomass_compounds_to_change}->[$i];
 		my $bio = $self->getObject("biomasses",$biocpd->{biomass_id});
 		if (defined($bio)) {
@@ -1880,6 +1895,11 @@ sub edit_metabolic_model {
 	}
 	Bio::KBase::utilities::log("Adding reactions");
 	for (my $i=0; $i < @{$params->{reactions_to_add}}; $i++) {
+		if (defined($params->{reactions_to_add}->[$i]->{reaction_compartment_id})) {
+			if (ref($params->{reactions_to_add}->[$i]->{reaction_compartment_id}) eq "ARRAY") {
+				$params->{reactions_to_add}->[$i]->{reaction_compartment_id} = $params->{reactions_to_add}->[$i]->{reaction_compartment_id}->[0];
+			}
+		}
 		my $rxnadd = $params->{reactions_to_add}->[$i];
 		$rxnadd->{add_reaction_id} =~ s/_[a-z]\d+$//;
 		my $rxnobj = $self->template()->getObject("reactions",$rxnadd->{add_reaction_id}."_".substr($rxnadd->{reaction_compartment_id},0,1));
@@ -1937,6 +1957,11 @@ sub edit_metabolic_model {
 	Bio::KBase::utilities::log("Changing reactions");
 	my $rxntranslation;
 	for (my $i=0; $i < @{$params->{reactions_to_change}}; $i++) {
+		if (defined($params->{reactions_to_change}->[$i]->{change_reaction_id})) {
+			if (ref($params->{reactions_to_change}->[$i]->{change_reaction_id}) eq "ARRAY") {
+				$params->{reactions_to_change}->[$i]->{change_reaction_id} = $params->{reactions_to_change}->[$i]->{change_reaction_id}->[0];
+			}
+		}
 		my $mdlrxn = $self->getObject("modelreactions",$params->{reactions_to_change}->[$i]->{change_reaction_id});
 		if (defined($mdlrxn)) {
 			if (defined($params->{reactions_to_change}->[$i]->{change_reaction_name})) {
@@ -1954,6 +1979,16 @@ sub edit_metabolic_model {
 	}
 	Bio::KBase::utilities::log("Editing reactants");
 	for (my $i=0; $i < @{$params->{edit_compound_stoichiometry}}; $i++) {
+		if (defined($params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id})) {
+			if (ref($params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id}) eq "ARRAY") {
+				$params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id} = $params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id}->[0];
+			}
+		}
+		if (defined($params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id})) {
+			if (ref($params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id}) eq "ARRAY") {
+				$params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id} = $params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id}->[0];
+			}
+		}
 		if (defined($rxntranslation->{$params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id}})) {
 			$params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id} = $rxntranslation->{$params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id}};
 		}
