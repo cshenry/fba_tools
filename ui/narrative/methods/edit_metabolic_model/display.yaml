@@ -141,11 +141,11 @@ parameters :
             New biomas compound coefficient
         short-hint : |
             Coefficient for specified compound in specified biomass (set to zero to remove compound from biomass, negative values for consumption, positive values for production)
-    remove_reaction_id :
+    reactions_to_remove :
         ui-name : |
-            Reaction to remove
+            Reactions to remove
         short-hint : |
-            ID of existing model reaction to remove
+            ID of existing model reactions to remove
     change_reaction_id :
         ui-name : |
             Reaction to change
@@ -227,11 +227,6 @@ parameter-groups:
       Biomass objective compounds to change
     short-hint: |
       Use this interface to adjust the coefficient for a single compound in a single biomass objective function - can be used to add or remove a compound from a biomass          
-  reactions_to_remove:
-    ui-name: |
-      Remove a reaction from the model
-    short-hint: |
-      Use this interface to remove an existing reaction from a model           
   reactions_to_change:
     ui-name: |
       Alter existing reactions in model

@@ -67,16 +67,6 @@
             "with_border": true
         },
         {
-            "id": "reactions_to_remove",
-            "parameters": [
-                "remove_reaction_id"
-            ],
-            "optional": true,
-            "advanced": false,
-            "allow_multiple": true,
-            "with_border": true
-        },
-        {
             "id": "reactions_to_change",
             "parameters": [
                 "change_reaction_id",
@@ -125,17 +115,13 @@
 				]
 			},
 			"advanced" : false,
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"id" : "fbamodel_id",
 			"optional" : false,
 			"allow_multiple" : false
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "fbamodel_output_id",
 			"optional" : false,
@@ -149,9 +135,7 @@
 			}
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "add_compound_id",
 			"field_type" : "text",
@@ -162,9 +146,7 @@
 			}
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "add_compound_name",
 			"field_type" : "text",
@@ -179,18 +161,14 @@
 				"validate_as" : "float"
 			},
 			"id" : "add_compound_charge",
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"field_type" : "text",
 			"optional" : true,
 			"allow_multiple" : false
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "add_compound_formula",
 			"field_type" : "text",
@@ -206,9 +184,7 @@
 			"field_type" : "textsubdata",
 			"id" : "compound_id",
 			"advanced" : false,
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"text_options" : {
 				"valid_ws_types" : []
 			},
@@ -234,9 +210,7 @@
 			}
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "compound_name",
 			"field_type" : "text",
@@ -251,18 +225,14 @@
 				"validate_as" : "float"
 			},
 			"id" : "compound_charge",
-			"default_values" : [
-				"0.001"
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"field_type" : "text",
 			"optional" : true,
 			"allow_multiple" : false
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "compound_formula",
 			"field_type" : "text",
@@ -273,9 +243,7 @@
 			}
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "biomass_name",
 			"field_type" : "text",
@@ -382,9 +350,7 @@
 			"field_type" : "textsubdata",
 			"id" : "biomass_id",
 			"advanced" : false,
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"text_options" : {
 				"valid_ws_types" : []
 			},
@@ -415,9 +381,7 @@
 			"field_type" : "textsubdata",
 			"id" : "biomass_compound_id",
 			"advanced" : false,
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"text_options" : {
 				"valid_ws_types" : []
 			},
@@ -456,10 +420,10 @@
 			"allow_multiple" : false
 		},
 		{
-			"allow_multiple" : false,
+			"allow_multiple" : true,
 			"optional" : true,
 			"field_type" : "textsubdata",
-			"id" : "remove_reaction_id",
+			"id" : "reactions_to_remove",
 			"advanced" : false,
 			"default_values" : [
 				""
@@ -494,9 +458,7 @@
 			"field_type" : "textsubdata",
 			"id" : "change_reaction_id",
 			"advanced" : false,
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"text_options" : {
 				"valid_ws_types" : []
 			},
@@ -522,9 +484,7 @@
 			}
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "change_reaction_name",
 			"field_type" : "text",
@@ -562,17 +522,13 @@
          },
          "id" : "change_reaction_direction",
          "advanced" : false,
-         "default_values" : [
-            ""
-         ],
+         "default_values" : [],
          "text_options" : {
             "valid_ws_types" : []
          }
       	},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "change_reaction_gpr",
 			"field_type" : "text",
@@ -583,9 +539,7 @@
 			}
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "add_reaction_id",
 			"field_type" : "text",
@@ -623,17 +577,13 @@
          },
          "id" : "add_reaction_direction",
          "advanced" : false,
-         "default_values" : [
-            "="
-         ],
+         "default_values" : [],
          "text_options" : {
             "valid_ws_types" : []
          }
       	},
       	{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "add_reaction_name",
 			"field_type" : "text",
@@ -644,9 +594,7 @@
 			}
 		},
 		{
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"id" : "add_reaction_gpr",
 			"field_type" : "text",
@@ -695,9 +643,7 @@
 			"field_type" : "textsubdata",
 			"id" : "reaction_compartment_id",
 			"advanced" : false,
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"text_options" : {
 				"valid_ws_types" : []
 			},
@@ -728,9 +674,7 @@
 			"field_type" : "textsubdata",
 			"id" : "stoich_reaction_id",
 			"advanced" : false,
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"text_options" : {
 				"valid_ws_types" : []
 			},
@@ -761,9 +705,7 @@
 			"field_type" : "textsubdata",
 			"id" : "stoich_compound_id",
 			"advanced" : false,
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"text_options" : {
 				"valid_ws_types" : []
 			},
@@ -793,9 +735,7 @@
 				"validate_as" : "float"
 			},
 			"id" : "stoich_coefficient",
-			"default_values" : [
-				""
-			],
+			"default_values" : [],
 			"advanced" : false,
 			"field_type" : "text",
 			"optional" : true,

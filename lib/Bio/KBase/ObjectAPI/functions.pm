@@ -1527,7 +1527,7 @@ sub func_create_or_edit_media {
 
 sub func_edit_metabolic_model {
 	my ($params) = @_;
-    $params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","data"],{
+    $params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
     	compounds_to_add => [],
     	compounds_to_change => [],
     	biomasses_to_add => [],
@@ -1557,22 +1557,15 @@ sub func_edit_metabolic_model {
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	my $message = "Name of edited model: ".$params->{fbamodel_output_id}."\n";
 	$message .= "Starting from: ".$params->{fbamodel_id}."\n";	
-	$message .= "Added:".join("\n",@{$editresults->{reactions_added}})."\n";
-	$message .= "Removed:".join("\n",@{$editresults->{reactions_removed}})."\n";
-	$message .= "Changed:".join("\n",@{$editresults->{reactions_modified}})."\n";
-	$message .= "Added biomass:";
-	for (my $i=0; $i < @{$editresults->{biomass_added}}; $i++) {
-		$message .= $editresults->{biomass_added}->[$i]->[0].":".$editresults->{biomass_added}->[$i]->[1].";";
-	}
-	$message .= "\nRemoved biomass:";
-	for (my $i=0; $i < @{$editresults->{biomass_removed}}; $i++) {
-		$message .= $editresults->{biomass_removed}->[$i]->[0].":".$editresults->{biomass_removed}->[$i]->[1].";";
-	}
-	$message .= "\nChanged biomass:";
-	for (my $i=0; $i < @{$editresults->{biomass_changed}}; $i++) {
-		$message .= $editresults->{biomass_changed}->[$i]->[0].":".$editresults->{biomass_changed}->[$i]->[1].";";
-	}
-	$message .= "\n";
+	$message .= "Compounds added:".join("\n",@{$editresults->{compounds_added}})."\n";
+	$message .= "Compounds changed:".join("\n",@{$editresults->{compounds_changed}})."\n";
+	$message .= "Biomass added:".join("\n",@{$editresults->{biomass_added}})."\n";
+	$message .= "Biomass compounds removed:".join("\n",@{$editresults->{biomass_compounds_removed}})."\n";
+	$message .= "Biomass compounds added:".join("\n",@{$editresults->{biomass_compounds_added}})."\n";
+	$message .= "Biomass compounds changed:".join("\n",@{$editresults->{biomass_compounds_changed}})."\n";
+	$message .= "Reactions added:".join("\n",@{$editresults->{reactions_added}})."\n";
+	$message .= "Reactions changed:".join("\n",@{$editresults->{reactions_changed}})."\n";
+	$message .= "Reactions removed:".join("\n",@{$editresults->{reactions_removed}})."\n";
 	Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
    	return {
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},

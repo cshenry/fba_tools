@@ -1855,20 +1855,20 @@ sub edit_metabolic_model {
 	for (my $i=0; $i < @{$params->{reactions_to_remove}}; $i++) {
 		my $rxnobj = $self->getObject("modelreactions",$params->{reactions_to_remove}->[$i]);
     	if (defined($rxnobj)) {
-    		if (!defined($self->deleted_reactions()->{$rxnobj->id()})) {
-    			$self->deleted_reactions()->{$rxnobj->id()} = $rxnobj->serializeToDB();
-    		}
-    		$self->deleted_reactions()->{$rxnobj->id()}->{edits}->{$uuid} = {
-				status => "deleted",
-				reaction => $params->{reactions_to_remove}->[$i],
-			    compartment => $rxnobj->modelCompartmentLabel(),
-			    direction => [$rxnobj->direction(),undef],
-			    gpr => [$rxnobj->gprString(),undef],
-			    equation => [$rxnobj->equation(),undef],
-			    pathway => [$rxnobj->pathway(),undef],
-			    name => [$rxnobj->name(),undef],
-			    reference => [$rxnobj->reference(),undef],
-			};
+#    		if (!defined($self->deleted_reactions()->{$rxnobj->id()})) {
+#    			$self->deleted_reactions()->{$rxnobj->id()} = $rxnobj->serializeToDB();
+#    		}
+#    		$self->deleted_reactions()->{$rxnobj->id()}->{edits}->{$uuid} = {
+#				status => "deleted",
+#				reaction => $params->{reactions_to_remove}->[$i],
+#			    compartment => $rxnobj->modelCompartmentLabel(),
+#			    direction => [$rxnobj->direction(),undef],
+#			    gpr => [$rxnobj->gprString(),undef],
+#			    equation => [$rxnobj->equation(),undef],
+#			    pathway => [$rxnobj->pathway(),undef],
+#			    name => [$rxnobj->name(),undef],
+#			    reference => [$rxnobj->reference(),undef],
+#			};
     		$self->remove("modelreactions",$rxnobj);
     		push(@{$output->{reactions_removed}},$params->{reactions_to_remove}->[$i]);
     	}
@@ -1905,17 +1905,17 @@ sub edit_metabolic_model {
 		if (defined($rxnobj)) {
 			my $reactants = $rxnobj->templateReactionReagents();
 			for (my $i=0; $i < @{$reactants}; $i++) {
-				my $reactantobj = $self->getObject("modelcompounds",$reactants->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1));
+				my $reactantobj = $self->getObject("modelcompounds",$reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1));
 				if (!defined($reactantobj)) {
 					$reactantobj = $self->add("modelcompounds",{
-						id => $reactants->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1),
-						compound_ref => "~/template/compounds/".$reactants->templatecompcompound()->templatecompound()->id(),
+						id => $reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1),
+						compound_ref => "~/template/compounds/".$reactants->[$i]->templatecompcompound()->templatecompound()->id(),
 						aliases => [],
-						name => $reactants->templatecompcompound()->templatecompound()->name(),
-						charge => $reactants->templatecompcompound()->charge(),
-						maxuptake => $reactants->templatecompcompound()->maxuptake(),
-						formula => $reactants->templatecompcompound()->formula(),
-						modelcompartment_ref => "~/modelcompartments/id/".$reactants->templatecompcompound()->templatecompartment()->id().substr($rxnadd->{reaction_compartment_id},1)
+						name => $reactants->[$i]->templatecompcompound()->templatecompound()->name(),
+						charge => $reactants->[$i]->templatecompcompound()->charge(),
+						maxuptake => $reactants->[$i]->templatecompcompound()->maxuptake(),
+						formula => $reactants->[$i]->templatecompcompound()->formula(),
+						modelcompartment_ref => "~/modelcompartments/id/".$reactants->[$i]->templatecompcompound()->templatecompartment()->id().substr($rxnadd->{reaction_compartment_id},1)
 					});
 				}
 				$mdlrxnobj->add("modelReactionReagents",{
@@ -1930,6 +1930,7 @@ sub edit_metabolic_model {
 		push(@{$output->{reactions_added}},$mdlrxnobj->id());
 	}
 	Bio::KBase::utilities::log("Changing reactions");
+	my $rxntranslation;
 	for (my $i=0; $i < @{$params->{reactions_to_change}}; $i++) {
 		my $mdlrxn = $self->getObject("modelreactions",$params->{reactions_to_change}->[$i]->{change_reaction_id});
 		if (defined($mdlrxn)) {
@@ -1942,12 +1943,44 @@ sub edit_metabolic_model {
 			if (defined($params->{reactions_to_change}->[$i]->{change_reaction_gpr})) {
 				$mdlrxn->loadGPRFromString($params->{reactions_to_change}->[$i]->{change_reaction_gpr});
 			}
+			$rxntranslation->{$params->{reactions_to_change}->[$i]->{change_reaction_id}} = $mdlrxn->id();
 			push(@{$output->{reactions_changed}},$mdlrxn->id());
 		}
 	}
 	Bio::KBase::utilities::log("Editing reactants");
 	for (my $i=0; $i < @{$params->{edit_compound_stoichiometry}}; $i++) {
-		
+		if (defined($rxntranslation->{$params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id}})) {
+			$params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id} = $rxntranslation->{$params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id}};
+		}
+		my $mdlrxn = $self->getObject("modelreactions",$params->{edit_compound_stoichiometry}->[$i]->{stoich_reaction_id});
+		if (defined($mdlrxn)) {
+			if (defined($translation->{$params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id}})) {
+				$params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id} = $translation->{$params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id}};
+			}
+			my $mdlcpd = $self->getObject("modelcompounds",$params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id});
+			if (defined($mdlcpd)) {
+				my $reactants = $mdlrxn->modelReactionReagents();
+				my $found = 0;
+				for (my $j=0; $j < @{$reactants}; $j++) {
+					if ($reactants->[$j]->modelcompound()->id() eq $params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id}) {
+						$found = 1;
+						if ($params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient} == 0) {
+							$mdlrxn->remove("modelReactionReagents",$reactants->[$j]);
+						} else {
+							$reactants->[$j]->coefficient() = $params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient};
+						}
+						last;
+					}
+				}
+				if ($found == 0 && $params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient} != 0) {
+					$mdlrxn->add("modelReactionReagents",{
+						modelcompound_ref => "~/modelcompounds/id/".$params->{edit_compound_stoichiometry}->[$i]->{stoich_compound_id},
+						coefficient => $params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient}
+					});
+				}
+			}
+			push(@{$output->{reactions_changed}},$mdlrxn->id());
+		}
 	}
     #push(@{$self->model_edits()},$output);
 	return $output;
