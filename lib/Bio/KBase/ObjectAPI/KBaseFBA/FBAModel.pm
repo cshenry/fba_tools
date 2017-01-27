@@ -1751,6 +1751,11 @@ sub edit_metabolic_model {
 	my $uuid = Data::UUID->new()->create_str();
 	my $translation = {};
 	for (my $i=0; $i < @{$params->{compounds_to_add}}; $i++) {
+		if (defined($params->{compounds_to_add}->[$i]->{add_compartment_id})) {
+			if (ref($params->{compounds_to_add}->[$i]->{add_compartment_id}) eq "ARRAY") {
+				$params->{compounds_to_add}->[$i]->{add_compartment_id} = $params->{compounds_to_add}->[$i]->{add_compartment_id}->[0];
+			}
+		}
 		my $cpdref = "~/template/compounds/id/cpd00000";
 		$params->{compounds_to_add}->[$i]->{add_compound_id} =~ s/_[a-z]\d+$//;
 		if ($params->{compounds_to_add}->[$i]->{add_compound_id} =~ m/cpd\d+/) {
