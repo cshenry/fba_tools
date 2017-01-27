@@ -1532,13 +1532,18 @@ sub func_edit_metabolic_model {
     	compounds_to_change => [],
     	biomasses_to_add => [],
     	biomass_compounds_to_change => [],
-    	reactions_to_remove => [],
+    	reactions_to_remove => "",
     	reactions_to_change => [],
     	reactions_to_add => [],
     	edit_compound_stoichiometry => [],
     	fbamodel_workspace => $params->{workspace},
     	fbamodel_output_id => $params->{fbamodel_id}
     });
+    if (defined($params->{reactions_to_remove}) && length($params->{reactions_to_remove}) > 0) {
+    	$params->{reactions_to_remove} = [split(/,/,$params->{reactions_to_remove})];
+    } else {
+    	$params->{reactions_to_remove} = [];
+    }
 	#Getting genome
 	$handler->util_log("Loading model from workspace");
 	my $model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
