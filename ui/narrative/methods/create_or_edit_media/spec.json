@@ -119,7 +119,7 @@
                   "mediacompounds/[*]/compound_ref"
                ]
             },
-            "multiselection" : false
+            "multiselection" : true
          },
          "text_options" : {
             "valid_ws_types" : []

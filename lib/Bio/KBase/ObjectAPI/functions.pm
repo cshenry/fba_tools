@@ -1449,6 +1449,7 @@ sub func_create_or_edit_media {
 	my $count = @{$mediacpds};
 	my $removed_list;
 	for (my $i=0; $i < @{$params->{compounds_to_remove}}; $i++) {
+		$params->{compounds_to_remove}->[$i] =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
 			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
 				if ($1 eq $params->{compounds_to_remove}->[$i]) {
@@ -1469,6 +1470,7 @@ sub func_create_or_edit_media {
 	}
 	my $change_list;
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
+		$params->{compounds_to_change}->[$i]->{change_id} =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
 			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
 				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}) {
