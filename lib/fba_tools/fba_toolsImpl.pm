@@ -30,6 +30,7 @@ use DataFileUtil::DataFileUtilClient;
 #Initialization function for call
 sub util_initialize_call {
 	my ($self,$params,$ctx) = @_;
+	print "Import parameters:".Bio::KBase::ObjectAPI::utilities::TOJSON($params,1);
 	if (defined($ctx)) {
 		Bio::KBase::kbaseenv::initialize_call($ctx);
 	}

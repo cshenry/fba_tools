@@ -1495,27 +1495,36 @@ sub func_create_or_edit_media {
 		
 	}
 	my $add_list = [];
+	my $bio = $handler->util_get_object("kbase/default",{});
 	for (my $i=0; $i < @{$params->{compounds_to_add}}; $i++) {
 		my $found = 0;
-		for (my $j=0; $j < @{$mediacpds}; $j++) {
-			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
-				if ($1 eq $params->{compounds_to_add}->[$i]->{add_id}) {
-					$mediacpds->[$j]->concentration($params->{compounds_to_add}->[$i]->{add_concentration});
-					$mediacpds->[$j]->minFlux($params->{compounds_to_add}->[$i]->{add_minflux});
-					$mediacpds->[$j]->maxFlux($params->{compounds_to_add}->[$i]->{add_maxflux});
-					$found = 1;
+		my $cpd;
+		if ($params->{compounds_to_add}->[$i]->{add_id} =~ m/^cpd\d+$/) {
+			$cpd = $bio->getObject("compounds",$params->{compounds_to_add}->[$i]->{add_id});
+		} else {
+			$cpd = $bio->searchForCompound($params->{compounds_to_add}->[$i]->{add_id});
+		}
+		if (defined($cpd)) {
+			for (my $j=0; $j < @{$mediacpds}; $j++) {
+				if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+					if ($1 eq $cpd->id()) {
+						$mediacpds->[$j]->concentration($params->{compounds_to_add}->[$i]->{add_concentration});
+						$mediacpds->[$j]->minFlux($params->{compounds_to_add}->[$i]->{add_minflux});
+						$mediacpds->[$j]->maxFlux($params->{compounds_to_add}->[$i]->{add_maxflux});
+						$found = 1;
+					}
 				}
 			}
-		}
-		if ($found == 0) {
-			my $newcpd = $media->add("mediacompounds",{
-				compound_ref => "kbase/default/compounds/id/".$params->{compounds_to_add}->[$i]->{add_id},
-				concentration => $params->{compounds_to_add}->[$i]->{add_concentration},
-				minFlux => $params->{compounds_to_add}->[$i]->{add_minflux},
-				maxFlux => $params->{compounds_to_add}->[$i]->{add_maxflux}
-			});
-			push(@{$add_list},$newcpd->compound()->name()." (".$params->{compounds_to_add}->[$i]->{add_id}.")");
-			$mediacpds = $media->mediacompounds();
+			if ($found == 0) {
+				my $newcpd = $media->add("mediacompounds",{
+					compound_ref => "kbase/default/compounds/id/".$cpd->id(),
+					concentration => $params->{compounds_to_add}->[$i]->{add_concentration},
+					minFlux => $params->{compounds_to_add}->[$i]->{add_minflux},
+					maxFlux => $params->{compounds_to_add}->[$i]->{add_maxflux}
+				});
+				push(@{$add_list},$cpd->name()." (".$cpd->id().")");
+				$mediacpds = $media->mediacompounds();
+			}
 		}
 	}
 	my $wsmeta = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_output_id});
