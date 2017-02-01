@@ -1447,7 +1447,7 @@ sub func_create_or_edit_media {
 	}
 	my $mediacpds = $media->mediacompounds();
 	my $count = @{$mediacpds};
-	my $removed_list;
+	my $removed_list = [];
 	if (defined($params->{compounds_to_remove}) && length($params->{compounds_to_remove}) > 0) {
     	$params->{compounds_to_remove} = [split(/,/,$params->{compounds_to_remove})];
     } else {
@@ -1473,7 +1473,7 @@ sub func_create_or_edit_media {
 		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});
 		
 	}
-	my $change_list;
+	my $change_list = [];
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
 		$params->{compounds_to_change}->[$i]->{change_id} =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
@@ -1494,7 +1494,7 @@ sub func_create_or_edit_media {
 		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds changed in the media: ".join("; ",@{$change_list}).".",append => 1,html => 0});
 		
 	}
-	my $add_list;
+	my $add_list = [];
 	for (my $i=0; $i < @{$params->{compounds_to_add}}; $i++) {
 		my $found = 0;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
