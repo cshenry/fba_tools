@@ -1408,7 +1408,7 @@ sub func_create_or_edit_media {
 	my ($params) = @_;
     $params = Bio::KBase::utilities::args($params,["workspace","media_output_id"],{
     	media_id => undef,
-    	compounds_to_remove => [],
+    	compounds_to_remove => "",
     	compounds_to_change => [],
     	compounds_to_add => [],
     	media_workspace => $params->{workspace},
@@ -1448,6 +1448,11 @@ sub func_create_or_edit_media {
 	my $mediacpds = $media->mediacompounds();
 	my $count = @{$mediacpds};
 	my $removed_list;
+	if (defined($params->{compounds_to_remove}) && length($params->{compounds_to_remove}) > 0) {
+    	$params->{compounds_to_remove} = [split(/,/,$params->{compounds_to_remove})];
+    } else {
+    	$params->{compounds_to_remove} = [];
+    }
 	for (my $i=0; $i < @{$params->{compounds_to_remove}}; $i++) {
 		$params->{compounds_to_remove}->[$i] =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
