@@ -1475,11 +1475,11 @@ sub func_create_or_edit_media {
 	}
 	my $change_list = [];
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
-		$params->{compounds_to_change}->[$i]->{change_id} =~ s/.+\///;
+		$params->{compounds_to_change}->[$i]->{change_id}->[0] =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
 			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
-				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}) {
-					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->{change_id}.")");
+				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}->[0]) {
+					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->{change_id}->[0].")");
 					$mediacpds->[$j]->concentration($params->{compounds_to_change}->[$i]->{change_concentration});
 					$mediacpds->[$j]->minFlux($params->{compounds_to_change}->[$i]->{change_minflux});
 					$mediacpds->[$j]->maxFlux($params->{compounds_to_change}->[$i]->{change_maxflux});
