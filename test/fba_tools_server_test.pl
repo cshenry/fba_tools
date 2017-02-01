@@ -6,6 +6,7 @@ use Time::HiRes qw(time);
 use Bio::KBase::utilities;
 use Bio::KBase::kbaseenv;
 use fba_tools::fba_toolsImpl;
+use KBaseReport::KBaseReportImpl;
 
 my $tester = LocalTester->new($ENV{'KB_DEPLOYMENT_CONFIG'});
 $tester->run_tests();
@@ -61,13 +62,13 @@ $tester->run_tests();
 			return;
 		}
 		my $output;
-		eval {
+		#eval {
 			if (defined($parameters)) {
 				$output = $self->{obj}->$function($parameters);
 			} else {
 				$output = $self->{obj}->$function();
 			}
-		};
+		#};
 		my $errors;
 		if ($@) {
 			$errors = $@;
@@ -113,8 +114,191 @@ $tester->run_tests();
 	}
 	sub run_tests {
 		my($self) = @_;
+		
+		my $output = $self->test_harness("tsv_file_to_model",{
+			model_file => {path => "/Users/chenry/temp/SBW25Reactions.txt"},
+	        model_name => "iSB1139",
+	        workspace_name => "chenry:1485196974520",
+	        genome => "Pseudomonas_SBW25",
+	        biomass => ["BIOMASSRXN"],
+	        compounds_file => {path => "/Users/chenry/temp/SBW25Compounds.txt"}
+		},"import model from tsv",[],0,undef);
+		exit;
+		
+		my $output = $self->test_harness("tsv_file_to_model",{
+			model_file => {path => "/Users/chenry/temp/RhodoReactions.tsv"},
+	        model_name => "tsv_import",
+	        workspace_name => "chenry:1485812271066",
+	        genome => "Rhodococcus_jostii_RHA1",
+	        biomass => ["A00000"],
+	        compounds_file => {path => "/Users/chenry/temp/RhodoCompounds.tsv"}
+		},"import model from tsv",[],0,undef);
+		exit;
+		
+		my $report_input_params = { 
+			'objects_created' => [ 
+				{ 'ref'=> "16162/24/21", 'description'=> 'Differential Expression' },
+				{ 'ref'=> "16162/27/17", 'description'=> 'Filtered Expression Matrix' },
+			],
+			'direct_html_index' => 0,
+			'file_links'        => [{
+				'path'       =>  "/Users/chenry/temp/volcano_plot.png.zip",
+				'name'       =>  "volcano_plot.png.zip",
+				'description'=> 'zip file containing volcano plot'
+			}],
+			'html_links'        => [{
+				'path'       => "/Users/chenry/temp/volcano.html",
+				'name'       => "volcano.html",
+				'description'=> 'HTML file to display volcano plot'
+			}],
+			'report_object_name'=> "ath_sample_set_hisat2_AlignmentSet_stringtie_ExpressionSet_plot_report",
+			'workspace_name'    => "mccorkle:1484837859347"
+		};
+    	my $kr = new KBaseReport::KBaseReportImpl();
+		if (!defined($KBaseReport::KBaseReportServer::CallContext)) {
+			$KBaseReport::KBaseReportServer::CallContext = Bio::KBase::utilities::context();
+		}
+		$kr->create_extended_report($report_input_params);
+    	exit;
 		#my $wsname = "chenry:1456989658583";
 		my $wsname = "chenry:1454960620516";
+		
+		my $output = $self->test_harness("edit_metabolic_model",{
+			workspace => "chenry:1454960620516",
+			fbamodel_id => "New211586.9.gf",
+	    	compounds_to_add => [{
+	    		add_compound_id => "testcompound_c0",
+                add_compartment_id => "c0",
+                add_compound_name => "test_compound_name",
+                add_compound_charge => 0,
+                add_compound_formula => "C4H4"
+	    	},{
+	    		add_compound_id => "testcompound_e0",
+                add_compartment_id => "e0",
+                add_compound_name => "test_compound_name",
+                add_compound_charge => 0,
+                add_compound_formula => "C4H4"
+	    	}],
+	    	compounds_to_change => [{
+	    		compound_id => "cpd00036_c0",
+                compound_name => "testname",
+                compound_charge => 0,
+                compound_formula => "C4H4"
+	    	}],
+	    	biomasses_to_add => [{
+	    		biomass_name => "TestBiomass",
+				biomass_dna => 0,
+				biomass_rna => 0,
+				biomass_protein => 1,
+				biomass_cellwall => 0,
+				biomass_lipid => 0,
+				biomass_cofactor => 0,
+				biomass_energy => 0
+			}],
+	    	biomass_compounds_to_change => [{
+	    		biomass_id => "bio1",
+                biomass_compound_id => "cpd00220_c0",
+				biomass_coefficient => 0
+	    	},{
+	    		biomass_id => "bio1",
+                biomass_compound_id => "cpd15352_c0",
+				biomass_coefficient => -0.004
+	    	}],
+	    	reactions_to_remove => [
+	    		"rxn00016_c0"
+	    	],
+	    	reactions_to_change => [{
+	    		change_reaction_id => "rxn00015_c0",
+                change_reaction_name => "testname",
+                change_reaction_direction => "<",
+				change_reaction_gpr => "(fig|211586.9.peg.3166 and fig|211586.9.peg.3640)"
+	    	}],
+	    	reactions_to_add => [{
+	    		add_reaction_id => "rxn00021_c0",
+                reaction_compartment_id => "c0",
+                add_reaction_name => undef,
+                add_reaction_direction => undef,
+				add_reaction_gpr => "fig|211586.9.peg.3166",
+	    	},{
+	    		add_reaction_id => "testcustomreaction",
+                reaction_compartment_id => "c0",
+                add_reaction_name => "test_transporter",
+                add_reaction_direction => ">",
+				add_reaction_gpr => "fig|211586.9.peg.3166",
+	    	}],
+	    	edit_compound_stoichiometry => [{
+	    		stoich_reaction_id => "testcustomreaction_c0",
+                stoich_compound_id => "testcompound_c0",
+                stoich_coefficient =>  -1
+	    	},{
+	    		stoich_reaction_id => "testcustomreaction_c0",
+                stoich_compound_id => "testcompound_e0",
+                stoich_coefficient => 1
+	    	},{
+	    		stoich_reaction_id => "rxn00022_c0",
+                stoich_compound_id => "cpd00179_c0",
+                stoich_coefficient => 0
+	    	}],
+	    	fbamodel_output_id => "New211586.9.edited"
+		},"editing a metabolic model",[],0,undef);
+		exit();
+		
+		my $output = $self->test_harness("sbml_file_to_model",{
+			model_file => {path => "/Users/chenry/Downloads/pFluorescens.xml"},
+	        model_name => "iSB1139",
+	        workspace_name => "chenry:1485196974520",
+	        genome => "Pseudomonas_SBW25",
+	        biomass => ["GROWTH"]
+		},"import model from SBML",[],0,undef);
+		exit();
+		
+		my $output = $self->test_harness("sbml_file_to_model",{
+			model_file => {path => "/Users/chenry/workspace/Metabolite repair/iPS189.xml"},
+	        model_name => "iPS189",
+	        #model_file => {path => "/Users/chenry/Downloads/Syn3_0_FBA.xml"},
+	        #model_name => "JCVI-ZanModel",
+	        workspace_name => "chenry:1484810346458",
+	        genome => "Mycoplasma_genitalium",
+	        #genome => "JCVI-Syn3.kbase",
+	        biomass => ["Biomass"]
+		},"import model from SBML",[],0,undef);
+		exit();
+		my $output = $self->test_harness("sbml_file_to_model",{
+			model_file => {path => "/Users/chenry/temp/Syn3_0_FBA.xml"},
+	        model_name => "ZanModel",
+	        workspace_name => "chenry:1474434516205",
+	        genome => "JCVI_Syn3.kbase",
+	        biomass => ["Biomass"],
+	        compounds_file => {path => "/Users/chenry/temp/Syn3_0_compounds.tsv"}
+		},"import model from SBML",[],0,undef);
+		exit();
+		
+		my $output = $self->test_harness("run_flux_balance_analysis",{
+	        "fbamodel_id"=> "test_model_minimal",
+	        "media_id"=> "Carbon-D-Glucose",
+	        "target_reaction"=> "bio1",
+	        "fba_output_id"=> "test_model_singleko_fba",
+	        "fva"=> 1,
+	        "minimize_flux"=> 1,
+	        "simulate_ko"=> 1,
+	        "feature_ko_list"=> [],
+	        "reaction_ko_list"=> "",
+	        "custom_bound_list"=> [],
+	        "media_supplement_list"=> "",
+	        "expseries_id"=> undef,
+	        "expression_condition"=> undef,
+	        "exp_threshold_percentile"=> 0.5,
+	        "exp_threshold_margin"=> 0.1,
+	        "activation_coefficient"=> 0.5,
+	        "max_c_uptake"=> undef,
+	        "max_n_uptake"=> undef,
+	        "max_p_uptake"=> undef,
+	        "max_s_uptake"=> undef,
+	        "max_o_uptake"=> undef,
+	        workspace => "chenry:1482435841726"
+	    },"Run flux balance analysis",[],0,undef);
+		
+		exit;
 		my $output = $self->test_harness("edit_media",{
 			workspace => "chenry:1454960620516",
 			media_output_id => "edit_media_test",
@@ -129,7 +313,6 @@ $tester->run_tests();
 	    	type => "test",
 	    	isDefined => 1
 		},"edited media",[],0,undef);
-		exit;
 		$output = $self->test_harness("export_phenotype_set_as_tsv_file",{
 			input_ref => "chenry:1454960620516/shewy_phenotypes"
 		},"export phenotypes as tsv",[],0,undef);
@@ -238,6 +421,13 @@ $tester->run_tests();
 			phenotype_simulation_set_name => "test_phenosim",
 			workspace_name => "chenry:1454960620516"
 		},"export phenosim as tsv",[],0,undef);
+		$output = $self->test_harness("bulk_export_objects",{
+			refs => ["sbml_import","core_model"],
+	        workspace => "chenry:1454960620516",
+	        all_media => 1,
+	        media_format => "excel"
+		},"bulk export of modeling objects",[],0,undef);
+		exit();
 		exit();
 		$output = $self->test_harness("build_metabolic_model",{
 			genome_id => "Shewanella_amazonensis_SB2B",

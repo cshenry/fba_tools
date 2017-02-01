@@ -70,59 +70,57 @@
          }
       },
       {
+         "field_type" : "textsubdata",
+         "allow_multiple" : false,
          "optional" : true,
-         "allow_multiple" : true,
-         "field_type" : "dropdown",
-         "dropdown_options" : {
-            "options" : [
-               {
-                  "id" : "cpd00007",
-                  "display" : "O2",
-                  "ui_name" : "O2",
-                  "value" : "cpd00007"
-               },
-               {
-                  "value" : "cpd00030",
-                  "ui_name" : "Mn2+",
-                  "display" : "Mn2+",
-                  "id" : "cpd00030"
-               }
-            ]
-         },
-         "id" : "compounds_to_remove",
-         "advanced" : false,
+         "id" : "change_id",
          "default_values" : [
-            "cpd00007"
+            ""
          ],
+         "advanced" : false,
+         "textsubdata_options" : {
+            "allow_custom" : false,
+            "show_src_obj" : false,
+            "subdata_selection" : {
+               "path_to_subdata" : [
+                  "mediacompounds"
+               ],
+               "parameter_id" : "media_id",
+               "selection_id" : "compound_ref",
+               "subdata_included" : [
+                  "mediacompounds/[*]/compound_ref"
+               ]
+            },
+            "multiselection" : false
+         },
          "text_options" : {
             "valid_ws_types" : []
          }
       },
       {
-         "optional" : true,
+         "field_type" : "textsubdata",
          "allow_multiple" : false,
-         "field_type" : "dropdown",
-         "dropdown_options" : {
-            "options" : [
-               {
-                  "id" : "cpd00007",
-                  "display" : "O2",
-                  "ui_name" : "O2",
-                  "value" : "cpd00007"
-               },
-               {
-                  "value" : "cpd00030",
-                  "ui_name" : "Mn2+",
-                  "display" : "Mn2+",
-                  "id" : "cpd00030"
-               }
-            ]
-         },
-         "id" : "change_id",
-         "advanced" : false,
+         "optional" : true,
+         "id" : "compounds_to_remove",
          "default_values" : [
-            "cpd00007"
+            ""
          ],
+         "advanced" : false,
+         "textsubdata_options" : {
+            "allow_custom" : false,
+            "show_src_obj" : false,
+            "subdata_selection" : {
+               "path_to_subdata" : [
+                  "mediacompounds"
+               ],
+               "parameter_id" : "media_id",
+               "selection_id" : "compound_ref",
+               "subdata_included" : [
+                  "mediacompounds/[*]/compound_ref"
+               ]
+            },
+            "multiselection" : false
+         },
          "text_options" : {
             "valid_ws_types" : []
          }
@@ -167,33 +165,17 @@
          "allow_multiple" : false
       },
       {
-         "optional" : true,
-         "allow_multiple" : false,
-         "field_type" : "dropdown",
-         "dropdown_options" : {
-            "options" : [
-               {
-                  "id" : "cpd00027",
-                  "display" : "Glucose",
-                  "ui_name" : "Glucose",
-                  "value" : "cpd00027"
-               },
-               {
-                  "value" : "cpd00033",
-                  "ui_name" : "Glycine",
-                  "display" : "Glycine",
-                  "id" : "cpd00033"
-               }
-            ]
-         },
-         "id" : "add_id",
-         "advanced" : false,
-         "default_values" : [
-            "cpd00027"
-         ],
          "text_options" : {
-            "valid_ws_types" : []
-         }
+		 	"valid_ws_types" : []
+		 },
+         "id" : "add_id",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
       },
       {
          "text_options" : {

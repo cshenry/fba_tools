@@ -2236,7 +2236,6 @@ sub func_importmodel {
     	model_file => undef,
     	genome => undef,
     	genome_workspace => $params->{workspace_name},
-    	compounds_file => undef,
     	source => "External",
     	type => "SingleOrganism",
     	template_id => "auto",
@@ -2248,6 +2247,7 @@ sub func_importmodel {
     if (!defined($params->{genome})) {
     	$params->{genome} = "Empty";
     	$params->{genome_workspace} = "PlantSEED";
+    	$params->{template_workspace} = "NewKBaseModelTemplates";
     	$params->{template_id} = "GramNegModelTemplate";
     }
     my $genomeobj = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome},{});
@@ -2288,20 +2288,6 @@ sub func_importmodel {
 			$params->{sbml} .= $line;
 		}
 		close($fh);
-    }
-    #HANDLING COMPOUND FILENAMES IF PROVIDED
-    if (defined($params->{compounds_file})) {
-   		$params->{compounds_file} = $handler->util_get_file_path($params->{compounds_file});
-    	if (!-e $params->{compounds_file}) {
-	    	Bio::KBase::utilities::error("Compound file ".$params->{compounds_file}." doesn't exist!");
-	    }
-	    $params->{compound_data} = Bio::KBase::utilities::parse_input_table($params->{compounds_file},[
-			["id",1],
-			["charge",0,undef],
-			["formula",0,undef],
-			["name",1],
-			["aliases",0,undef]
-		]);
     }
     #PARSING SBML IF PROVIDED
     my $comptrans = Bio::KBase::constants::compartment_trans();
@@ -2454,63 +2440,66 @@ sub func_importmodel {
     			}
     		}
 	        foreach my $node ($cpd->getElementsByTagName("*",0)) {
-			    foreach my $html ($node->getElementsByTagName("*",0)){
-					my $nodes = $html->getChildNodes();
-					foreach my $node (@{$nodes}) {
-					    my $text = $node->toString();
-					    if ($text =~ m/FORMULA:\s*([^<]+)/) {
-							if (length($1) > 0) {
-							    $formula = $1;
-							}
-					    } elsif ($text =~ m/CHARGE:\s*([^<]+)/) {
-							if (length($1) > 0) {
-							    $charge = $1;
-							}
-						} elsif ($text =~ m/BIOCYC:\s*([^<]+)/) {
-							if (length($1) > 0) {
-							    if (defined($aliases) && length($aliases) > 0) {
-							    	$aliases .= "|";
-							    }
-							    $aliases .= "BIOCYC:".$1;
-							}
-						} elsif ($text =~ m/INCHI:\s*([^<]+)/) {
-							if (length($1) > 0) {
-							    if (defined($aliases) && length($aliases) > 0) {
-							    	$aliases .= "|";
-							    }
-							    $aliases .= "INCHI:".$1;
-							}
-						} elsif ($text =~ m/CHEBI:\s*([^<]+)/) {
-							if (length($1) > 0) {
-							    if (defined($aliases) && length($aliases) > 0) {
-							    	$aliases .= "|";
-							    }
-							    $aliases .= "CHEBI:".$1;
-							}
-						} elsif ($text =~ m/CHEMSPIDER:\s*([^<]+)/) {
-							if (length($1) > 0) {
-							    if (defined($aliases) && length($aliases) > 0) {
-							    	$aliases .= "|";
-							    }
-							    $aliases .= "CHEMSPIDER:".$1;
-							}
-						} elsif ($text =~ m/PUBCHEM:\s*([^<]+)/) {
-							if (length($1) > 0) {
-							    if (defined($aliases) && length($aliases) > 0) {
-							    	$aliases .= "|";
-							    }
-							    $aliases .= "PUBCHEM:".$1;
-							}
-						} elsif ($text =~ m/KEGG:\s*([^<]+)/) {
-							if (length($1) > 0) {
-							    if (defined($aliases) && length($aliases) > 0) {
-							    	$aliases .= "|";
-							    }
-							    $aliases .= "KEGG:".$1;
-							}
-					    }
-					}
-			    }
+			    if ($node->getNodeName() eq "notes") {
+	    			foreach my $html ($node->getElementsByTagName("*",0)){
+	    				my $nodes = $html->getChildNodes();
+	    				foreach my $node (@{$nodes}) {
+		    				my $text = $node->toString();
+							print $text."\n";
+							if ($text =~ m/FORMULA:\s*([^<]+)/) {
+								if (length($1) > 0) {
+								    $formula = $1;
+								}
+						    } elsif ($text =~ m/CHARGE:\s*([^<]+)/) {
+								if (length($1) > 0) {
+								    $charge = $1;
+								}
+							} elsif ($text =~ m/BIOCYC:\s*([^<]+)/) {
+								if (length($1) > 0) {
+								    if (defined($aliases) && length($aliases) > 0) {
+								    	$aliases .= "|";
+								    }
+								    $aliases .= "BIOCYC:".$1;
+								}
+							} elsif ($text =~ m/INCHI:\s*([^<]+)/) {
+								if (length($1) > 0) {
+								    if (defined($aliases) && length($aliases) > 0) {
+								    	$aliases .= "|";
+								    }
+								    $aliases .= "INCHI:".$1;
+								}
+							} elsif ($text =~ m/CHEBI:\s*([^<]+)/) {
+								if (length($1) > 0) {
+								    if (defined($aliases) && length($aliases) > 0) {
+								    	$aliases .= "|";
+								    }
+								    $aliases .= "CHEBI:".$1;
+								}
+							} elsif ($text =~ m/CHEMSPIDER:\s*([^<]+)/) {
+								if (length($1) > 0) {
+								    if (defined($aliases) && length($aliases) > 0) {
+								    	$aliases .= "|";
+								    }
+								    $aliases .= "CHEMSPIDER:".$1;
+								}
+							} elsif ($text =~ m/PUBCHEM:\s*([^<]+)/) {
+								if (length($1) > 0) {
+								    if (defined($aliases) && length($aliases) > 0) {
+								    	$aliases .= "|";
+								    }
+								    $aliases .= "PUBCHEM:".$1;
+								}
+							} elsif ($text =~ m/KEGG:\s*([^<]+)/) {
+								if (length($1) > 0) {
+								    if (defined($aliases) && length($aliases) > 0) {
+								    	$aliases .= "|";
+								    }
+								    $aliases .= "KEGG:".$1;
+								}
+						    }
+	    				}
+	    			}
+	    		}
 			}	
 	    	if (!defined($name)) {
 	    		$name = $id;
@@ -2691,6 +2680,7 @@ sub func_importmodel {
 	    	push(@{$params->{reactions}},[$id,$direction,$compartment,$gpr,$name,$enzyme,$pathway,undef,$reactants." => ".$products,$aliases]);
 	    }
     }
+    print Bio::KBase::ObjectAPI::utilities::TOJSON($params->{compounds},1)."\n";
     #ENSURING THAT THERE ARE REACTIONS AND COMPOUNDS FOR THE MODEL AT THIS STAGE
     if (!defined($params->{compounds}) || @{$params->{compounds}} == 0) {
     	Bio::KBase::utilities::error("Must have compounds for model!");

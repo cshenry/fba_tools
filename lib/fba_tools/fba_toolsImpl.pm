@@ -2079,7 +2079,8 @@ sub tsv_file_to_model
 		["charge",0,undef],
 		["formula",0,undef],
 		["name",1],
-		["aliases",0,undef]
+		["aliases",0,undef],
+		["compartment",0,undef]
 	]);
     $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
     #END tsv_file_to_model

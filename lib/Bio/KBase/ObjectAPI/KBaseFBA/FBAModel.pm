@@ -577,6 +577,10 @@ sub LoadExternalReactionEquation {
 	    		}
 	    		if ($cpd =~m/(.+)_([a-z]\d+)$/) {
 	    			$cpd = $1;
+	    			$compartment = $2;
+	    		}
+	    		if (defined($args->{compounds}->{$cpd}->[5])) {
+	    			$compartment = $args->{compounds}->{$cpd}->[5];
 	    		}
 	    		if ($compartment =~ m/([a-z])(\d+)/) {
 	    			$index = $2;
@@ -585,16 +589,19 @@ sub LoadExternalReactionEquation {
 	    		if ($i == 0) {
 	    			$coef = -1*$coef;
 	    		}
+	    		my $origid = $cpd;
+	    		$cpd =~ s/\+/PLUS/g;
+	    		$cpd =~ s/[\W_]//g;
 	    		my $cpdobj;
-	    		if (defined($args->{compounds}->{$cpd})) {
-	    			my $name = $args->{compounds}->{$cpd}->[3];
+	    		if (defined($args->{compounds}->{$origid})) {
+	    			my $name = $args->{compounds}->{$origid}->[3];
 	    			if ($name =~ m/^(.+)\[([a-z])\]$/) {
 	    				$compartment = $2;
 	    				$name = $1;
 	    			}
 	    			$cpdobj = $self->template()->searchForCompound($name);
-	    			if (!defined($cpdobj) && defined($args->{compounds}->{$cpd}->[4])) {
-	    				my $aliases = [split(/\|/,$args->{compounds}->{$cpd}->[4])];
+	    			if (!defined($cpdobj) && defined($args->{compounds}->{$origid}->[4])) {
+	    				my $aliases = [split(/\|/,$args->{compounds}->{$origid}->[4])];
 	    				foreach my $alias (@{$aliases}) {
 	    					if ($alias =~ m/^(.+):(.+)/) {
 	    						$alias = $2;
@@ -662,7 +669,7 @@ sub LoadExternalReactionEquation {
 	    			#print $cpd." not found!\n";
 	    			$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
 	    			if (!defined($mdlcpd)) {
-	    				if (!defined($args->{compounds}->{$cpd})) {
+	    				if (!defined($args->{compounds}->{$origid})) {
 	    					Bio::KBase::utilities::log("Ill defined compound:".$cpd."!");
 	    					$cpd =~ s/[^\w]/_/g;
 	    					$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
