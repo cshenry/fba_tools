@@ -2937,6 +2937,7 @@ sub func_export {
     my $object = $handler->util_get_object($ref,{});
     if ($args->{file_util} == 0) {
     	$export_dir .= "/".$object->_wsname();
+    	File::Path::mkpath ($export_dir);
     }
     my $files = $object->export({format => $args->{format},file => 1,path => $export_dir});
     if ($args->{file_util} == 1) {
