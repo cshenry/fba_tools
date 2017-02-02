@@ -1475,11 +1475,16 @@ sub func_create_or_edit_media {
 	}
 	my $change_list = [];
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
-		$params->{compounds_to_change}->[$i]->{change_id}->[0] =~ s/.+\///;
+		if (defined($params->{compounds_to_change}->[$i]->{change_id})) {
+			if (ref($params->{compounds_to_change}->[$i]->{change_id}) eq "ARRAY") {
+				$params->{compounds_to_change}->[$i]->{change_id} = $params->{compounds_to_change}->[$i]->{change_id}->[0];
+			}
+		}
+		$params->{compounds_to_change}->[$i]->{change_id} =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
 			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
-				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}->[0]) {
-					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->{change_id}->[0].")");
+				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}) {
+					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->{change_id}.")");
 					$mediacpds->[$j]->concentration($params->{compounds_to_change}->[$i]->{change_concentration});
 					$mediacpds->[$j]->minFlux($params->{compounds_to_change}->[$i]->{change_minflux});
 					$mediacpds->[$j]->maxFlux($params->{compounds_to_change}->[$i]->{change_maxflux});
@@ -2930,6 +2935,9 @@ sub func_export {
     }
     my $export_dir = $args->{path};
     my $object = $handler->util_get_object($ref,{});
+    if ($args->{file_util} == 0) {
+    	$export_dir .= "/".$object->_wsname();
+    }
     my $files = $object->export({format => $args->{format},file => 1,path => $export_dir});
     if ($args->{file_util} == 1) {
     	if ($params->{save_to_shock} == 1) {
