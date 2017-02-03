@@ -1,6 +1,7 @@
 package Bio::KBase::ObjectAPI::functions;
 use strict;
 use warnings;
+use POSIX;
 use Data::Dumper;
 use Data::UUID;
 use Bio::KBase::utilities;
@@ -578,7 +579,7 @@ sub func_compare_fba_solutions {
     my $fbacpds = {};
     my $fbacount = @{$params->{fba_id_list}};
     for (my $i=0; $i < @{$params->{fba_id_list}}; $i++) {
-    	$fbaids->[$i] = $params->{fba_workspace}."/".$params->{fba_id_list}->[$i];
+    	$fbaids->[$i] = $params->{fba_id_list}->[$i];
     	$handler->util_log("Retrieving FBA ".$fbaids->[$i].".");
     	my $fba = $handler->util_get_object($fbaids->[$i]);
    		my $rxns = $fba->FBAReactionVariables();
@@ -1016,7 +1017,7 @@ sub func_compare_flux_with_expression {
 	$handler->util_log("Computing the cutoff expression value to use to call genes active.");
 	my $sortedgenes = [sort { $exphash->{$a} <=> $exphash->{$b} } keys(%{$exphash})];
 	my $threshold_gene = @{$sortedgenes};
-	$threshold_gene = floor($params->{exp_threshold_percentile}*$threshold_gene);
+	$threshold_gene = POSIX::floor($params->{exp_threshold_percentile}*$threshold_gene);
 	$threshold_gene =  $sortedgenes->[$threshold_gene];
 	my $threshold_value = $exphash->{$threshold_gene};
 	$handler->util_log("Computing expression values for each reaction.");
