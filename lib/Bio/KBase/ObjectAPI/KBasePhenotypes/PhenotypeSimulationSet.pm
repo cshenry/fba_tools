@@ -14,13 +14,30 @@ extends 'Bio::KBase::ObjectAPI::KBasePhenotypes::DB::PhenotypeSimulationSet';
 #***********************************************************************************************************
 # ADDITIONAL ATTRIBUTES:
 #***********************************************************************************************************
-
+has cp => ( is => 'rw', isa => 'Int',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcp'  );
+has cn => ( is => 'rw', isa => 'Int',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcn'  );
+has fp => ( is => 'rw', isa => 'Int',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildfp'  );
+has fn => ( is => 'rw', isa => 'Int',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildfn'  );
 
 #***********************************************************************************************************
 # BUILDERS:
 #***********************************************************************************************************
-
-
+sub _buildcp {
+	my ($self) = @_;
+	return $self->class_count("cp");
+}
+sub _buildfp {
+	my ($self) = @_;
+	return $self->class_count("fp");
+}
+sub _buildcn {
+	my ($self) = @_;
+	return $self->class_count("cn");
+}
+sub _buildfn {
+	my ($self) = @_;
+	return $self->class_count("fn");
+}
 
 #***********************************************************************************************************
 # CONSTANTS:
@@ -29,6 +46,19 @@ extends 'Bio::KBase::ObjectAPI::KBasePhenotypes::DB::PhenotypeSimulationSet';
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub class_count {
+    my $self = shift;
+    my $class = shift;
+    my $count = 0;
+   	my $phenos = $self->phenotypeSimulations();
+   	for (my $i=0; $i < @{$phenos}; $i++) {
+   		if ($phenos->[$i]->phenoclass() eq $class) {
+   			$count++;
+   		}
+   	}
+   	return $count;
+}
+
 sub export {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["format"], {file => 0,path => undef}, @_);

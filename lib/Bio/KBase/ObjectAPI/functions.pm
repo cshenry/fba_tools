@@ -921,21 +921,34 @@ sub func_simulate_growth_on_phenotype_data {
     	Bio::KBase::utilities::error("Simulation of phenotypes failed to return results from FBA! The model probably failed to grow on Complete media. Try running gapfiling first on Complete media.");
 	}
 	my $phenoset = $fba->phenotypesimulationset();
+	my $phenos = $phenoset->phenotypeSimulations();
+	my $total = @{$phenos};
+	my $htmlreport ="<div style=\"height: 400px; overflow-y: scroll;\"><p>Correct positives: ".$phenoset->cp()." (".POSIX::floor(100*$phenoset->cp()/$total)."%)<br>".
+					"Correct negatives: ".$phenoset->cn()." (".POSIX::floor(100*$phenoset->cn()/$total)."%)<br>".
+					"False positives : ".$phenoset->fp()." (".POSIX::floor(100*$phenoset->fp()/$total)."%)<br>".
+					"False negatives : ".$phenoset->fn()." (".POSIX::floor(100*$phenoset->fn()/$total)."%)<br>".
+					"Overall accuracy : ".POSIX::floor(100*($phenoset->cp()+$phenoset->cn())/$total)."%<p>";
 	if ($params->{gapfill_phenotypes} == 1 || $params->{fit_phenotype_data} == 1) {
-		$handler->util_log("Phenotype gapfilling results:");
-		$handler->util_log("Media\tKO\tSupplements\tGrowth\tSim growth\tGapfilling count\tGapfilled reactions");
-		my $phenos = $phenoset->phenotypeSimulations();
-		for (my $i=0; $i < @{$phenos}; $i++) {
+    	$htmlreport .= "<br><table class=\"table table-striped table-bordered\" style=\"margin-left: auto; margin-right: auto;\">".
+    		"<row><th>Media</th><th>KO</th><th>Supplements</th><th>Growth</th><th>Gapfilled reactions</th></row>";
+    	for (my $i=0; $i < @{$phenos}; $i++) {
 			if ($phenos->[$i]->numGapfilledReactions() > 0) {
-				$handler->util_log($phenos->[$i]->phenotype()->media()->_wsname()."\t".$phenos->[$i]->phenotype()->geneKOString()."\t".$phenos->[$i]->phenotype()->additionalCpdString()."\t".$phenos->[$i]->phenotype()->normalizedGrowth()."\t".$phenos->[$i]->simulatedGrowth()."\t".$phenos->[$i]->numGapfilledReactions()."\t".join(";",@{$phenos->[$i]->gapfilledReactions()})."");
+				$htmlreport .= "<tr><td>".$phenos->[$i]->phenotype()->media()->_wsname()."</td><td>".
+					$phenos->[$i]->phenotype()->geneKOString()."</td><td>".
+					$phenos->[$i]->phenotype()->additionalCpdString()."</td><td>".
+					$phenos->[$i]->phenotype()->normalizedGrowth()."</td><td>".
+					$phenos->[$i]->phenotype()->gapfilledReactionString()."</td></tr>";
 			}
-		}
+		}	
+    	$htmlreport .= "</table>";
 		if ($params->{fit_phenotype_data} == 1) {
 			$handler->util_log("Saving gapfilled model.");
 			my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
     		$fba->fbamodel_ref($model->_reference());
 		}
 	}
+	$htmlreport .= "</div>";
+	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
     $handler->util_log("Saving FBA object with phenotype simulation results.");
     my $wsmeta = $handler->util_save_object($phenoset,$params->{workspace}."/".$params->{phenotypesim_output_id},{type => "KBasePhenotypes.PhenotypeSimulationSet"});
     $fba->phenotypesimulationset_ref($phenoset->_reference());
@@ -1477,8 +1490,7 @@ sub func_create_or_edit_media {
 		Bio::KBase::utilities::print_report_message({message => "No compounds removed from the media.",append => 0,html => 0});
 	} else {
 		my $count = @{$removed_list};
-		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});
-		
+		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});	
 	}
 	my $change_list = [];
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
@@ -1504,7 +1516,6 @@ sub func_create_or_edit_media {
 	} else {
 		my $count = @{$change_list};
 		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds changed in the media: ".join("; ",@{$change_list}).".",append => 1,html => 0});
-		
 	}
 	my $add_list = [];
 	my $bio = $handler->util_get_object("kbase/default",{});
