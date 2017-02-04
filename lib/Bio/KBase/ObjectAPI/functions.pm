@@ -1679,9 +1679,6 @@ sub func_compare_models {
 	if (@{$params->{model_refs}} < 2) {
 		Bio::KBase::utilities::error("Must select at least two models to compare");
     }
-	if (!defined($params->{protcomp_ref}) && !defined($params->{pangenome_ref})) {
-    	Bio::KBase::utilities::error("Must provide either a pangenome or proteome comparison");
-    }
 
     my $provenance = [{}];
     my $models;
@@ -1826,64 +1823,63 @@ sub func_compare_models {
     my $core_families = 0;
 
     if (defined $protcomp) {
-	my $i = 0;
-	foreach my $ftr (@{$protcomp->{proteome1names}}) {
-	    foreach my $hit (@{$protcomp->{data1}->[$i]}) {
-		$gene_translation->{$ftr}->{$protcomp->{proteome2names}->[$hit->[0]]} = 1;
-	    }
-	    $i++;
-	}
-        $i = 0;
-	foreach my $ftr (@{$protcomp->{proteome2names}}) {
-	    foreach my $hit (@{$protcomp->{data2}->[$i]}) {
-		$gene_translation->{$ftr}->{$protcomp->{proteome1names}->[$hit->[0]]} = 1;
-	    }
-	    $i++;
-	}
+		my $i = 0;
+		foreach my $ftr (@{$protcomp->{proteome1names}}) {
+		    foreach my $hit (@{$protcomp->{data1}->[$i]}) {
+			$gene_translation->{$ftr}->{$protcomp->{proteome2names}->[$hit->[0]]} = 1;
+		    }
+		    $i++;
+		}
+	        $i = 0;
+		foreach my $ftr (@{$protcomp->{proteome2names}}) {
+		    foreach my $hit (@{$protcomp->{data2}->[$i]}) {
+			$gene_translation->{$ftr}->{$protcomp->{proteome1names}->[$hit->[0]]} = 1;
+		    }
+		    $i++;
+		}
     }
+    
     if (defined $pangenome) {
-	foreach my $family (@{$pangenome->{orthologs}}) {
-	    my $in_models = {};
-	    my $family_model_data = {};
-	    foreach my $ortholog (@{$family->{orthologs}}) {
-		$ftr2family{$ortholog->[0]} = $family;
-		map { $gene_translation->{$ortholog->[0]}->{$_->[0]} = 1 } @{$family->{orthologs}};
-		foreach my $model (@{$models}) {
-		    if (exists $ftr2model{$ortholog->[0]}->{$model->{id}}) {
-			map { $in_models->{$model->{id}}->{$_} = 1 } keys $ftr2reactions{$ortholog->[0]};
-			push @{$model2family{$model->{id}}->{$family->{id}}}, $ortholog->[0];
+		foreach my $family (@{$pangenome->{orthologs}}) {
+		    my $in_models = {};
+		    my $family_model_data = {};
+		    foreach my $ortholog (@{$family->{orthologs}}) {
+				$ftr2family{$ortholog->[0]} = $family;
+				map { $gene_translation->{$ortholog->[0]}->{$_->[0]} = 1 } @{$family->{orthologs}};
+				foreach my $model (@{$models}) {
+				    if (exists $ftr2model{$ortholog->[0]}->{$model->{id}}) {
+						map { $in_models->{$model->{id}}->{$_} = 1 } keys $ftr2reactions{$ortholog->[0]};
+						push @{$model2family{$model->{id}}->{$family->{id}}}, $ortholog->[0];
+				    }
+				}
+		    }
+		    my $num_models = scalar keys %$in_models;
+		    if ($num_models > 0) {
+				foreach my $model (@{$models}) {
+				    if (exists $in_models->{$model->{id}}) {
+						my @reactions = sort keys %{$in_models->{$model->{id}}};
+						$family_model_data->{$model->{id}} =  [1, \@reactions];
+				    } else {
+						$family_model_data->{$model->{id}} = [0, []];
+				    }
+				}
+				my $mc_family = {
+				    id => $family->{id},
+				    family_id => $family->{id},
+				    function => $family->{function},
+				    number_models => $num_models,
+				    fraction_models => $num_models*1.0/@{$models},
+				    core => ($num_models == @{$models} ? 1 : 0),
+				    family_model_data => $family_model_data
+				};
+				$mc_families->{$family->{id}} = $mc_family;
+				$core_families++ if ($num_models == @{$models});
 		    }
 		}
-	    }
-	    my $num_models = scalar keys %$in_models;
-	    if ($num_models > 0) {
-		foreach my $model (@{$models}) {
-		    if (exists $in_models->{$model->{id}}) {
-			my @reactions = sort keys %{$in_models->{$model->{id}}};
-			$family_model_data->{$model->{id}} =  [1, \@reactions];
-		    }
-		    else {
-			$family_model_data->{$model->{id}} = [0, []];
-		    }
-		}
-		my $mc_family = {
-		    id => $family->{id},
-		    family_id => $family->{id},
-		    function => $family->{function},
-		    number_models => $num_models,
-		    fraction_models => $num_models*1.0/@{$models},
-		    core => ($num_models == @{$models} ? 1 : 0),
-		    family_model_data => $family_model_data
-		};
-		$mc_families->{$family->{id}} = $mc_family;
-		$core_families++ if ($num_models == @{$models});
-	    }
-	}
     }
 
     # ACCUMULATE REACTIONS AND FAMILIES
     my %rxn2families;
-
     foreach my $model (@{$models}) {
 		foreach my $rxnid (keys %{$model->{rxnhash}}) {
 		    foreach my $ftr (keys %{$model->{$rxnid}->{ftrhash}}) {
@@ -2010,24 +2006,23 @@ sub func_compare_models {
 		# fill in info for reactions not in model
 		foreach my $rxnid (keys %rxn2families) {
 		    if (! exists $model1->{rxnhash}->{$rxnid}) {
-			my $ftrs = [];
-			if (defined $pangenome) {
-			    foreach my $familyid (keys %{$rxn2families{$rxnid}}) {
-				my $conservation = 0;
-				foreach my $m (keys %model2family) {
-				    $conservation++ if exists $model2family{$m}->{$familyid};
-				}
-				if (exists $model2family{$model1->{id}}->{$familyid}) {
-				    foreach my $ftr (@{$model2family{$model1->{id}}->{$familyid}}) {
-					push @$ftrs, [$ftr, $familyid, $conservation*1.0/@{$models}, 0];
+				my $ftrs = [];
+				if (defined $pangenome) {
+				    foreach my $familyid (keys %{$rxn2families{$rxnid}}) {
+						my $conservation = 0;
+						foreach my $m (keys %model2family) {
+						    $conservation++ if exists $model2family{$m}->{$familyid};
+						}
+						if (exists $model2family{$model1->{id}}->{$familyid}) {
+						    foreach my $ftr (@{$model2family{$model1->{id}}->{$familyid}}) {
+								push @$ftrs, [$ftr, $familyid, $conservation*1.0/@{$models}, 0];
+						    }
+						} else {
+						    push @$ftrs, ["", $familyid, $conservation*1.0/@{$models}, 1];
+						}
 				    }
 				}
-				else {
-				    push @$ftrs, ["", $familyid, $conservation*1.0/@{$models}, 1];
-				}
-			    }
-			}
-			$mc_reactions->{$rxnid}->{reaction_model_data}->{$model1->{id}} = [1,"",$ftrs,""];
+				$mc_reactions->{$rxnid}->{reaction_model_data}->{$model1->{id}} = [1,"",$ftrs,""];
 		    }
 		}
 		# process compounds
