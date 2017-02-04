@@ -18,6 +18,27 @@ our $loghandler;
 our $starttime = undef;
 our $arguments = undef;
 
+sub style {
+	return "	<style>
+	.reporttbl {
+		border:1px solid #C0C0C0;
+		border-collapse:collapse;
+		padding:5px;
+	}
+	.reporttbl th {
+		border:1px solid #C0C0C0;
+		padding:5px;
+		background:#F0F0F0;
+	}
+	.reporttbl td {
+		border:1px solid #C0C0C0;
+		text-align:left;
+		padding:5px;
+	}
+	</style>";
+}
+
+
 sub to_json {
     my ($ref,$prettyprint) = @_;
     my $JSON = JSON->new->utf8(1);

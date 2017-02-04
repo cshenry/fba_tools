@@ -22,7 +22,7 @@
          ],
          "advanced" : false,
          "field_type" : "text",
-         "optional" : false,
+         "optional" : true,
          "allow_multiple" : true,
          "text_options" : {
             "valid_ws_types" : [

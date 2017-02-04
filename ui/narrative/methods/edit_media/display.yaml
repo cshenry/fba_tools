@@ -1,11 +1,11 @@
 #
 # Define basic display information
 #
-name     : Create or Edit Media
+name     : Edit Media
 subtitle : |
-    Create new media for metabolic modeling or edit an existing media formulation.
+    Edit an existing media formulation.
 tooltip  : |
-    Create new media for metabolic modeling or edit an existing media formulation.
+    Edit an existing media formulation.
 screenshots :
     []
 
@@ -148,4 +148,4 @@ parameter-groups:
     short-hint: |
       Compounds to add to media  
 description : |
-    <p>Create or edit a media formulation by adding or removing compounds, changing concentrations, or adjusting flux bounds.</p>
+    <p>Edit a media formulation by adding or removing compounds, changing concentrations, or adjusting flux bounds.</p>

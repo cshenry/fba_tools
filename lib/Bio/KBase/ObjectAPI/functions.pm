@@ -923,13 +923,13 @@ sub func_simulate_growth_on_phenotype_data {
 	my $phenoset = $fba->phenotypesimulationset();
 	my $phenos = $phenoset->phenotypeSimulations();
 	my $total = @{$phenos};
-	my $htmlreport ="<div style=\"height: 400px; overflow-y: scroll;\"><p>Correct positives: ".$phenoset->cp()." (".POSIX::floor(100*$phenoset->cp()/$total)."%)<br>".
+	my $htmlreport =Bio::KBase::utilities::style()."<div style=\"height: 400px; overflow-y: scroll;\"><p>Correct positives: ".$phenoset->cp()." (".POSIX::floor(100*$phenoset->cp()/$total)."%)<br>".
 					"Correct negatives: ".$phenoset->cn()." (".POSIX::floor(100*$phenoset->cn()/$total)."%)<br>".
 					"False positives : ".$phenoset->fp()." (".POSIX::floor(100*$phenoset->fp()/$total)."%)<br>".
 					"False negatives : ".$phenoset->fn()." (".POSIX::floor(100*$phenoset->fn()/$total)."%)<br>".
 					"Overall accuracy : ".POSIX::floor(100*($phenoset->cp()+$phenoset->cn())/$total)."%<p>";
 	if ($params->{gapfill_phenotypes} == 1 || $params->{fit_phenotype_data} == 1) {
-    	$htmlreport .= "<br><table class=\"table table-striped table-bordered\" style=\"margin-left: auto; margin-right: auto;\">".
+    	$htmlreport .= "<br><table class=\"reporttbl\">".
     		"<row><th>Media</th><th>KO</th><th>Supplements</th><th>Growth</th><th>Gapfilled reactions</th></row>";
     	for (my $i=0; $i < @{$phenos}; $i++) {
 			if ($phenos->[$i]->numGapfilledReactions() > 0) {
@@ -1374,7 +1374,7 @@ sub func_check_model_mass_balance {
 	my $message = "No mass imbalance found";
     if (length($fba->MFALog) > 0) {
     	$message = $fba->MFALog();
-    	$htmlreport = "<div style=\"height: 400px; overflow-y: scroll;\"><table class=\"table table-striped table-bordered\" style=\"margin-left: auto; margin-right: auto;\"><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
+    	$htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 400px; overflow-y: scroll;\"><table class=\"reporttbl\"><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
     	my $array = [split(/\n/,$message)];
     	my ($id,$reactants,$products,$rimbal,$pimbal);
     	for (my $i=0; $i < @{$array}; $i++) {
@@ -1417,7 +1417,7 @@ sub func_check_model_mass_balance {
     		}
     	}
     	if (defined($id)) {
-			$htmlreport .= "<row><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></row>";
+			$htmlreport .= "<tr><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></tr>";
 		}
     	$htmlreport .= "</table></div>";
     }
