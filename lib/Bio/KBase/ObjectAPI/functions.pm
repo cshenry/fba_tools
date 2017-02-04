@@ -1361,7 +1361,6 @@ sub func_check_model_mass_balance {
 	my $message = "No mass imbalance found";
     if (length($fba->MFALog) > 0) {
     	$message = $fba->MFALog();
-    	Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
     	$htmlreport = "<div style=\"overflow-y: scroll;\"><table><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
     	my $array = [split(/\n/,$message)];
     	my ($id,$reactants,$products,$rimbal,$pimbal);
@@ -1877,6 +1876,17 @@ sub func_compare_models {
 		    }
 		}
     }
+	
+	my $genomehash;
+	if (!defined($gene_translation)) {
+		foreach my $model1 (@{$models}) {
+			$genomehash->{$model1->{genome_ref}} = $handler->util_get_object($model1->{genome_ref},{raw => 1});
+			my $ftrs = $genomehash->{$model1->{genome_ref}}->{features};
+			for (my $i=0; $i < @{$ftrs}; $i++) {
+				$gene_translation->{$ftrs->[$i]->{id}}->{$ftrs->[$i]->{id}} = 1;
+			}
+		}
+	}
 
     # ACCUMULATE REACTIONS AND FAMILIES
     my %rxn2families;
@@ -1904,9 +1914,8 @@ sub func_compare_models {
 		$mc_model->{families} = exists $model2family{$model1->{id}} ? scalar keys %{$model2family{$model1->{id}}} : 0;
 	
 		eval {
-			my $genome=$handler->util_get_object($model1->{genome_ref},{raw => 1});
-		    $mc_model->{name} = $genome->{scientific_name};
-		    $mc_model->{taxonomy} = $genome->{taxonomy};
+		    $mc_model->{name} = $genomehash->{$model1->{genome_ref}}->{scientific_name};
+		    $mc_model->{taxonomy} = $genomehash->{$model1->{genome_ref}}->{taxonomy};
 		};
 		if ($@) {
 		    warn "Error loading genome from workspace:\n".$@;
