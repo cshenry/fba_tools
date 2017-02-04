@@ -515,6 +515,13 @@ sub func_run_flux_balance_analysis {
 		massbalance => undef,
 		sensitivity_analysis => 0
     });
+    if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
+		if (length($params->{reaction_ko_list}) > 0) {
+			$params->{reaction_ko_list} = [split(/,/,$params->{reaction_ko_list})];
+		} else {
+			 $params->{reaction_ko_list} = [];
+		}
+	}
     if (!defined($model)) {
     	$handler->util_log("Retrieving model.");
 		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});

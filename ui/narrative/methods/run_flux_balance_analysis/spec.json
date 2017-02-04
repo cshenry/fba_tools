@@ -307,7 +307,7 @@
          ],
          "advanced" : true,
          "id" : "reaction_ko_list",
-         "allow_multiple" : true,
+         "allow_multiple" : false,
          "optional" : true,
          "field_type" : "textsubdata"
       },
