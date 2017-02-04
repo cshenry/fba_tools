@@ -1362,7 +1362,7 @@ sub func_check_model_mass_balance {
     if (length($fba->MFALog) > 0) {
     	$message = $fba->MFALog();
     	Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
-    	$htmlreport = "<table><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
+    	$htmlreport = "<div style=\"overflow-y: scroll;\"><table><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
     	my $array = [split(/\n/,$message)];
     	my ($id,$reactants,$products,$rimbal,$pimbal);
     	for (my $i=0; $i < @{$array}; $i++) {
@@ -1379,12 +1379,12 @@ sub func_check_model_mass_balance {
     			if (length($rimbal) > 0) {
     				$rimbal .= "<br>";
     			}
-    			$rimbal = $1." ".$2;
+    			$rimbal .= $1." ".$2;
     		} elsif ($array->[$i] =~ m/Extra\s(.+)\s(.+)\sin\sreactants/) {
     			if (length($pimbal) > 0) {
     				$pimbal .= "<br>";
     			}
-    			$pimbal = $1." ".$2;
+    			$pimbal .= $1." ".$2;
     		} elsif ($array->[$i] =~ m/Reactants:/) {
     			$i++;
     			while ($array->[$i] ne "Products:") {
@@ -1407,7 +1407,7 @@ sub func_check_model_mass_balance {
     	if (defined($id)) {
 			$htmlreport .= "<row><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></row>";
 		}
-    	$htmlreport .= "</table>";
+    	$htmlreport .= "</table></div>";
     }
     Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 }
