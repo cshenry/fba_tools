@@ -1361,7 +1361,7 @@ sub func_check_model_mass_balance {
 	my $message = "No mass imbalance found";
     if (length($fba->MFALog) > 0) {
     	$message = $fba->MFALog();
-    	$htmlreport = "<div style=\"height: 100px; overflow-y: scroll;\"><table><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
+    	$htmlreport = "<div style=\"height: 400px; overflow-y: scroll;\"><table class=\"table table-striped table-bordered\" style=\"margin-left: auto; margin-right: auto;\"><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
     	my $array = [split(/\n/,$message)];
     	my ($id,$reactants,$products,$rimbal,$pimbal);
     	for (my $i=0; $i < @{$array}; $i++) {
@@ -3044,10 +3044,11 @@ sub func_bulk_export {
 	    	$input->{type} = $typehash->{$field};
 	    	my $objects = $handler->util_list_objects($input);
 	    	for (my $i=0; $i < @{$objects}; $i++) {
-	    		$hash->{$objects->[$i]->[1]} = 1;
+	    		$hash->{$objects->[$i]->[6]."/".$objects->[$i]->[0]."/".$objects->[$i]->[4]} = 1;
 	    	}
 	    }
     }
+    
     my $export_dir = Bio::KBase::utilities::conf("fba_tools","scratch")."/model_objects";
     if (-d $export_dir) {
     	File::Path::rmtree ($export_dir);
@@ -3055,14 +3056,14 @@ sub func_bulk_export {
     File::Path::mkpath ($export_dir);
     my $count = keys(%{$hash});
     foreach my $item (keys(%{$hash})) {
-    	my $object = $handler->util_get_object($params->{workspace}."/".$item,{});
+    	my $object = $handler->util_get_object($item,{});
     	my $input = {workspace_name => $params->{workspace}};
     	if ($translation->{$object->_type()} eq "phenosim") {
-    		$input->{phenotype_simulation_set_name} = $item;
+    		$input->{phenotype_simulation_set_name} = $object->_wsname();
     	} elsif ($translation->{$object->_type()} eq "phenotype") {
-    		$input->{phenotype_set_name} = $item;
+    		$input->{phenotype_set_name} = $object->_wsname();
     	} else {
-    		$input->{$translation->{$object->_type()}."_name"} = $item;
+    		$input->{$translation->{$object->_type()}."_name"} = $object->_wsname();
     	}
     	func_export($input,{
     		file_util => 1,
