@@ -1361,7 +1361,7 @@ sub func_check_model_mass_balance {
 	my $message = "No mass imbalance found";
     if (length($fba->MFALog) > 0) {
     	$message = $fba->MFALog();
-    	$htmlreport = "<div style=\"overflow-y: scroll;\"><table><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
+    	$htmlreport = "<div style=\"height: 100px; overflow-y: scroll;\"><table><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
     	my $array = [split(/\n/,$message)];
     	my ($id,$reactants,$products,$rimbal,$pimbal);
     	for (my $i=0; $i < @{$array}; $i++) {
