@@ -214,7 +214,7 @@ sub util_build_fba {
 			make_model_rxns_reversible => $make_model_reactions_reversible,
 			activate_all_model_reactions => $params->{comprehensive_gapfill},
 		};
-		print "activate_all_model_reactions:".$params->{comprehensive_gapfill}."\n";
+		#print "activate_all_model_reactions:".$params->{comprehensive_gapfill}."\n";
 		if (defined($exp_matrix)) {
 			$input->{expsample} = $exphash;
 			$input->{expression_threshold_percentile} = $params->{exp_threshold_percentile};
@@ -945,18 +945,23 @@ sub func_simulate_growth_on_phenotype_data {
 					"False negatives : ".$phenoset->fn()." (".POSIX::floor(100*$phenoset->fn()/$total)."%)<br>".
 					"Overall accuracy : ".POSIX::floor(100*($phenoset->cp()+$phenoset->cn())/$total)."%<p>";
 	if ($params->{gapfill_phenotypes} == 1 || $params->{fit_phenotype_data} == 1) {
-    	$htmlreport .= "<br><table class=\"reporttbl\">".
+    	my $htmltable = "<br><table class=\"reporttbl\">".
     		"<row><th>Media</th><th>KO</th><th>Supplements</th><th>Growth</th><th>Gapfilled reactions</th></row>";
+    	my $found = 0;
     	for (my $i=0; $i < @{$phenos}; $i++) {
 			if ($phenos->[$i]->numGapfilledReactions() > 0) {
-				$htmlreport .= "<tr><td>".$phenos->[$i]->phenotype()->media()->_wsname()."</td><td>".
+				$found = 1;
+				$htmltable .= "<tr><td>".$phenos->[$i]->phenotype()->media()->_wsname()."</td><td>".
 					$phenos->[$i]->phenotype()->geneKOString()."</td><td>".
 					$phenos->[$i]->phenotype()->additionalCpdString()."</td><td>".
 					$phenos->[$i]->phenotype()->normalizedGrowth()."</td><td>".
 					$phenos->[$i]->gapfilledReactionString()."</td></tr>";
 			}
 		}	
-    	$htmlreport .= "</table>";
+    	$htmltable .= "</table>";
+    	if ($found == 1) {
+    		$htmlreport .= $htmltable;
+    	}
 		if ($params->{fit_phenotype_data} == 1) {
 			$handler->util_log("Saving gapfilled model.");
 			my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
@@ -1933,7 +1938,7 @@ sub func_compare_models {
     my $mc_bcpds;
 
     foreach my $model1 (@{$models}) {
-		my $mc_model = {};
+		my $mc_model = {model_similarity => {}};
 		push @{$mc_models}, $mc_model;
 		$mc_model->{id} = $model1->{id};
 		$mc_model->{model_ref} = $model1->{model_ref};
@@ -2505,7 +2510,6 @@ sub func_importmodel {
 	    				my $nodes = $html->getChildNodes();
 	    				foreach my $node (@{$nodes}) {
 		    				my $text = $node->toString();
-							print $text."\n";
 							if ($text =~ m/FORMULA:\s*([^<]+)/) {
 								if (length($1) > 0) {
 								    $formula = $1;
@@ -2740,7 +2744,6 @@ sub func_importmodel {
 	    	push(@{$params->{reactions}},[$id,$direction,$compartment,$gpr,$name,$enzyme,$pathway,undef,$reactants." => ".$products,$aliases]);
 	    }
     }
-    print Bio::KBase::ObjectAPI::utilities::TOJSON($params->{compounds},1)."\n";
     #ENSURING THAT THERE ARE REACTIONS AND COMPOUNDS FOR THE MODEL AT THIS STAGE
     if (!defined($params->{compounds}) || @{$params->{compounds}} == 0) {
     	Bio::KBase::utilities::error("Must have compounds for model!");

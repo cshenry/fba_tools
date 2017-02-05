@@ -1245,7 +1245,7 @@ sub add_gapfilling {
 	my $solutions = $args->{object}->gapfillingSolutions();
 	my $added = 0;
 	my $reversed = 0;
-	my $gfarray;
+	my $gfarray = [];
 	for (my $i=0; $i < @{$solutions}; $i++) {
 		my $solution = $solutions->[$i];
 		my $integrated = 0;
@@ -1386,12 +1386,17 @@ sub add_gapfilling {
 			}
 		}	
 	}
-	my $tbl = "<p>During gapfilling, ".$added." new reactions were added to the model, while ".$reversed." existing reactions were made reversible. The reactions added and modified during gapfilling are listed below:</p><br>";
-	$tbl .= "<table class=\"reporttbl\"><tr><th>Reaction</th><th>Direction</th><th>Equation</th><th>Action</th></tr>";
-	foreach my $gfrxn (@{$gfarray}) {
-		$tbl .= "<tr><td>".$gfrxn->{obj}->id()."</td><td>".$gfrxn->{dir}."</td><td>".$gfrxn->{obj}->definition()."</td><td>".$gfrxn->{action}."</td></tr>";
+	my $tbl = "<p>During gapfilling, ".$added." new reactions were added to the model, while ".$reversed." existing reactions were made reversible.";
+	if (@{$gfarray} > 0) {
+		$tbl .= " The reactions added and modified during gapfilling are listed below:</p><br>";
+		$tbl .= "<table class=\"reporttbl\"><tr><th>Reaction</th><th>Direction</th><th>Equation</th><th>Action</th></tr>";
+		foreach my $gfrxn (@{$gfarray}) {
+			$tbl .= "<tr><td>".$gfrxn->{obj}->id()."</td><td>".$gfrxn->{dir}."</td><td>".$gfrxn->{obj}->definition()."</td><td>".$gfrxn->{action}."</td></tr>";
+		}
+		$tbl .= "</table>";
+	} else {
+		$tbl .= "</p>";
 	}
-	$tbl .= "</table>";
 	Bio::KBase::utilities::gapfilling_html_table({message => $tbl,append => 0});
 }
 
