@@ -635,7 +635,18 @@ sub LoadExternalReactionEquation {
 	    			my $newcpd = 1;
 	    			my $newcpdid = $cpdobj->id();
 	    			my $formula = $cpdobj->formula();
-	    			my $charge = $cpdobj->defaultCharge();
+	    			my $formula;
+	    			if (defined($args->{compounds}->{$origid}->[2])) {
+	    				$formula = $args->{compounds}->{$origid}->[2];
+	    			} else {
+	    				$formula = $cpdobj->formula();
+	    			}
+	    			my $charge;
+	    			if (defined($args->{compounds}->{$origid}->[1])) {
+	    				$charge = $args->{compounds}->{$origid}->[1];
+	    			} else {
+	    				$charge = $cpdobj->defaultCharge();
+	    			}
 	    			my $name = $cpdobj->name();
 	    			my $reference = $cpdobj->_reference();
 	    			if (defined($mdlcpd)) {
@@ -647,8 +658,6 @@ sub LoadExternalReactionEquation {
 	    							$newcpd = 1;
 	    							$newcpdid = $cpd;
 	    							$name = $newcpdid;
-	    							$formula = "";
-	    							$charge = 0;
 	    							$reference = $self->template()->_reference()."/compounds/id/cpd00000";
 	    						}
 	    					}
@@ -687,13 +696,21 @@ sub LoadExternalReactionEquation {
 		    					}
 		    				}
 		    			}
+		    			my $formula = "";
+		    			if (defined($args->{compounds}->{$origid}->[2])) {
+		    				$formula = $args->{compounds}->{$origid}->[2];
+		    			}
+		    			my $charge = 0;
+		    			if (defined($args->{compounds}->{$origid}->[1])) {
+		    				$charge = $args->{compounds}->{$origid}->[1];
+		    			}
 		    			if ($newcpd == 1) {
 	    					$mdlcpd = $self->add("modelcompounds",{
 		    					id => $cpd."_".$compartment.$index,
 								compound_ref => $self->template()->_reference()."/compounds/id/cpd00000",
 								name => $cpd."_".$compartment.$index,
-								charge => 0,
-								formula => "",
+								charge => $charge,
+								formula => $formula,
 								modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
 		    					aliases => ["mdlid:".$cpd]
 		    				});
