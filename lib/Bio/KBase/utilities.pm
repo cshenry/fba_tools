@@ -17,6 +17,7 @@ our $processid = undef;
 our $loghandler;
 our $starttime = undef;
 our $arguments = undef;
+our $gapfilltable = undef;
 
 sub style {
 	return "	<style>
@@ -93,6 +94,21 @@ sub log {
 	my ($msg,$tag) = @_;
 	$loghandler->util_log($msg,$tag,Bio::KBase::utilities::processid());
 }
+
+sub gapfilling_html_table {
+	my ($args) = @_;
+	$args = Bio::KBase::utilities::args($args,[],{
+		message => undef,
+		append => 1,
+	});
+	if (defined($args->{message})) {
+		if ($args->{append} == 0 || !defined($gapfilltable)) {
+			$gapfilltable = "";
+		}
+		$gapfilltable .= $args->{message};
+	}
+	return $gapfilltable;
+};
 
 sub print_report_message {
 	my ($args) = @_;

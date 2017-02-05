@@ -937,7 +937,7 @@ sub func_simulate_growth_on_phenotype_data {
 					$phenos->[$i]->phenotype()->geneKOString()."</td><td>".
 					$phenos->[$i]->phenotype()->additionalCpdString()."</td><td>".
 					$phenos->[$i]->phenotype()->normalizedGrowth()."</td><td>".
-					$phenos->[$i]->phenotype()->gapfilledReactionString()."</td></tr>";
+					$phenos->[$i]->gapfilledReactionString()."</td></tr>";
 			}
 		}	
     	$htmlreport .= "</table>";
