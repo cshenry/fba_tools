@@ -234,7 +234,7 @@
          },
          "field_type" : "textsubdata",
          "optional" : true,
-         "allow_multiple" : true,
+         "allow_multiple" : false,
          "id" : "reaction_ko_list"
       },
       {

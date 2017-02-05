@@ -358,7 +358,7 @@ sub func_build_metabolic_model {
 	$datachannel->{fbamodel} = $model;
 	#Gapfilling model if requested
 	my $output;
-	Bio::KBase::utilities::print_report_message({message => "A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".",append => 0,html => 0});
+	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
 	if ($params->{gapfill_model} == 1) {
 		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			thermodynamic_constraints => $params->{thermodynamic_constraints},
@@ -381,15 +381,16 @@ sub func_build_metabolic_model {
 			media_workspace => $params->{media_workspace},
 			media_id => $params->{media_id}
 		},$model);
+		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
 	} else {
 		#If not gapfilling, then we just save the model directly
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
 		my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 		$output->{new_fbamodel_ref} = $params->{workspace}."/".$params->{fbamodel_output_id};
-		Bio::KBase::utilities::print_report_message({message => " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run.",append => 1,html => 0});
+		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.</p></div>"
 	}
-	Bio::KBase::utilities::print_report_message({message => " Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.",append => 1,html => 0});
+	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return $output;
 }
 
@@ -421,12 +422,22 @@ sub func_gapfill_metabolic_model {
 		number_of_solutions => 1,
 		gapfill_output_id => undef
     });
+    my $printreport = 1;
+    my $htmlreport = "";
+    if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
+		if (length($params->{reaction_ko_list}) > 0) {
+			$params->{reaction_ko_list} = [split(/,/,$params->{reaction_ko_list})];
+		} else {
+			 $params->{reaction_ko_list} = [];
+		}
+	}
     if (!defined($model)) {
     	$handler->util_log("Retrieving model.");
 		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
-    	Bio::KBase::utilities::print_report_message({message => "The genome-scale metabolic model ".$params->{fbamodel_id}." was gapfilled",append => 0,html => 0});
+    	$htmlreport .= Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>The genome-scale metabolic model ".$params->{fbamodel_id}." was gapfilled";
     } else {
-    	Bio::KBase::utilities::print_report_message({message => " The model ".$params->{fbamodel_id}." was gapfilled",append => 1,html => 0});
+    	$printreport = 0;
+    	$htmlreport .= "<p>The model ".$params->{fbamodel_id}." was gapfilled";
     }
     if (!defined($params->{media_id})) {
     	if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
@@ -437,12 +448,12 @@ sub func_gapfill_metabolic_model {
 		}
     	$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
     }
-    Bio::KBase::utilities::print_report_message({message => " in ".$params->{media_id}." media to force a minimum flux of ".$params->{minimum_target_flux}." through the ".$params->{target_reaction}." reaction.",append => 1,html => 0});
+    $htmlreport .= " in ".$params->{media_id}." media to force a minimum flux of ".$params->{minimum_target_flux}." through the ".$params->{target_reaction}." reaction.";
     $handler->util_log("Retrieving ".$params->{media_id}." media.");
     my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
     $handler->util_log("Preparing flux balance analysis problem.");
     if (defined($params->{source_fbamodel_id}) && !defined($source_model)) {
-		Bio::KBase::utilities::print_report_message({message => " During the gapfilling, the source biochemistry database was augmented with all the reactions contained in the existing ".$params->{source_fbamodel_id}." model.",append => 1,html => 0});
+		$htmlreport .= " During the gapfilling, the source biochemistry database was augmented with all the reactions contained in the existing ".$params->{source_fbamodel_id}." model.";
 		$source_model = $handler->util_get_object($params->{source_fbamodel_workspace}."/".$params->{source_fbamodel_id});
 	}
 	my $gfs = $model->gapfillings();
@@ -471,9 +482,13 @@ sub func_gapfill_metabolic_model {
     }
     $fba->id($params->{gapfill_output_id});
     $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{gapfill_output_id},{type => "KBaseFBA.FBA"});
-	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 400px; overflow-y: scroll;\">".Bio::KBase::utilities::gapfilling_html_table()."</div>";
-	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	$htmlreport .= "</p>";
+	if ($printreport == 1) {
+		$htmlreport .= Bio::KBase::utilities::gapfilling_html_table()."</div>";
+		Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	}
 	return {
+		html_report => $htmlreport,
 		new_fba_ref => $params->{workspace}."/".$params->{fbamodel_output_id}.".".$gfid,
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},
 		number_gapfilled_reactions => 0,

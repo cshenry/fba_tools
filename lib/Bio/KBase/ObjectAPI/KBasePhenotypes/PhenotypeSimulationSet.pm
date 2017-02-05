@@ -24,19 +24,19 @@ has fn => ( is => 'rw', isa => 'Int',printOrder => '-1', type => 'msdata', metac
 #***********************************************************************************************************
 sub _buildcp {
 	my ($self) = @_;
-	return $self->class_count("cp");
+	return $self->class_count("CP");
 }
 sub _buildfp {
 	my ($self) = @_;
-	return $self->class_count("fp");
+	return $self->class_count("FP");
 }
 sub _buildcn {
 	my ($self) = @_;
-	return $self->class_count("cn");
+	return $self->class_count("CN");
 }
 sub _buildfn {
 	my ($self) = @_;
-	return $self->class_count("fn");
+	return $self->class_count("FN");
 }
 
 #***********************************************************************************************************
