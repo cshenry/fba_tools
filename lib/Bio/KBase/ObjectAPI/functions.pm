@@ -454,7 +454,6 @@ sub func_gapfill_metabolic_model {
 			}
 		}
 	}
-	Bio::KBase::utilities::print_report_message({message => " This model has been previously gapfilled ".@{$gfs}." times, and the ID of the current gapfilling solution is gf.".$currentid.".",append => 1,html => 0});
 	my $gfid = "gf.".$currentid;
     my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fbamodel_output_id}.".".$gfid,1,1,$source_model,1);
     $handler->util_log("Running flux balance analysis problem.");
@@ -472,6 +471,8 @@ sub func_gapfill_metabolic_model {
     }
     $fba->id($params->{gapfill_output_id});
     $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{gapfill_output_id},{type => "KBaseFBA.FBA"});
+	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 400px; overflow-y: scroll;\">".Bio::KBase::utilities::gapfilling_html_table()."</div>";
+	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return {
 		new_fba_ref => $params->{workspace}."/".$params->{fbamodel_output_id}.".".$gfid,
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},

@@ -1245,6 +1245,7 @@ sub add_gapfilling {
 	my $solutions = $args->{object}->gapfillingSolutions();
 	my $added = 0;
 	my $reversed = 0;
+	my $gfarray;
 	for (my $i=0; $i < @{$solutions}; $i++) {
 		my $solution = $solutions->[$i];
 		my $integrated = 0;
@@ -1271,6 +1272,7 @@ sub add_gapfilling {
 				$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
 				if ($rxn->direction() ne $mdlrxn->direction() && $integrated == 1) {
 					$reversed++;
+					push(@{$gfarray},{obj => $mdlrxn, dir => $rxn->direction(),action => "reversed"});
 					$mdlrxn->direction("=");
 				}
 			} else {
@@ -1284,6 +1286,7 @@ sub add_gapfilling {
 					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
 					if ($integrated == 1) {
 						$added++;
+						push(@{$gfarray},{obj => $mdlrxn, dir => $rxn->direction(),action => "added"});
 						$self->add("modelreactions",$mdlrxn);
 						$mdlrxn->direction() = $rxn->direction();
 						$self->removed("gapfilledcandidates",$mdlrxn);
@@ -1359,6 +1362,7 @@ sub add_gapfilling {
 					$mdlrxn->gapfill_data()->{$args->{id}}->{$i} = [$rxn->direction(),$integrated,[]];
 					if ($integrated == 1) {
 						$added++;
+						push(@{$gfarray},{obj => $mdlrxn, dir => $rxn->direction(),action => "added"});
 						$mdlrxn = $self->add("modelreactions",$mdlrxn);
 					} else {
 						$mdlrxn = $self->add("gapfilledcandidates",$mdlrxn);
@@ -1375,13 +1379,20 @@ sub add_gapfilling {
 						$self->add("gapfilledcandidates",$mdlrxn);
 						$self->remove("modelreactions",$mdlrxn);
 					} else {
+						push(@{$gfarray},{obj => $mdlrxn, dir => $rxn->direction(),action => "added"});
 						$added++;
 					}
 				}
 			}
 		}	
 	}
-	Bio::KBase::utilities::print_report_message({message => " During gapfilling, ".$added." new reactions were added to the model, while ".$reversed." existing reactions were made reversible.",append => 1,html => 0});
+	my $tbl = "<p>During gapfilling, ".$added." new reactions were added to the model, while ".$reversed." existing reactions were made reversible. The reactions added and modified during gapfilling are listed below:</p><br>";
+	$tbl .= "<table class=\"reporttbl\"><tr><th>Reaction</th><th>Direction</th><th>Equation</th><th>Action</th></tr>";
+	foreach my $gfrxn (@{$gfarray}) {
+		$tbl .= "<tr><td>".$gfrxn->{obj}->id()."</td><td>".$gfrxn->{dir}."</td><td>".$gfrxn->{obj}->definition()."</td><td>".$gfrxn->{action}."</td></tr>";
+	}
+	$tbl .= "</table>";
+	Bio::KBase::utilities::gapfilling_html_table({message => $tbl,append => 0});
 }
 
 =head3 searchForCompound
