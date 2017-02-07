@@ -115,6 +115,30 @@ $tester->run_tests();
 	sub run_tests {
 		my($self) = @_;
 		
+		my $output = $self->test_harness("sbml_file_to_model",{
+			model_file => {path => "/Users/chenry/workspace/KBaseDemo/iMR1_799.xml"},
+	        model_name => "iMR1_799",
+	        workspace_name => "chenry:1484863241748",
+	        genome => "Shewanella_oneidensis_MR1",
+	        biomass => ["SO_BIOMASSMACRO_DM_NOATP2"]
+		},"import model from SBML",[],0,undef);
+		exit();
+		
+		my $output = $self->test_harness("edit_media",{
+			workspace => "chenry:1454960620516",
+			media_output_id => "edit_media_test",
+			media_id => "test_media",
+	    	compounds_to_remove => "cpd00204",
+	    	compounds_to_change => [{change_id => "cpd00001",change_concentration => 0.1,change_minflux => -100,change_maxflux => 1}],
+	    	compounds_to_add => [{add_id => "Acetate",add_concentration => 0.1,add_minflux => -100,add_maxflux => 1}],
+	    	pH_data => 8,
+	    	temperature => 303,
+	    	source_id => "edit_media_test_source_id",
+	    	source => "edit_media_test_source",
+	    	type => "test",
+	    	isDefined => 1
+		},"edited media",[],0,undef);
+		exit;
 		my $output = $self->test_harness("tsv_file_to_model",{
 			model_file => {path => "/Users/chenry/temp/SBW25Reactions.txt"},
 	        model_name => "iSB1139",
@@ -135,31 +159,7 @@ $tester->run_tests();
 		},"import model from tsv",[],0,undef);
 		exit;
 		
-		my $report_input_params = { 
-			'objects_created' => [ 
-				{ 'ref'=> "16162/24/21", 'description'=> 'Differential Expression' },
-				{ 'ref'=> "16162/27/17", 'description'=> 'Filtered Expression Matrix' },
-			],
-			'direct_html_index' => 0,
-			'file_links'        => [{
-				'path'       =>  "/Users/chenry/temp/volcano_plot.png.zip",
-				'name'       =>  "volcano_plot.png.zip",
-				'description'=> 'zip file containing volcano plot'
-			}],
-			'html_links'        => [{
-				'path'       => "/Users/chenry/temp/volcano.html",
-				'name'       => "volcano.html",
-				'description'=> 'HTML file to display volcano plot'
-			}],
-			'report_object_name'=> "ath_sample_set_hisat2_AlignmentSet_stringtie_ExpressionSet_plot_report",
-			'workspace_name'    => "mccorkle:1484837859347"
-		};
-    	my $kr = new KBaseReport::KBaseReportImpl();
-		if (!defined($KBaseReport::KBaseReportServer::CallContext)) {
-			$KBaseReport::KBaseReportServer::CallContext = Bio::KBase::utilities::context();
-		}
-		$kr->create_extended_report($report_input_params);
-    	exit;
+		
 		#my $wsname = "chenry:1456989658583";
 		my $wsname = "chenry:1454960620516";
 		
@@ -299,20 +299,7 @@ $tester->run_tests();
 	    },"Run flux balance analysis",[],0,undef);
 		
 		exit;
-		my $output = $self->test_harness("edit_media",{
-			workspace => "chenry:1454960620516",
-			media_output_id => "edit_media_test",
-			media_id => "test_media",
-	    	compounds_to_remove => ["cpd00204"],
-	    	compounds_to_change => [["cpd00001",0.1,-100,1]],
-	    	compounds_to_add => [["cpd00027",0.1,-100,1]],
-	    	pH_data => 8,
-	    	temperature => 303,
-	    	source_id => "edit_media_test_source_id",
-	    	source => "edit_media_test_source",
-	    	type => "test",
-	    	isDefined => 1
-		},"edited media",[],0,undef);
+		
 		$output = $self->test_harness("export_phenotype_set_as_tsv_file",{
 			input_ref => "chenry:1454960620516/shewy_phenotypes"
 		},"export phenotypes as tsv",[],0,undef);

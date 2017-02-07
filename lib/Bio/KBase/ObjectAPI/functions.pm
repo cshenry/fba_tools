@@ -987,7 +987,7 @@ sub func_merge_metabolic_models_into_community_model {
     });
     #Getting genome
 	$handler->util_log("Retrieving first model.");
-	my $model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id_list}->[0]);
+	my $model = $handler->util_get_object($params->{fbamodel_id_list}->[0]);
 	#Creating new community model
 	my $commdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		source_id => $params->{fbamodel_output_id},
@@ -1006,9 +1006,6 @@ sub func_merge_metabolic_models_into_community_model {
 		gapfillings => [],
 	});
 	$commdl->parent($handler->util_store());
-	for (my $i=0; $i < @{$params->{fbamodel_id_list}}; $i++) {
-		$params->{fbamodel_id_list}->[$i] = $params->{fbamodel_workspace}."/".$params->{fbamodel_id_list}->[$i];
-	}
 	$handler->util_log("Merging models.");
 	my $genomeObj = $commdl->merge_models({
 		models => $params->{fbamodel_id_list},
