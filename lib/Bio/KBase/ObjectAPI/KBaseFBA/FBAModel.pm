@@ -473,7 +473,6 @@ sub addModelReaction {
 	    }else{
 		$rxnobj = $self->template()->searchForReaction($rootid);
 	    }
-		my $rxnobj = $self->template()->searchForReaction($rootid);
 		if (!defined($rxnobj) && !defined($eq)) {
 			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 		} else {
@@ -641,7 +640,6 @@ sub LoadExternalReactionEquation {
 	    			my $newcpd = 1;
 	    			my $newcpdid = $cpdobj->id();
 	    			my $formula = $cpdobj->formula();
-	    			my $formula;
 	    			if (defined($args->{compounds}->{$origid}->[2])) {
 	    				$formula = $args->{compounds}->{$origid}->[2];
 	    			} else {
