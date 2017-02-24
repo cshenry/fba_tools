@@ -8,7 +8,7 @@ service-language:
     perl
 
 module-version:
-    1.5.0
+    1.5.1
 
 owners:
     [chenry]
