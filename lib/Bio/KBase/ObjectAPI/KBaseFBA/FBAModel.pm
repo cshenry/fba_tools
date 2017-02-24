@@ -857,18 +857,20 @@ sub printSBML {
 		}
 		for (my $j=0; $j < @{$rgts}; $j++) {
 			my $rgt = $rgts->[$j];
+			my $rgtid = $rgt->modelcompound_ref();
+			$rgtid =~ s/.+\///;
 			if ($sign*$rgt->coefficient() < 0) {
 				if ($firstreact == 1) {
 					$firstreact = 0;
 					push(@{$output},"<listOfReactants>");
 				}
-				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgt->modelcompound()->id()).' stoichiometry="'.-1*$sign*$rgt->coefficient().'"/>');	
+				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.-1*$sign*$rgt->coefficient().'"/>');	
 			} else {
 				if ($firstprod == 1) {
 					$firstprod = 0;
 					push(@{$prodoutput},"<listOfProducts>");
 				}
-				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgt->modelcompound()->id()).' stoichiometry="'.$sign*$rgt->coefficient().'"/>');
+				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.$sign*$rgt->coefficient().'"/>');
 			}
 		}
 		if ($firstreact != 1) {
@@ -912,18 +914,20 @@ sub printSBML {
 		my $biocpds = $rxn->biomasscompounds();
 		for (my $j=0; $j < @{$biocpds}; $j++) {
 			my $rgt = $biocpds->[$j];
+			my $rgtid = $rgt->modelcompound_ref();
+			$rgtid =~ s/.+\///;
 			if ($rgt->coefficient() < 0) {
 				if ($firstreact == 1) {
 					$firstreact = 0;
 					push(@{$output},"<listOfReactants>");
 				}
-				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgt->modelcompound()->id()).' stoichiometry="'.-1*$rgt->coefficient().'"/>');	
+				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.-1*$rgt->coefficient().'"/>');	
 			} else {
 				if ($firstprod == 1) {
 					$firstprod = 0;
 					push(@{$prodoutput},"<listOfProducts>");
 				}
-				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgt->modelcompound()->id()).' stoichiometry="'.$rgt->coefficient().'"/>');
+				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.$rgt->coefficient().'"/>');
 			}
 		}
 		if ($firstreact != 1) {
@@ -1386,6 +1390,7 @@ sub add_gapfilling {
 			}
 		}	
 	}
+	
 	my $tbl = "<p>During gapfilling, ".$added." new reactions were added to the model, while ".$reversed." existing reactions were made reversible.";
 	if (@{$gfarray} > 0) {
 		$tbl .= " The reactions added and modified during gapfilling are listed below:</p><br>";
