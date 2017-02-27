@@ -444,7 +444,10 @@ sub addModelReaction {
     }
     my $cmp = $self->template()->searchForCompartment($args->{compartment});
     if (!defined($cmp)) {
-    	Bio::KBase::ObjectAPI::utilities::error("Unrecognized compartment ".$args->{compartment}." in reaction: ".$args->{reaction});
+    	$cmp = $self->template()->biochemistry()->searchForCompartment($args->{compartment});
+    	if (!defined($cmp)) {
+    		Bio::KBase::ObjectAPI::utilities::error("Unrecognized compartment ".$args->{compartment}." in reaction: ".$args->{reaction});
+    	}
     }
     $args->{compartment} = $cmp->id();
     my $eq;
@@ -635,7 +638,6 @@ sub LoadExternalReactionEquation {
 	    			my $newcpd = 1;
 	    			my $newcpdid = $cpdobj->id();
 	    			my $formula = $cpdobj->formula();
-	    			my $formula;
 	    			if (defined($args->{compounds}->{$origid}->[2])) {
 	    				$formula = $args->{compounds}->{$origid}->[2];
 	    			} else {
@@ -1804,16 +1806,16 @@ sub edit_metabolic_model {
 		my $cpdref = "~/template/compounds/id/cpd00000";
 		$params->{compounds_to_add}->[$i]->{add_compound_id} =~ s/_[a-z]\d+$//;
 		if ($params->{compounds_to_add}->[$i]->{add_compound_id} =~ m/cpd\d+/) {
-			$cpdref = "~/template/compounds/id/".$params->{compounds_to_add}->[$i]->{add_compound_id};
 			my $cpdobj = $self->template()->getObject("compounds",$params->{compounds_to_add}->[$i]->{add_compound_id});
 			if (defined($cpdobj)) {
-				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_charge})) {
+				$cpdref = "~/template/compounds/id/".$params->{compounds_to_add}->[$i]->{add_compound_id};
+				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_charge}) || $params->{compounds_to_add}->[$i]->{add_compound_charge} eq "") {
 					$params->{compounds_to_add}->[$i]->{add_compound_charge} = $cpdobj->defaultCharge();
 				}
-				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_name})) {
+				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_name}) || $params->{compounds_to_add}->[$i]->{add_compound_name} eq "") {
 					$params->{compounds_to_add}->[$i]->{add_compound_name} = $cpdobj->name();
 				}
-				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_formula})) {
+				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_formula}) || $params->{compounds_to_add}->[$i]->{add_compound_formula} eq "") {
 					$params->{compounds_to_add}->[$i]->{add_compound_formula} = $cpdobj->formula();
 				}
 			}

@@ -592,7 +592,7 @@ sub save_model {
 	}
 	$object->genome();
 	$object->genome_ref($ref."/genome||");
-	$object->genome()->_reference($ref."/genome");
+	$object->genome()->_reference($ref."/genome||");
 	my $objectdata = {};
 	#Adding folders and genome if not already present
 	my $listout = [];

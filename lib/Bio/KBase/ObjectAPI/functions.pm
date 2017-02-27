@@ -194,6 +194,21 @@ sub util_build_fba {
 			}
 		}
 	}
+	if (defined($params->{probanno_id})) {
+		$handler->util_log("Getting reaction likelihoods from ".$params->{probanno_workspace}."/".$params->{probanno_id});
+		my $rxnprobs = $handler->util_get_object($params->{probanno_workspace}."/".$params->{probanno_id});
+		$fbaobj->{parameters}->{"Objective coefficient file"} = "ProbModelReactionCoefficients.txt";
+		$fbaobj->{inputfiles}->{"ProbModelReactionCoefficients.txt"} = [];
+		my $rxncosts = {};
+		foreach my $rxn (@{$rxnprobs->{reaction_probabilities}}) {
+			$rxncosts->{$rxn->[0]} = (1-$rxn->[1]); # ID is first element, likelihood is second element
+		}
+		foreach my $rxn (keys(%{$rxncosts})) {
+			push(@{$fbaobj->{inputfiles}->{"ProbModelReactionCoefficients.txt"}},"forward\t".$rxn."\t".$rxncosts->{$rxn});
+			push(@{$fbaobj->{inputfiles}->{"ProbModelReactionCoefficients.txt"}},"reverse\t".$rxn."\t".$rxncosts->{$rxn});
+		}
+		$handler->util_log("Added reaction coefficients from reaction likelihoods in ".$params->{probanno_workspace}."/".$params->{probanno_id});
+ 	}
     if (defined($exp_matrix) || (defined($gapfilling) && $gapfilling == 1)) {
 		if ($params->{minimum_target_flux} < 0.1) {
 			$params->{minimum_target_flux} = 0.1;
@@ -400,6 +415,8 @@ sub func_gapfill_metabolic_model {
     	fbamodel_workspace => $params->{workspace},
     	media_id => undef,
     	media_workspace => $params->{workspace},
+		probanno_id => undef,
+		probanno_workspace => $params->{workspace},
     	target_reaction => "bio1",
     	fbamodel_output_id => $params->{fbamodel_id},
     	thermodynamic_constraints => 0,
