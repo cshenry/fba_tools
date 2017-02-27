@@ -788,9 +788,23 @@ sub loadGPRFromString {
 						if (!defined($geneAliases->{$ftrID})) {
 							$missingGenes->{$ftrID} = 1;
 						} else {
-							$subObj->addLinkArrayItem("features",$geneAliases->{$ftrID});
+							if (!defined($geneAliases->{$ftrID}) && $ftrID =~ m/(.+\d)\.\d+$/) {
+								 if (defined($geneAliases->{$1})) {
+								 	$ftrID = $1;
+								 }
+							}
+							if (!defined($geneAliases->{$ftrID})) {
+								$missingGenes->{$ftrID} = 1;
+							} else {
+								$subObj->addLinkArrayItem("features",$geneAliases->{$ftrID});
+							}
 						}
 					}
+				}
+				if (!defined($geneAliases->{$ftrID}) && $ftrID =~ m/(.+\d)\.\d+$/) {
+					 if (defined($geneAliases->{$1})) {
+					 	$ftrID = $1;
+					 }
 				}
 				if (!defined($geneAliases->{$ftrID})) {
 					$missingGenes->{$ftrID} = 1;

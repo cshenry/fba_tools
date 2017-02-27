@@ -2801,13 +2801,13 @@ sub func_importmodel {
     }
     for (my $i=0; $i < @{$params->{reactions}}; $i++) {
     	my $rxn = $params->{reactions}->[$i];
-    	if ($rxn->[0] =~ m/(.+)_[a-z]\d+$/) {
+    	if ($rxn->[0] =~ m/(.+)_[abcdefghijklmnopqrstuvwxyz]\d+$/) {
     		$rxn->[0] = $1;
     	}
     	$rxn->[0] =~ s/[^\w]/_/g;
     	$rxn->[0] =~ s/_/-/g;
     	if (defined($rxn->[8])) {
-    		if ($rxn->[8] =~ m/^\[([A-Za-z])\]\s*:\s*(.+)/) {
+    		if ($rxn->[8] =~ m/^\[([ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz])\]\s*:\s*(.+)/) {
     			$rxn->[2] = lc($1);
     			$rxn->[8] = $2;
     		}
@@ -2818,17 +2818,19 @@ sub func_importmodel {
     				$cpd =~ s/\+/\\+/g;
     				$cpd =~ s/\(/\\(/g;
     				$cpd =~ s/\)/\\)/g;
-    				my $array = [split(/\s$cpd\s/,$eqn)];
+    				my $search = " ".$cpd." ";
+    				my $array = [split(/\Q$search/,$eqn)];
     				$eqn = join(" ".$translation->{$origcpd}." ",@{$array});
-    				$array = [split(/\s$cpd\[/,$eqn)];
+    				$search = " ".$cpd."[";
+    				$array = [split(/\Q$search/,$eqn)];
     				$eqn = join(" ".$translation->{$origcpd}."[",@{$array});
     			}
     		}
     		$eqn =~ s/^\|\s//;
     		$eqn =~ s/\s\|$//;
-    		while ($eqn =~ m/\[([A-Z])\]/) {
+    		while ($eqn =~ m/\[([ABCDEFGHIJKLMNOPQRSTUVWXYZ])\]/) {
     			my $reqplace = "[".lc($1)."]";
-    			$eqn =~ s/\[[A-Z]\]/$reqplace/;
+    			$eqn =~ s/\[[ABCDEFGHIJKLMNOPQRSTUVWXYZ]\]/$reqplace/;
     		}
     		if ($eqn =~ m/<[-=]+>/) {
     			if (!defined($rxn->[1])) {
