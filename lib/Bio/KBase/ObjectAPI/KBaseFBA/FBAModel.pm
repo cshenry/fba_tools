@@ -1982,7 +1982,13 @@ sub edit_metabolic_model {
 			direction => $rxnadd->{add_reaction_direction},
 			modelcompartment_ref => "~/modelcompartments/id/".$rxnadd->{reaction_compartment_id}
 		});
-		if (defined($rxnobj)) {
+		if (defined($rxnadd->{equation})) {
+			$mdlrxnobj->LoadExternalReactionEquation({
+				equation => $rxnadd->{equation},
+				compounds => {},
+				reaction => $mdlrxnobj
+			});
+		} elsif (defined($rxnobj)) {
 			my $reactants;
 			if ($rxnobj->id() =~ m/rxn\d+_[a-z]+/) {
 				$reactants = $rxnobj->templateReactionReagents();
