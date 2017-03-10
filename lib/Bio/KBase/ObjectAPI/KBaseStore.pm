@@ -154,7 +154,7 @@ sub read_object_from_file_cache {
 	my $cache_dir = Bio::KBase::utilities::conf("ModelSEED","kbase_file_cache");
 	if ($self->is_a_cache_target($ref) == 1) {
 		#Get WS metadata
-		my $infos = $self->workspace()->get_object_info([$self->ref_to_identity($ref)],0);
+		my $infos = Bio::KBase::ObjectAPI::kbaseenv::get_object_info([$self->ref_to_identity($ref)],0);
 		my $info = $infos->[0];
 		if (-e $cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/meta") {
 			my $filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/meta");
