@@ -95,7 +95,7 @@ sub is_a_cache_target {
 		$self->{_cache_targets} = {};
 		my $cache_targets = Bio::KBase::utilities::conf("ModelSEED","kbase_cache_targets");
 		if (defined($cache_targets) && length($cache_targets) > 0) {
-			my $array = [split(/\|/,$cache_targets)];
+			my $array = [split(/;/,$cache_targets)];
 			for (my $i=0; $i < @{$array}; $i++) {
 				if ($array->[$i] eq "all") {
 					$self->{_cache_all} = 1;
