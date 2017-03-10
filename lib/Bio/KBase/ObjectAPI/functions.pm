@@ -1600,7 +1600,7 @@ sub func_create_or_edit_media {
 }
 
 sub func_edit_metabolic_model {
-	my ($params) = @_;
+	my ($params,$model) = @_;
     $params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
     	compounds_to_add => [],
     	compounds_to_change => [],
@@ -1620,7 +1620,9 @@ sub func_edit_metabolic_model {
     }
 	#Getting genome
 	$handler->util_log("Loading model from workspace");
-	my $model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+	if (!defined($model)) {
+		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+	}
 	(my $editresults,my $detaileditresults) = $model->edit_metabolic_model({
 		compounds_to_add => $params->{compounds_to_add},
 		compounds_to_change => $params->{compounds_to_change},
