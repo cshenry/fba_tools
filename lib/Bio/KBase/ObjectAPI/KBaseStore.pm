@@ -187,34 +187,34 @@ sub process_object {
 				no_data => 0,
 				no_metadata => 1
 			});
-			$objdatas->[$i]->{data} = $gaoutput->{genomes}->[0]->{data};
+			$data = $gaoutput->{genomes}->[0]->{data};
 			$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
 		}
 		if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
-			$self->cache()->{$newrefs->[$i]} = $objdatas->[$i]->{data};
-			$self->cache()->{$newrefs->[$i]}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
+			$self->cache()->{$ref} = $data;
+			$self->cache()->{$ref}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
 		} else {
-			$self->cache()->{$newrefs->[$i]} = $class->new($objdatas->[$i]->{data});
-			$self->cache()->{$newrefs->[$i]}->parent($self);
-			$self->cache()->{$newrefs->[$i]}->_wsobjid($info->[0]);
-			$self->cache()->{$newrefs->[$i]}->_wsname($info->[1]);
-			$self->cache()->{$newrefs->[$i]}->_wstype($info->[2]);
-			$self->cache()->{$newrefs->[$i]}->_wssave_date($info->[3]);
-			$self->cache()->{$newrefs->[$i]}->_wsversion($info->[4]);
-			$self->cache()->{$newrefs->[$i]}->_wssaved_by($info->[5]);
-			$self->cache()->{$newrefs->[$i]}->_wswsid($info->[6]);
-			$self->cache()->{$newrefs->[$i]}->_wsworkspace($info->[7]);
-			$self->cache()->{$newrefs->[$i]}->_wschsum($info->[8]);
-			$self->cache()->{$newrefs->[$i]}->_wssize($info->[9]);
-			$self->cache()->{$newrefs->[$i]}->_wsmeta($info->[10]);
-			$self->cache()->{$newrefs->[$i]}->_reference($info->[6]."/".$info->[0]."/".$info->[4]);
-			$self->uuid_refs()->{$self->cache()->{$newrefs->[$i]}->uuid()} = $info->[6]."/".$info->[0]."/".$info->[4];
+			$self->cache()->{$ref} = $class->new($data);
+			$self->cache()->{$ref}->parent($self);
+			$self->cache()->{$ref}->_wsobjid($info->[0]);
+			$self->cache()->{$ref}->_wsname($info->[1]);
+			$self->cache()->{$ref}->_wstype($info->[2]);
+			$self->cache()->{$ref}->_wssave_date($info->[3]);
+			$self->cache()->{$ref}->_wsversion($info->[4]);
+			$self->cache()->{$ref}->_wssaved_by($info->[5]);
+			$self->cache()->{$ref}->_wswsid($info->[6]);
+			$self->cache()->{$ref}->_wsworkspace($info->[7]);
+			$self->cache()->{$ref}->_wschsum($info->[8]);
+			$self->cache()->{$ref}->_wssize($info->[9]);
+			$self->cache()->{$ref}->_wsmeta($info->[10]);
+			$self->cache()->{$ref}->_reference($info->[6]."/".$info->[0]."/".$info->[4]);
+			$self->uuid_refs()->{$self->cache()->{$ref}->uuid()} = $info->[6]."/".$info->[0]."/".$info->[4];
 		}
 		if (!defined($self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]})) {
-			$self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]} = $self->cache()->{$newrefs->[$i]};
+			$self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]} = $self->cache()->{$ref};
 		}
 		if ($type eq "Biochemistry") {
-			$self->cache()->{$newrefs->[$i]}->add("compounds",{
+			$self->cache()->{$ref}->add("compounds",{
 				id => "cpd00000",
 		    	isCofactor => 0,
 		    	name => "CustomCompound",
@@ -231,7 +231,7 @@ sub process_object {
 		    	pkas => {},
 		    	pkbs => {}
 			});
-			$self->cache()->{$newrefs->[$i]}->add("reactions",{
+			$self->cache()->{$ref}->add("reactions",{
 				id => "rxn00000",
 		    	name => "CustomReaction",
 		    	abbreviation => "CustomReaction",
@@ -247,26 +247,26 @@ sub process_object {
 			});
 		}
 		if ($type eq "FBAModel" && $options->{raw} != 1) {
-			if (defined($self->cache()->{$newrefs->[$i]}->template_ref())) {
-				if ($self->cache()->{$newrefs->[$i]}->template_ref() =~ m/(\w+)\/(\w+)\/*\d*/) {
+			if (defined($self->cache()->{$ref}->template_ref())) {
+				if ($self->cache()->{$ref}->template_ref() =~ m/(\w+)\/(\w+)\/*\d*/) {
 					my $output = Bio::KBase::kbaseenv::get_object_info([{
-						"ref" => $self->cache()->{$newrefs->[$i]}->template_ref()
+						"ref" => $self->cache()->{$ref}->template_ref()
 					}],0);
 					if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
-						$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramPosModelTemplate");
+						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/GramPosModelTemplate");
 					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramNegModelTemplate") {
-						$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
+						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
 					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "CoreModelTemplate ") {
-						$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
+						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
 					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
-						$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/PlantModelTemplate");
+						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/PlantModelTemplate");
 					} elsif ($output->[0]->[7] eq "NewKBaseModelTemplates") {
-						$self->cache()->{$newrefs->[$i]}->template_ref($output->[0]->[7]."/".$output->[0]->[1]);
+						$self->cache()->{$ref}->template_ref($output->[0]->[7]."/".$output->[0]->[1]);
 					}
 				}
 			}
-			if (defined($self->cache()->{$newrefs->[$i]}->template_refs())) {
-				my $temprefs = $self->cache()->{$newrefs->[$i]}->template_refs();
+			if (defined($self->cache()->{$ref}->template_refs())) {
+				my $temprefs = $self->cache()->{$ref}->template_refs();
 				for (my $j=0; $j < @{$temprefs}; $j++) {
 					my $output = Bio::KBase::kbaseenv::get_object_info([{
 						"ref" => $temprefs->[$j]
@@ -284,8 +284,8 @@ sub process_object {
 					}
 				}
 			}
-			if (!defined($self->cache()->{$newrefs->[$i]}->{_updated})) {
-				my $obj = $self->cache()->{$newrefs->[$i]};
+			if (!defined($self->cache()->{$ref}->{_updated})) {
+				my $obj = $self->cache()->{$ref};
 				$obj->update_from_old_versions();
 			}
 		}
