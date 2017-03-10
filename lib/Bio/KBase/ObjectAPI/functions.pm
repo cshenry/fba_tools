@@ -1895,7 +1895,7 @@ sub func_compare_models {
 				map { $gene_translation->{$ortholog->[0]}->{$_->[0]} = 1 } @{$family->{orthologs}};
 				foreach my $model (@{$models}) {
 				    if (exists $ftr2model{$ortholog->[0]}->{$model->{id}}) {
-						map { $in_models->{$model->{id}}->{$_} = 1 } keys $ftr2reactions{$ortholog->[0]};
+						map { $in_models->{$model->{id}}->{$_} = 1 } keys %{$ftr2reactions{$ortholog->[0]}};
 						push @{$model2family{$model->{id}}->{$family->{id}}}, $ortholog->[0];
 				    }
 				}
