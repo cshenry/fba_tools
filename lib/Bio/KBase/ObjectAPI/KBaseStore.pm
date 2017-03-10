@@ -150,7 +150,7 @@ sub write_object_to_file_cache {
 
 #This function writes data to file cache if it's been flagged for local file caching
 sub read_object_from_file_cache {
-	my ($self,$ref) = @_;
+	my ($self,$ref,$options) = @_;
 	my $cache_dir = Bio::KBase::utilities::conf("ModelSEED","kbase_file_cache");
 	if ($self->is_a_cache_target($ref) == 1) {
 		#Get WS metadata
@@ -161,7 +161,7 @@ sub read_object_from_file_cache {
 			my $meta = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
 			$filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/data");
 			my $data = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
-			$self->process_object($meta,$data,$ref);
+			$self->process_object($meta,$data,$ref,$options);
 			return 1;
 		}
 	}
@@ -169,7 +169,7 @@ sub read_object_from_file_cache {
 }
 
 sub process_object {
-	my ($self,$info,$data,$ref) = @_;
+	my ($self,$info,$data,$ref,$options) = @_;
 	$self->write_object_to_file_cache($info,$data);
 	if ($info->[2] =~ m/^(.+)\.(.+)-/) {
 		my $module = $1;
@@ -305,7 +305,7 @@ sub get_objects {
 			$refs->[$i] = "kbase/default";
 		}
 		if (!defined($self->cache()->{$refs->[$i]}) || $options->{refreshcache} == 1) {
-    		if ($self->read_object_from_file_cache($refs->[$i]) == 0) {
+    		if ($self->read_object_from_file_cache($refs->[$i],$options) == 0) {
     			push(@{$newrefs},$refs->[$i]);
     		}
     	}
@@ -318,7 +318,7 @@ sub get_objects {
 		}
 		my $objdatas = Bio::KBase::kbaseenv::get_objects($objids);
 		for (my $i=0; $i < @{$objdatas}; $i++) {
-			$self->process_object($objdatas->[$i]->{info},$objdatas->[$i]->{data},$newrefs->[$i]);
+			$self->process_object($objdatas->[$i]->{info},$objdatas->[$i]->{data},$newrefs->[$i],$options);
 		}
 	}
 	#Gathering objects out of the cache
