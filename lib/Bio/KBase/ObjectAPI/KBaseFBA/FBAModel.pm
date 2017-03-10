@@ -1983,7 +1983,7 @@ sub edit_metabolic_model {
 			modelcompartment_ref => "~/modelcompartments/id/".$rxnadd->{reaction_compartment_id}
 		});
 		if (defined($rxnadd->{equation})) {
-			$mdlrxnobj->LoadExternalReactionEquation({
+			$self->LoadExternalReactionEquation({
 				equation => $rxnadd->{equation},
 				compounds => {},
 				reaction => $mdlrxnobj
