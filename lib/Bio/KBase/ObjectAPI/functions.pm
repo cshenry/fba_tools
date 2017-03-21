@@ -1478,6 +1478,7 @@ sub func_create_or_edit_media {
     my $media;
 	if (defined($params->{media_id})) {
 		$media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+		$media = $media->cloneObject();
 		my $list = ["source","source_id","type","isDefined","temperature","pH_data"];
 		for (my $i=0; $i < @{$list}; $i++) {
 			my $item = $list->[$i];
@@ -2735,7 +2736,7 @@ sub func_importmodel {
 									if (defined($aliases) && length($aliases) > 0) {
 								    	$aliases .= "|";
 								    }
-								    $aliases .= "BIOCYC".$1;
+								    $aliases .= "BIOCYC:".$1;
 								}
 							}
 	    				}

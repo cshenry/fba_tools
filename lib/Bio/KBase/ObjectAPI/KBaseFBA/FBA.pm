@@ -2334,12 +2334,12 @@ sub parseFluxFiles {
 			my $biomass_array = [];
 			if (defined($row->[1]) && length($row->[1]) > 0) {
 				$biomass_array = [split(/;/,$row->[1])];
-				pop(@{$biomass_array});
+				#pop(@{$biomass_array});
 			}
 			my $rxn_array = [];
 			if (defined($row->[2]) && length($row->[2]) > 0) {
 				$rxn_array = [split(/;/,$row->[2])];
-				pop(@{$rxn_array});
+				#pop(@{$rxn_array});
 			}
 			$sensitivity_hash->{$rxn} = {
 				biomass => $biomass_array,
