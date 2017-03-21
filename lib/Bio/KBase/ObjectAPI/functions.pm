@@ -1477,8 +1477,9 @@ sub func_create_or_edit_media {
     $params->{pH_data} .= "";
     my $media;
 	if (defined($params->{media_id})) {
-		$media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
-		$media = $media->cloneObject();
+		my $oldmedia = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+		$media = $oldmedia->cloneObject();
+		$media->parent($oldmedia->parent());
 		my $list = ["source","source_id","type","isDefined","temperature","pH_data"];
 		for (my $i=0; $i < @{$list}; $i++) {
 			my $item = $list->[$i];
