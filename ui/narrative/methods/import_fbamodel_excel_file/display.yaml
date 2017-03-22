@@ -7,9 +7,9 @@ screenshots :
 
 method-suggestions :
     related :
-        [import_fbamodel_sbml_file, import_fbamodel_tsv_file]
+        []
     next :
-        [compare_models, edit_metabolic_model, propagate_model_to_new_genome]
+        []
 
 parameters :
     inputFile :
