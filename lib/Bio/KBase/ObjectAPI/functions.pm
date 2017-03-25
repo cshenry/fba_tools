@@ -405,6 +405,7 @@ sub func_build_metabolic_model {
 		$output->{new_fbamodel_ref} = $params->{workspace}."/".$params->{fbamodel_output_id};
 		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.</p></div>"
 	}
+	$output->{new_fbamodel} = $model;
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return $output;
 }
@@ -505,6 +506,7 @@ sub func_gapfill_metabolic_model {
 		Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	}
 	return {
+		new_fbamodel => $model,
 		html_report => $htmlreport,
 		new_fba_ref => $params->{workspace}."/".$params->{fbamodel_output_id}.".".$gfid,
 		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},
