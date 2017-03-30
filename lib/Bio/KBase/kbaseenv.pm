@@ -168,23 +168,39 @@ sub add_object_created {
 
 sub save_objects {
 	my ($args) = @_;
-	my $output = Bio::KBase::kbaseenv::ws_client()->save_objects($args);
-	for (my $i=0; $i < @{$output}; $i++) {
-		my $array = [split(/\./,$output->[$i]->[2])];
-		my $description = $array->[1]." ".$output->[$i]->[1];
-		if (defined($output->[$i]->[10]) && defined($output->[$i]->[10]->{description})) {
-			$description = $output->[$i]->[10]->{description};
+	my $retryCount = 3;
+	my $error;
+	my $output;
+	while ($retryCount > 0) {
+		eval {
+			$output = Bio::KBase::kbaseenv::ws_client()->save_objects($args);
+			for (my $i=0; $i < @{$output}; $i++) {
+				my $array = [split(/\./,$output->[$i]->[2])];
+				my $description = $array->[1]." ".$output->[$i]->[1];
+				if (defined($output->[$i]->[10]) && defined($output->[$i]->[10]->{description})) {
+					$description = $output->[$i]->[10]->{description};
+				}
+				push(@{$objects_created},{
+					"ref" => $output->[$i]->[6]."/".$output->[$i]->[0]."/".$output->[$i]->[4],
+					description => $description
+				});
+			}
+		};
+		# If there is a network glitch, wait a second and try again. 
+		if ($@) {
+			$error = $@;
+		} else {
+			last;
 		}
-		push(@{$objects_created},{
-			"ref" => $output->[$i]->[6]."/".$output->[$i]->[0]."/".$output->[$i]->[4],
-			description => $description
-		});
+	}
+	if ($retryCount == 0) {
+		Bio::KBase::utilities::error($error);
 	}
 	return $output;
 }
 
 sub configure_ws_id {
-	my ($ws,$id) = @_;
+	my ($ws,$id,$version) = @_;
 	my $input = {};
  	if ($ws =~ m/^\d+$/) {
  		$input->{wsid} = $ws;
@@ -195,6 +211,9 @@ sub configure_ws_id {
 		$input->{objid} = $id;
 	} else {
 		$input->{name} = $id;
+	}
+	if (defined($version)) {
+		$input->{ver} = $version;
 	}
 	return $input;
 }

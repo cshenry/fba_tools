@@ -360,7 +360,8 @@ sub adjustModelReaction {
     	enzyme => undef,
     	pathway => undef,
     	name => undef,
-    	reference => undef
+    	reference => undef,
+    	genetranslation => undef
     }, @_);
 	my $rxnid = $args->{reaction};
 	my $mdlrxn = $self->getObject("modelreactions",$rxnid);
@@ -371,7 +372,7 @@ sub adjustModelReaction {
 		$mdlrxn->direction($args->{direction});
 	}
 	if (defined($args->{gpr})){
-		$mdlrxn->loadGPRFromString($args->{gpr});
+		$mdlrxn->loadGPRFromString($args->{gpr},$args->{genetranslation});
 	}
 	if (!defined($args->{name}) && !defined($mdlrxn->name()) && length($mdlrxn->name()) == 0)  {
     	$args->{name} = $rxnid;
@@ -421,7 +422,8 @@ sub addModelReaction {
     	enzyme => undef,
     	pathway => undef,
     	name => undef,
-    	reference => undef
+    	reference => undef,
+    	genetranslation => undef
     }, @_);
     my $rootid = $args->{reaction};
 	if ($rootid =~ m/(.+)_([a-zA-Z])(\d+)$/) {
@@ -533,7 +535,8 @@ sub addModelReaction {
     	gpr => $args->{gpr},
     	enzyme => $args->{enzyme},
     	pathway => $args->{pathway},
-    	reference => $args->{reference}
+    	reference => $args->{reference},
+    	genetranslation => $args->{genetranslation}
 	});
 	return $mdlrxn;
 }
@@ -602,24 +605,24 @@ sub LoadExternalReactionEquation {
 	    				$compartment = $2;
 	    				$name = $1;
 	    			}
-	    			$cpdobj = $self->template()->searchForCompound($name);
+	    			$cpdobj = $self->template()->searchForCompound($name,1);
 	    			if (!defined($cpdobj) && defined($args->{compounds}->{$origid}->[4])) {
 	    				my $aliases = [split(/\|/,$args->{compounds}->{$origid}->[4])];
 	    				foreach my $alias (@{$aliases}) {
 	    					if ($alias =~ m/^(.+):(.+)/) {
 	    						$alias = $2;
 	    					}
-	    					$cpdobj = $self->template()->searchForCompound($alias);
+	    					$cpdobj = $self->template()->searchForCompound($alias,1);
 	    					if (defined($cpdobj)) {
 	    						last;
 	    					}
 	    				}
 	    			}
 	    			if (!defined($cpdobj)) {
-	    				$cpdobj = $self->template()->searchForCompound($cpd);
+	    				$cpdobj = $self->template()->searchForCompound($cpd,1);
 	    			}
 	    		} else {
-	    			$cpdobj = $self->template()->searchForCompound($cpd);
+	    			$cpdobj = $self->template()->searchForCompound($cpd,1);
 	    		}
 	    		my $mdlcmp = $self->getObject("modelcompartments",$compartment.$index);
 	    		if (!defined($mdlcmp)) {

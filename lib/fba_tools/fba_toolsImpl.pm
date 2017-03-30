@@ -122,7 +122,7 @@ sub util_parse_input_table {
 	if (!-e $filename) {
 		Bio::KBase::utilities::error("Could not find input file:".$filename."!\n");
 	}
-	open(my $fh, "<", $filename) || return;
+	open(my $fh, "<", $filename) || die "Could not open file ".$filename;
 	my $headingline = <$fh>;
 	$headingline =~ tr/\r\n//d;#This line removes line endings from nix and windows files
 	my $delim = undef;

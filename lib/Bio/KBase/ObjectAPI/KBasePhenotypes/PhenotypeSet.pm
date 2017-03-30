@@ -149,6 +149,7 @@ sub import_phenotype_table {
     if (keys(%{$missingMedia}) > 0) {
     	$msg .= "Could not find media:".join(";",keys(%{$missingMedia}))."\n";
     }
+    print "ERRORS:".$msg."\n";
     $self->importErrors($msg);
 }
 

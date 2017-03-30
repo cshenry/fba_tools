@@ -784,32 +784,41 @@ sub loadGPRFromString {
 				my $ftrID = $gpr->[$m]->[$j]->[$k];
 				if (defined($genetranslation) && defined($genetranslation->{$ftrID})) {
 					for (my $n=0; $n < @{$genetranslation->{$ftrID}}; $n++) {
-						$ftrID = $genetranslation->{$ftrID}->[$n];
-						if (!defined($geneAliases->{$ftrID})) {
-							$missingGenes->{$ftrID} = 1;
+						my $newftrID = $genetranslation->{$ftrID}->[$n];
+						if (!defined($geneAliases->{$newftrID}) && $newftrID =~ m/(.+\d)\.\d+$/) {
+							 if (defined($geneAliases->{$1})) {
+							 	$newftrID = $1;
+							 }
+						}
+						if (!defined($geneAliases->{$newftrID}) && defined($geneAliases->{"kb|".$newftrID})) {
+							 $newftrID = "kb|".$newftrID;
+						}
+						if (!defined($geneAliases->{$newftrID}) && defined($geneAliases->{"fig|".$newftrID})) {
+							 $newftrID = "fig|".$newftrID;
+						}
+						if (!defined($geneAliases->{$newftrID})) {
+							$missingGenes->{$newftrID} = 1;
 						} else {
-							if (!defined($geneAliases->{$ftrID}) && $ftrID =~ m/(.+\d)\.\d+$/) {
-								 if (defined($geneAliases->{$1})) {
-								 	$ftrID = $1;
-								 }
-							}
-							if (!defined($geneAliases->{$ftrID})) {
-								$missingGenes->{$ftrID} = 1;
-							} else {
-								$subObj->addLinkArrayItem("features",$geneAliases->{$ftrID});
-							}
+							$subObj->addLinkArrayItem("features",$geneAliases->{$newftrID});
 						}
 					}
-				}
-				if (!defined($geneAliases->{$ftrID}) && $ftrID =~ m/(.+\d)\.\d+$/) {
-					 if (defined($geneAliases->{$1})) {
-					 	$ftrID = $1;
-					 }
-				}
-				if (!defined($geneAliases->{$ftrID})) {
-					$missingGenes->{$ftrID} = 1;
 				} else {
-					$subObj->addLinkArrayItem("features",$geneAliases->{$ftrID});
+					if (!defined($geneAliases->{$ftrID}) && $ftrID =~ m/(.+\d)\.\d+$/) {
+						 if (defined($geneAliases->{$1})) {
+						 	$ftrID = $1;
+						 }
+					}
+					if (!defined($geneAliases->{$ftrID}) && defined($geneAliases->{"kb|".$ftrID})) {
+						 $ftrID = "kb|".$ftrID;
+					}
+					if (!defined($geneAliases->{$ftrID}) && defined($geneAliases->{"fig|".$ftrID})) {
+						 $ftrID = "fig|".$ftrID;
+					}
+					if (!defined($geneAliases->{$ftrID})) {
+						$missingGenes->{$ftrID} = 1;
+					} else {
+						$subObj->addLinkArrayItem("features",$geneAliases->{$ftrID});
+					}
 				}
 			}
 		}
