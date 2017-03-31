@@ -1932,7 +1932,7 @@ sub func_compare_models {
 	my $genomehash;
 	if (!defined($gene_translation)) {
 		foreach my $model1 (@{$models}) {
-			$genomehash->{$model1->{genome_ref}} = $handler->util_get_object($model1->{genome_ref},{raw => 1});
+			$genomehash->{$model1->{genome_ref}} = $handler->util_get_object($model1->{genome_ref},{raw => 1,parent => $model1});
 			my $ftrs = $genomehash->{$model1->{genome_ref}}->{features};
 			for (my $i=0; $i < @{$ftrs}; $i++) {
 				$gene_translation->{$ftrs->[$i]->{id}}->{$ftrs->[$i]->{id}} = 1;

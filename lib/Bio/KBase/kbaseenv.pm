@@ -132,13 +132,17 @@ sub ac_client {
 
 sub get_object {
 	my ($ws,$id) = @_;
-	my $output = Bio::KBase::kbaseenv::ws_client()->get_objects();
+	my $output = Bio::KBase::kbaseenv::ws_client()->get_objects([Bio::KBase::kbaseenv::configure_ws_id($ws,$id)]);
 	return $output->[0]->{data};
 }
 
 sub get_objects {
-	my ($args) = @_;
-	return Bio::KBase::kbaseenv::ws_client()->get_objects($args);
+	my ($args,$options) = @_;
+	my $input = {
+		objects => $args,
+	};
+	my $output = Bio::KBase::kbaseenv::ws_client()->get_objects2($input);
+	return $output->{data};
 }
 
 sub list_objects {

@@ -155,7 +155,13 @@ sub read_object_from_file_cache {
 	my $cache_dir = Bio::KBase::utilities::conf("ModelSEED","kbase_file_cache");
 	if ($self->is_a_cache_target($ref) == 1) {
 		#Get WS metadata
-		my $infos = Bio::KBase::kbaseenv::get_object_info([$self->ref_to_identity($ref)],0);
+		my $infos;
+		eval {
+		$infos = Bio::KBase::kbaseenv::get_object_info([$self->ref_to_identity($ref)],0);
+		};
+		if ($@) {
+			return 0;
+		}
 		my $info = $infos->[0];
 		if (-e $cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/meta") {
 			my $filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/meta");
@@ -171,6 +177,9 @@ sub read_object_from_file_cache {
 
 sub process_object {
 	my ($self,$info,$data,$ref,$options) = @_;
+	my $origref = $ref;
+	my $array = [split(/;/,$ref)];
+	$ref = pop(@{$array});
 	$self->write_object_to_file_cache($info,$data);
 	if ($info->[2] =~ m/^(.+)\.(.+)-/) {
 		my $module = $1;
@@ -194,8 +203,10 @@ sub process_object {
 		if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
 			$self->cache()->{$ref} = $data;
 			$self->cache()->{$ref}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
+			$self->cache()->{$ref}->{_ref_chain} = $origref;
 		} else {
 			$self->cache()->{$ref} = $class->new($data);
+			$self->cache()->{$ref}->ref_chain($origref);
 			$self->cache()->{$ref}->parent($self);
 			$self->cache()->{$ref}->_wsobjid($info->[0]);
 			$self->cache()->{$ref}->_wsname($info->[1]);
@@ -304,9 +315,16 @@ sub get_objects {
 	for (my $i=0; $i < @{$refs}; $i++) {
 		if ($refs->[$i] =~ m/^489\/6\/\d+$/ || $refs->[$i] =~ m/^kbase\/default\/\d+$/) {
 			$refs->[$i] = "kbase/default";
+		} elsif ($refs->[$i] =~ m/(.+;)489\/6\/\d+$/ || $refs->[$i] =~ m/(.+;)kbase\/default\/\d+$/) {
+			$refs->[$i] = $1."kbase/default";
 		}
-		if (!defined($self->cache()->{$refs->[$i]}) || $options->{refreshcache} == 1) {
-    		if ($self->read_object_from_file_cache($refs->[$i],$options) == 0) {
+		my $array = [split(/;/,$refs->[$i])];
+		my $finalref = pop(@{$array});
+		if ($finalref eq $refs->[$i] && defined($options->{parent}) && defined($options->{parent}->{_ref_chain})) {
+			$refs->[$i] = $options->{parent}->{_ref_chain}.";".$refs->[$i];
+		}
+		if (!defined($self->cache()->{$finalref}) || $options->{refreshcache} == 1) {
+    		if ($self->read_object_from_file_cache($finalref,$options) == 0) {
     			push(@{$newrefs},$refs->[$i]);
     		}
     	}
@@ -315,7 +333,8 @@ sub get_objects {
 	if (@{$newrefs} > 0) {
 		my $objids = [];
 		for (my $i=0; $i < @{$newrefs}; $i++) {
-			push(@{$objids},$self->ref_to_identity($newrefs->[$i]));
+			print "REFCHAIN:".$newrefs->[$i]."\n";
+			push(@{$objids},{"ref" => $newrefs->[$i]});
 		}
 		my $objdatas = Bio::KBase::kbaseenv::get_objects($objids);
 		for (my $i=0; $i < @{$objdatas}; $i++) {
@@ -325,7 +344,9 @@ sub get_objects {
 	#Gathering objects out of the cache
 	my $objs = [];
 	for (my $i=0; $i < @{$refs}; $i++) {
-		$objs->[$i] = $self->cache()->{$refs->[$i]};
+		my $array = [split(/;/,$refs->[$i])];
+		my $finalref = pop(@{$array});
+		$objs->[$i] = $self->cache()->{$finalref};
 	}
 	return $objs;
 }
