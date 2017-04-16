@@ -29,6 +29,7 @@ our $CallContext;
 
 our %return_counts = (
         'build_metabolic_model' => 1,
+        'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
         'run_flux_balance_analysis' => 1,
         'compare_fba_solutions' => 1,
@@ -72,6 +73,7 @@ our %return_counts = (
 
 our %method_authentication = (
         'build_metabolic_model' => 'required',
+        'build_multiple_metabolic_models' => 'required',
         'gapfill_metabolic_model' => 'required',
         'run_flux_balance_analysis' => 'required',
         'compare_fba_solutions' => 'required',
@@ -117,6 +119,7 @@ sub _build_valid_methods
     my($self) = @_;
     my $methods = {
         'build_metabolic_model' => 1,
+        'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
         'run_flux_balance_analysis' => 1,
         'compare_fba_solutions' => 1,

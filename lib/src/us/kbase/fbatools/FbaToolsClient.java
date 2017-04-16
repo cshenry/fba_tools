@@ -182,6 +182,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: build_multiple_metabolic_models</p>
+     * <pre>
+     * Build multiple genome-scale metabolic models based on annotations in an input genome typed object
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.BuildMultipleMetabolicModelsParams BuildMultipleMetabolicModelsParams}
+     * @return   instance of type {@link us.kbase.fbatools.BuildMultipleMetabolicModelsResults BuildMultipleMetabolicModelsResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public BuildMultipleMetabolicModelsResults buildMultipleMetabolicModels(BuildMultipleMetabolicModelsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<BuildMultipleMetabolicModelsResults>> retType = new TypeReference<List<BuildMultipleMetabolicModelsResults>>() {};
+        List<BuildMultipleMetabolicModelsResults> res = caller.jsonrpcCall("fba_tools.build_multiple_metabolic_models", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: gapfill_metabolic_model</p>
      * <pre>
      * Gapfills a metabolic model to induce flux in a specified reaction
