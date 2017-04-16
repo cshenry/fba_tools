@@ -71,17 +71,6 @@ parameters :
             Growth condition for gapfilling
 
 
-    fbamodel_output_id :
-        ui-name : |
-            Output model
-        short-hint : |
-            Enter a name for the metabolic model to be created
-        long-hint : |
-            Enter a name for the metabolic model to be created
-        placeholder : |
-            Output metabolic model name
-
-
     custom_bound_list :
         ui-name : |
             Custom flux bounds
