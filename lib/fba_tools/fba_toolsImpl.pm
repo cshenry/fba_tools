@@ -545,6 +545,43 @@ sub build_multiple_metabolic_models
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_multiple_metabolic_models
+    $self->util_initialize_call($params,$ctx);
+	my $orig_genome_workspace = $params->{genome_workspace};
+	my $genomes = $params->{genome_ids};
+	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
+	for (my $i=0; $i < @{$new_genome_list}; $i++) {
+		push(@{$genomes},$new_genome_list->[$i]);
+	}
+	my $htmlmessage = "<p>";
+	for (my $i=0; $i < @{$genomes}; $i++) {
+		$params->{genome_workspace} = $orig_genome_workspace;
+		$params->{genome_id} = $genomes->[$i];
+		if ($genomes->[$i] =~ m/(\d+)\/(\d+)\/*(\d*)/) {
+			$params->{genome_id} = $2;
+			$params->{genome_workspace} = $1;
+		}
+		$params->{fbamodel_output_id} = $params->{genome_id}.".mdl";
+		print "Now building model of ".$genomes->[$i]."\n";
+		eval {
+			my $output = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
+		};
+		if ($@) {
+			print $@."\n";
+			$htmlmessage .= $genomes->[$i]." failed!<br>";
+		} else {
+			$htmlmessage .= $genomes->[$i]." succeeded!<br>";
+		}
+	}
+	$htmlmessage .= "</p>";
+	Bio::KBase::utilities::print_report_message({
+		message => $htmlmessage,html=>1,append => 0
+	});
+	$return = {};
+	$self->util_finalize_call({
+		output => $return,
+		workspace => $params->{workspace},
+		report_name => Bio::KBase::utilities::processid(),
+	});
     #END build_multiple_metabolic_models
     my @_bad_returns;
     (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
