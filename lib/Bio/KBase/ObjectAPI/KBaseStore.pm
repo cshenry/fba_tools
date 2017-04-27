@@ -336,7 +336,17 @@ sub get_objects {
 			print "REFCHAIN:".$newrefs->[$i]."\n";
 			push(@{$objids},{"ref" => $newrefs->[$i]});
 		}
-		my $objdatas = Bio::KBase::kbaseenv::get_objects($objids);
+		my $objdatas;
+		eval {
+			$objdatas = Bio::KBase::kbaseenv::get_objects($objids);
+		};
+		if ($@) {
+			for (my $i=0; $i < @{$objids}; $i++) {
+				my $array = [split(/;/,$objids->[$i]->{"ref"})];
+				$objids->[$i]->{"ref"} = pop(@{$array});
+			}
+			$objdatas = Bio::KBase::kbaseenv::get_objects($objids);
+		}
 		for (my $i=0; $i < @{$objdatas}; $i++) {
 			$self->process_object($objdatas->[$i]->{info},$objdatas->[$i]->{data},$newrefs->[$i],$options);
 		}
