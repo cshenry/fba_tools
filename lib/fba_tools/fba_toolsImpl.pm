@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.1.0';
-our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = '7b245bd0625977772ab0bd74032d045272db26d9';
+our $VERSION = '1.2.0';
+our $GIT_URL = 'git@github.com:msneddon/fba_tools';
+our $GIT_COMMIT_HASH = '0c5cea95326d0f4dd192a85257466a2de484d27e';
 
 =head1 NAME
 
@@ -20,7 +20,6 @@ This module contains the implementation for the primary methods in KBase for met
 
 #BEGIN_HEADER
 use Bio::KBase::AuthToken;
-use Bio::KBase::workspace::Client;
 use Bio::KBase::ObjectAPI::KBaseStore;
 use Bio::KBase::ObjectAPI::functions;
 use Bio::KBase::utilities;

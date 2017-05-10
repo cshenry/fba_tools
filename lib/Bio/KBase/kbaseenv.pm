@@ -2,6 +2,7 @@ package Bio::KBase::kbaseenv;
 use strict;
 use warnings;
 use Bio::KBase::utilities;
+use Workspace::WorkspaceClient;
 
 our $ws_client = undef;
 our $ga_client = undef;
@@ -101,7 +102,7 @@ sub ws_client {
 		refresh => 0
 	});
 	if ($parameters->{refresh} == 1 || !defined($ws_client)) {
-		$ws_client = new Bio::KBase::workspace::Client(Bio::KBase::utilities::utilconf("workspace-url"),token => Bio::KBase::utilities::token());
+		$ws_client = new Workspace::WorkspaceClient(Bio::KBase::utilities::utilconf("workspace-url"),token => Bio::KBase::utilities::token());
 	}
 	return $ws_client;
 }

@@ -30,6 +30,12 @@ DataFileUtil::DataFileUtilClient
 Contains utilities for saving and retrieving data to and from KBase data
 services. Requires Shock 0.9.6+ and Workspace Service 0.4.1+.
 
+Note that some calls may create files or directories in the root of the scratch space (typically
+/kb/module/work/tmp). For this reason client programmers should not request that DFU archive from
+the root of the scratch space - always create a new directory (e.g. using a UUID for a name or a
+standard library temporary directory utility) and add the target files to that directory when
+archiving.
+
 
 =cut
 
@@ -58,7 +64,7 @@ sub new
     }
     my $service_version = 'release';
     if (exists $arg_hash{"service_version"}) {
-        $service_version = $arg_hash{"async_version"};
+        $service_version = $arg_hash{"service_version"};
     }
     $self->{service_version} = $service_version;
 
@@ -101,20 +107,19 @@ sub new
     # We create an auth token, passing through the arguments that we were (hopefully) given.
 
     {
-	my $token = Bio::KBase::AuthToken->new(@args);
-	
-	if (!$token->error_message)
-	{
-	    $self->{token} = $token->token;
-	    $self->{client}->{token} = $token->token;
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
 	}
-        else
-        {
-	    #
-	    # All methods in this module require authentication. In this case, if we
-	    # don't have a token, we can't continue.
-	    #
-	    die "Authentication failed: " . $token->error_message;
+	
+	if (exists $self->{token})
+	{
+	    $self->{client}->{token} = $self->{token};
 	}
     }
 
@@ -264,7 +269,7 @@ sub _shock_to_file_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._shock_to_file_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -383,7 +388,7 @@ sub _shock_to_file_mass_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._shock_to_file_mass_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -518,7 +523,7 @@ sub _file_to_shock_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._file_to_shock_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -629,7 +634,7 @@ sub _unpack_file_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._unpack_file_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -738,7 +743,7 @@ sub _pack_file_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._pack_file_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -853,7 +858,7 @@ sub _package_for_download_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._package_for_download_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -988,7 +993,7 @@ sub _file_to_shock_mass_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._file_to_shock_mass_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1115,7 +1120,7 @@ sub _copy_shock_node_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._copy_shock_node_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1253,7 +1258,7 @@ sub _own_shock_node_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._own_shock_node_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1352,7 +1357,7 @@ sub _ws_name_to_id_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._ws_name_to_id_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1498,7 +1503,7 @@ sub _save_objects_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._save_objects_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1639,7 +1644,7 @@ sub _get_objects_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._get_objects_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1728,7 +1733,7 @@ sub _versions_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._versions_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1743,6 +1748,222 @@ sub _versions_submit {
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _versions_submit",
                         status_line => $self->{client}->status_line,
                         method_name => '_versions_submit');
+    }
+}
+
+ 
+
+
+=head2 download_staging_file
+
+  $results = $obj->download_staging_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a DataFileUtil.DownloadStagingFileParams
+$results is a DataFileUtil.DownloadStagingFileOutput
+DownloadStagingFileParams is a reference to a hash where the following keys are defined:
+	staging_file_subdir_path has a value which is a string
+DownloadStagingFileOutput is a reference to a hash where the following keys are defined:
+	copy_file_path has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a DataFileUtil.DownloadStagingFileParams
+$results is a DataFileUtil.DownloadStagingFileOutput
+DownloadStagingFileParams is a reference to a hash where the following keys are defined:
+	staging_file_subdir_path has a value which is a string
+DownloadStagingFileOutput is a reference to a hash where the following keys are defined:
+	copy_file_path has a value which is a string
+
+
+=end text
+
+=item Description
+
+Download a staging area file to scratch area
+
+=back
+
+=cut
+
+sub download_staging_file
+{
+    my($self, @args) = @_;
+    my $job_id = $self->_download_staging_file_submit(@args);
+    my $async_job_check_time = $self->{async_job_check_time};
+    while (1) {
+        Time::HiRes::sleep($async_job_check_time);
+        $async_job_check_time *= $self->{async_job_check_time_scale_percent} / 100.0;
+        if ($async_job_check_time > $self->{async_job_check_max_time}) {
+            $async_job_check_time = $self->{async_job_check_max_time};
+        }
+        my $job_state_ref = $self->_check_job($job_id);
+        if ($job_state_ref->{"finished"} != 0) {
+            if (!exists $job_state_ref->{"result"}) {
+                $job_state_ref->{"result"} = [];
+            }
+            return wantarray ? @{$job_state_ref->{"result"}} : $job_state_ref->{"result"}->[0];
+        }
+    }
+}
+
+sub _download_staging_file_submit {
+    my($self, @args) = @_;
+# Authentication: required
+    if ((my $n = @args) != 1) {
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+                                   "Invalid argument count for function _download_staging_file_submit (received $n, expecting 1)");
+    }
+    {
+        my($params) = @args;
+        my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+            my $msg = "Invalid arguments passed to _download_staging_file_submit:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+            Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+                                   method_name => '_download_staging_file_submit');
+        }
+    }
+    my $context = undef;
+    if ($self->{service_version}) {
+        $context = {'service_ver' => $self->{service_version}};
+    }
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+        method => "DataFileUtil._download_staging_file_submit",
+        params => \@args, context => $context});
+    if ($result) {
+        if ($result->is_error) {
+            Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+                           code => $result->content->{error}->{code},
+                           method_name => '_download_staging_file_submit',
+                           data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+            );
+        } else {
+            return $result->result->[0];  # job_id
+        }
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _download_staging_file_submit",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_download_staging_file_submit');
+    }
+}
+
+ 
+
+
+=head2 download_web_file
+
+  $results = $obj->download_web_file($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a DataFileUtil.DownloadWebFileParams
+$results is a DataFileUtil.DownloadWebFileOutput
+DownloadWebFileParams is a reference to a hash where the following keys are defined:
+	file_url has a value which is a string
+	download_type has a value which is a string
+DownloadWebFileOutput is a reference to a hash where the following keys are defined:
+	copy_file_path has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a DataFileUtil.DownloadWebFileParams
+$results is a DataFileUtil.DownloadWebFileOutput
+DownloadWebFileParams is a reference to a hash where the following keys are defined:
+	file_url has a value which is a string
+	download_type has a value which is a string
+DownloadWebFileOutput is a reference to a hash where the following keys are defined:
+	copy_file_path has a value which is a string
+
+
+=end text
+
+=item Description
+
+Download a web file to scratch area
+
+=back
+
+=cut
+
+sub download_web_file
+{
+    my($self, @args) = @_;
+    my $job_id = $self->_download_web_file_submit(@args);
+    my $async_job_check_time = $self->{async_job_check_time};
+    while (1) {
+        Time::HiRes::sleep($async_job_check_time);
+        $async_job_check_time *= $self->{async_job_check_time_scale_percent} / 100.0;
+        if ($async_job_check_time > $self->{async_job_check_max_time}) {
+            $async_job_check_time = $self->{async_job_check_max_time};
+        }
+        my $job_state_ref = $self->_check_job($job_id);
+        if ($job_state_ref->{"finished"} != 0) {
+            if (!exists $job_state_ref->{"result"}) {
+                $job_state_ref->{"result"} = [];
+            }
+            return wantarray ? @{$job_state_ref->{"result"}} : $job_state_ref->{"result"}->[0];
+        }
+    }
+}
+
+sub _download_web_file_submit {
+    my($self, @args) = @_;
+# Authentication: required
+    if ((my $n = @args) != 1) {
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+                                   "Invalid argument count for function _download_web_file_submit (received $n, expecting 1)");
+    }
+    {
+        my($params) = @args;
+        my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+            my $msg = "Invalid arguments passed to _download_web_file_submit:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+            Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+                                   method_name => '_download_web_file_submit');
+        }
+    }
+    my $context = undef;
+    if ($self->{service_version}) {
+        $context = {'service_ver' => $self->{service_version}};
+    }
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+        method => "DataFileUtil._download_web_file_submit",
+        params => \@args, context => $context});
+    if ($result) {
+        if ($result->is_error) {
+            Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+                           code => $result->content->{error}->{code},
+                           method_name => '_download_web_file_submit',
+                           data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+            );
+        } else {
+            return $result->result->[0];  # job_id
+        }
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _download_web_file_submit",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_download_web_file_submit');
     }
 }
 
@@ -1762,7 +1983,7 @@ sub status
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "DataFileUtil._status_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1807,16 +2028,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'versions',
+                method_name => 'download_web_file',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method versions",
+            error => "Error invoking method download_web_file",
             status_line => $self->{client}->status_line,
-            method_name => 'versions',
+            method_name => 'download_web_file',
         );
     }
 }
@@ -2075,7 +2296,8 @@ pack - compress a file or archive a directory before loading to Shock.
     file_path is a directory and tarring or zipping is specified, the
     created file name will be set to the directory name, possibly
     overwriting an existing file. Attempting to pack the root directory
-    is an error.
+    is an error. Do not attempt to pack the scratch space root as noted
+    in the module description.
     
     The allowed values are:
         gzip - gzip the file given by file_path.
@@ -2241,8 +2463,9 @@ Input for the pack_file function.
            file_path is a directory and tarring or zipping is specified, the
            created file name will be set to the directory name, possibly
            overwriting an existing file. Attempting to pack the root directory
-           is an error.
-           
+           is an error. Do not attempt to pack the scratch space root as noted
+           in the module description.
+
            The allowed values are:
                gzip - gzip the file given by file_path.
                targz - tar and gzip the directory specified by the directory
@@ -2330,10 +2553,11 @@ file_path - the location of the directory to compress as zip archive
     '.zip' file extension prior to writing. If it is a directory, file 
     name of the created archive will be set to the directory name 
     followed by '.zip', possibly overwriting an existing file. 
-    Attempting to pack the root directory is an error.
+    Attempting to pack the root directory is an error. Do not attempt
+    to pack the scratch space root as noted in the module description.
 ws_ref - list of references to workspace objects which will be used to
     produce info-files in JSON format containing workspace metadata and
-    provenane structures each. It produces new files in folder pointed 
+    provenance structures. It produces new files in folder pointed 
     by file_path (or folder containing file pointed by file_path if 
     it's not folder).
 Optional parameters:
@@ -2872,6 +3096,164 @@ data has a value which is a reference to a list where each element is a DataFile
 
 a reference to a hash where the following keys are defined:
 data has a value which is a reference to a list where each element is a DataFileUtil.ObjectData
+
+
+=end text
+
+=back
+
+
+
+=head2 DownloadStagingFileParams
+
+=over 4
+
+
+
+=item Description
+
+Input parameters for the "download_staging_file" function.
+
+      Required parameters:
+      staging_file_subdir_path: subdirectory file path
+      e.g. 
+        for file: /data/bulk/user_name/file_name
+        staging_file_subdir_path is file_name
+        for file: /data/bulk/user_name/subdir_1/subdir_2/file_name
+        staging_file_subdir_path is subdir_1/subdir_2/file_name
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+staging_file_subdir_path has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+staging_file_subdir_path has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 DownloadStagingFileOutput
+
+=over 4
+
+
+
+=item Description
+
+Results from the download_staging_file function.
+
+      copy_file_path: copied file scratch area path
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+copy_file_path has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+copy_file_path has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 DownloadWebFileParams
+
+=over 4
+
+
+
+=item Description
+
+Input parameters for the "download_web_file" function.
+
+      Required parameters:
+      file_url: file URL
+      download_type: one of ['Direct Download', 'FTP', 'DropBox', 'Google Drive']
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+file_url has a value which is a string
+download_type has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+file_url has a value which is a string
+download_type has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 DownloadWebFileOutput
+
+=over 4
+
+
+
+=item Description
+
+Results from the download_web_file function.
+
+      copy_file_path: copied file scratch area path
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+copy_file_path has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+copy_file_path has a value which is a string
 
 
 =end text
