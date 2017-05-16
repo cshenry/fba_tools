@@ -36,10 +36,6 @@ sub new
 {
     my($class, $url, @args) = @_;
     
-    if (!defined($url))
-    {
-	$url = 'https://kbase.us/services/njs_wrapper';
-    }
 
     my $self = {
 	client => KBaseReport::KBaseReportClient::RpcClient->new,
@@ -59,9 +55,9 @@ sub new
     if (exists $arg_hash{"async_job_check_max_time_ms"}) {
         $self->{async_job_check_max_time} = $arg_hash{"async_job_check_max_time_ms"} / 1000.0;
     }
-    my $service_version = 'dev';
+    my $service_version = 'release';
     if (exists $arg_hash{"service_version"}) {
-        $service_version = $arg_hash{"async_version"};
+        $service_version = $arg_hash{"service_version"};
     }
     $self->{service_version} = $service_version;
 
@@ -104,20 +100,19 @@ sub new
     # We create an auth token, passing through the arguments that we were (hopefully) given.
 
     {
-	my $token = Bio::KBase::AuthToken->new(@args);
-	
-	if (!$token->error_message)
-	{
-	    $self->{token} = $token->token;
-	    $self->{client}->{token} = $token->token;
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
 	}
-        else
-        {
-	    #
-	    # All methods in this module require authentication. In this case, if we
-	    # don't have a token, we can't continue.
-	    #
-	    die "Authentication failed: " . $token->error_message;
+	
+	if (exists $self->{token})
+	{
+	    $self->{client}->{token} = $self->{token};
 	}
     }
 
@@ -201,6 +196,7 @@ LinkedFile is a reference to a hash where the following keys are defined:
 	handle has a value which is a KBaseReport.handle_ref
 	description has a value which is a string
 	name has a value which is a string
+	label has a value which is a string
 	URL has a value which is a string
 handle_ref is a string
 ReportInfo is a reference to a hash where the following keys are defined:
@@ -234,6 +230,7 @@ LinkedFile is a reference to a hash where the following keys are defined:
 	handle has a value which is a KBaseReport.handle_ref
 	description has a value which is a string
 	name has a value which is a string
+	label has a value which is a string
 	URL has a value which is a string
 handle_ref is a string
 ReportInfo is a reference to a hash where the following keys are defined:
@@ -295,7 +292,7 @@ sub _create_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "KBaseReport._create_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -338,6 +335,8 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	direct_html_link_index has a value which is an int
 	file_links has a value which is a reference to a list where each element is a KBaseReport.File
 	report_object_name has a value which is a string
+	html_window_height has a value which is a float
+	summary_window_height has a value which is a float
 	workspace_name has a value which is a string
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
@@ -369,6 +368,8 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	direct_html_link_index has a value which is an int
 	file_links has a value which is a reference to a list where each element is a KBaseReport.File
 	report_object_name has a value which is a string
+	html_window_height has a value which is a float
+	summary_window_height has a value which is a float
 	workspace_name has a value which is a string
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
@@ -438,7 +439,7 @@ sub _create_extended_report_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "KBaseReport._create_extended_report_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -472,7 +473,7 @@ sub status
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "KBaseReport._status_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -674,7 +675,7 @@ description has a value which is a string
 =item Description
 
 Represents a file or html archive that the report should like to
-@optional description
+@optional description label
 
 
 =item Definition
@@ -686,6 +687,7 @@ a reference to a hash where the following keys are defined:
 handle has a value which is a KBaseReport.handle_ref
 description has a value which is a string
 name has a value which is a string
+label has a value which is a string
 URL has a value which is a string
 
 </pre>
@@ -698,6 +700,7 @@ a reference to a hash where the following keys are defined:
 handle has a value which is a KBaseReport.handle_ref
 description has a value which is a string
 name has a value which is a string
+label has a value which is a string
 URL has a value which is a string
 
 
@@ -907,6 +910,8 @@ The following argument allows the user to specify the location of files that the
 list <fileRef> file_links - a list of paths or shock node IDs pointing to a single flat file
 The following parameters indicate where the report object should be saved in the workspace:
 string report_object_name - name to use for the report object (job ID is used if left unspecified)
+html_window_height - height of the html window in the narrative output widget
+summary_window_height - height of summary window in the narrative output widget
 string workspace_name - name of workspace where object should be saved
 
 
@@ -924,6 +929,8 @@ direct_html has a value which is a string
 direct_html_link_index has a value which is an int
 file_links has a value which is a reference to a list where each element is a KBaseReport.File
 report_object_name has a value which is a string
+html_window_height has a value which is a float
+summary_window_height has a value which is a float
 workspace_name has a value which is a string
 
 </pre>
@@ -941,6 +948,8 @@ direct_html has a value which is a string
 direct_html_link_index has a value which is an int
 file_links has a value which is a reference to a list where each element is a KBaseReport.File
 report_object_name has a value which is a string
+html_window_height has a value which is a float
+summary_window_height has a value which is a float
 workspace_name has a value which is a string
 
 

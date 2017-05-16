@@ -36,10 +36,6 @@ sub new
 {
     my($class, $url, @args) = @_;
     
-    if (!defined($url))
-    {
-	$url = 'https://kbase.us/services/njs_wrapper';
-    }
 
     my $self = {
 	client => AssemblyUtil::AssemblyUtilClient::RpcClient->new,
@@ -61,7 +57,7 @@ sub new
     }
     my $service_version = 'release';
     if (exists $arg_hash{"service_version"}) {
-        $service_version = $arg_hash{"async_version"};
+        $service_version = $arg_hash{"service_version"};
     }
     $self->{service_version} = $service_version;
 
@@ -104,20 +100,19 @@ sub new
     # We create an auth token, passing through the arguments that we were (hopefully) given.
 
     {
-	my $token = Bio::KBase::AuthToken->new(@args);
-	
-	if (!$token->error_message)
-	{
-	    $self->{token} = $token->token;
-	    $self->{client}->{token} = $token->token;
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
 	}
-        else
-        {
-	    #
-	    # All methods in this module require authentication. In this case, if we
-	    # don't have a token, we can't continue.
-	    #
-	    die "Authentication failed: " . $token->error_message;
+	
+	if (exists $self->{token})
+	{
+	    $self->{client}->{token} = $self->{token};
 	}
     }
 
@@ -187,6 +182,7 @@ GetAssemblyParams is a reference to a hash where the following keys are defined:
 	filename has a value which is a string
 FastaAssemblyFile is a reference to a hash where the following keys are defined:
 	path has a value which is a string
+	assembly_name has a value which is a string
 
 </pre>
 
@@ -201,6 +197,7 @@ GetAssemblyParams is a reference to a hash where the following keys are defined:
 	filename has a value which is a string
 FastaAssemblyFile is a reference to a hash where the following keys are defined:
 	path has a value which is a string
+	assembly_name has a value which is a string
 
 
 =end text
@@ -259,7 +256,7 @@ sub _get_assembly_as_fasta_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "AssemblyUtil._get_assembly_as_fasta_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -368,7 +365,7 @@ sub _export_assembly_as_fasta_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "AssemblyUtil._export_assembly_as_fasta_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -410,6 +407,7 @@ SaveAssemblyParams is a reference to a hash where the following keys are defined
 	assembly_name has a value which is a string
 FastaAssemblyFile is a reference to a hash where the following keys are defined:
 	path has a value which is a string
+	assembly_name has a value which is a string
 ShockNodeId is a string
 
 </pre>
@@ -428,6 +426,7 @@ SaveAssemblyParams is a reference to a hash where the following keys are defined
 	assembly_name has a value which is a string
 FastaAssemblyFile is a reference to a hash where the following keys are defined:
 	path has a value which is a string
+	assembly_name has a value which is a string
 ShockNodeId is a string
 
 
@@ -489,7 +488,7 @@ sub _save_assembly_from_fasta_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "AssemblyUtil._save_assembly_from_fasta_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -523,7 +522,7 @@ sub status
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "AssemblyUtil._status_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -627,6 +626,7 @@ sub _validate_version {
 <pre>
 a reference to a hash where the following keys are defined:
 path has a value which is a string
+assembly_name has a value which is a string
 
 </pre>
 
@@ -636,6 +636,7 @@ path has a value which is a string
 
 a reference to a hash where the following keys are defined:
 path has a value which is a string
+assembly_name has a value which is a string
 
 
 =end text

@@ -20,7 +20,6 @@ This module contains the implementation for the primary methods in KBase for met
 
 #BEGIN_HEADER
 use Bio::KBase::AuthToken;
-use Bio::KBase::workspace::Client;
 use Bio::KBase::ObjectAPI::KBaseStore;
 use Bio::KBase::ObjectAPI::functions;
 use Bio::KBase::utilities;

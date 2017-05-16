@@ -36,10 +36,6 @@ sub new
 {
     my($class, $url, @args) = @_;
     
-    if (!defined($url))
-    {
-	$url = 'https://kbase.us/services/njs_wrapper';
-    }
 
     my $self = {
 	client => GenomeAnnotationAPI::GenomeAnnotationAPIClient::RpcClient->new,
@@ -61,7 +57,7 @@ sub new
     }
     my $service_version = 'release';
     if (exists $arg_hash{"service_version"}) {
-        $service_version = $arg_hash{"async_version"};
+        $service_version = $arg_hash{"service_version"};
     }
     $self->{service_version} = $service_version;
 
@@ -104,12 +100,19 @@ sub new
     # We create an auth token, passing through the arguments that we were (hopefully) given.
 
     {
-	my $token = Bio::KBase::AuthToken->new(@args);
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
+	}
 	
-	if (!$token->error_message)
+	if (exists $self->{token})
 	{
-	    $self->{token} = $token->token;
-	    $self->{client}->{token} = $token->token;
+	    $self->{client}->{token} = $self->{token};
 	}
     }
 
@@ -245,7 +248,7 @@ sub _get_taxon_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_taxon_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -350,7 +353,7 @@ sub _get_assembly_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_assembly_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -455,7 +458,7 @@ sub _get_feature_types_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_types_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -562,7 +565,7 @@ sub _get_feature_type_descriptions_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_type_descriptions_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -669,7 +672,7 @@ sub _get_feature_type_counts_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_type_counts_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -808,7 +811,7 @@ sub _get_feature_ids_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_ids_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -957,7 +960,7 @@ sub _get_features_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_features_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1110,7 +1113,7 @@ sub _get_features2_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_features2_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1229,7 +1232,7 @@ sub _get_proteins_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_proteins_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1346,7 +1349,7 @@ sub _get_feature_locations_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_locations_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1453,7 +1456,7 @@ sub _get_feature_publications_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_publications_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1560,7 +1563,7 @@ sub _get_feature_dna_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_dna_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1667,7 +1670,7 @@ sub _get_feature_functions_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_functions_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1774,7 +1777,7 @@ sub _get_feature_aliases_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_feature_aliases_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1881,7 +1884,7 @@ sub _get_cds_by_gene_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_cds_by_gene_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -1988,7 +1991,7 @@ sub _get_cds_by_mrna_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_cds_by_mrna_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -2095,7 +2098,7 @@ sub _get_gene_by_cds_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_gene_by_cds_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -2202,7 +2205,7 @@ sub _get_gene_by_mrna_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_gene_by_mrna_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -2309,7 +2312,7 @@ sub _get_mrna_by_cds_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_mrna_by_cds_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -2416,7 +2419,7 @@ sub _get_mrna_by_gene_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_mrna_by_gene_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -2541,7 +2544,7 @@ sub _get_mrna_exons_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_mrna_exons_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -2664,7 +2667,7 @@ sub _get_mrna_utrs_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_mrna_utrs_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -2807,7 +2810,7 @@ sub _get_summary_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_summary_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -2952,7 +2955,7 @@ sub _save_summary_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._save_summary_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -3212,7 +3215,7 @@ sub _get_combined_data_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_combined_data_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -3802,7 +3805,7 @@ sub _get_genome_v1_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._get_genome_v1_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -4349,7 +4352,7 @@ sub _save_one_genome_v1_submit {
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._save_one_genome_v1_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
@@ -4383,7 +4386,7 @@ sub status
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
         method => "GenomeAnnotationAPI._status_submit",
-        params => \@args}, context => $context);
+        params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
             Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
