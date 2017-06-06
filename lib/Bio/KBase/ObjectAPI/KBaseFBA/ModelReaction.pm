@@ -11,6 +11,7 @@ package Bio::KBase::ObjectAPI::KBaseFBA::ModelReaction;
 use Moose;
 use Bio::KBase::ObjectAPI::utilities;
 use namespace::autoclean;
+use Digest::MD5::md5_hex
 extends 'Bio::KBase::ObjectAPI::KBaseFBA::DB::ModelReaction';
 #***********************************************************************************************************
 # ADDITIONAL ATTRIBUTES:
