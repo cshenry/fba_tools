@@ -11,7 +11,6 @@ package Bio::KBase::ObjectAPI::KBaseFBA::ModelReaction;
 use Moose;
 use Bio::KBase::ObjectAPI::utilities;
 use namespace::autoclean;
-use Digest::MD5::md5_hex
 extends 'Bio::KBase::ObjectAPI::KBaseFBA::DB::ModelReaction';
 #***********************************************************************************************************
 # ADDITIONAL ATTRIBUTES:
@@ -570,7 +569,7 @@ sub createEquation {
     }
 
     if ($args->{hashed} == 1) {
-	return Digest::MD5::md5_hex($reaction_string);
+	#return Digest::MD5::md5_hex($reaction_string);
     }
     return $reaction_string;
 }
