@@ -2859,7 +2859,7 @@ sub func_importmodel {
 			$rxn->[8] = $eqn;
 			for (my $j=0; $j < @{$params->{biomass}}; $j++) {
 				my $biomass = $params->{biomass}->[$j];
-				if ($rxn->[4] eq $biomass) {
+				if ($rxn->[4] eq $biomass || "R_".$rxn->[4] eq $biomass) {
 					$params->{biomass}->[$j] = $eqn;
 					splice(@{$params->{reactions}},$i,1);
 					$i--;

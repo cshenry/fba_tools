@@ -827,10 +827,33 @@ sub createJobDirectory {
 		}
 	}
 	#Building the model data file for MFAToolkit
+	my $modelbounds = [];
 	for (my $i=0; $i < @{$mdlrxn}; $i++) {
 		my $rxn = $mdlrxn->[$i];
 		my $direction = $rxn->direction();
 		my $rxndir = "<=>";
+		if ($rxn->maxforflux() != 1000000 || $rxn->maxrevflux() != 1000000) {
+			my $newbound = {
+				id => $rxn->id(),
+				vartype => "FLUX",
+				upperbound => $rxn->maxforflux(),
+				lowerbound => -1*$rxn->maxrevflux(),
+				conc => 0.001
+			};
+			if ($rxn->maxforflux() == 1000000) {
+				$newbound->{upperbound} = $self->defaultMaxFlux();
+				if ($direction eq "<") {
+					$newbound->{upperbound} = 0;
+				}
+			}
+			if ($rxn->maxrevflux() == 1000000) {
+				if ($direction eq ">") {
+					$newbound->{lowerbound} = 0;
+				}
+				$newbound->{lowerbound} = -1*$self->defaultMaxFlux();
+			}
+			push(@{$modelbounds},$newbound);
+		}
 		if (defined($self->parameters()->{activate_all_model_reactions}) && $self->parameters()->{activate_all_model_reactions} == 1) {
 			$actcoef->{$rxn->id()} = 1;
 		}
@@ -1552,6 +1575,13 @@ sub createJobDirectory {
 			if ($comp ne "e") {
 				$exchangehash->{$cpdbnds->[$i]->modelcompound()->id()}->{c} = [$cpdbnds->[$i]->lowerBound(),$cpdbnds->[$i]->upperBound()];
 			}
+		}
+		for (my $i=0; $i < @{$modelbounds}; $i++) {
+			$userBounds->{$modelbounds->[$i]->{id}}->{c}->{$modelbounds->[$i]->{vartype}} = {
+				max => $modelbounds->[$i]->{upperbound},
+				min => $modelbounds->[$i]->{lowerbound},
+				conc => 0.001
+			};
 		}
 		for (my $i=0; $i < @{$rxnbnds}; $i++) {
 			$userBounds->{$rxnbnds->[$i]->modelreaction()->id()}->{c}->{$translation->{$rxnbnds->[$i]->variableType()}} = {
