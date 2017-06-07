@@ -591,11 +591,7 @@ sub func_run_flux_balance_analysis {
 	}	
 	$handler->util_log("Saving FBA results.");
 	$fba->id($params->{fba_output_id});
-	#my $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{fba_output_id},{type => "KBaseFBA.FBA"});
-	print "Objective:".$fba->objectiveValue()."\n";
-	open(my $fout,">","/Users/chenry/Dropbox/Gusto/Data/".$params->{fba_output_id}.".json");
-	print $fout $fba->toJSON({pp=>1});
-	close($fout);
+	my $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{fba_output_id},{type => "KBaseFBA.FBA"});
 	return {
 		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id}
 	};
