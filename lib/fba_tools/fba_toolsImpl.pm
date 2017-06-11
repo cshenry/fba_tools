@@ -51,6 +51,9 @@ sub util_finalize_call {
     });
     $params->{output}->{report_ref} = $reportout->{"ref"};
 	$params->{output}->{report_name} = $params->{report_name};
+	if (defined($params->{output}->{new_fbamodel})) {
+		delete $params->{output}->{new_fbamodel};
+	}
 }
 
 sub util_store {
@@ -402,7 +405,6 @@ sub build_metabolic_model
 		workspace => $params->{workspace},
 		report_name => $params->{fbamodel_output_id}.".report",
 	});
-	delete $return->{new_fbamodel};
     #END build_metabolic_model
     my @_bad_returns;
     (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
