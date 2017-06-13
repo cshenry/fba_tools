@@ -2867,7 +2867,7 @@ sub func_importmodel {
 	}
 	my $excludehash = {};
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
-		if (defined($original_rxn_ids->{$params->{biomass}->[$i]}) {
+		if (defined($original_rxn_ids->{$params->{biomass}->[$i]})) {
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{$params->{biomass}->[$i]}} = 1;
 		} elsif (defined($original_rxn_ids->{"R_".$params->{biomass}->[$i]})) {
