@@ -8,6 +8,19 @@ This SDK Module contains methods relating to the reconstruction and analysis of 
 
 ## Release notes
 ------------------------------------------
+### VERSION: 1.6.3 (Released 6/12/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+-Fixing R_ bug in model import
+
+------------------------------------------
+### VERSION: 1.6.1 (Released 6/12/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+-Updated service to support new authentication procedure
+-Added batch version of model reconstruction 
+
+------------------------------------------
 ### VERSION: 1.5.1 (Released 2/24/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
