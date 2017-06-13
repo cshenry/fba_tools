@@ -519,6 +519,8 @@ sub func_run_flux_balance_analysis {
 	my ($params,$model) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","fba_output_id"],{
 		fbamodel_workspace => $params->{workspace},
+		mediaset_id => undef,
+		media_id_list => undef,
 		media_id => undef,
 		media_workspace => $params->{workspace},
 		target_reaction => "bio1",
@@ -2328,6 +2330,7 @@ sub func_importmodel {
 		compounds => [],
 		reactions => []
 	});
+	my $original_rxn_ids;
 	#RETRIEVING THE GENOME FOR THE MODEL
 	if (!defined($params->{genome})) {
 		$params->{genome} = "Empty";
@@ -2610,6 +2613,7 @@ sub func_importmodel {
 		#Parsing reactions
 		my $rxns = [$doc->getElementsByTagName("reaction")];
 		my $rxnhash = {};
+		my $rxncount = 0;
 		foreach my $rxn (@$rxns){
 			my $id = undef;
 			my $sbmlid = undef;
@@ -2637,6 +2641,7 @@ sub func_importmodel {
 						$id = $1.chr($2).$3;
 					}
 					$id =~ s/\!/__/g;
+					$original_rxn_ids->{$sbmlid} = $rxncount;
 				} elsif ($nm eq "name") {
 					if ($value =~ m/^R_(.+)/) {
 						$value = $1;
@@ -2747,6 +2752,7 @@ sub func_importmodel {
 				equation => $reactants." => ".$products,
 				aliases => $aliases
 			};
+			$rxncount++;
 			push(@{$params->{reactions}},[$id,$direction,$compartment,$gpr,$name,$enzyme,$pathway,undef,$reactants." => ".$products,$aliases]);
 		}
 		my $geneproducts = [$doc->getElementsByTagName("fbc:geneProduct")];
@@ -2763,6 +2769,10 @@ sub func_importmodel {
 			if (defined($id) && defined($gid)) {
 				push(@{$genetranslation->{$id}},$gid);
 			}
+		}
+	} else {
+		for (my $i=0; $i < @{$params->{reactions}}; $i++) {
+			$original_rxn_ids->{$params->{reactions}->[$i]->[0]} = $i;
 		}
 	}
 	#ENSURING THAT THERE ARE REACTIONS AND COMPOUNDS FOR THE MODEL AT THIS STAGE
@@ -2853,27 +2863,17 @@ sub func_importmodel {
 				}
 			}
 			$rxn->[8] = $eqn;
-			for (my $j=0; $j < @{$params->{biomass}}; $j++) {
-				my $biomass = $params->{biomass}->[$j];
-				if ($rxn->[4] eq $biomass || "R_".$rxn->[4] eq $biomass) {
-					$params->{biomass}->[$j] = $eqn;
-					splice(@{$params->{reactions}},$i,1);
-					$i--;
-					last;
-				} else {
-					$biomass =~ s/[^\w]/_/g;
-					$biomass =~ s/_/-/g;
-					if ($rxn->[0] eq $biomass) {
-						$params->{biomass}->[$j] = $eqn;
-						splice(@{$params->{reactions}},$i,1);
-						$i--;
-						last;
-					}
-				}
-			}
 		}
 	}
+	my $excludehash = {};
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
+		if (defined($original_rxn_ids->{$params->{biomass}->[$i]}) {
+			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{$params->{biomass}->[$i]}]->[8];
+			$excludehash->{$original_rxn_ids->{$params->{biomass}->[$i]}} = 1;
+		} elsif (defined($original_rxn_ids->{"R_".$params->{biomass}->[$i]})) {
+			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
+			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
+		}
 		my $eqn = "| ".$params->{biomass}->[$i]." |";
 		foreach my $cpd (keys(%{$translation})) {
 			if (index($params->{biomass}->[$i],$cpd) >= 0 && $cpd ne $translation->{$cpd}) {
@@ -2904,6 +2904,9 @@ sub func_importmodel {
 		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
 	}
 	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
+		if (defined($excludehash->{$i})) {
+			next;
+		}
 		my $rxnrow = $params->{reactions}->[$i];
 		my $compartment = $rxnrow->[2];
 		my $compartmentIndex = 0;
