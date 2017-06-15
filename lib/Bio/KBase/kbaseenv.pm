@@ -193,6 +193,7 @@ sub save_objects {
 		};
 		# If there is a network glitch, wait a second and try again. 
 		if ($@) {
+			$retryCount--;
 			$error = $@;
 		} else {
 			last;
