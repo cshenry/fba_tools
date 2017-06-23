@@ -333,7 +333,6 @@ sub get_objects {
 	if (@{$newrefs} > 0) {
 		my $objids = [];
 		for (my $i=0; $i < @{$newrefs}; $i++) {
-			print "REFCHAIN:".$newrefs->[$i]."\n";
 			push(@{$objids},{"ref" => $newrefs->[$i]});
 		}
 		my $objdatas;

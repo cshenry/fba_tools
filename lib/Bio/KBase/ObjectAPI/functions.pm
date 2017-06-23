@@ -242,6 +242,9 @@ sub util_build_fba {
 		}
 		$fbaobj->PrepareForGapfilling($input);
 	}
+        if(defined($params->{MFASolver})){
+            $fbaobj->parameters()->{"MFASolver"}=$params->{MFASolver};
+        }
 	return $fbaobj;
 }
 
