@@ -29,6 +29,7 @@ our $CallContext;
 
 our %return_counts = (
         'build_metabolic_model' => 1,
+        'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
         'run_flux_balance_analysis' => 1,
         'compare_fba_solutions' => 1,
@@ -72,6 +73,7 @@ our %return_counts = (
 
 our %method_authentication = (
         'build_metabolic_model' => 'required',
+        'build_multiple_metabolic_models' => 'required',
         'gapfill_metabolic_model' => 'required',
         'run_flux_balance_analysis' => 'required',
         'compare_fba_solutions' => 'required',
@@ -117,6 +119,7 @@ sub _build_valid_methods
     my($self) = @_;
     my $methods = {
         'build_metabolic_model' => 1,
+        'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
         'run_flux_balance_analysis' => 1,
         'compare_fba_solutions' => 1,
@@ -347,7 +350,14 @@ sub call_method {
 	    $self->exception('PerlError', "Authentication required for fba_tools but no authentication header was passed");
 	}
 
-	my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
+	my $auth_token;
+        if ($self->config->{'auth-service-url'})
+        {
+            $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1, auth_svc=>$self->config->{'auth-service-url'});
+        } else {
+            $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
+        }
+
 	my $valid = $auth_token->validate();
 	# Only throw an exception if authentication was required and it fails
 	if ($method_auth eq 'required' && !$valid)

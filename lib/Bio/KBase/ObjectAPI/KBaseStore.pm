@@ -49,6 +49,7 @@ use Moose;
 use Bio::KBase::ObjectAPI::utilities;
 
 use Class::Autouse qw(
+    Bio::KBase::kbaseenv
     Bio::KBase::workspace::Client
     Bio::KBase::utilities
     Bio::KBase::ObjectAPI::KBaseRegulation::Regulome
@@ -88,6 +89,221 @@ has user_override => ( is => 'rw', isa => 'Str',default => "");
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub is_a_cache_target {
+	my ($self,$ref) = @_;
+	if (!defined($self->{_cache_targets})) {
+		$self->{_cache_all} = 0;
+		$self->{_cache_targets} = {};
+		my $cache_targets = Bio::KBase::utilities::conf("ModelSEED","kbase_cache_targets");
+		if (defined($cache_targets) && length($cache_targets) > 0) {
+			my $array = [split(/;/,$cache_targets)];
+			for (my $i=0; $i < @{$array}; $i++) {
+				if ($array->[$i] eq "all") {
+					$self->{_cache_all} = 1;
+				} else {
+					$self->{_cache_targets}->{$array->[$i]} = 1;
+				}
+			}
+		}
+	}
+	if ($self->{_cache_all} == 1) {
+		return 1;
+	}
+	if (defined($self->{_cache_targets}->{$ref})) {
+		return 1;
+	}
+	return 0;
+} 
+
+sub ref_to_identity {
+	my ($self,$ref) = @_;
+	my $array = [split(/\//,$ref)];
+	my $objid = {};
+	if (@{$array} < 2) {
+		Bio::KBase::ObjectAPI::utilities->error("Invalid reference:".$ref);
+	}
+	if ($array->[0] =~ m/^\d+$/) {
+		$objid->{wsid} = $array->[0];
+	} else {
+		$objid->{workspace} = $array->[0];
+	}
+	if ($array->[1] =~ m/^\d+$/) {
+		$objid->{objid} = $array->[1];
+	} else {
+		$objid->{name} = $array->[1];
+	}
+	if (defined($array->[2])) {
+		$objid->{ver} = $array->[2];
+	}
+	return $objid;
+}
+
+#This function writes data to file cache if it's been flagged for local file caching
+sub write_object_to_file_cache {
+	my ($self,$info,$data) = @_;
+	my $cache_dir = Bio::KBase::utilities::conf("ModelSEED","kbase_file_cache");
+	if (defined($cache_dir) && length($cache_dir) > 0 && $self->is_a_cache_target($info->[6]."/".$info->[0]."/".$info->[4]) == 1 && !-e $cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/meta") {
+		File::Path::mkpath $cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4];
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/meta",[Bio::KBase::ObjectAPI::utilities::TOJSON($info)]);
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/data",[Bio::KBase::ObjectAPI::utilities::TOJSON($data)]);
+	}
+}
+
+#This function writes data to file cache if it's been flagged for local file caching
+sub read_object_from_file_cache {
+	my ($self,$ref,$options) = @_;
+	my $cache_dir = Bio::KBase::utilities::conf("ModelSEED","kbase_file_cache");
+	if ($self->is_a_cache_target($ref) == 1) {
+		#Get WS metadata
+		my $infos;
+		eval {
+		$infos = Bio::KBase::kbaseenv::get_object_info([$self->ref_to_identity($ref)],0);
+		};
+		if ($@) {
+			return 0;
+		}
+		my $info = $infos->[0];
+		if (-e $cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/meta") {
+			my $filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/meta");
+			my $meta = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
+			$filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/data");
+			my $data = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
+			$self->process_object($meta,$data,$ref,$options);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+sub process_object {
+	my ($self,$info,$data,$ref,$options) = @_;
+	my $origref = $ref;
+	my $array = [split(/;/,$ref)];
+	$ref = pop(@{$array});
+	$self->write_object_to_file_cache($info,$data);
+	if ($info->[2] =~ m/^(.+)\.(.+)-/) {
+		my $module = $1;
+		my $type = $2;
+		$type =~ s/^New//;
+		my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
+		if (($type eq "Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) || ($type eq "GenomeAnnotation")) {
+			require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
+			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
+			my $gaoutput = $ga->get_genome_v1({
+				genomes => [{
+					"ref" => $info->[6]."/".$info->[0]."/".$info->[4]
+				}],
+				ignore_errors => 1,
+				no_data => 0,
+				no_metadata => 1
+			});
+			$data = $gaoutput->{genomes}->[0]->{data};
+			$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
+		}
+		if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
+			$self->cache()->{$ref} = $data;
+			$self->cache()->{$ref}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
+			$self->cache()->{$ref}->{_ref_chain} = $origref;
+		} else {
+			$self->cache()->{$ref} = $class->new($data);
+			$self->cache()->{$ref}->ref_chain($origref);
+			$self->cache()->{$ref}->parent($self);
+			$self->cache()->{$ref}->_wsobjid($info->[0]);
+			$self->cache()->{$ref}->_wsname($info->[1]);
+			$self->cache()->{$ref}->_wstype($info->[2]);
+			$self->cache()->{$ref}->_wssave_date($info->[3]);
+			$self->cache()->{$ref}->_wsversion($info->[4]);
+			$self->cache()->{$ref}->_wssaved_by($info->[5]);
+			$self->cache()->{$ref}->_wswsid($info->[6]);
+			$self->cache()->{$ref}->_wsworkspace($info->[7]);
+			$self->cache()->{$ref}->_wschsum($info->[8]);
+			$self->cache()->{$ref}->_wssize($info->[9]);
+			$self->cache()->{$ref}->_wsmeta($info->[10]);
+			$self->cache()->{$ref}->_reference($info->[6]."/".$info->[0]."/".$info->[4]);
+			$self->uuid_refs()->{$self->cache()->{$ref}->uuid()} = $info->[6]."/".$info->[0]."/".$info->[4];
+		}
+		if (!defined($self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]})) {
+			$self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]} = $self->cache()->{$ref};
+		}
+		if ($type eq "Biochemistry") {
+			$self->cache()->{$ref}->add("compounds",{
+				id => "cpd00000",
+		    	isCofactor => 0,
+		    	name => "CustomCompound",
+		    	abbreviation => "CustomCompound",
+		    	md5 => "",
+		    	formula => "",
+		    	unchargedFormula => "",
+		    	mass => 0,
+		    	defaultCharge => 0,
+		    	deltaG => 0,
+		    	deltaGErr => 0,
+		    	comprisedOfCompound_refs => [],
+		    	cues => {},
+		    	pkas => {},
+		    	pkbs => {}
+			});
+			$self->cache()->{$ref}->add("reactions",{
+				id => "rxn00000",
+		    	name => "CustomReaction",
+		    	abbreviation => "CustomReaction",
+		    	md5 => "",
+		    	direction => "=",
+		    	thermoReversibility => "=",
+		    	status => "OK",
+		    	defaultProtons => 0,
+		    	deltaG => 0,
+		    	deltaGErr => 0,
+		    	cues => {},
+		    	reagents => []
+			});
+		}
+		if ($type eq "FBAModel" && $options->{raw} != 1) {
+			if (defined($self->cache()->{$ref}->template_ref())) {
+				if ($self->cache()->{$ref}->template_ref() =~ m/(\w+)\/(\w+)\/*\d*/) {
+					my $output = Bio::KBase::kbaseenv::get_object_info([{
+						"ref" => $self->cache()->{$ref}->template_ref()
+					}],0);
+					if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
+						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/GramPosModelTemplate");
+					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramNegModelTemplate") {
+						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
+					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "CoreModelTemplate ") {
+						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
+					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
+						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/PlantModelTemplate");
+					} elsif ($output->[0]->[7] eq "NewKBaseModelTemplates") {
+						$self->cache()->{$ref}->template_ref($output->[0]->[7]."/".$output->[0]->[1]);
+					}
+				}
+			}
+			if (defined($self->cache()->{$ref}->template_refs())) {
+				my $temprefs = $self->cache()->{$ref}->template_refs();
+				for (my $j=0; $j < @{$temprefs}; $j++) {
+					my $output = Bio::KBase::kbaseenv::get_object_info([{
+						"ref" => $temprefs->[$j]
+					}],0);
+					if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
+						$temprefs->[$j] = "NewKBaseModelTemplates/GramPosModelTemplate";
+					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramNegModelTemplate") {
+						$temprefs->[$j] = "NewKBaseModelTemplates/GramNegModelTemplate";
+					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "CoreModelTemplate ") {
+						$temprefs->[$j] = "NewKBaseModelTemplates/GramNegModelTemplate";
+					} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
+						$temprefs->[$j] = "NewKBaseModelTemplates/PlantModelTemplate";
+					} elsif ($output->[0]->[7] eq "NewKBaseModelTemplates") {
+						$temprefs->[$j] = $output->[0]->[7]."/".$output->[0]->[1];
+					}
+				}
+			}
+			if (!defined($self->cache()->{$ref}->{_updated})) {
+				my $obj = $self->cache()->{$ref};
+				$obj->update_from_old_versions();
+			}
+		}
+	}
+}
+
 sub get_objects {
 	my ($self,$refs,$options) = @_;
 	$options = Bio::KBase::utilities::args($options,[],{
@@ -99,164 +315,48 @@ sub get_objects {
 	for (my $i=0; $i < @{$refs}; $i++) {
 		if ($refs->[$i] =~ m/^489\/6\/\d+$/ || $refs->[$i] =~ m/^kbase\/default\/\d+$/) {
 			$refs->[$i] = "kbase/default";
+		} elsif ($refs->[$i] =~ m/(.+;)489\/6\/\d+$/ || $refs->[$i] =~ m/(.+;)kbase\/default\/\d+$/) {
+			$refs->[$i] = $1."kbase/default";
 		}
-		if (!defined($self->cache()->{$refs->[$i]}) || $options->{refreshcache} == 1) {
-    		push(@{$newrefs},$refs->[$i]);
+		my $array = [split(/;/,$refs->[$i])];
+		my $finalref = pop(@{$array});
+		if ($finalref eq $refs->[$i] && defined($options->{parent}) && defined($options->{parent}->{_ref_chain})) {
+			$refs->[$i] = $options->{parent}->{_ref_chain}.";".$refs->[$i];
+		}
+		if (!defined($self->cache()->{$finalref}) || $options->{refreshcache} == 1) {
+    		if ($self->read_object_from_file_cache($finalref,$options) == 0) {
+    			push(@{$newrefs},$refs->[$i]);
+    		}
     	}
 	}
 	#Pulling objects from workspace
 	if (@{$newrefs} > 0) {
 		my $objids = [];
 		for (my $i=0; $i < @{$newrefs}; $i++) {
-			my $array = [split(/\//,$newrefs->[$i])];
-			my $objid = {};
-			if (@{$array} < 2) {
-				Bio::KBase::ObjectAPI::utilities->error("Invalid reference:".$newrefs->[$i]);
-			}
-			if ($array->[0] =~ m/^\d+$/) {
-				$objid->{wsid} = $array->[0];
-			} else {
-				$objid->{workspace} = $array->[0];
-			}
-			if ($array->[1] =~ m/^\d+$/) {
-				$objid->{objid} = $array->[1];
-			} else {
-				$objid->{name} = $array->[1];
-			}
-			if (defined($array->[2])) {
-				$objid->{ver} = $array->[2];
-			}
-			push(@{$objids},$objid);
+			print "REFCHAIN:".$newrefs->[$i]."\n";
+			push(@{$objids},{"ref" => $newrefs->[$i]});
 		}
-		my $objdatas = Bio::KBase::kbaseenv::get_objects($objids);
-		for (my $i=0; $i < @{$objdatas}; $i++) {
-			my $info = $objdatas->[$i]->{info};
-			#print "Retreived:".join("|",@{$info})."\n";
-			if ($info->[2] =~ m/^(.+)\.(.+)-/) {
-				my $module = $1;
-				my $type = $2;
-				$type =~ s/^New//;
-				my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
-				if (($type eq "Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) || ($type eq "GenomeAnnotation")) {
-					require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-					my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
-					my $gaoutput = $ga->get_genome_v1({
-						genomes => [{
-							"ref" => $info->[6]."/".$info->[0]."/".$info->[4]
-						}],
-						ignore_errors => 1,
-						no_data => 0,
-						no_metadata => 1
-					});
-					$objdatas->[$i]->{data} = $gaoutput->{genomes}->[0]->{data};
-					$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
-				}
-				if ($type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
-					$self->cache()->{$newrefs->[$i]} = $objdatas->[$i]->{data};
-					$self->cache()->{$newrefs->[$i]}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
-				} else {
-					$self->cache()->{$newrefs->[$i]} = $class->new($objdatas->[$i]->{data});
-					$self->cache()->{$newrefs->[$i]}->parent($self);
-					$self->cache()->{$newrefs->[$i]}->_wsobjid($info->[0]);
-					$self->cache()->{$newrefs->[$i]}->_wsname($info->[1]);
-					$self->cache()->{$newrefs->[$i]}->_wstype($info->[2]);
-					$self->cache()->{$newrefs->[$i]}->_wssave_date($info->[3]);
-					$self->cache()->{$newrefs->[$i]}->_wsversion($info->[4]);
-					$self->cache()->{$newrefs->[$i]}->_wssaved_by($info->[5]);
-					$self->cache()->{$newrefs->[$i]}->_wswsid($info->[6]);
-					$self->cache()->{$newrefs->[$i]}->_wsworkspace($info->[7]);
-					$self->cache()->{$newrefs->[$i]}->_wschsum($info->[8]);
-					$self->cache()->{$newrefs->[$i]}->_wssize($info->[9]);
-					$self->cache()->{$newrefs->[$i]}->_wsmeta($info->[10]);
-					$self->cache()->{$newrefs->[$i]}->_reference($info->[6]."/".$info->[0]."/".$info->[4]);
-					$self->uuid_refs()->{$self->cache()->{$newrefs->[$i]}->uuid()} = $info->[6]."/".$info->[0]."/".$info->[4];
-				}
-				if (!defined($self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]})) {
-					$self->cache()->{$info->[6]."/".$info->[0]."/".$info->[4]} = $self->cache()->{$newrefs->[$i]};
-				}
-				if ($type eq "Biochemistry") {
-					$self->cache()->{$newrefs->[$i]}->add("compounds",{
-						id => "cpd00000",
-				    	isCofactor => 0,
-				    	name => "CustomCompound",
-				    	abbreviation => "CustomCompound",
-				    	md5 => "",
-				    	formula => "",
-				    	unchargedFormula => "",
-				    	mass => 0,
-				    	defaultCharge => 0,
-				    	deltaG => 0,
-				    	deltaGErr => 0,
-				    	comprisedOfCompound_refs => [],
-				    	cues => {},
-				    	pkas => {},
-				    	pkbs => {}
-					});
-					$self->cache()->{$newrefs->[$i]}->add("reactions",{
-						id => "rxn00000",
-				    	name => "CustomReaction",
-				    	abbreviation => "CustomReaction",
-				    	md5 => "",
-				    	direction => "=",
-				    	thermoReversibility => "=",
-				    	status => "OK",
-				    	defaultProtons => 0,
-				    	deltaG => 0,
-				    	deltaGErr => 0,
-				    	cues => {},
-				    	reagents => []
-					});
-				}
-				if ($type eq "FBAModel" && $options->{raw} != 1) {
-					if (defined($self->cache()->{$newrefs->[$i]}->template_ref())) {
-						if ($self->cache()->{$newrefs->[$i]}->template_ref() =~ m/(\w+)\/(\w+)\/*\d*/) {
-							my $output = Bio::KBase::kbaseenv::get_object_info([{
-								"ref" => $self->cache()->{$newrefs->[$i]}->template_ref()
-							}],0);
-							if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
-								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramPosModelTemplate");
-							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramNegModelTemplate") {
-								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
-							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "CoreModelTemplate ") {
-								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/GramNegModelTemplate");
-							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
-								$self->cache()->{$newrefs->[$i]}->template_ref("NewKBaseModelTemplates/PlantModelTemplate");
-							} elsif ($output->[0]->[7] eq "NewKBaseModelTemplates") {
-								$self->cache()->{$newrefs->[$i]}->template_ref($output->[0]->[7]."/".$output->[0]->[1]);
-							}
-						}
-					}
-					if (defined($self->cache()->{$newrefs->[$i]}->template_refs())) {
-						my $temprefs = $self->cache()->{$newrefs->[$i]}->template_refs();
-						for (my $j=0; $j < @{$temprefs}; $j++) {
-							my $output = Bio::KBase::kbaseenv::get_object_info([{
-								"ref" => $temprefs->[$j]
-							}],0);
-							if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
-								$temprefs->[$j] = "NewKBaseModelTemplates/GramPosModelTemplate";
-							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramNegModelTemplate") {
-								$temprefs->[$j] = "NewKBaseModelTemplates/GramNegModelTemplate";
-							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "CoreModelTemplate ") {
-								$temprefs->[$j] = "NewKBaseModelTemplates/GramNegModelTemplate";
-							} elsif ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "PlantModelTemplate") {
-								$temprefs->[$j] = "NewKBaseModelTemplates/PlantModelTemplate";
-							} elsif ($output->[0]->[7] eq "NewKBaseModelTemplates") {
-								$temprefs->[$j] = $output->[0]->[7]."/".$output->[0]->[1];
-							}
-						}
-					}
-					if (!defined($self->cache()->{$newrefs->[$i]}->{_updated})) {
-						my $obj = $self->cache()->{$newrefs->[$i]};
-						$obj->update_from_old_versions();
-					}
-				}
+		my $objdatas;
+		eval {
+			$objdatas = Bio::KBase::kbaseenv::get_objects($objids);
+		};
+		if ($@) {
+			for (my $i=0; $i < @{$objids}; $i++) {
+				my $array = [split(/;/,$objids->[$i]->{"ref"})];
+				$objids->[$i]->{"ref"} = pop(@{$array});
 			}
+			$objdatas = Bio::KBase::kbaseenv::get_objects($objids);
+		}
+		for (my $i=0; $i < @{$objdatas}; $i++) {
+			$self->process_object($objdatas->[$i]->{info},$objdatas->[$i]->{data},$newrefs->[$i],$options);
 		}
 	}
 	#Gathering objects out of the cache
 	my $objs = [];
 	for (my $i=0; $i < @{$refs}; $i++) {
-		$objs->[$i] = $self->cache()->{$refs->[$i]};
+		my $array = [split(/;/,$refs->[$i])];
+		my $finalref = pop(@{$array});
+		$objs->[$i] = $self->cache()->{$finalref};
 	}
 	return $objs;
 }

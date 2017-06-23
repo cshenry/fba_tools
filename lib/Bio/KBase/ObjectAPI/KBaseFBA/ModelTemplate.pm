@@ -349,13 +349,19 @@ Description:
 =cut
 
 sub searchForCompound {
-	my ($self,$compound) = @_;
+	my ($self,$compound,$searchbio) = @_;
 	#First search by exact alias match
 	my $cpdobj = $self->getObject("compounds",$compound);
 	#Next, search by name
 	if (!defined($cpdobj)) {
 		my $searchname = Bio::KBase::ObjectAPI::KBaseFBA::TemplateCompound->nameToSearchname($compound);
 		$cpdobj = $self->queryObject("compounds",{searchnames => $searchname});
+	}
+	if (!defined($cpdobj) && defined($searchbio)) {
+		$cpdobj = $self->biochemistry()->searchForCompound($compound);
+		if (defined($cpdobj)) {
+			$cpdobj = $self->getObject("compounds",$cpdobj->id());
+		}
 	}
 	return $cpdobj;
 }

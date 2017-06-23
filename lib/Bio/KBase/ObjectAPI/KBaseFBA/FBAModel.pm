@@ -360,7 +360,8 @@ sub adjustModelReaction {
     	enzyme => undef,
     	pathway => undef,
     	name => undef,
-    	reference => undef
+    	reference => undef,
+    	genetranslation => undef
     }, @_);
 	my $rxnid = $args->{reaction};
 	my $mdlrxn = $self->getObject("modelreactions",$rxnid);
@@ -371,7 +372,7 @@ sub adjustModelReaction {
 		$mdlrxn->direction($args->{direction});
 	}
 	if (defined($args->{gpr})){
-		$mdlrxn->loadGPRFromString($args->{gpr});
+		$mdlrxn->loadGPRFromString($args->{gpr},$args->{genetranslation});
 	}
 	if (!defined($args->{name}) && !defined($mdlrxn->name()) && length($mdlrxn->name()) == 0)  {
     	$args->{name} = $rxnid;
@@ -421,7 +422,8 @@ sub addModelReaction {
     	enzyme => undef,
     	pathway => undef,
     	name => undef,
-    	reference => undef
+    	reference => undef,
+    	genetranslation => undef
     }, @_);
     my $rootid = $args->{reaction};
 	if ($rootid =~ m/(.+)_([a-zA-Z])(\d+)$/) {
@@ -444,7 +446,10 @@ sub addModelReaction {
     }
     my $cmp = $self->template()->searchForCompartment($args->{compartment});
     if (!defined($cmp)) {
-    	Bio::KBase::ObjectAPI::utilities::error("Unrecognized compartment ".$args->{compartment}." in reaction: ".$args->{reaction});
+    	$cmp = $self->template()->biochemistry()->searchForCompartment($args->{compartment});
+    	if (!defined($cmp)) {
+    		Bio::KBase::ObjectAPI::utilities::error("Unrecognized compartment ".$args->{compartment}." in reaction: ".$args->{reaction});
+    	}
     }
     $args->{compartment} = $cmp->id();
     my $eq;
@@ -535,7 +540,8 @@ sub addModelReaction {
     	gpr => $args->{gpr},
     	enzyme => $args->{enzyme},
     	pathway => $args->{pathway},
-    	reference => $args->{reference}
+    	reference => $args->{reference},
+    	genetranslation => $args->{genetranslation}
 	});
 	return $mdlrxn;
 }
@@ -604,24 +610,24 @@ sub LoadExternalReactionEquation {
 	    				$compartment = $2;
 	    				$name = $1;
 	    			}
-	    			$cpdobj = $self->template()->searchForCompound($name);
+	    			$cpdobj = $self->template()->searchForCompound($name,1);
 	    			if (!defined($cpdobj) && defined($args->{compounds}->{$origid}->[4])) {
 	    				my $aliases = [split(/\|/,$args->{compounds}->{$origid}->[4])];
 	    				foreach my $alias (@{$aliases}) {
 	    					if ($alias =~ m/^(.+):(.+)/) {
 	    						$alias = $2;
 	    					}
-	    					$cpdobj = $self->template()->searchForCompound($alias);
+	    					$cpdobj = $self->template()->searchForCompound($alias,1);
 	    					if (defined($cpdobj)) {
 	    						last;
 	    					}
 	    				}
 	    			}
 	    			if (!defined($cpdobj)) {
-	    				$cpdobj = $self->template()->searchForCompound($cpd);
+	    				$cpdobj = $self->template()->searchForCompound($cpd,1);
 	    			}
 	    		} else {
-	    			$cpdobj = $self->template()->searchForCompound($cpd);
+	    			$cpdobj = $self->template()->searchForCompound($cpd,1);
 	    		}
 	    		my $mdlcmp = $self->getObject("modelcompartments",$compartment.$index);
 	    		if (!defined($mdlcmp)) {
@@ -861,18 +867,20 @@ sub printSBML {
 		}
 		for (my $j=0; $j < @{$rgts}; $j++) {
 			my $rgt = $rgts->[$j];
+			my $rgtid = $rgt->modelcompound_ref();
+			$rgtid =~ s/.+\///;
 			if ($sign*$rgt->coefficient() < 0) {
 				if ($firstreact == 1) {
 					$firstreact = 0;
 					push(@{$output},"<listOfReactants>");
 				}
-				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgt->modelcompound()->id()).' stoichiometry="'.-1*$sign*$rgt->coefficient().'"/>');	
+				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.-1*$sign*$rgt->coefficient().'"/>');	
 			} else {
 				if ($firstprod == 1) {
 					$firstprod = 0;
 					push(@{$prodoutput},"<listOfProducts>");
 				}
-				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgt->modelcompound()->id()).' stoichiometry="'.$sign*$rgt->coefficient().'"/>');
+				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.$sign*$rgt->coefficient().'"/>');
 			}
 		}
 		if ($firstreact != 1) {
@@ -916,18 +924,20 @@ sub printSBML {
 		my $biocpds = $rxn->biomasscompounds();
 		for (my $j=0; $j < @{$biocpds}; $j++) {
 			my $rgt = $biocpds->[$j];
+			my $rgtid = $rgt->modelcompound_ref();
+			$rgtid =~ s/.+\///;
 			if ($rgt->coefficient() < 0) {
 				if ($firstreact == 1) {
 					$firstreact = 0;
 					push(@{$output},"<listOfReactants>");
 				}
-				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgt->modelcompound()->id()).' stoichiometry="'.-1*$rgt->coefficient().'"/>');	
+				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.-1*$rgt->coefficient().'"/>');	
 			} else {
 				if ($firstprod == 1) {
 					$firstprod = 0;
 					push(@{$prodoutput},"<listOfProducts>");
 				}
-				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgt->modelcompound()->id()).' stoichiometry="'.$rgt->coefficient().'"/>');
+				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.$rgt->coefficient().'"/>');
 			}
 		}
 		if ($firstreact != 1) {
@@ -1390,6 +1400,7 @@ sub add_gapfilling {
 			}
 		}	
 	}
+	
 	my $tbl = "<p>During gapfilling, ".$added." new reactions were added to the model, while ".$reversed." existing reactions were made reversible.";
 	if (@{$gfarray} > 0) {
 		$tbl .= " The reactions added and modified during gapfilling are listed below:</p><br>";
@@ -1803,16 +1814,16 @@ sub edit_metabolic_model {
 		my $cpdref = "~/template/compounds/id/cpd00000";
 		$params->{compounds_to_add}->[$i]->{add_compound_id} =~ s/_[a-z]\d+$//;
 		if ($params->{compounds_to_add}->[$i]->{add_compound_id} =~ m/cpd\d+/) {
-			$cpdref = "~/template/compounds/id/".$params->{compounds_to_add}->[$i]->{add_compound_id};
 			my $cpdobj = $self->template()->getObject("compounds",$params->{compounds_to_add}->[$i]->{add_compound_id});
 			if (defined($cpdobj)) {
-				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_charge})) {
+				$cpdref = "~/template/compounds/id/".$params->{compounds_to_add}->[$i]->{add_compound_id};
+				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_charge}) || $params->{compounds_to_add}->[$i]->{add_compound_charge} eq "") {
 					$params->{compounds_to_add}->[$i]->{add_compound_charge} = $cpdobj->defaultCharge();
 				}
-				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_name})) {
+				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_name}) || $params->{compounds_to_add}->[$i]->{add_compound_name} eq "") {
 					$params->{compounds_to_add}->[$i]->{add_compound_name} = $cpdobj->name();
 				}
-				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_formula})) {
+				if (!defined($params->{compounds_to_add}->[$i]->{add_compound_formula}) || $params->{compounds_to_add}->[$i]->{add_compound_formula} eq "") {
 					$params->{compounds_to_add}->[$i]->{add_compound_formula} = $cpdobj->formula();
 				}
 			}
@@ -1841,13 +1852,13 @@ sub edit_metabolic_model {
 		}
 		my $cpd = $self->getObject("modelcompounds",$id);
 		if (defined($cpd)) {
-			if (defined($params->{compounds_to_change}->[$i]->{compound_name})) {
+			if (defined($params->{compounds_to_change}->[$i]->{compound_name}) && $params->{compounds_to_change}->[$i]->{compound_name} ne "") {
 				$cpd->name($params->{compounds_to_change}->[$i]->{compound_name});
 			}
-			if (defined($params->{compounds_to_change}->[$i]->{compound_charge})) {
+			if (defined($params->{compounds_to_change}->[$i]->{compound_charge}) && $params->{compounds_to_change}->[$i]->{compound_charge} ne "") {
 				$cpd->charge($params->{compounds_to_change}->[$i]->{compound_charge});
 			}
-			if (defined($params->{compounds_to_change}->[$i]->{compound_formula})) {
+			if (defined($params->{compounds_to_change}->[$i]->{compound_formula}) && $params->{compounds_to_change}->[$i]->{compound_formula} ne "") {
 				$cpd->formula($params->{compounds_to_change}->[$i]->{compound_formula});
 			}
 			push(@{$output->{compounds_changed}},$cpd->id());
@@ -1946,21 +1957,29 @@ sub edit_metabolic_model {
 		}
 		my $rxnadd = $params->{reactions_to_add}->[$i];
 		$rxnadd->{add_reaction_id} =~ s/_[a-z]\d+$//;
+		if (!defined($rxnadd->{reaction_compartment_id}) || $rxnadd->{reaction_compartment_id} eq "") {
+			$rxnadd->{reaction_compartment_id} = "c0";
+		}
 		my $rxnobj = $self->template()->getObject("reactions",$rxnadd->{add_reaction_id}."_".substr($rxnadd->{reaction_compartment_id},0,1));
+		if (!defined($rxnobj) && $rxnadd->{add_reaction_id} =~ m/rxn\d+/) {
+			$rxnobj = $self->template()->biochemistry()->getObject("reactions",$rxnadd->{add_reaction_id});
+		}
 		my $rxnref = "~/template/reactions/id/rxn00000_c";
 		if (defined($rxnobj)) {
-			if (!defined($rxnadd->{add_reaction_name})) {
+			if (!defined($rxnadd->{add_reaction_name}) || $rxnadd->{add_reaction_name} eq "") {
 				$rxnadd->{add_reaction_name} = $rxnobj->name();
 			}
-			if (!defined($rxnadd->{add_reaction_direction})) {
+			if (!defined($rxnadd->{add_reaction_direction}) || $rxnadd->{add_reaction_direction} eq "") {
 				$rxnadd->{add_reaction_direction} = $rxnobj->direction();
 			}
-			$rxnref = "~/template/reactions/id/".$rxnobj->id();
+			if ($rxnobj->id() =~ m/rxn\d+_[a-z]+/) {
+				$rxnref = "~/template/reactions/id/".$rxnobj->id();
+			}
 		} else {
-			if (!defined($rxnadd->{add_reaction_name})) {
+			if (!defined($rxnadd->{add_reaction_name}) || $rxnadd->{add_reaction_name} eq "") {
 				$rxnadd->{add_reaction_name} = $rxnadd->{add_reaction_id};
 			}
-			if (!defined($rxnadd->{add_reaction_direction})) {
+			if (!defined($rxnadd->{add_reaction_direction}) || $rxnadd->{add_reaction_direction} eq "") {
 				$rxnadd->{add_reaction_direction} = "=";
 			}
 		}
@@ -1971,26 +1990,60 @@ sub edit_metabolic_model {
 			direction => $rxnadd->{add_reaction_direction},
 			modelcompartment_ref => "~/modelcompartments/id/".$rxnadd->{reaction_compartment_id}
 		});
-		if (defined($rxnobj)) {
-			my $reactants = $rxnobj->templateReactionReagents();
-			for (my $i=0; $i < @{$reactants}; $i++) {
-				my $reactantobj = $self->getObject("modelcompounds",$reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1));
-				if (!defined($reactantobj)) {
-					$reactantobj = $self->add("modelcompounds",{
-						id => $reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1),
-						compound_ref => "~/template/compounds/".$reactants->[$i]->templatecompcompound()->templatecompound()->id(),
-						aliases => [],
-						name => $reactants->[$i]->templatecompcompound()->templatecompound()->name(),
-						charge => $reactants->[$i]->templatecompcompound()->charge(),
-						maxuptake => $reactants->[$i]->templatecompcompound()->maxuptake(),
-						formula => $reactants->[$i]->templatecompcompound()->formula(),
-						modelcompartment_ref => "~/modelcompartments/id/".$reactants->[$i]->templatecompcompound()->templatecompartment()->id().substr($rxnadd->{reaction_compartment_id},1)
+		if (defined($rxnadd->{equation})) {
+			$self->LoadExternalReactionEquation({
+				equation => $rxnadd->{equation},
+				compounds => {},
+				reaction => $mdlrxnobj
+			});
+		} elsif (defined($rxnobj)) {
+			my $reactants;
+			if ($rxnobj->id() =~ m/rxn\d+_[a-z]+/) {
+				$reactants = $rxnobj->templateReactionReagents();
+				for (my $i=0; $i < @{$reactants}; $i++) {
+					my $reactantobj = $self->getObject("modelcompounds",$reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1));
+					if (!defined($reactantobj)) {
+						$reactantobj = $self->add("modelcompounds",{
+							id => $reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1),
+							compound_ref => "~/template/compounds/".$reactants->[$i]->templatecompcompound()->templatecompound()->id(),
+							aliases => [],
+							name => $reactants->[$i]->templatecompcompound()->templatecompound()->name(),
+							charge => $reactants->[$i]->templatecompcompound()->charge(),
+							maxuptake => $reactants->[$i]->templatecompcompound()->maxuptake(),
+							formula => $reactants->[$i]->templatecompcompound()->formula(),
+							modelcompartment_ref => "~/modelcompartments/id/".$reactants->[$i]->templatecompcompound()->templatecompartment()->id().substr($rxnadd->{reaction_compartment_id},1)
+						});
+					}
+					$mdlrxnobj->add("modelReactionReagents",{
+						modelcompound_ref => "~/modelcompounds/id/".$reactantobj->id(),
+						coefficient => $reactants->[$i]->coefficient()
 					});
 				}
-				$mdlrxnobj->add("modelReactionReagents",{
-					modelcompound_ref => "~/modelcompounds/id/".$reactantobj->id(),
-					coefficient => $reactants->[$i]->coefficient()
-				});
+			} else {
+				$reactants = $rxnobj->reagents();
+				for (my $i=0; $i < @{$reactants}; $i++) {
+					my $reactantobj = $self->getObject("modelcompounds",$reactants->[$i]->compound()->id()."_".$reactants->[$i]->compartment()->id().substr($rxnadd->{reaction_compartment_id},1));
+					if (!defined($reactantobj)) {
+						my $cpdref = "~/template/compounds/cpd00000";
+						if (defined($self->template()->getObject("compounds",$reactants->[$i]->compound()->id()))) {
+							$cpdref = "~/template/compounds/".$reactants->[$i]->compound()->id();
+						}
+						$reactantobj = $self->add("modelcompounds",{
+							id => $reactants->[$i]->compound()->id()."_".$reactants->[$i]->compartment()->id().substr($rxnadd->{reaction_compartment_id},1),
+							compound_ref => $cpdref,
+							aliases => [],
+							name => $reactants->[$i]->compound()->name(),
+							charge => $reactants->[$i]->compound()->defaultCharge(),
+							maxuptake => 100,
+							formula => $reactants->[$i]->compound()->formula(),
+							modelcompartment_ref => "~/modelcompartments/id/".$reactants->[$i]->compartment()->id().substr($rxnadd->{reaction_compartment_id},1)
+						});
+					}
+					$mdlrxnobj->add("modelReactionReagents",{
+						modelcompound_ref => "~/modelcompounds/id/".$reactantobj->id(),
+						coefficient => $reactants->[$i]->coefficient()
+					});
+				}
 			}
 		}
 		if (defined($rxnadd->{add_reaction_gpr})) {

@@ -7,6 +7,7 @@ use File::Temp qw(tempfile);
 use File::Path;
 use File::Copy::Recursive;
 use JSON::XS;
+use JSON;
 use HTTP::Request::Common;
 
 our $VERBOSE = undef; # A GLOBAL Reference to print verbose() calls to, or undef.

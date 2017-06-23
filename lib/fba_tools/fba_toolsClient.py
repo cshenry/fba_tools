@@ -77,6 +77,49 @@ class fba_tools(object):
             'fba_tools.build_metabolic_model',
             [params], self._service_ver, context)
 
+    def build_multiple_metabolic_models(self, params, context=None):
+        """
+        Build multiple genome-scale metabolic models based on annotations in an input genome typed object
+        :param params: instance of type "BuildMultipleMetabolicModelsParams"
+           -> structure: parameter "genome_ids" of list of type "genome_id"
+           (A string representing a Genome id.), parameter "genome_workspace"
+           of type "workspace_name" (A string representing a workspace
+           name.), parameter "media_id" of type "media_id" (A string
+           representing a Media id.), parameter "media_workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "template_id" of type "template_id" (A string
+           representing a NewModelTemplate id.), parameter
+           "template_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "coremodel" of type
+           "bool" (A binary boolean), parameter "gapfill_model" of type
+           "bool" (A binary boolean), parameter "thermodynamic_constraints"
+           of type "bool" (A binary boolean), parameter
+           "comprehensive_gapfill" of type "bool" (A binary boolean),
+           parameter "custom_bound_list" of list of String, parameter
+           "media_supplement_list" of list of type "compound_id" (A string
+           representing a compound id.), parameter "expseries_id" of type
+           "expseries_id" (A string representing an expression matrix id.),
+           parameter "expseries_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "expression_condition"
+           of String, parameter "exp_threshold_percentile" of Double,
+           parameter "exp_threshold_margin" of Double, parameter
+           "activation_coefficient" of Double, parameter "omega" of Double,
+           parameter "objective_fraction" of Double, parameter
+           "minimum_target_flux" of Double, parameter "number_of_solutions"
+           of Long
+        :returns: instance of type "BuildMultipleMetabolicModelsResults" ->
+           structure: parameter "new_fbamodel_ref" of type "ws_fbamodel_id"
+           (The workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
+           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA)
+        """
+        return self._client.call_method(
+            'fba_tools.build_multiple_metabolic_models',
+            [params], self._service_ver, context)
+
     def gapfill_metabolic_model(self, params, context=None):
         """
         Gapfills a metabolic model to induce flux in a specified reaction

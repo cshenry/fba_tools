@@ -107,7 +107,7 @@ sub _equation_builder {
         }
     }
     if ($args->{hashed} == 1) {
-        return Digest::MD5::md5_hex($reactcode.$sign.$productcode);
+        #return Digest::MD5::md5_hex($reactcode.$sign.$productcode);
     }
     return $reactcode.$sign.$productcode;
 }

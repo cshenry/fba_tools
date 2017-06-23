@@ -2,6 +2,7 @@ package Bio::KBase::kbaseenv;
 use strict;
 use warnings;
 use Bio::KBase::utilities;
+use Workspace::WorkspaceClient;
 
 our $ws_client = undef;
 our $ga_client = undef;
@@ -101,7 +102,7 @@ sub ws_client {
 		refresh => 0
 	});
 	if ($parameters->{refresh} == 1 || !defined($ws_client)) {
-		$ws_client = new Bio::KBase::workspace::Client(Bio::KBase::utilities::utilconf("workspace-url"),token => Bio::KBase::utilities::token());
+		$ws_client = new Workspace::WorkspaceClient(Bio::KBase::utilities::utilconf("workspace-url"),token => Bio::KBase::utilities::token());
 	}
 	return $ws_client;
 }
@@ -132,13 +133,17 @@ sub ac_client {
 
 sub get_object {
 	my ($ws,$id) = @_;
-	my $output = Bio::KBase::kbaseenv::ws_client()->get_objects();
+	my $output = Bio::KBase::kbaseenv::ws_client()->get_objects([Bio::KBase::kbaseenv::configure_ws_id($ws,$id)]);
 	return $output->[0]->{data};
 }
 
 sub get_objects {
-	my ($args) = @_;
-	return Bio::KBase::kbaseenv::ws_client()->get_objects($args);
+	my ($args,$options) = @_;
+	my $input = {
+		objects => $args,
+	};
+	my $output = Bio::KBase::kbaseenv::ws_client()->get_objects2($input);
+	return $output->{data};
 }
 
 sub list_objects {
@@ -168,23 +173,40 @@ sub add_object_created {
 
 sub save_objects {
 	my ($args) = @_;
-	my $output = Bio::KBase::kbaseenv::ws_client()->save_objects($args);
-	for (my $i=0; $i < @{$output}; $i++) {
-		my $array = [split(/\./,$output->[$i]->[2])];
-		my $description = $array->[1]." ".$output->[$i]->[1];
-		if (defined($output->[$i]->[10]) && defined($output->[$i]->[10]->{description})) {
-			$description = $output->[$i]->[10]->{description};
+	my $retryCount = 3;
+	my $error;
+	my $output;
+	while ($retryCount > 0) {
+		eval {
+			$output = Bio::KBase::kbaseenv::ws_client()->save_objects($args);
+			for (my $i=0; $i < @{$output}; $i++) {
+				my $array = [split(/\./,$output->[$i]->[2])];
+				my $description = $array->[1]." ".$output->[$i]->[1];
+				if (defined($output->[$i]->[10]) && defined($output->[$i]->[10]->{description})) {
+					$description = $output->[$i]->[10]->{description};
+				}
+				push(@{$objects_created},{
+					"ref" => $output->[$i]->[6]."/".$output->[$i]->[0]."/".$output->[$i]->[4],
+					description => $description
+				});
+			}
+		};
+		# If there is a network glitch, wait a second and try again. 
+		if ($@) {
+			$retryCount--;
+			$error = $@;
+		} else {
+			last;
 		}
-		push(@{$objects_created},{
-			"ref" => $output->[$i]->[6]."/".$output->[$i]->[0]."/".$output->[$i]->[4],
-			description => $description
-		});
+	}
+	if ($retryCount == 0) {
+		Bio::KBase::utilities::error($error);
 	}
 	return $output;
 }
 
 sub configure_ws_id {
-	my ($ws,$id) = @_;
+	my ($ws,$id,$version) = @_;
 	my $input = {};
  	if ($ws =~ m/^\d+$/) {
  		$input->{wsid} = $ws;
@@ -195,6 +217,9 @@ sub configure_ws_id {
 		$input->{objid} = $id;
 	} else {
 		$input->{name} = $id;
+	}
+	if (defined($version)) {
+		$input->{ver} = $version;
 	}
 	return $input;
 }

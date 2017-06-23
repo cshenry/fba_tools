@@ -213,6 +213,17 @@ sub BUILD {
     }
 }
 
+sub ref_chain {
+	my ($self,$ref) = @_;
+	if (defined($ref)) {
+		$self->{_ref_chain} = $ref;
+	}
+	if (!defined($self->{_ref_chain})) {
+		$self->{_ref_chain} = "";
+	}
+	return $self->{_ref_chain};
+}
+
 sub fix_reference {
 	my ($self,$ref) = @_;
 	if ($ref =~ m/^~/) {
@@ -664,6 +675,10 @@ sub remove {
 
 sub getLinkedObject {
     my ($self, $ref) = @_;
+	my $refchain = $self->ref_chain();
+	if (length($refchain) > 0) {
+		$refchain .= ";";
+	}
 	if ($ref =~ m/^~$/) {
 		return $self->topparent();
 	} elsif ($ref =~ m/(.+)\|\|(.*)/) {
@@ -675,7 +690,7 @@ sub getLinkedObject {
 				$objpath =~ s/[^\/]+\/\.\.\/*//g;
 			}
     	}
-    	my $obj = $self->store()->get_object($objpath);
+    	my $obj = $self->store()->get_object($refchain.$objpath);
     	if (length($internalref) == 0) {
     		return $obj;
     	} elsif ($internalref =~ m/^\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
@@ -699,18 +714,18 @@ sub getLinkedObject {
 	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-]+)$/) {
 		Bio::KBase::ObjectAPI::utilities::error("FAILED!");
 	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-]+$/) {
-    	return $self->store()->get_object($ref);
+    	return $self->store()->get_object($refchain.$ref);
     } elsif ($ref =~ m/^([:\w]+\/\w+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
     	my $field = $2;
     	my $query = {$3 => $4};
-    	my $object = $self->store()->get_object($1);
+    	my $object = $self->store()->get_object($refchain.$1);
     	return $object->queryObject($field,$query);
     } elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+$/) {
-    	return $self->store()->get_object($ref);
+    	return $self->store()->get_object($refchain.$ref);
     } elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
     	my $field = $2;
     	my $query = {$3 => $4};
-    	my $object = $self->store()->get_object($1);
+    	my $object = $self->store()->get_object($refchain.$1);
     	return $object->queryObject($field,$query);
     }
     Bio::KBase::ObjectAPI::utilities::error("Unrecognized reference format:".$ref);
