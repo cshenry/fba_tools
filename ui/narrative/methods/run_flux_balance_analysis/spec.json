@@ -150,7 +150,8 @@
       {
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseBiochem.Media"
+               "KBaseBiochem.Media",
+               "KBaseBiochem.MediaSet"
             ]
          },
          "advanced" : false,

@@ -242,9 +242,9 @@ sub util_build_fba {
 		}
 		$fbaobj->PrepareForGapfilling($input);
 	}
-        if(defined($params->{MFASolver})){
-            $fbaobj->parameters()->{"MFASolver"}=$params->{MFASolver};
-        }
+	if(defined($params->{MFASolver})){
+		$fbaobj->parameters()->{"MFASolver"}=$params->{MFASolver};
+	}
 	return $fbaobj;
 }
 
@@ -523,6 +523,7 @@ sub func_run_flux_balance_analysis {
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","fba_output_id"],{
 		fbamodel_workspace => $params->{workspace},
 		mediaset_id => undef,
+		mediaset_workspace => $params->{workspace},
 		media_id_list => undef,
 		media_id => undef,
 		media_workspace => $params->{workspace},
@@ -576,11 +577,35 @@ sub func_run_flux_balance_analysis {
 		}
 		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
 	}
-	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
-	$handler->util_log("Retrieving ".$params->{media_id}." media.");
+	
+	$handler->util_log("Retrieving ".$params->{media_id}." media or mediaset.");
 	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+	if ($media->_wstype() eq "KBaseBiochem.MediaSet") {
+		$params->{mediaset_id} = $params->{media_id};
+		my $firstmedia = $media->{elements}->[0]->{"ref"};
+		shift(@{$media->{elements}});
+		my $array = [split(/\//,$firstmedia)];
+		$params->{media_id} = pop(@{$array});
+		$media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+	}
+	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
 	$handler->util_log("Preparing flux balance analysis problem.");
 	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+	if (defined($params->{mediaset_id})) {
+		$fba->mediaset_ref($params->{mediaset_workspace}."/".$params->{mediaset_id});
+	}
+	if (defined($params->{media_id_list})) {
+		if (ref($params->{media_id_list}) ne 'ARRAY') {
+			$params->{media_id_list} = [split(/[\n;\|]+/,$params->{media_id_list})];
+		}
+		for (my $i=0; $i < @{$params->{media_id_list}}; $i++) {
+			my $currref = $params->{media_id_list}->[$i];
+			if ($currref !~ m/\//) {
+				$currref = $params->{media_workspace}."/".$currref;
+			}
+			push(@{$fba->media_list_refs()},$currref);
+		}
+	}
 	#Running FBA
 	$handler->util_log("Running flux balance analysis problem.");
 	my $objective;

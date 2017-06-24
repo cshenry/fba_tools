@@ -368,6 +368,50 @@ sub runFBA {
 	if (!-e $self->jobDirectory()."/runMFAToolkit.sh") {
 		$self->createJobDirectory();
 	}
+	if (length($self->mediaset_ref()) > 0) {
+		my $mediaset = $self->mediaset();
+		for (my $i=0; $i < @{$mediaset->{elements}}; $i++) {
+			push(@{$self->media_list_refs()},$mediaset->{elements}->[$i]->{"ref"});
+		}
+	}
+	my $medialist = $self->media_list();
+	for (my $i=0; $i < @{$medialist}; $i++) {
+		my $file = Bio::KBase::ObjectAPI::utilities::LOADFILE($self->jobDirectory()."/SpecializedParameters.txt");
+		for(my $j=0; $j < @{$file}; $j++) {
+			if ($file->[$j] =~ m/^(user bounds filename\|).+(\|.+)$/) {
+				$file->[$j] = $1.$medialist->[$i]->name().$2;
+			}
+		}
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($self->jobDirectory()."/SpecializedParameters.txt",$file);
+		system($self->command());
+		$self->loadMFAToolkitResults();
+		push(@{$self->other_objectives()},$self->objectiveValue()+0);
+		my $vars = $self->FBACompoundVariables();
+		for (my $j=0; $j < @{$vars}; $j++) {
+			push(@{$vars->[$j]->other_values()},$vars->[$j]->value()+0);
+			push(@{$vars->[$j]->other_max()},$vars->[$j]->max()+0);
+			push(@{$vars->[$j]->other_min()},$vars->[$j]->min()+0);
+		}
+		$vars = $self->FBAReactionVariables();
+		for (my $j=0; $j < @{$vars}; $j++) {
+			push(@{$vars->[$j]->other_values()},$vars->[$j]->value()+0);
+			push(@{$vars->[$j]->other_max()},$vars->[$j]->max()+0);
+			push(@{$vars->[$j]->other_min()},$vars->[$j]->min()+0);
+		}
+		$vars = $self->FBABiomassVariables();
+		for (my $j=0; $j < @{$vars}; $j++) {
+			push(@{$vars->[$j]->other_values()},$vars->[$j]->value()+0);
+			push(@{$vars->[$j]->other_max()},$vars->[$j]->max()+0);
+			push(@{$vars->[$j]->other_min()},$vars->[$j]->min()+0);
+		}
+	}
+	my $file = Bio::KBase::ObjectAPI::utilities::LOADFILE($self->jobDirectory()."/SpecializedParameters.txt");
+	for(my $j=0; $j < @{$file}; $j++) {
+		if ($file->[$j] =~ m/^(user bounds filename\|).+(\|.+)$/) {
+			$file->[$j] = $1.$self->media()->name().$2;
+		}
+	}
+	Bio::KBase::ObjectAPI::utilities::PRINTFILE($self->jobDirectory()."/SpecializedParameters.txt",$file);
 	system($self->command());
 	$self->loadMFAToolkitResults();
 	if (defined(Bio::KBase::utilities::conf("ModelSEED","fbajobcache"))) {

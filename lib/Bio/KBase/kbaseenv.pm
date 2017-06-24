@@ -99,10 +99,11 @@ sub create_context_from_client_config {
 sub ws_client {
 	my($parameters) = @_;
 	$parameters = Bio::KBase::utilities::args($parameters,[],{
-		refresh => 0
+		refresh => 0,
+		url => Bio::KBase::utilities::utilconf("workspace-url")
 	});
 	if ($parameters->{refresh} == 1 || !defined($ws_client)) {
-		$ws_client = new Workspace::WorkspaceClient(Bio::KBase::utilities::utilconf("workspace-url"),token => Bio::KBase::utilities::token());
+		$ws_client = new Workspace::WorkspaceClient($parameters->{url},token => Bio::KBase::utilities::token());
 	}
 	return $ws_client;
 }
