@@ -82,7 +82,7 @@ has biomassRemovals => (is => 'rw', isa => 'HashRef', printOrder => '-1', defaul
 has expression_matrix_column => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has MFALog => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has media_list_refs => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub{return [];}, type => 'attribute', metaclass => 'Typed');
-has mediaset_ref => (is => 'rw', isa => 'Str', printOrder => '-1',default => "", type => 'attribute', metaclass => 'Typed');
+has mediaset_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has other_objectives => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
