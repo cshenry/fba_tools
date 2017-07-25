@@ -58,7 +58,7 @@ sub util_finalize_call {
 
 sub util_store {
 	my ($self,$store) = @_;
-	if (defined($store)) {
+    if (defined($store)) {
 		$self->{_kbase_store} = $store;
 	}
     if (!defined($self->{_kbase_store})) {

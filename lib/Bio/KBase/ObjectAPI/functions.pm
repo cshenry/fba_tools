@@ -342,7 +342,7 @@ sub func_build_metabolic_model {
 	my $genome = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome_id});
 	#Classifying genome
 	if ($params->{template_id} eq "auto") {
-		if (!defined($params->{template_workspace})) {
+		if (defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$handler->util_log("Classifying genome in order to select template.");
@@ -354,22 +354,22 @@ sub func_build_metabolic_model {
 			$params->{template_id} = "GramPosModelTemplate";
 		}
 	} elsif ($params->{template_id} eq "grampos") {
-		if (!defined($params->{template_workspace})) {
+		if (defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "GramPosModelTemplate";
 	} elsif ($params->{template_id} eq "gramneg") {
-		if (!defined($params->{template_workspace})) {
+		if (defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "GramNegModelTemplate";
 	} elsif ($params->{template_id} eq "plant") {
-		if (!defined($params->{template_workspace})) {
+		if (defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "PlantModelTemplate";
 	} elsif ($params->{template_id} eq "core") {
-		if (!defined($params->{template_workspace})) {
+		if (defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "CoreModelTemplate";
@@ -596,6 +596,7 @@ sub func_run_flux_balance_analysis {
 	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
 	if ($media->_wstype() eq "KBaseBiochem.MediaSet") {
 		$params->{mediaset_id} = $params->{media_id};
+		$params->{mediaset_workspace} = $params->{media_workspace};
 		my $firstmedia = $media->{elements}->[0]->{"ref"};
 		shift(@{$media->{elements}});
 		my $array = [split(/\//,$firstmedia)];
@@ -1512,43 +1513,33 @@ sub func_create_or_edit_media {
 		compounds_to_remove => "",
 		compounds_to_change => [],
 		compounds_to_add => [],
+		protocol_link => undef,
+		atmosphere => undef,
+		atmosphere_addition => undef,
 		media_workspace => $params->{workspace},
 		pH_data => undef,
 		temperature => undef,
 		source_id => undef,
 		source => undef,
+		name => undef,
 		type => undef,
 		isDefined => undef
 	});
-	$params->{pH_data} .= "";
-	my $media;
+	my $media = {
+		mediacompounds => [],
+	};
 	if (defined($params->{media_id})) {
-		my $oldmedia = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
-		$media = $oldmedia->cloneObject();
-		$media->parent($oldmedia->parent());
-		my $list = ["source","source_id","type","isDefined","temperature","pH_data"];
-		for (my $i=0; $i < @{$list}; $i++) {
-			my $item = $list->[$i];
-			if (defined($params->{$item})) {
-				$media->$item($params->{$item});
-			}
-		}
-	} else {
-		$media = Bio::KBase::ObjectAPI::Biochem::Media->new({
-			source => $params->{source},
-			pH_data => $params->{pH_data},
-			id => $params->{media_output_id},
-			temperature => $params->{temperature},
-			isAerobic => 0,
-			source_id => $params->{source_id},
-			isMinimal => 0,
-			name => $params->{media_output_id},
-			type => $params->{type},
-			isDefined => $params->{isDefined},
-			mediacompounds => []
-		});
+		$media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id},{raw => 1});
 	}
-	my $mediacpds = $media->mediacompounds();
+	$media->{id} = $params->{media_output_id};
+	$media->{name} = $params->{media_output_id};
+	my $list = ["name","source","source_id","type","isDefined","temperature","pH_data","atmosphere","atmosphere_addition","protocol_link"];
+	for (my $i=0; $i < @{$list}; $i++) {
+		if (defined($params->{$list->[$i]})) {
+			$media->{$list->[$i]} = $params->{$list->[$i]};
+		}
+	}
+	
 	my $count = @{$mediacpds};
 	my $removed_list = [];
 	if (defined($params->{compounds_to_remove}) && length($params->{compounds_to_remove}) > 0) {
@@ -1561,9 +1552,8 @@ sub func_create_or_edit_media {
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
 			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
 				if ($1 eq $params->{compounds_to_remove}->[$i]) {
-					push(@{$removed_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_remove}->[$i].")");
-					$media->remove("mediacompounds",$mediacpds->[$j]);
-					$mediacpds = $media->mediacompounds();
+					push(@{$removed_list},$params->{compounds_to_remove}->[$i]);
+					splice(@{$mediacpds}, $j, 1);
 					last;
 				}
 			}
@@ -1584,12 +1574,12 @@ sub func_create_or_edit_media {
 		}
 		$params->{compounds_to_change}->[$i]->{change_id} =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
-			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+			if ($mediacpds->[$j]->{compound_ref} =~ m/(cpd\d+)/) {
 				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}) {
-					push(@{$change_list},$mediacpds->[$j]->compound()->name()." (".$params->{compounds_to_change}->[$i]->{change_id}.")");
-					$mediacpds->[$j]->concentration($params->{compounds_to_change}->[$i]->{change_concentration});
-					$mediacpds->[$j]->minFlux($params->{compounds_to_change}->[$i]->{change_minflux});
-					$mediacpds->[$j]->maxFlux($params->{compounds_to_change}->[$i]->{change_maxflux});
+					push(@{$change_list},$params->{compounds_to_change}->[$i]->{change_id});
+					$mediacpds->[$j]->{concentration} = $params->{compounds_to_change}->[$i]->{change_concentration}
+					$mediacpds->[$j]->{minFlux} = $params->{compounds_to_change}->[$i]->{change_minflux};
+					$mediacpds->[$j]->{maxFlux} = $params->{compounds_to_change}->[$i]->{change_maxflux};
 				}
 			}
 		}
@@ -1612,34 +1602,73 @@ sub func_create_or_edit_media {
 		}
 		if (defined($cpd)) {
 			for (my $j=0; $j < @{$mediacpds}; $j++) {
-				if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+				if ($mediacpds->[$j]->{compound_ref} =~ m/(cpd\d+)/) {
 					if ($1 eq $cpd->id()) {
-						$mediacpds->[$j]->concentration($params->{compounds_to_add}->[$i]->{add_concentration});
-						$mediacpds->[$j]->minFlux($params->{compounds_to_add}->[$i]->{add_minflux});
-						$mediacpds->[$j]->maxFlux($params->{compounds_to_add}->[$i]->{add_maxflux});
+						$mediacpds->[$j]->{concentration} = $params->{compounds_to_add}->[$i]->{add_concentration};
+						$mediacpds->[$j]->{minFlux} = $params->{compounds_to_add}->[$i]->{add_minflux};
+						$mediacpds->[$j]->{maxFlux} = $params->{compounds_to_add}->[$i]->{add_maxflux};
 						$found = 1;
 					}
 				}
 			}
-			if ($found == 0) {
-				my $newcpd = $media->add("mediacompounds",{
-					compound_ref => "kbase/default/compounds/id/".$cpd->id(),
-					concentration => $params->{compounds_to_add}->[$i]->{add_concentration},
-					minFlux => $params->{compounds_to_add}->[$i]->{add_minflux},
-					maxFlux => $params->{compounds_to_add}->[$i]->{add_maxflux}
-				});
-				push(@{$add_list},$cpd->name()." (".$cpd->id().")");
-				$mediacpds = $media->mediacompounds();
+		} else {
+			for (my $j=0; $j < @{$mediacpds}; $j++) {
+				if (defined($mediacpds->[$j]->{id}) && $mediacpds->[$j]->{id} eq $params->{compounds_to_add}->[$i]->{add_id}) {
+					$found = 1;
+				} elsif (defined($mediacpds->[$j]->{name}) && $mediacpds->[$j]->{name} eq $params->{compounds_to_add}->[$i]->{add_id}) {
+					$found = 1;
+				}
 			}
 		}
+		if ($found == 0) {
+			my $newmediacpd = {
+				concentration => $params->{compounds_to_add}->[$i]->{add_concentration},
+				maxFlux => $params->{compounds_to_add}->[$i]->{add_minflux},
+				minFlux => $params->{compounds_to_add}->[$i]->{add_maxflux}
+			};
+			if (defined($cpd)) {
+				$newmediacpd->{id} = $cpd->id();
+				$newmediacpd->{name} = $cpd->name();
+				$newmediacpd->{compound_ref} = "kbase/default/compounds/id/".$cpd->id();
+			} else {
+				$newmediacpd->{id} = $params->{compounds_to_add}->[$i]->{add_id};
+				$newmediacpd->{name} = $params->{compounds_to_add}->[$i]->{add_id};
+				$newmediacpd->{compound_ref} = "kbase/default/compounds/id/cpd00000";
+			}
+			if (defined($params->{compounds_to_add}->[$i]->{smiles})) {
+				$newmediacpd->{smiles} = $params->{compounds_to_add}->[$i]->{smiles};
+			}
+			if (defined($params->{compounds_to_add}->[$i]->{inchikey})) {
+				$newmediacpd->{inchikey} = $params->{compounds_to_add}->[$i]->{inchikey};
+			}
+			push(@{$mediacpds},$newmediacpd);
+			push(@{$add_list},$params->{compounds_to_add}->[$i]->{add_id};
+		}
 	}
-	my $wsmeta = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_output_id});
 	if (@{$add_list} == 0) {
 		Bio::KBase::utilities::print_report_message({message => " No compounds added to the media.",append => 1,html => 0});
 	} else {
 		my $count = @{$add_list};
 		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds added to the media: ".join("; ",@{$add_list}).".",append => 1,html => 0});	
 	}
+	for (my $i=0; $i < @{$mediacpds}; $i++) {
+		if ($mediacpds->[$i]->{compound_ref} =~ m/(cpd\d+)/) {
+			my $cpdid = $1;
+			if ($cpdid ne "cpd00000") {
+				my $cpdobj = $bio->getObject("compounds",$cpdid);
+				if (!defined($mediacpds->[$i]->{name})) {
+					$mediacpds->[$i]->{name} = $cpdobj->name();
+				}
+				if (!defined($mediacpds->[$i]->{id})) {
+					$mediacpds->[$i]->{id} = $cpdobj->id();
+				}
+			}
+		}
+	}
+	my $mediaobj = Bio::KBase::ObjectAPI::KBaseBiochem::Media->new($media);
+	my $mediaobjcpds = $mediaobj->mediacompounds();
+	my $mediacpds = $media->{mediacompounds};
+	my $wsmeta = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_output_id});
    	return {
 		new_media_ref => $params->{workspace}."/".$params->{media_output_id},
 		report_name => $params->{media_output_id}.".create_or_edit_media.report",
@@ -2274,57 +2303,84 @@ sub func_import_media {
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["compounds","media_id","workspace"],{
 		name => $params->{media_id},
+		source => undef,
+		source_id => undef,
+		protocol_link => undef,
+		pH_data => undef,
+		temperature => undef,
+		atmosphere => undef,
+		atmosphere_addition => undef,
 		isDefined => 0,
 		isMinimal => 0,
 		type => "custom",
 		concentrations => [],
+		smiles => {},
+		inchikey => {},
+		compound_names => {},
 		maxflux => [],
 		minflux => []
 	});
 	#Creating the media object from the specifications
 	my $bio = $handler->util_get_object("kbase/default",{});
-	my $media = Bio::KBase::ObjectAPI::KBaseBiochem::Media->new({
+	my $media = {
 		id => $params->{media_id},
 		name => $params->{name},
 		isDefined => $params->{isDefined},
 		isMinimal => $params->{isMinimal},
 		type => $params->{type},
-		source_id => $params->{media_id}
-	});
-	my $missing = [];
-	my $found = [];
-	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
-		my $name = $params->{compounds}->[$i];
-		my $cpdobj = $bio->searchForCompound($name);
-		if (defined($cpdobj)) {
-			my $data = {
-				compound_ref => $bio->_reference()."/compounds/id/".$cpdobj->id(),
-				concentration => 0.001,
-				maxFlux => 1000,
-				minFlux => -1000
-			};
-			if (defined($params->{concentrations}->[$i])) {
-				$data->{concentration} = $params->{concentrations}->[$i];
-			}
-			if (defined($params->{maxflux}->[$i])) {
-				$data->{maxFlux} = $params->{maxflux}->[$i];
-			}
-			if (defined($params->{minflux}->[$i])) {
-				$data->{minFlux} = $params->{minflux}->[$i];
-			}
-			$media->add("mediacompounds",$data);
-			push(@{$found},$cpdobj->id());
-		} else {
-			push(@{$missing},$params->{compounds}->[$i]);
+		source_id => $params->{media_id},
+		mediacompounds => []
+	};
+	my $attributelist = [
+		"source",
+		"source_id",
+		"protocol_link",
+		"pH_data",
+		"temperature",
+		"atmosphere",
+		"atmosphere_addition"
+	];
+	for (my $i=0; $i < @{$attributelist}; $i++) {
+		if (defined($params->{$attributelist->[$i]})) {
+			$media_data->{$attributelist->[$i]} = $params->{$attributelist->[$i]};
 		}
 	}
-	#Checking that all compounds specified for media were found
-	if (defined($missing->[0])) {
-		Bio::KBase::utilities::error("Compounds specified for media not found: ".join(";",@{$missing}),'addmedia');
+	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
+		my $newcpd = {
+			id => $params->{compounds}->[$i],
+			name => $params->{compounds}->[$i],
+			concentration => 0.001,
+			maxFlux => 1000,
+			minFlux => -1000,
+			compound_ref => "/kbase/default/compounds/id/cpd00000"
+		};
+		if (defined($params->{compound_names}->{$params->{compounds}->[$i]})) {
+			$newcpd->{name} = $params->{compound_names}->{$params->{compounds}->[$i]};
+		}
+		if (defined($params->{smiles}->{$params->{compounds}->[$i]})) {
+			$newcpd->{smiles} = $params->{smiles}->{$params->{compounds}->[$i]};
+		}
+		if (defined($params->{inchikey}->{$params->{compounds}->[$i]})) {
+			$newcpd->{inchikey} = $params->{inchikey}->{$params->{compounds}->[$i]};
+		}
+		if (defined($params->{concentrations}->[$i])) {
+			$newcpd->{concentration} = $params->{concentrations}->[$i];
+		}
+		if (defined($params->{maxflux}->[$i])) {
+			$newcpd->{maxFlux} = $params->{maxflux}->[$i];
+		}
+		if (defined($params->{minflux}->[$i])) {
+			$newcpd->{minFlux} = $params->{minflux}->[$i];
+		}
+		my $cpdobj = $bio->searchForCompound($newcpd->{id});
+		if (defined($cpdobj)) {
+			$newcpd->{id} = $cpdobj->id();
+			$newcpd->{compound_ref} = $bio->_reference()."/compounds/id/".$cpdobj->id();
+		}
+		push(@{$media->{mediacompounds}},$newcpd);
 	}
 	#Saving media in database
-	$media->parent($handler->util_store());
-	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media"});  
+	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});  
 	return { ref => $mc_metadata->[6]."/".$mc_metadata->[0]."/".$mc_metadata->[4] };
 }
 

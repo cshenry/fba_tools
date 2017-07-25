@@ -207,7 +207,7 @@ sub BUILD {
             };
 
             $data->{parent} = $self; # set the parent
-            #weaken($data->{parent}); # and make it weak
+            weaken($data->{parent}); # and make it weak
             $subobjs->[$i] = $info; # reset the subobject with info hash
         }
     }
