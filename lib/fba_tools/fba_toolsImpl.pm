@@ -57,7 +57,10 @@ sub util_finalize_call {
 }
 
 sub util_store {
-	my ($self) = @_;
+	my ($self,$store) = @_;
+	if (defined($store)) {
+		$self->{_kbase_store} = $store;
+	}
     if (!defined($self->{_kbase_store})) {
     	$self->{_kbase_store} = Bio::KBase::ObjectAPI::KBaseStore->new();
     }

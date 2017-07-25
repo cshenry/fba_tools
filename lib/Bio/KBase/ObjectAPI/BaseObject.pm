@@ -207,7 +207,7 @@ sub BUILD {
             };
 
             $data->{parent} = $self; # set the parent
-            weaken($data->{parent}); # and make it weak
+            #weaken($data->{parent}); # and make it weak
             $subobjs->[$i] = $info; # reset the subobject with info hash
         }
     }
@@ -800,7 +800,7 @@ sub clearLinkArray {
 sub store {
     my ($self) = @_;
     my $parent = $self->parent();
-    if (defined($parent) && ref($parent) ne "Bio::KBase::ObjectAPI::KBaseStore" && ref($parent) ne "Bio::KBase::ObjectAPI::PATRICStore") {
+    if (defined($parent) && ref($parent) ne "Bio::KBase::ObjectAPI::KBaseStore" && ref($parent) ne "Bio::KBase::ObjectAPI::PATRICStore" && ref($parent) ne "Bio::KBase::ObjectAPI::FileStore") {
         return $parent->store();
     }
     if (!defined($parent)) {

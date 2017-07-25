@@ -318,7 +318,7 @@ sub func_build_metabolic_model {
 		media_id => undef,
 		template_id => "auto",
 		genome_workspace => $params->{workspace},
-		template_workspace => $params->{workspace},
+		template_workspace => undef,
 		media_workspace => $params->{workspace},
 		coremodel => 0,
 		gapfill_model => 1,
@@ -342,7 +342,9 @@ sub func_build_metabolic_model {
 	my $genome = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome_id});
 	#Classifying genome
 	if ($params->{template_id} eq "auto") {
-		$params->{template_workspace} = "NewKBaseModelTemplates";
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
 		$handler->util_log("Classifying genome in order to select template.");
 		if ($genome->template_classification() eq "plant") {
 			$params->{template_id} = "PlantModelTemplate";
@@ -352,17 +354,29 @@ sub func_build_metabolic_model {
 			$params->{template_id} = "GramPosModelTemplate";
 		}
 	} elsif ($params->{template_id} eq "grampos") {
-		$params->{template_workspace} = "NewKBaseModelTemplates";
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
 		$params->{template_id} = "GramPosModelTemplate";
 	} elsif ($params->{template_id} eq "gramneg") {
-		$params->{template_workspace} = "NewKBaseModelTemplates";
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
 		$params->{template_id} = "GramNegModelTemplate";
 	} elsif ($params->{template_id} eq "plant") {
-		$params->{template_workspace} = "NewKBaseModelTemplates";
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
 		$params->{template_id} = "PlantModelTemplate";
 	} elsif ($params->{template_id} eq "core") {
-		$params->{template_workspace} = "NewKBaseModelTemplates";
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
 		$params->{template_id} = "CoreModelTemplate";
+	} else {
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = $params->{workspace};
+		}
 	}
 	#Retrieving template
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
