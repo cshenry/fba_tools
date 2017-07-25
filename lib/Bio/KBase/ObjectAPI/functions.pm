@@ -2502,6 +2502,8 @@ sub func_importmodel {
 			my $name;
 			my $id;
 			my $aliases;
+			my $smiles;
+			my $inchikey;
 			my $boundary = 0;
 			foreach my $attr ($cpd->getAttributes()->getValues()) {
 				my $nm = $attr->getName();
@@ -2635,7 +2637,9 @@ sub func_importmodel {
 				charge => $charge,
 				aliases => $aliases,
 				compartment => $compartment,
-				boundary => $boundary
+				boundary => $boundary,
+				smiles=>$smiles,
+				inchikey=>$inchikey
 			};
 		}
 		#Parsing reactions
