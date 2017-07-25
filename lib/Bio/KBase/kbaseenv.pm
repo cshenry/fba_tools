@@ -115,7 +115,7 @@ sub ga_client {
 	});
 	if ($parameters->{refresh} == 1 || !defined($ga_client)) {
 		require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-		$ga_client = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"));
+		$ga_client = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ga_client;
 }
@@ -127,7 +127,7 @@ sub ac_client {
 	});
 	if ($parameters->{refresh} == 1 || !defined($ac_client)) {
 		require "AssemblyUtil/AssemblyUtilClient.pm";
-		$ac_client = new AssemblyUtil::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"));
+		$ac_client = new AssemblyUtil::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ac_client;
 }
