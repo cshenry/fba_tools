@@ -63,19 +63,17 @@ sub get_objects {
 			$refs->[$i] = $1;
 		}
 		$refs->[$i] =~ s/\/+/\//g;
-		if (!defined($self->cache()->{$refs->[$i]}) || defined($options->{refreshcache})) {
+		if (!defined($self->cache()->{$refs->[$i]}) || $options->{refreshcache} == 1) {
     		push(@{$newrefs},$refs->[$i]);
     	}
 	}
 	#Pulling objects from workspace
-	if (@{$newrefs} > 0) {
-		for (my $i=0; $i < @{$newrefs}; $i++) {
-			my $directory = Bio::KBase::utilities::conf("FileStore","directory");
-			$directory =~ s/\/+$//;
-			my $filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory.$newrefs->[$i]);
-			my $data = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
-			$self->process_object($data,$newrefs->[$i],$options);
-		}
+	for (my $i=0; $i < @{$newrefs}; $i++) {
+		my $directory = Bio::KBase::utilities::conf("FileStore","directory");
+		$directory =~ s/\/+$//;
+		my $filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory.$newrefs->[$i]);
+		my $data = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
+		$self->process_object($data,$newrefs->[$i],$options);
 	}
 	#Gathering objects out of the cache
 	my $objs = [];
@@ -168,6 +166,7 @@ sub save_objects {
     	} else {
     		$data = $obj->{object}->serializeToDB();
     		$data->{__type__} = $obj->{object}->_type();
+    		$data->{__type__} =~ s/\./::/;
     	}
     	$output->{$ref} = {
     		id => $name,
