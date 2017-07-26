@@ -1539,7 +1539,7 @@ sub func_create_or_edit_media {
 			$media->{$list->[$i]} = $params->{$list->[$i]};
 		}
 	}
-	
+	my $mediacpds = $media->{mediacompounds};
 	my $count = @{$mediacpds};
 	my $removed_list = [];
 	if (defined($params->{compounds_to_remove}) && length($params->{compounds_to_remove}) > 0) {
@@ -1577,7 +1577,7 @@ sub func_create_or_edit_media {
 			if ($mediacpds->[$j]->{compound_ref} =~ m/(cpd\d+)/) {
 				if ($1 eq $params->{compounds_to_change}->[$i]->{change_id}) {
 					push(@{$change_list},$params->{compounds_to_change}->[$i]->{change_id});
-					$mediacpds->[$j]->{concentration} = $params->{compounds_to_change}->[$i]->{change_concentration}
+					$mediacpds->[$j]->{concentration} = $params->{compounds_to_change}->[$i]->{change_concentration};
 					$mediacpds->[$j]->{minFlux} = $params->{compounds_to_change}->[$i]->{change_minflux};
 					$mediacpds->[$j]->{maxFlux} = $params->{compounds_to_change}->[$i]->{change_maxflux};
 				}
@@ -1642,7 +1642,7 @@ sub func_create_or_edit_media {
 				$newmediacpd->{inchikey} = $params->{compounds_to_add}->[$i]->{inchikey};
 			}
 			push(@{$mediacpds},$newmediacpd);
-			push(@{$add_list},$params->{compounds_to_add}->[$i]->{add_id};
+			push(@{$add_list},$params->{compounds_to_add}->[$i]->{add_id});
 		}
 	}
 	if (@{$add_list} == 0) {
@@ -1667,7 +1667,6 @@ sub func_create_or_edit_media {
 	}
 	my $mediaobj = Bio::KBase::ObjectAPI::KBaseBiochem::Media->new($media);
 	my $mediaobjcpds = $mediaobj->mediacompounds();
-	my $mediacpds = $media->{mediacompounds};
 	my $wsmeta = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_output_id});
    	return {
 		new_media_ref => $params->{workspace}."/".$params->{media_output_id},
@@ -2342,7 +2341,7 @@ sub func_import_media {
 	];
 	for (my $i=0; $i < @{$attributelist}; $i++) {
 		if (defined($params->{$attributelist->[$i]})) {
-			$media_data->{$attributelist->[$i]} = $params->{$attributelist->[$i]};
+			$media->{$attributelist->[$i]} = $params->{$attributelist->[$i]};
 		}
 	}
 	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
