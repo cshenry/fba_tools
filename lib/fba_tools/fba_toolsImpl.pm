@@ -550,22 +550,31 @@ sub build_multiple_metabolic_models
     $self->util_initialize_call($params,$ctx);
 	my $orig_genome_workspace = $params->{genome_workspace};
 	my $genomes = $params->{genome_ids};
-	# If user provides a list of genomes in text form, append these to the
-    # existing gemome ids
+	# If user provides a list of genomes in text form, append these to the existing gemome ids
 	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
 	for (my $i=0; $i < @{$new_genome_list}; $i++) {
 		push(@{$genomes},$new_genome_list->[$i]);
 	}
+    # look up genome object info so we can get names
+    my $query;
+	for (my $i=0; $i < @{$genomes}; $i++) {
+		push(@{$query}, {ref=>$genomes->[$i]});
+	};
+    my $ws = Bio::KBase::kbaseenv::ws_client();
+    my $infos = $ws->get_object_info3({objects=>$query})->{infos};
 	my $htmlmessage = "<p>";
+    # run build metabolic model
 	for (my $i=0; $i < @{$genomes}; $i++) {
 		$params->{genome_workspace} = $orig_genome_workspace;
 		$params->{genome_id} = $genomes->[$i];
+        # If a full refferece is used, this app can build from multiple workspaces
 		if ($genomes->[$i] =~ m/(\d+)\/(\d+)\/*(\d*)/) {
 			$params->{genome_id} = $2;
 			$params->{genome_workspace} = $1;
 		}
-		$params->{fbamodel_output_id} = $params->{genome_id}.".mdl";
-		print "Now building model of ".$genomes->[$i]."\n";
+        my $genome_name = $infos->[$i]->[1];
+		$params->{fbamodel_output_id} = $genome_name.".mdl";
+		print "Now building model of ".$genome_name."\n";
 		eval {
 			my $output = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
 		};
