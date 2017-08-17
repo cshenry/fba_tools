@@ -2253,6 +2253,7 @@ sub tsv_file_to_model
 	};
 	my $file_path = $self->util_get_file_path($p->{model_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $cpd_file_path = $self->util_get_file_path($p->{compounds_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+	print("Parsing input files\n");
 	$input->{reactions} = $self->util_parse_input_table($file_path,[
 		["id",1],
 		["direction",0,"="],

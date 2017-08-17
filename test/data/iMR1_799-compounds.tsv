@@ -1,0 +1,746 @@
+id	name	formula	charge	aliases
+cpd01892_c0	4-Hydroxybenzoyl-CoA_c0	C28H37N7O18P3S	-3	
+cpd00001_c0	H2O_c0	H2O	0	
+cpd00136_c0	4-Hydroxybenzoate_c0	C7H5O3	-1	
+cpd00010_c0	CoA_c0	C21H32N7O16P3S	-4	
+cpd00067_c0	H+_c0	H	1	
+cpd03091_c0	5'-Deoxyadenosine_c0	C10H13N5O3	0	
+cpd17002_c0	5-Deoxy-D-ribose_c0	C5H10O4	0	
+cpd00128_c0	Adenine_c0	C5H5N5	0	
+cpd00171_c0	D-Ribulose5-phosphate_c0	C5H9O8P	-2	
+cpd00817_c0	D-Arabinose5-phosphate_c0	C5H9O8P	-2	
+cpd11493_c0	ACP_c0	C11H22N2O7PRS	-2	
+cpd00002_c0	ATP_c0	C10H13N5O13P3	-3	
+cpd11430_c0	fa1_c0	C14H27O2	-1	
+cpd00018_c0	AMP_c0	C10H12N5O7P	-2	
+cpd17011_c0	Iso-C14:0 ACP_c0	C14H27OX	0	
+cpd00012_c0	PPi_c0	HO7P2	-3	
+cpd11436_c0	fa3_c0	C15H29O2	-1	
+cpd17012_c0	iso-C15:0 ACP_c0	C15H29OX	0	
+cpd11440_c0	fa6_c0	C16H31O2	-1	
+cpd17013_c0	Iso-C16:0 ACP_c0	C16H31OX	0	
+cpd11431_c0	fa11_c0	C17H33O2	-1	
+cpd17007_c0	Iso-C17:0 ACP_c0	C17H33O1X	0	
+pde_c0	pde_c0		0	
+pdeacp_c0	pdeacp_c0		0	
+hpde_c0	hpde_c0		0	
+hpdeacp_c0	hpdeacp_c0		0	
+dodca_c0	dodca_c0		0	
+ddcaacp_c0	ddcaacp_c0		0	
+hdca_c0	hdca_c0		0	
+palmacp_c0	palmacp_c0		0	
+hdcea_c0	hdcea_c0		0	
+hdeacp_c0	hdeacp_c0		0	
+ocdcea_c0	ocdcea_c0		0	
+octeacp_c0	octeacp_c0		0	
+ptdca_c0	ptdca_c0		0	
+cpd17029_c0	pentadecanoyl-ACP (n-C15:0ACP)_c0	C15H29OX	0	
+hpdca_c0	hpdca_c0		0	
+cpd17018_c0	heptadecanoyl-ACP (n-C17:0ACP)_c0	C17H33OX	0	
+cpd01080_c0	ocdca_c0	C18H35O2	-1	
+ocdacp_c0	ocdacp_c0		0	
+fa13_c0	fa13_c0		0	
+cpd17009_c0	Iso-C13:0 ACP_c0	C13H25OX	0	
+4abut_c0	4abut_c0		0	
+cpd00024_c0	2-Oxoglutarate_c0	C5H4O5	-2	
+cpd00023_c0	L-Glutamate_c0	C5H8NO4	-1	
+sucsal_c0	sucsal_c0		0	
+cpd00279_c0	Acetoacetyl-CoA_c0	C25H36N7O18P3S	-4	
+cpd00022_c0	Acetyl-CoA_c0	C23H34N7O17P3S	-4	
+cpd00142_c0	Acetoacetate_c0	C4H5O3	-1	
+cpd00029_c0	Acetate_c0	C2H3O2	-1	
+cpd02124_c0	2-Methylacetoacetyl-CoA_c0	C26H38N7O18P3S	-4	
+ppcoa_c0	ppcoa_c0		0	
+cpd00071_c0	Acetaldehyde_c0	C2H4O	0	
+cpd00003_c0	NAD_c0	C21H26N7O14P2	-1	
+cpd00004_c0	NADH_c0	C21H27N7O14P2	-2	
+cpd03919_c0	Adenosyl cobinamide phosphate_c0	C58H86CoN16O14P	2	
+cpd00038_c0	GTP_c0	C10H13N5O14P3	-3	
+adgcoba_c0	adgcoba_c0		0	
+hco3_c0	hco3_c0		0	
+cpd00008_c0	ADP_c0	C10H13N5O10P2	-2	
+cpd00070_c0	Malonyl-CoA_c0	C24H33N7O19P3S	-5	
+cpd00009_c0	Phosphate_c0	HO4P	-2	
+cpd00141_c0	Propionate_c0	C3H5O2	-1	
+cpd00122_c0	N-Acetyl-D-glucosamine_c0	C8H15NO6	0	
+cpd00293_c0	N-Acetyl-D-glucosamine 6-phosphate_c0	C8H14NO9P	-2	
+cpd00122_e0	N-Acetyl-D-glucosamine_e0	C8H15NO6	0	
+cpd00067_e0	H+_e0	H	1	
+cpd00477_c0	N-Acetyl-L-glutamate_c0	C7H9NO5	-2	
+acg5p_c0	acg5p_c0		0	
+2obut_c0	2obut_c0		0	
+cpd00020_c0	Pyruvate_c0	C3H3O3	-1	
+2ahbut_c0	2ahbut_c0		0	
+cpd00011_c0	CO2_c0	CO2	0	
+cpd00196_c0	Acetylphosphate_c0	C2H3O5P	-2	
+alacs_c0	alacs_c0		0	
+cpd11494_c0	Acetyl-ACP_c0	C13H24N2O8PRS	-2	
+malacp_c0	malacp_c0		0	
+cpd11488_c0	Acetoacetyl-ACP_c0	C15H26N2O9PRS	-2	
+2mbcoa_c0	2mbcoa_c0		0	
+2mb2coa_c0	2mb2coa_c0		0	
+cpd01882_c0	Isovaleryl-CoA_c0	C26H40N7O17P3S	-4	
+3mb2coa_c0	3mb2coa_c0		0	
+cpd00481_c0	Isobutyryl-CoA_c0	C25H38N7O17P3S	-4	
+2mp2coa_c0	2mp2coa_c0		0	
+acorn_c0	acorn_c0		0	
+ornl_c0	ornl_c0		0	
+cpd00137_c0	Citrate_c0	C6H5O7	-3	
+cpd00260_c0	Isocitrate_c0	C6H5O7	-3	
+acg5sa_c0	acg5sa_c0		0	
+cpd12370_c0	apo-ACP_c0	HOR	0	
+cpd00045_c0	Adenosine 3-5-bisphosphate_c0	C10H11N5O10P2	-4	
+pan4p_c0	pan4p_c0		0	
+cpd00029_e0	Acetate_e0	C2H3O2	-1	
+cpd00182_c0	Adenosine_c0	C10H13N5O4	0	
+cpd00246_c0	Inosine_c0	C10H12N4O5	0	
+nh4_c0	nh4_c0		0	
+4adcho_c0	4adcho_c0		0	
+4abz_c0	4abz_c0		0	
+cpd03918_c0	Adenosyl cobinamide_c0	C58H87CoN16O11	4	
+cpd02039_c0	1-Aminopropan-2-ol_c0	C3H10NO	1	
+cpd03917_c0	Adenosylcobyric acid_c0	C55H79CoN15O11	3	
+cpd03916_c0	Adenosyl cobyrinate diamide_c0	C55H71CoN11O15	-1	
+cpd00053_c0	L-Glutamine_c0	C5H10N2O3	0	
+cpd00216_c0	Chorismate_c0	C10H8O6	-2	
+cpd00031_c0	GDP_c0	C10H13N5O11P2	-2	
+cpd00068_c0	ITP_c0	C10H12N4O14P3	-3	
+cpd00090_c0	IDP_c0	C10H12N4O11P2	-2	
+cpd00017_c0	S-Adenosyl-L-methionine_c0	C15H23N6O5S	1	
+cpd00837_c0	S-Adenosylmethioninamine_c0	C14H24N6O3S	2	
+cpd00446_c0	cAMP_c0	C10H11N5O6P	-1	
+cpd00182_e0	Adenosine_e0	C10H13N5O4	0	
+cpd00103_c0	PRPP_c0	C5H9O14P3	-4	
+cpd00193_c0	APS_c0	C10H12N5O10PS	-2	
+cpd00044_c0	3-phosphoadenylylsulfate_c0	C10H11N5O13P2S	-4	
+dcamp_c0	dcamp_c0		0	
+cpd00106_c0	Fumarate_c0	C4H2O4	-2	
+25aics_c0	25aics_c0		0	
+cpd02851_c0	AICAR_c0	C9H13N4O8P	-2	
+cpd00041_c0	L-Aspartate_c0	C4H6NO4	-1	
+cpd00114_c0	IMP_c0	C10H11N4O8P	-2	
+gam6p_c0	gam6p_c0		0	
+cpd00006_c0	NADP_c0	C21H25N7O17P3	-3	
+cpd00005_c0	NADPH_c0	C21H26N7O17P3	-4	
+23dhmb_c0	23dhmb_c0		0	
+ahcys_c0	ahcys_c0		0	
+rhcys_c0	rhcys_c0		0	
+cpd00790_c0	O-Acetyl-L-homoserine_c0	C6H11NO4	0	
+ch4s_c0	ch4s_c0		0	
+cpd00060_c0	L-Methionine_c0	C5H11NO2S	0	
+cpd00239_c0	H2S_c0	HS	-1	
+hcysl_c0	hcysl_c0		0	
+cpd00201_c0	10-Formyltetrahydrofolate_c0	C20H21N7O7	-2	
+fprica_c0	fprica_c0		0	
+thf_c0	thf_c0		0	
+cpd02140_c0	AIR_c0	C8H13N3O7P	-1	
+cpd11310_c0	5-phosphoribosyl-5-carboxyaminoimidazole_c0	C9H12N3O9P	-2	
+5aizc_c0	5aizc_c0		0	
+cpd00078_c0	Succinyl-CoA_c0	C25H35N7O19P3S	-5	
+cpd00024_e0	2-Oxoglutarate_e0	C5H4O5	-2	
+cpd00117_c0	D-Alanine_c0	C3H7NO2	0	
+cpd00731_c0	Ala-Ala_c0	C6H12N2O3	0	
+cpd00035_c0	L-Alanine_c0	C3H7NO2	0	
+cpd00035_e0	L-Alanine_e0	C3H7NO2	0	
+na1_e0	na1_e0		0	
+na1_c0	na1_c0		0	
+pydx5p_c0	pydx5p_c0		0	
+pyam5p_c0	pyam5p_c0		0	
+cpd11906_c0	tRNA(Ala)_c0	C10H12N5O3R	0	
+alatrna_c0	alatrna_c0		0	
+cpd00117_e0	D-Alanine_e0	C3H7NO2	0	
+cpd00363_c0	Ethanol_c0	C2H6O	0	
+acmama_c0	acmama_c0		0	
+cpd03485_c0	N-Acetyl-D-muramoate_c0	C11H18NO8	-1	
+cpd00179_c0	Maltose_c0	C12H22O11	0	
+malttr_c0	malttr_c0		0	
+cpd00027_c0	D-Glucose_c0	C6H12O6	0	
+cpd01399_c0	Maltotetraose_c0	C24H42O21	0	
+cpd15495_c0	Maltopentaose_c0	C30H52O26	0	
+cpd01329_c0	Maltohexaose_c0	C36H62O31	0	
+cpd15494_c0	Maltoheptaose_c0	C42H72O36	0	
+cpd00800_c0	8-Amino-7-oxononanoate_c0	C9H17NO3	0	
+cpd02701_c0	S-Adenosyl-4-methylthio-2-oxobutanoate_c0	C15H19N5O6S	0	
+cpd00764_c0	7-8-Diaminononanoate_c0	C9H21N2O2	1	
+cpd11425_c0	2dmmq7_c0	C45H62O2	0	
+cpd11606_c0	Menaquinone 7_c0	C46H64O2	0	
+cpd17027_c0	methylmenaquinone 7_c0	C47H66O2	0	
+4ampm_c0	4ampm_c0		0	
+cpd00047_c0	Formate_c0	CHO2	-1	
+cpd00093_c0	Anthranilate_c0	C7H6NO2	-1	
+pran_c0	pran_c0		0	
+cpd00782_c0	Pimeloyl-CoA_c0	C28H41N7O19P3S	-5	
+ap4a_c0	ap4a_c0		0	
+ap5a_c0	ap5a_c0		0	
+cpd00931_c0	5-Amino-6--5-phosphoribosylaminouracil_c0	C9H13N4O9P	-2	
+cpd02720_c0	5-Amino-6--5-phosphoribitylaminouracil_c0	C9H15N4O9P	-2	
+cpd00051_e0	L-Arginine_e0	C6H15N4O2	1	
+cpd00051_c0	L-Arginine_c0	C6H15N4O2	1	
+cpd00152_c0	Agmatine_c0	C5H16N4	2	
+argsuc_c0	argsuc_c0		0	
+citrl_c0	citrl_c0		0	
+cpd11907_c0	tRNA(Arg)_c0	C10H12N5O3R	0	
+argtrna_c0	argtrna_c0		0	
+cpd01048_c0	Arsenate_c0	HO4As	-2	
+gthrd_c0	gthrd_c0		0	
+cpd04098_c0	Arsenite_c0	AsH2O3	-1	
+cpd00111_c0	Oxidized glutathione_c0	C20H30N6O12S2	-2	
+cpd01048_e0	Arsenate_e0	HO4As	-2	
+cpd04098_e0	Arsenite_e0	AsH2O3	-1	
+cpd00346_c0	L-Aspartate4-semialdehyde_c0	C4H7NO3	0	
+cpd01977_c0	4-Phospho-L-aspartate_c0	C4H6NO7P	-2	
+cpd00132_c0	L-Asparagine_c0	C4H8N2O3	0	
+cpd00132_e0	L-Asparagine_e0	C4H8N2O3	0	
+cpd11908_c0	tRNA(Asn)_c0	C10H12N5O3R	0	
+asntrna_c0	asntrna_c0		0	
+cpd00085_c0	beta-Alanine_c0	C3H7NO2	0	
+cpd00146_c0	Carbamoylphosphate_c0	CH2NO5P	-2	
+cpd00343_c0	N-Carbamoyl-L-aspartate_c0	C5H6N2O5	-2	
+cpd15560_c0	Ubiquinone-8_c0	C49H74O4	0	
+cpd03470_c0	Iminoaspartate_c0	C4H3NO4	-2	
+cpd15561_c0	Ubiquinol-8_c0	C49H76O4	0	
+cpd00036_c0	Succinate_c0	C4H4O4	-2	
+cpd00007_c0	O2_c0	O2	0	
+cpd00025_c0	H2O2_c0	H2O2	0	
+cpd11451_c0	mql7_c0	C46H66O2	0	
+cpd17026_c0	methymenaquinol 7_c0	C47H68O2	0	
+cpd00041_e0	L-Aspartate_e0	C4H6NO4	-1	
+cpd00032_c0	Oxaloacetate_c0	C4H2O5	-2	
+cpd00084_c0	L-Cysteine_c0	C3H7NO2S	0	
+cpd00706_c0	Mercaptopyruvate_c0	C3H3O3S	-1	
+cpd11909_c0	tRNA(Asp)_c0	C10H12N5O3R	0	
+cpd12226_c0	L-Aspartyl-tRNA(Asp)_c0	C14H17N6O6R	0	
+cpd02103_c0	N2-Succinyl-L-arginine_c0	C10H17N4O5	-1	
+prbatp_c0	prbatp_c0		0	
+cpd01311_c0	Dethiobiotin_c0	C10H17N2O3	-1	
+btn_c0	btn_c0		0	
+cpd00211_c0	Butyrate_c0	C4H7O2	-1	
+btcoa_c0	btcoa_c0		0	
+cpd00211_e0	Butyrate_e0	C4H7O2	-1	
+cpd17014_c0	Iso-C7:0 ACP_c0	C7H13OX	0	
+cpd17015_c0	Iso-C6:0 ACP_c0	C6H11OX	0	
+myrsacp_c0	myrsacp_c0		0	
+cpd17010_c0	Fatty Acid (n-C5:0 ACP)_c0	C5H9OX	0	
+ca2_c0	ca2_c0		0	
+ca2_e0	ca2_e0		0	
+cpd03422_c0	Cobinamide_c0	C48H75CoN11O8	3	
+cbl1_e0	cbl1_e0		0	
+cbl1_c0	cbl1_c0		0	
+cobamcoa_c0	cobamcoa_c0		0	
+cobalt3_e0	cobalt3_e0		0	
+cpd00149_e0	Co2+_e0	Co	2	
+cpd08287_c0	4--cytidine5-diphospho-2-C-methyl-D-erythritol_c0	C14H23N3O14P2	-2	
+cpd08288_c0	2-phospho-4--cytidine5-diphospho-2-C-methyl-D-erythritol_c0	C14H22N3O17P3	-4	
+ch4s_e0	ch4s_e0		0	
+cpd00219_c0	Prephenate_c0	C10H8O6	-2	
+cpd00932_c0	5-O--1-Carboxyvinyl-3-phosphoshikimate_c0	C10H9O10P	-4	
+ckdo_c0	ckdo_c0		0	
+ckdo8n_c0	ckdo8n_c0		0	
+cpd00680_c0	Chloramphenicol_c0	C11H12N2O5Cl2	0	
+cpd02267_c0	Chloramphenicol 3-acetate_c0	C13H14N2O6Cl2	0	
+cl_e0	cl_e0		0	
+cl_c0	cl_c0		0	
+2c25dho_c0	2c25dho_c0		0	
+5odhf2a_c0	5odhf2a_c0		0	
+cpd00011_e0	CO2_e0	CO2	0	
+cpd00149_c0	Co2+_c0	Co	2	
+rdmbzi_c0	rdmbzi_c0		0	
+cpd00126_c0	GMP_c0	C10H12N5O8P	-2	
+confald_c0	confald_c0		0	
+cpd01059_c0	Ferulate_c0	C10H9O4	-1	
+cpd02083_c0	CoproporphyrinogenIII_c0	C36H40N4O8	-4	
+cpd00791_c0	ProtoporphyrinogenIX_c0	C34H38N4O4	-2	
+fdxo42_c0	fdxo42_c0		0	
+fdxr42_c0	fdxr42_c0		0	
+cpd11595_e0	chromate_e0	H2O4Cr	-2	
+croh3_e0	croh3_e0		0	
+cpd00001_e0	H2O_e0	H2O	0	
+cpd11595_c0	chromate_c0	H2O4Cr	-2	
+cpd00307_c0	Cytosine_c0	C4H5N3O	0	
+cpd00092_c0	Uracil_c0	C4H4N2O2	0	
+cpd00062_c0	UTP_c0	C9H12N2O15P3	-3	
+cpd00052_c0	CTP_c0	C9H13N3O14P3	-3	
+cpd00058_c0	Cu2+_c0	Cu	2	
+cpd00058_e0	Cu2+_e0	Cu	2	
+focytcc_c0	focytcc_c0		0	
+cpd00025_e0	H2O2_e0	H2O2	0	
+ficytcc_c0	ficytcc_c0		0	
+cpd00722_c0	O-Acetyl-L-serine_c0	C5H9NO4	0	
+cpd00084_e0	L-Cysteine_e0	C3H7NO2S	0	
+cysthl_c0	cysthl_c0		0	
+cpd11910_c0	tRNA(Cys)_c0	C10H12N5O3R	0	
+cpd12255_c0	L-Cysteinyl-tRNA(Cys)_c0	C13H18N6O4RS	1	
+cpd00367_c0	Cytidine_c0	C9H13N3O5	0	
+cpd00249_c0	Uridine_c0	C9H12N2O6	0	
+cpd00046_c0	CMP_c0	C9H12N3O8P	-2	
+cpd00367_e0	Cytidine_e0	C9H13N3O5	0	
+cpd00096_c0	CDP_c0	C9H13N3O11P2	-2	
+cpd00206_c0	dCMP_c0	C9H12N3O7P	-2	
+cpd00533_c0	dCDP_c0	C9H13N3O10P2	-2	
+cpd00221_e0	D-Lactate_e0	C3H5O3	-1	
+cpd00221_c0	D-Lactate_c0	C3H5O3	-1	
+cpd00438_c0	Deoxyadenosine_c0	C10H13N5O3	0	
+cpd03279_c0	Deoxyinosine_c0	C10H12N4O4	0	
+cpd00294_c0	dAMP_c0	C10H12N5O6P	-2	
+cpd00177_c0	dADP_c0	C10H13N5O9P2	-2	
+cpd00438_e0	Deoxyadenosine_e0	C10H13N5O3	0	
+12dgr_c0	12dgr_c0		0	
+12dag3p_c0	12dag3p_c0		0	
+cpd00236_c0	D-Erythrose4-phosphate_c0	C4H7O7P	-2	
+cpd00061_c0	Phosphoenolpyruvate_c0	C3H2O6P	-3	
+2dda7p_c0	2dda7p_c0		0	
+26dapm_c0	26dapm_c0		0	
+cpd00039_c0	L-Lysine_c0	C6H15N2O2	1	
+26dapll_c0	26dapll_c0		0	
+cdpdag_c0	cdpdag_c0		0	
+cpd11225_c0	3-4-dihydroxy-2-butanone4-phosphate_c0	C4H7O6P	-2	
+cpd00356_c0	dCTP_c0	C9H13N3O13P3	-3	
+cpd00358_c0	dUTP_c0	C9H12N2O14P3	-3	
+cpd00654_c0	Deoxycytidine_c0	C9H13N3O4	0	
+cpd00412_c0	Deoxyuridine_c0	C9H12N2O5	0	
+cpd00654_e0	Deoxycytidine_e0	C9H13N3O4	0	
+cpd00296_c0	dGMP_c0	C10H12N5O7P	-2	
+cpd00295_c0	dGDP_c0	C10H13N5O10P2	-2	
+cpd00277_e0	Deoxyguanosine_e0	C10H13N5O4	0	
+cpd00277_c0	Deoxyguanosine_c0	C10H13N5O4	0	
+cpd00241_c0	dGTP_c0	C10H13N5O13P3	-3	
+pppi_c0	pppi_c0		0	
+cpd00123_c0	3-Methyl-2-oxobutanoate_c0	C5H7O3	-1	
+23dhmp_c0	23dhmp_c0		0	
+cpd00508_c0	3MOP_c0	C6H9O3	-1	
+23dhdp_c0	23dhdp_c0		0	
+thdp_c0	thdp_c0		0	
+dhf_c0	dhf_c0		0	
+cpd00683_c0	Dihydropteroate_c0	C14H13N6O3	-1	
+cpd02295_c0	1-4-Dihydroxy-2-naphthoate_c0	C11H7O4	-1	
+cpd02590_c0	all-trans-Heptaprenyl diphosphate_c0	C35H58O7P2	-2	
+dhnpt_c0	dhnpt_c0		0	
+2ahhmp_c0	2ahhmp_c0		0	
+cpd00229_c0	Glycolaldehyde_c0	C2H4O2	0	
+cpd00282_c0	S-Dihydroorotate_c0	C5H5N2O4	-1	
+cpd00247_c0	Orotate_c0	C5H3N2O4	-1	
+25dhpp_c0	25dhpp_c0		0	
+dhbpt_c0	dhbpt_c0		0	
+cpd00233_c0	Tetrahydrobiopterin_c0	C9H15N5O3	0	
+cpd02920_c0	2-Amino-4-hydroxy-6-hydroxymethyl-7-8-dihydropteridinediphosphate_c0	C7H9N5O8P2	-2	
+3dhq_c0	3dhq_c0		0	
+cpd01716_c0	3-Dehydroshikimate_c0	C7H7O5	-1	
+cpd11592_e0	gly-glu-L_e0	C7H11N2O5	-1	
+cpd11592_c0	gly-glu-L_c0	C7H11N2O5	-1	
+cpd11589_e0	gly-asp-L_e0	C6H9N2O5	-1	
+cpd11589_c0	gly-asp-L_c0	C6H9N2O5	-1	
+gluaspl_e0	gluaspl_e0		0	
+gluaspl_c0	gluaspl_c0		0	
+cpd11295_c0	2,3-diketo5-methylthio-1-phosphopentane_c0	C6H9O6PS	-2	
+2kmb_c0	2kmb_c0		0	
+dmpp_c0	dmpp_c0		0	
+cpd00113_c0	Isopentenyldiphosphate_c0	C5H10O7P2	-2	
+cpd00283_c0	Geranyldiphosphate_c0	C10H18O7P2	-2	
+cpd00875_c0	KDO_c0	C8H13O8	-1	
+h2mb4p_c0	h2mb4p_c0		0	
+cpd15360_c0	2-Octaprenyl-3-methyl-5-hydroxy-6-methoxy-1,4-benzoquinol_c0	C48H74O4	0	
+cpd08021_e0	DMSO_e0	C2H6OS	0	
+dms_e0	dms_e0		0	
+cpd00115_c0	dATP_c0	C10H13N5O12P3	-3	
+dttp_c0	dttp_c0		0	
+dnason_c0	dnason_c0		0	
+cpd11461_e0	DNA_e0	C15H23O13P2R3	-2	
+cpd00294_e0	dAMP_e0	C10H12N5O6P	-2	
+cpd00206_e0	dCMP_e0	C9H12N3O7P	-2	
+cpd00296_e0	dGMP_e0	C10H12N5O7P	-2	
+cpd00298_e0	dTMP_e0	C10H13N2O8P	-2	
+dhpmp_c0	dhpmp_c0		0	
+ahdt_c0	ahdt_c0		0	
+dodca_e0	dodca_e0		0	
+cpd00655_c0	Dephospho-CoA_c0	C21H33N7O13P2S	-2	
+cpd00712_c0	2-Dehydropantoate_c0	C6H9O4	-1	
+pantr_c0	pantr_c0		0	
+drib_c0	drib_c0		0	
+2dr5p_c0	2dr5p_c0		0	
+cpd00102_c0	Glyceraldehyde3-phosphate_c0	C3H5O6P	-2	
+cpd00298_c0	dTMP_c0	C10H13N2O8P	-2	
+cpd00297_c0	dTDP_c0	C10H14N2O11P2	-2	
+cpd00299_c0	dUMP_c0	C9H11N2O8P	-2	
+2dr1p_c0	2dr1p_c0		0	
+cpd00412_e0	Deoxyuridine_e0	C9H12N2O5	0	
+cpd08289_c0	1-deoxy-D-xylulose5-phosphate_c0	C5H9O7P	-2	
+cpd08286_c0	2-C-methyl-D-erythritol4-phosphate_c0	C5H11O7P	-2	
+4per_c0	4per_c0		0	
+cpd02503_c0	3-Hydroxyisobutyryl-CoA_c0	C25H39N7O18P3S	-3	
+3hmbcoa_c0	3hmbcoa_c0		0	
+2ddg6p_c0	2ddg6p_c0		0	
+cpd17023_c0	Kdo8N-lipid IV(A)_c0	C76H139N3O29P2	0	
+cpd17024_c0	Kdo8N-lipid IV(A) with laurate_c0	C88H161N3O30P2	0	
+cpd17022_c0	Kdo8N-lipid (A)_c0	C102H187N3O31P2	0	
+2pg_c0	2pg_c0		0	
+gdptp_c0	gdptp_c0		0	
+cpd00905_c0	Guanosine 3',5'-bis(diphosphate)_c0	C10H12N5O17P4	-5	
+cpd00363_e0	Ethanol_e0	C2H6O	0	
+cpd00053_e0	L-Glutamine_e0	C5H10N2O3	0	
+cpd00023_e0	L-Glutamate_e0	C5H8NO4	-1	
+cpd00033_e0	Glycine_e0	C2H5NO2	0	
+cpd00119_e0	L-Histidine_e0	C6H9N3O2	0	
+cpd00322_e0	L-Isoleucine_e0	C6H13NO2	0	
+cpd00107_e0	L-Leucine_e0	C6H13NO2	0	
+cpd00039_e0	L-Lysine_e0	C6H15N2O2	1	
+cpd00060_e0	L-Methionine_e0	C5H11NO2S	0	
+cpd00066_e0	L-Phenylalanine_e0	C9H11NO2	0	
+cpd00129_e0	L-Proline_e0	C5H9NO2	0	
+cpd00054_e0	L-Serine_e0	C3H7NO3	0	
+cpd00161_e0	L-Threonine_e0	C4H9NO3	0	
+cpd00069_e0	L-Tyrosine_e0	C9H11NO3	0	
+cpd00156_e0	L-Valine_e0	C5H11NO2	0	
+cpd00021_e0	Fe2+_e0	Fe	0	
+cpd10516_e0	fe3_e0	Fe	3	
+cpd00047_e0	Formate_e0	CHO2	-1	
+cpd00378_e0	Formamide_e0	CH3NO	0	
+cpd00106_e0	Fumarate_e0	C4H2O4	-2	
+cpd00065_e0	L-Tryptophan_e0	C11H12N2O2	0	
+cpd00027_e0	D-Glucose_e0	C6H12O6	0	
+glycr_e0	glycr_e0		0	
+cpd00139_e0	Glycolate_e0	C2H3O3	-1	
+cpd00100_e0	Glycerol_e0	C3H8O3	0	
+cpd00311_e0	Guanosine_e0	C10H13N5O5	0	
+gthrd_e0	gthrd_e0		0	
+cpd00207_e0	Guanine_e0	C5H5N5O	0	
+cpd00239_e0	H2S_e0	HS	-1	
+cpd11640_e0	H2_e0	H2	0	
+hdca_e0	hdca_e0		0	
+hg2_e0	hg2_e0		0	
+hxan_e0	hxan_e0		0	
+indole_e0	indole_e0		0	
+inoshp_e0	inoshp_e0		0	
+inospp1_e0	inospp1_e0		0	
+cpd00246_e0	Inosine_e0	C10H12N4O5	0	
+cpd00205_e0	K+_e0	K	1	
+cpd00159_e0	L-Lactate_e0	C3H5O3	-1	
+cpd00130_e0	L-Malate_e0	C4H4O5	-2	
+cpd00254_e0	Mg_e0	Mg	2	
+cpd00030_e0	Mn2+_e0	Mn	2	
+cpd17028_e0	Manganese(IV) oxide_e0	MnO2	0	
+cpd11574_e0	Molybdate_e0	H2MoO4	0	
+nh4_e0	nh4_e0		0	
+cpd00244_e0	Ni2+_e0	Ni	2	
+nmn_e0	nmn_e0		0	
+cpd00075_e0	Nitrite_e0	NO2	-1	
+cpd00209_e0	Nitrate_e0	NO3	-1	
+cpd00007_e0	O2_e0	O2	0	
+cpd01080_e0	ocdca_e0	C18H35O2	-1	
+ornl_e0	ornl_e0		0	
+cpd00009_e0	Phosphate_e0	HO4P	-2	
+cpd00141_e0	Propionate_e0	C3H5O2	-1	
+cpd00118_e0	Putrescine_e0	C4H14N2	2	
+cpd00020_e0	Pyruvate_e0	C3H3O3	-1	
+cpd00081_e0	Sulfite_e0	HO3S	-1	
+cpd00048_e0	Sulfate_e0	O4S	-2	
+cpd00036_e0	Succinate_e0	C4H4O4	-2	
+cpd00305_e0	Thiamin_e0	C12H17N4OS	1	
+cpd00184_e0	Thymidine_e0	C10H14N2O5	0	
+cpd00151_e0	Thymine_e0	C5H6N2O2	0	
+tmao_e0	tmao_e0		0	
+tma_e0	tma_e0		0	
+tsul_e0	tsul_e0		0	
+ttdca_e0	ttdca_e0		0	
+cpd01414_e0	Tetrathionate_e0	O6S4	-2	
+cpd00092_e0	Uracil_e0	C4H4N2O2	0	
+urdio_e0	urdio_e0		0	
+cpd00249_e0	Uridine_e0	C9H12N2O6	0	
+urnyl_e0	urnyl_e0		0	
+wo4_e0	wo4_e0		0	
+cpd00015_c0	FAD_c0	C27H30N9O15P2	-3	
+cpd00982_c0	FADH2_c0	C27H33N9O15P2	-2	
+ttdca_c0	ttdca_c0		0	
+cpd00290_c0	D-fructose-1,6-bisphosphate_c0	C6H10O12P2	-4	
+dhap_c0	dhap_c0		0	
+cpd00072_c0	D-fructose-6-phosphate_c0	C6H11O9P	-2	
+cpd10515_c0	Fe2+_c0	Fe	2	
+cpd01476_c0	Protoporphyrin_c0	C34H32N4O4	-2	
+pheme_c0	pheme_c0		0	
+cpd00021_c0	Fe2+_c0	Fe	0	
+cpd10516_c0	fe3_c0	Fe	3	
+cpd10515_e0	Fe2+_e0	Fe	2	
+forglu_c0	forglu_c0		0	
+cpd00378_c0	Formamide_c0	CH3NO	0	
+mettrna_c0	mettrna_c0		0	
+cpd12285_c0	N-Formylmethionyl-tRNA_c0	C16H21N6O5RS	0	
+cpd00050_c0	FMN_c0	C17H18N4O9P	-3	
+fmnrd_c0	fmnrd_c0		0	
+cpd00350_c0	Farnesyldiphosphate_c0	C15H26O7P2	-2	
+cpd00289_c0	Geranylgeranyl diphosphate_c0	C20H34O7P2	-2	
+cpd00130_c0	L-Malate_c0	C4H4O5	-2	
+4fumacac_c0	4fumacac_c0		0	
+cpd03671_c0	D-Glucosamine1-phosphate_c0	C6H13NO8P	-1	
+cpd02611_c0	N-Acetyl-D-glucosamine1-phosphate_c0	C8H14NO9P	-2	
+g1p_c0	g1p_c0		0	
+cpd00626_c0	dTDPglucose_c0	C16H24N2O16P2	-2	
+cpd02345_c0	L-Glutamate1-semialdehyde_c0	C5H9NO3	0	
+5aop_c0	5aop_c0		0	
+glyc3p_c0	glyc3p_c0		0	
+cpd00858_c0	L-Glutamate5-semialdehyde_c0	C5H9NO3	0	
+cpd02431_c0	1-Pyrroline-5-carboxylate_c0	C5H6NO2	-1	
+glu5p_c0	glu5p_c0		0	
+cpd00079_c0	D-glucose-6-phosphate_c0	C6H11O9P	-2	
+cpd00911_c0	6-phospho-D-glucono-1-5-lactone_c0	C6H9O9P	-2	
+gal_c0	gal_c0		0	
+gal1p_c0	gal1p_c0		0	
+cpd00026_c0	UDP-glucose_c0	C15H22N2O17P2	-2	
+13dpg_c0	13dpg_c0		0	
+cpd02394_c0	GAR_c0	C7H14N2O8P	-1	
+fgam_c0	fgam_c0		0	
+glycogenmonomer_c0	glycogenmonomer_c0		0	
+cpd00139_c0	Glycolate_c0	C2H3O3	-1	
+ggluaba_c0	ggluaba_c0		0	
+ggluabt_c0	ggluabt_c0		0	
+cpd15478_c0	gamma-glutamyl-putrescine_c0	C9H20N3O3	1	
+cpd00118_c0	Putrescine_c0	C4H14N2	2	
+cpd02591_c0	pendp_c0	C25H42O7P2	-2	
+cpd00054_c0	L-Serine_c0	C3H7NO3	0	
+cpd00033_c0	Glycine_c0	C2H5NO2	0	
+cpd00125_c0	5-10-Methylenetetrahydrofolate_c0	C20H21N7O6	-2	
+cpd00387_c0	ADPglucose_c0	C16H23N5O15P2	-2	
+udpglcur_c0	udpglcur_c0		0	
+cpd00472_c0	UDPgalacturonate_c0	C15H19N2O18P2	-3	
+cpd11911_c0	tRNA(Gln)_c0	C10H12N5O3R	0	
+glntrna_c0	glntrna_c0		0	
+glucys_c0	glucys_c0		0	
+pram_c0	pram_c0		0	
+cpd00186_c0	D-Glutamate_c0	C5H8NO4	-1	
+cpd12227_c0	L-Glutamyl-tRNA-Glu_c0	C15H19N6O6R	0	
+cpd11912_c0	tRNA-Glu_c0	C10H12N5O3R	0	
+2aobut_c0	2aobut_c0		0	
+glycr_c0	glycr_c0		0	
+glx_c0	glx_c0		0	
+cpd00100_c0	Glycerol_c0	C3H8O3	0	
+cpd00145_c0	Hydroxypyruvate_c0	C3H3O4	-1	
+cpd02182_c0	(R)-S-Lactoylglutathione_c0	C13H20N3O8S	-1	
+cpd11913_c0	tRNA(Gly)_c0	C10H12N5O3R	0	
+cpd12100_c0	Glycyl-tRNA(Gly)_c0	C12H16N6O4R	1	
+cpd04920_c0	D-Glycero-D-manno-heptose1-phosphate_c0	C7H13O10P	-2	
+cpd03830_c0	ADP-D-glycero-D-manno-heptose_c0	C17H25N5O16P2	-2	
+cpd04918_c0	D-Glycero-D-manno-heptose7-phosphate_c0	C7H13O10P	-2	
+cpd08316_c0	D-Glycero-D-manno-heptose1-7-bisphosphate_c0	C7H12O13P2	-4	
+cpd00497_c0	XMP_c0	C10H11N4O9P	-2	
+gp4g_c0	gp4g_c0		0	
+g3pe_c0	g3pe_c0		0	
+etha_c0	etha_c0		0	
+cpd02090_c0	Glycerophosphoglycerol_c0	C6H14O8P	-1	
+cpd00311_c0	Guanosine_c0	C10H13N5O5	0	
+cpd00207_c0	Guanine_c0	C5H5N5O	0	
+3hmp_c0	3hmp_c0		0	
+mmalsa_c0	mmalsa_c0		0	
+cpd00728_c0	4-Hydroxybutanoate_c0	C4H7O3	-1	
+cpd07946_c0	4-Hydroxybutyryl-CoA_c0	C25H38N7O18P3S	-4	
+octdp_c0	octdp_c0		0	
+cpd03443_c0	3-Octaprenyl-4-hydroxybenzoate_c0	C47H69O3	-1	
+cpd11313_c0	hemeO_c0	C49H56FeN4O5	-2	
+cpd00906_c0	all-trans-Hexaprenyl diphosphate_c0	C30H50O7P2	-2	
+cpd00426_c0	Homogentisate_c0	C8H7O4	-1	
+cpd00763_c0	4-Maleylacetoacetate_c0	C8H6O6	-2	
+hg2_c0	hg2_c0		0	
+cpd00119_c0	L-Histidine_c0	C6H9N3O2	0	
+cpd00581_c0	Urocanate_c0	C6H5N2O2	-1	
+cpd00641_c0	L-Histidinol_c0	C6H12N3O	1	
+cpd00807_c0	L-histidinol-phosphate_c0	C6H11N3O4P	-1	
+cpd11914_c0	tRNA(His)_c0	C10H12N5O3R	0	
+cpd12228_c0	L-Histidyl-tRNA(His)_c0	C16H20N8O4R	1	
+cpd00689_c0	Porphobilinogen_c0	C10H13N2O4	-1	
+cpd00755_c0	Hydroxymethylbilane_c0	C40H38N4O17	-8	
+cpd09879_c0	S-(Hydroxymethyl)glutathione_c0	C11H18N3O7S	-1	
+cpd00759_c0	S-Formylglutathione_c0	C11H16N3O7S	-1	
+cpd00292_c0	HMG-CoA_c0	C27H39N7O20P3S	-5	
+cpd00055_c0	Formaldehyde_c0	CH2O	0	
+2h3opp_c0	2h3opp_c0		0	
+34hpp_c0	34hpp_c0		0	
+cpd00227_c0	L-Homoserine_c0	C4H9NO3	0	
+cpd00809_c0	O-Phospho-L-homoserine_c0	C4H8NO6P	-2	
+cpd00822_c0	O-Succinyl-L-homoserine_c0	C8H12NO6	-1	
+imacp_c0	imacp_c0		0	
+5678thh_c0	5678thh_c0		0	
+78dhp_c0	78dhp_c0		0	
+cpd01157_c0	Chitobiose_c0	C16H28N2O11	0	
+hxan_c0	hxan_c0		0	
+cpd00658_c0	Isochorismate_c0	C10H8O6	-2	
+prlp_c0	prlp_c0		0	
+eig3p_c0	eig3p_c0		0	
+2cpr5p_c0	2cpr5p_c0		0	
+3ig3p_c0	3ig3p_c0		0	
+cpd00322_c0	L-Isoleucine_c0	C6H13NO2	0	
+cpd11915_c0	tRNA(Ile)_c0	C10H12N5O3R	0	
+cpd12256_c0	L-Isoleucyl-tRNA(Ile)_c0	C16H24N6O4R	1	
+indole_c0	indole_c0		0	
+3c2hmp_c0	3c2hmp_c0		0	
+3c4mop_c0	3c4mop_c0		0	
+cpd01710_c0	2-Isopropylmaleate_c0	C7H8O4	-2	
+3c3hmp_c0	3c3hmp_c0		0	
+cpd02311_c0	4-Imidazolone-5-propanoate_c0	C6H6N2O3	-2	
+3htdacp_c0	3htdacp_c0		0	
+cpd02730_c0	3-Deoxy-D-manno-octulosonate8-phosphate_c0	C8H12O11P	-3	
+cpd00205_c0	K+_c0	K	1	
+cpd00159_c0	L-Lactate_c0	C3H5O3	-1	
+cpd00107_c0	L-Leucine_c0	C6H13NO2	0	
+cpd00200_c0	4MOP_c0	C6H9O3	-1	
+cpd11916_c0	tRNA(Leu)_c0	C10H12N5O3R	0	
+leutrna_c0	leutrna_c0		0	
+mthgxl_c0	mthgxl_c0		0	
+cpd02930_c0	Lipid X_c0	C34H64NO12P	-2	
+cpd02835_c0	UDP-2,3-bis(3-hydroxytetradecanoyl)glucosamine_c0	C43H75N3O20P2	-2	
+cpd03002_c0	Lipid A disaccharide_c0	C68H127N2O20P	-2	
+cpd00014_c0	UDP_c0	C9H12N2O12P2	-2	
+cpd00175_c0	UDP-N-acetyl-D-galactosamine_c0	C17H25N3O17P2	-2	
+cpd00043_c0	UDP-galactose_c0	C15H22N2O17P2	-2	
+lpsso_c0	lpsso_c0		0	
+cpd00091_c0	UMP_c0	C9H11N2O9P	-2	
+cpd11917_c0	tRNA(Lys)_c0	C10H12N5O3R	0	
+cpd15249_c0	L-Lysine-tRNA (Lys)_c0	C16H26N7O4R	2	
+cpd01441_c0	Acetyl-maltose_c0	C14H24O12	0	
+cpd02662_c0	Malyl-CoA_c0	C25H35N7O20P3S	-5	
+cpd02068_c0	3-Methylglutaconyl-CoA_c0	C27H37N7O19P3S	-5	
+2mcit_c0	2mcit_c0		0	
+cpd02597_c0	cis-2-Methylaconitate_c0	C7H5O6	-3	
+cpd00081_c0	Sulfite_c0	HO3S	-1	
+tsul_c0	tsul_c0		0	
+5mdru1p_c0	5mdru1p_c0		0	
+cpd08301_c0	2-C-methyl-D-erythritol2-4-cyclodiphosphate_c0	C5H10O9P2	-2	
+cpd00345_c0	5-Methyltetrahydrofolate_c0	C20H23N7O6	-2	
+cpd11918_c0	tRNA(Met)_c0	C10H12N5O3R	0	
+cpd00254_c0	Mg_c0	Mg	2	
+mi1pd_c0	mi1pd_c0		0	
+inost_c0	inost_c0		0	
+cpd02799_c0	Methylisocitrate_c0	C7H7O7	-3	
+lipida_c0	lipida_c0		0	
+cpd11574_c0	Molybdate_c0	H2MoO4	0	
+cpd00147_c0	5-Methylthioadenosine_c0	C11H15N5O3S	0	
+cpd01981_c0	5-Methylthio-D-ribose_c0	C6H12O4S	0	
+cpd00347_c0	5-10-Methenyltetrahydrofolate_c0	C20H20N7O6	-1	
+cpd02738_c0	5-Methyltetrahydropteroyltri-L-glutamate_c0	C30H35N9O12	-4	
+cpd02555_c0	Tetrahydropteroyltri-L-glutamate_c0	C29H33N9O12	-4	
+5mdr1p_c0	5mdr1p_c0		0	
+dnad_c0	dnad_c0		0	
+nicrnt_c0	nicrnt_c0		0	
+cpd08325_c0	NAC_c0	C17H18N2O2	0	
+cpd00978_c0	dUDP_c0	C9H12N2O11P2	-2	
+cpd00244_c0	Ni2+_c0	Ni	2	
+nmn_c0	nmn_c0		0	
+dmbzid_c0	dmbzid_c0		0	
+5prdmbz_c0	5prdmbz_c0		0	
+cpd00220_c0	Riboflavin_c0	C17H19N4O6	-1	
+cpd17036_c0	Unknown Product_c0	C8H10N2O6	0	
+cpd02333_c0	Quinolinate_c0	C7H3NO4	-2	
+sbzcoa_c0	sbzcoa_c0		0	
+cpd01217_c0	Xanthosine_c0	C10H12N4O6	0	
+cpd00184_c0	Thymidine_c0	C10H14N2O5	0	
+cpd03606_c0	2-Oxo-3-hydroxy-4-phosphobutanoate_c0	C4H4O8P	-3	
+phthr_c0	phthr_c0		0	
+cpd03445_c0	2-Octaprenyl-6-hydroxyphenol_c0	C46H70O2	0	
+cpd03446_c0	2-Octaprenyl-6-methoxyphenol_c0	C47H72O2	0	
+cpd15359_c0	2-Octaprenyl-6-methoxy-1,4-benzoquinol_c0	C47H72O3	0	
+cpd15361_c0	2-Octaprenyl3-methyl-6-methoxy- 1,4-benzoquinol_c0	C48H74O3	0	
+orot5p_c0	orot5p_c0		0	
+cpd03444_c0	2-Octaprenylphenol_c0	C46H70O	0	
+thmpp_c0	thmpp_c0		0	
+cpd03450_c0	Succinatesemialdehyde-thiamindiphosphateanion_c0	C16H22N4O10P2S	-2	
+cpd00129_c0	L-Proline_c0	C5H9NO2	0	
+pntor_c0	pntor_c0		0	
+cpd00286_c0	Undecaprenylphosphate_c0	C55H89O4P	-2	
+ugmda_c0	ugmda_c0		0	
+cpd03494_c0	Undecaprenyl-diphospho-N-acetylmuramoyl-L-alanyl-D-glutamyl-meso-2-6-diaminopimeloyl-D-alanyl-D-alanine_c0	C87H139N7O23P2	-4	
+cpd11421_c0	trdrd_c0	C6H9NO2R2S2	0	
+cpd11420_c0	trdox_c0	C6H7NO2R2S2	0	
+pdx5p_c0	pdx5p_c0		0	
+cpd15654_e0	PeptidoglycansubunitofEscherichiacoli_e0	C40H62N8O21	-2	
+peptx_e0	peptx_e0		0	
+3pg_c0	3pg_c0		0	
+3php_c0	3php_c0		0	
+cpd00284_c0	6-Phospho-D-gluconate_c0	C6H10O10P	-3	
+cpd00727_c0	2-Phosphoglycolate_c0	C2H2O6P	-3	
+pglyp_c0	pglyp_c0		0	
+cpd11652_c0	Phosphatidylglycerol_c0	C8H12O10PR2	-1	
+cpd00066_c0	L-Phenylalanine_c0	C9H11NO2	0	
+cpd00069_c0	L-Tyrosine_c0	C9H11NO3	0	
+cinnm_c0	cinnm_c0		0	
+cpd00143_c0	Phenylpyruvate_c0	C9H7O3	-1	
+cpd11919_c0	tRNA(Phe)_c0	C10H12N5O3R	0	
+cpd12335_c0	L-Phenylalanyl-tRNA(Phe)_c0	C19H22N6O4R	1	
+pe_c0	pe_c0		0	
+cpd15647_c0	acyl-glycerophosphoethanolamine_c0	C6H13NO7PR	0	
+cpd15648_c0	acyl-glycerophosphoglycerol_c0	C7H13O9PR	-1	
+cpd00485_c0	D-Mannose1-phosphate_c0	C6H11O9P	-2	
+cpd00235_c0	D-mannose-6-phosphate_c0	C6H11O9P	-2	
+cpd02882_c0	4--1-D-Ribitylamino-5-aminouracil_c0	C9H16N4O6	0	
+2mahmp_c0	2mahmp_c0		0	
+4ppan_c0	4ppan_c0		0	
+4ppcys_c0	4ppcys_c0		0	
+r1p_c0	r1p_c0		0	
+r5p_c0	r5p_c0		0	
+uaagmda_c0	uaagmda_c0		0	
+udcpdp_c0	udcpdp_c0		0	
+fpram_c0	fpram_c0		0	
+prbamp_c0	prbamp_c0		0	
+prfp_c0	prfp_c0		0	
+cpd00871_c0	D-Ribulose 1,5-bisphosphate_c0	C5H8O11P2	-4	
+cpd11920_c0	tRNA(Pro)_c0	C10H12N5O3R	0	
+cpd12164_c0	L-Prolyl-tRNA(Pro)_c0	C15H19N6O4R	0	
+cpd12132_c0	L-Seryl-tRNA(Ser)_c0	C13H17N6O5R	0	
+cpd12229_c0	L-Threonyl-tRNA(Thr)_c0	C14H19N6O5R	0	
+cpd12336_c0	L-Tryptophanyl-tRNA(Trp)_c0	C21H23N7O4R	1	
+cpd12194_c0	L-Tyrosyl-tRNA(Tyr)_c0	C19H22N6O5R	1	
+cpd12133_c0	L-Valyl-tRNA(Val)_c0	C15H22N6O4R	1	
+proteinsonaerobic_c0	proteinsonaerobic_c0		0	
+cpd11921_c0	tRNA(Ser)_c0	C10H12N5O3R	0	
+cpd11922_c0	tRNA(Thr)_c0	C10H12N5O3R	0	
+cpd11923_c0	tRNA(Trp)_c0	C10H12N5O3R	0	
+cpd11751_c0	tRNA(Tyr)_c0	C10H12N5O3R	0	
+cpd11924_c0	tRNA(Val)_c0	C10H12N5O3R	0	
+skm5p_c0	skm5p_c0		0	
+ps_c0	ps_c0		0	
+pserl_c0	pserl_c0		0	
+cpd00859_c0	Pseudouridine 5'-phosphate_c0	C9H11N2O9P	-2	
+cpd00309_c0	XAN_c0	C5H4N4O2	0	
+cpd02656_c0	6-7-Dimethyl-8--1-D-ribityllumazine_c0	C13H17N4O6	-1	
+cpd00105_c0	D-Ribose_c0	C5H10O5	0	
+cpd08636_c0	4-5-dihydroxy-2-3-pentanedione_c0	C5H8O4	0	
+rnason_c0	rnason_c0		0	
+cpd00198_c0	D-Xylulose5-phosphate_c0	C5H9O8P	-2	
+cpd00238_c0	Sedoheptulose7-phosphate_c0	C7H13O10P	-2	
+cpd02160_c0	N2-Succinyl-L-ornithine_c0	C9H15N2O5	-1	
+cpd00048_c0	Sulfate_c0	O4S	-2	
+sl26da_c0	sl26da_c0		0	
+sl2a6o_c0	sl2a6o_c0		0	
+cpd01078_c0	Selenide_c0	H2Se	0	
+cpd03078_c0	Selenophosphate_c0	H2O3PSe	-1	
+sucglu_c0	sucglu_c0		0	
+sucgsa_c0	sucgsa_c0		0	
+2shchc_c0	2shchc_c0		0	
+shcl_c0	shcl_c0		0	
+cpd03426_c0	Sirohydrochlorin_c0	C42H38N4O16	-8	
+cpd00557_c0	Siroheme_c0	C42H36FeN4O16	-8	
+cpd00383_c0	Shikimate_c0	C7H9O5	-1	
+slcys_c0	slcys_c0		0	
+cpd00264_c0	Spermidine_c0	C7H22N3	3	
+cpd00558_c0	Spermine_c0	C10H30N4	4	
+sucbz_c0	sucbz_c0		0	
+dtdpddg_c0	dtdpddg_c0		0	
+dtdpddm_c0	dtdpddm_c0		0	
+dtdp6dm_c0	dtdp6dm_c0		0	
+cpd00305_c0	Thiamin_c0	C12H17N4OS	1	
+cpd00161_c0	L-Threonine_c0	C4H9NO3	0	
+cpd03282_c0	L-Allothreonine_c0	C4H9NO3	0	
+cpd00151_c0	Thymine_c0	C5H6N2O2	0	
+cpd15378_c0	4-Hydroxy-benzylalcohol_c0	C7H8O2	0	
+cpd02654_c0	4-Methyl-5--2-phosphoethyl-thiazole_c0	C6H8NO4PS	-2	
+thmmp_c0	thmmp_c0		0	
+cpd00065_c0	L-Tryptophan_c0	C11H12N2O2	0	
+cyan_c0	cyan_c0		0	
+cpd01211_c0	Thiocyanate_c0	CNS	-1	
+u3hga_c0	u3hga_c0		0	
+cpd00525_c0	UDP-N-acetylmuramoyl-L-alanyl-D-glutamate_c0	C28H39N5O23P2	-4	
+cpd02964_c0	UDP-N-acetylmuramoyl-L-alanyl-D-gamma-glutamyl-meso-2-6-diaminopimelate_c0	C35H51N7O26P2	-4	
+uacgam_c0	uacgam_c0		0	
+u3aga_c0	u3aga_c0		0	
+uaccg_c0	uaccg_c0		0	
+cpd09739_c0	UDP-N-acetyl-D-galactosaminuronic acid_c0	C17H22N3O18P2	-3	
+cpd00890_c0	UDP-N-acetylmuramoyl-L-alanine_c0	C23H33N4O20P2	-3	
+uamr_c0	uamr_c0		0	
+cpd00774_c0	UroporphyrinogenIII_c0	C40H36N4O16	-8	
+cpd00156_c0	L-Valine_c0	C5H11NO2	0	
+wo4_c0	wo4_c0		0	

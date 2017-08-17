@@ -2345,6 +2345,7 @@ sub func_import_phenotype_set {
 }
 
 sub func_importmodel {
+	print("Importing Model\n");
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["biomass","model_name","workspace_name"],{
 		sbml => undef,
@@ -2502,8 +2503,8 @@ sub func_importmodel {
 			my $name;
 			my $id;
 			my $aliases;
-			my $smiles;
-			my $inchikey;
+			my $smiles = $cpd->{smiles};
+			my $inchikey = $cpd->{inchikey};
 			my $boundary = 0;
 			foreach my $attr ($cpd->getAttributes()->getValues()) {
 				my $nm = $attr->getName();
@@ -2641,6 +2642,7 @@ sub func_importmodel {
 				smiles=>$smiles,
 				inchikey=>$inchikey
 			};
+			print(Dumper($cpdhash->{$sbmlid}))
 		}
 		#Parsing reactions
 		my $rxns = [$doc->getElementsByTagName("reaction")];
