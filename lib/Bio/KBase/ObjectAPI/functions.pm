@@ -1763,12 +1763,15 @@ sub func_compare_models {
 
 	my $provenance = [{}];
 	my $models;
-	my $modelnames;
+	my $modelnames = ();
 	foreach my $model_ref (@{$params->{model_refs}}) {
 		my $model=undef;
 		eval {
 			$model = $handler->util_get_object($model_ref,{raw => 1});
-			$model->{id} = pop(@{[split(/\//,$model_ref)]});
+			print("Downloaded model: $model->{id}\n");
+			if ($model->{id} ~~ $modelnames) {
+				die "Duplicate model names are not permitted\n";
+			}
 			push(@{$modelnames},$model->{id});
 			$model->{model_ref} = $model_ref;
 			push @{$models}, $model;

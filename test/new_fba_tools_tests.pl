@@ -1,6 +1,6 @@
 use strict;
 use Data::Dumper;
-use Test::More; qw( no_plan );
+use Test::More;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
@@ -54,7 +54,21 @@ sub get_ws_name {
 # check_model_mass_balance
 
 # compare_models
-
+ok(
+    defined(
+        my $retObj = $impl->compare_models({
+            mc_name       => "model_comparison",
+            model_refs    => [ "7601/20/1", "7601/29/1" ],
+            protcomp_ref  => undef,
+            pangenome_ref => undef,
+            workspace     => get_ws_name()
+        })
+    ), 'Compare Models'
+);
+my $err = undef;
+if ($@) {
+    $err = $@;
+};
 # edit_metabolic_model
 
 # edit_media
