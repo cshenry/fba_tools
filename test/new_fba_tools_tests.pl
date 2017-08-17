@@ -36,7 +36,21 @@ sub get_ws_name {
 # build_metabolic_model
 
 # build_multiple_metabolic_models
-
+ok(
+   defined(
+        my $retObj = $impl->build_multiple_metabolic_models({
+            "genome_text"=>"79/11/1",
+            "genome_ids"=>["79/5/1"],
+            "media_id"=>undef,
+            "template_id"=>"auto",
+            "gapfill_model"=>1,
+            "custom_bound_list"=>[],
+            "media_supplement_list"=>[],
+            "minimum_target_flux"=>0.1,
+            "workspace"=>get_ws_name()
+        })
+   ), "build_multiple_metabolic_models"
+);
 # gapfill_metabolic_model
 
 # run_flux_balance_analysis
