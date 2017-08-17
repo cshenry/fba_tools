@@ -553,6 +553,8 @@ sub build_multiple_metabolic_models
     $self->util_initialize_call($params,$ctx);
 	my $orig_genome_workspace = $params->{genome_workspace};
 	my $genomes = $params->{genome_ids};
+	# If user provides a list of genomes in text form, append these to the
+    # existing gemome ids
 	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
 	for (my $i=0; $i < @{$new_genome_list}; $i++) {
 		push(@{$genomes},$new_genome_list->[$i]);
