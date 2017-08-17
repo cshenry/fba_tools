@@ -686,7 +686,9 @@ sub save_model {
     		});
     	}
     }
-	$self->helper()->update_model_meta($ref,$summary,$object->wsmeta()->[3]);
+    $summary->{status} = "complete";
+    $summary->{status_timestamp} = Bio::KBase::utilities::timestamp();
+	$self->helper()->update_model_meta($ref,$summary);
 	return $output;
 }
 

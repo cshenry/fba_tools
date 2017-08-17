@@ -1791,7 +1791,7 @@ sub createJobDirectory {
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file
 	if (defined(Bio::KBase::utilities::conf("ModelSEED","use_cplex")) && Bio::KBase::utilities::conf("ModelSEED","use_cplex") == 1) {
-		$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
+		$parameters->{MFASolver} = "CPLEX";
 	}
 	my $exchange = "";
 	foreach my $key (keys(%{$exchangehash})) {

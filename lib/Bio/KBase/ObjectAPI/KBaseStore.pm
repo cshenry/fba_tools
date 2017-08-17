@@ -50,7 +50,6 @@ use Bio::KBase::ObjectAPI::utilities;
 
 use Class::Autouse qw(
     Bio::KBase::kbaseenv
-    Bio::KBase::workspace::Client
     Bio::KBase::utilities
     Bio::KBase::ObjectAPI::KBaseRegulation::Regulome
     Bio::KBase::ObjectAPI::KBaseBiochem::Biochemistry
