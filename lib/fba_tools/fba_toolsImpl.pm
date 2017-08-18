@@ -127,7 +127,7 @@ sub util_parse_input_table {
 	}
 	open(my $fh, "<", $filename) || die "Could not open file ".$filename;
 	my $headingline = <$fh>;
-	$headingline =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+	$headingline =~ tr/\r\n_//d;#This line removes line endings from nix and windows files and underscores
 	my $delim = undef;
 	if ($headingline =~ m/\t/) {
 		$delim = "\\t";
@@ -137,7 +137,8 @@ sub util_parse_input_table {
 	if (!defined($delim)) {
 		Bio::KBase::utilities::error("$filename either does not use commas or tabs as a separator!");
 	}
-	my $headings = [split(/$delim/,$headingline)];
+	# remove capitalization for column matching
+	my $headings = [split(/$delim/,lc($headingline))];
 	my $data = [];
 	while (my $line = <$fh>) {
 		$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
@@ -188,8 +189,6 @@ sub util_parse_input_table {
 		}
 		push(@{$objects},$object);
 	}
-	use Data::Dumper;
-	print(Dumper($objects));
 	return $objects;
 }
 
@@ -3214,8 +3213,8 @@ sub tsv_file_to_media
     my $mediadata = $self->util_parse_input_table($file_path,[
 		["compounds",1],
 		["concentrations",0,"0.001"],
-		["minFlux",0,"-100"],
-		["maxFlux",0,"100"],
+		["minflux",0,"-100"],
+		["maxflux",0,"100"],
 	]);
 	my $input = {media_id => $p->{media_name},workspace => $p->{workspace_name}};
 	for (my $i=0; $i < @{$mediadata}; $i++) {
@@ -3224,8 +3223,6 @@ sub tsv_file_to_media
 		push(@{$input->{minflux}},$mediadata->[$i]->[2]);
 		push(@{$input->{concentrations}},$mediadata->[$i]->[1]);
 	}
-	use Data::Dumper;
-	print(Dumper($input));
     $return = Bio::KBase::ObjectAPI::functions::func_import_media($input);
     #END tsv_file_to_media
     my @_bad_returns;
@@ -3755,7 +3752,7 @@ sub tsv_file_to_phenotype_set
 		["geneko",0,"",";"],
 		["media",1,""],
 		["mediaws",1,""],
-		["addtlCpd",0,"",";"],
+		["addtlcpd",0,"",";"],
 		["growth",1]
 	]);
 	for (my $i=0; $i < @{$phenodata}; $i++) {

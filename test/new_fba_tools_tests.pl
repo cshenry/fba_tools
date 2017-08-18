@@ -89,9 +89,9 @@ sub get_ws_name {
 ok(
     defined(
         my $retObj = $impl->tsv_file_to_media({
-            media_file => {path => "/kb/module/test/data/other_media.txt"},
+            media_file => {path => "/kb/module/test/data/media_example.txt"},
 	        media_name => "tsv_media",
-            workspace_name     => "jjeffryes:narrative_1501623862202"
+            workspace_name     => get_ws_name()
         })
     ), 'Compare Models'
 );
