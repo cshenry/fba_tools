@@ -69,11 +69,11 @@ parameters :
 
     media_id :
         ui-name : |
-            Media
+            Media (defaults to complete media)
         short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+            Media specifies the set of chemical compounds organism can use for its growth. If none is specified <a href="https://kbase.us/metabolic-modeling-faq/#What-is-complete-media>complete media</a> is used. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
         long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+            Media specifies the set of chemical compounds organism can use for its growth. If none is specified <a href="https://kbase.us/metabolic-modeling-faq/#What-is-complete-media>complete media</a> is used. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
         placeholder : |
             Growth condition for gapfilling
 
