@@ -114,8 +114,26 @@ if ($@) {
 # export_fba_as_tsv_file
 
 # tsv_file_to_media
+ok(
+    defined(
+        my $retObj = $impl->tsv_file_to_media({
+            media_file => {path => "/kb/module/test/data/media_example.txt"},
+	        media_name => "tsv_media",
+            workspace_name     => get_ws_name()
+        })
+    ), 'Compare Models'
+);
 
 # excel_file_to_media
+ok(
+    defined(
+        my $retObj = $impl->excel_file_to_media({
+            media_file => {path => "/kb/module/test/data/media_example.xlsx"},
+	        media_name => "xls_media",
+            workspace_name     => get_ws_name()
+        })
+    ), 'Compare Models'
+);
 
 # media_to_tsv_file
 
