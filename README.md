@@ -8,6 +8,21 @@ This SDK Module contains methods relating to the reconstruction and analysis of 
 
 ## Release notes
 ------------------------------------------
+### VERSION: 1.6.5 (Released 8/23/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Makes TSV & Excel importers case insensitive
+- Clarified media parameter on Build and Gapfill Metabolic Model
+- Updated compare metabolic model to accept model references(not names)
+- Updated build multiple metabolic models to accept model references(not names)
+- Allowing different solvers to be passed into FBA object
+- Adding sink to activate Biotin biosynthesis in SBML export
+- Allowing gapfilled compartmentalized reactions to be added to model
+- Fixing issue with genome client in KBase
+- Supporting generic media
+- Update Travis file
+
+------------------------------------------
 ### VERSION: 1.6.3 (Released 6/12/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
