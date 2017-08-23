@@ -3,7 +3,7 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.5.3';
+our $VERSION = '1.6.5';
 our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
 our $GIT_COMMIT_HASH = 'c8042e971c32b9ed927068c086160556d22dd1f5';
 
