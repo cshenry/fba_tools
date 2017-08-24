@@ -342,7 +342,7 @@ sub func_build_metabolic_model {
 	my $genome = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome_id});
 	#Classifying genome
 	if ($params->{template_id} eq "auto") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$handler->util_log("Classifying genome in order to select template.");
@@ -354,22 +354,22 @@ sub func_build_metabolic_model {
 			$params->{template_id} = "GramPosModelTemplate";
 		}
 	} elsif ($params->{template_id} eq "grampos") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "GramPosModelTemplate";
 	} elsif ($params->{template_id} eq "gramneg") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "GramNegModelTemplate";
 	} elsif ($params->{template_id} eq "plant") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "PlantModelTemplate";
 	} elsif ($params->{template_id} eq "core") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "CoreModelTemplate";

@@ -34,12 +34,9 @@ sub get_ws_name {
 #=cut
 
 # build_metabolic_model
-
-# build_multiple_metabolic_models
-=cut
 ok(
    defined(
-        my $retObj = $impl->build_multiple_metabolic_models({
+        $impl->build_multiple_metabolic_models({
             "genome_text"=>"79/11/1",
             "genome_ids"=>["79/5/1"],
             "media_id"=>undef,
@@ -69,6 +66,7 @@ ok(
 # check_model_mass_balance
 
 # compare_models
+=cut
 ok(
     defined(
         my $retObj = $impl->compare_models({
@@ -76,7 +74,7 @@ ok(
             model_refs    => [ "7601/3/1", "7601/4/1" ],
             protcomp_ref => undef,
             pangenome_ref => undef, #"7601/39/1",
-            workspace     => "jjeffryes:narrative_1499989472959"
+            workspace     => "jjeffryes:narrative_1501623862202"
         })
     ), 'Compare Models'
 );
@@ -111,7 +109,7 @@ ok(
 # export_fba_as_tsv_file
 
 # tsv_file_to_media
-=cut
+
 ok(
     defined(
         my $retObj = $impl->tsv_file_to_media({
@@ -132,7 +130,7 @@ ok(
         })
     ), 'Compare Models'
 );
-
+=cut
 # media_to_tsv_file
 
 # media_to_excel_file
