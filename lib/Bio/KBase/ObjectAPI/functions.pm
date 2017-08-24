@@ -342,7 +342,7 @@ sub func_build_metabolic_model {
 	my $genome = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome_id});
 	#Classifying genome
 	if ($params->{template_id} eq "auto") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$handler->util_log("Classifying genome in order to select template.");
@@ -354,22 +354,22 @@ sub func_build_metabolic_model {
 			$params->{template_id} = "GramPosModelTemplate";
 		}
 	} elsif ($params->{template_id} eq "grampos") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "GramPosModelTemplate";
 	} elsif ($params->{template_id} eq "gramneg") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "GramNegModelTemplate";
 	} elsif ($params->{template_id} eq "plant") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "PlantModelTemplate";
 	} elsif ($params->{template_id} eq "core") {
-		if (defined($params->{template_workspace})) {
+		if (!defined($params->{template_workspace})) {
 			$params->{template_workspace} = "NewKBaseModelTemplates";
 		}
 		$params->{template_id} = "CoreModelTemplate";
@@ -1945,6 +1945,7 @@ sub func_compare_models {
 	my $gene_translation;
 	my %model2family;
 	my %ftr2family;
+	my $genomehash;
 	my $mc_families = {};
 	my $core_families = 0;
 
@@ -1973,6 +1974,7 @@ sub func_compare_models {
 				$ftr2family{$ortholog->[0]} = $family;
 				map { $gene_translation->{$ortholog->[0]}->{$_->[0]} = 1 } @{$family->{orthologs}};
 				foreach my $model (@{$models}) {
+					$genomehash->{$model->{genome_ref}} = $handler->util_get_object($model->{genome_ref},{raw => 1,parent => $model});
 					if (exists $ftr2model{$ortholog->[0]}->{$model->{id}}) {
 						map { $in_models->{$model->{id}}->{$_} = 1 } keys %{$ftr2reactions{$ortholog->[0]}};
 						push @{$model2family{$model->{id}}->{$family->{id}}}, $ortholog->[0];
@@ -2003,8 +2005,6 @@ sub func_compare_models {
 			}
 		}
 	}
-	
-	my $genomehash;
 	if (!defined($gene_translation)) {
 		foreach my $model1 (@{$models}) {
 			$genomehash->{$model1->{genome_ref}} = $handler->util_get_object($model1->{genome_ref},{raw => 1,parent => $model1});
@@ -2039,7 +2039,6 @@ sub func_compare_models {
 		$mc_model->{model_ref} = $model1->{model_ref};
 		$mc_model->{genome_ref} = $model1->{genome_ref};
 		$mc_model->{families} = exists $model2family{$model1->{id}} ? scalar keys %{$model2family{$model1->{id}}} : 0;
-	
 		eval {
 			$mc_model->{name} = $genomehash->{$model1->{genome_ref}}->{scientific_name};
 			$mc_model->{taxonomy} = $genomehash->{$model1->{genome_ref}}->{taxonomy};
@@ -2366,13 +2365,13 @@ sub func_import_media {
 			$newcpd->{inchikey} = $params->{inchikey}->{$params->{compounds}->[$i]};
 		}
 		if (defined($params->{concentrations}->[$i])) {
-			$newcpd->{concentration} = $params->{concentrations}->[$i];
+			$newcpd->{concentration} = 0+$params->{concentrations}->[$i];
 		}
 		if (defined($params->{maxflux}->[$i])) {
-			$newcpd->{maxFlux} = $params->{maxflux}->[$i];
+			$newcpd->{maxFlux} = 0+$params->{maxflux}->[$i];
 		}
 		if (defined($params->{minflux}->[$i])) {
-			$newcpd->{minFlux} = $params->{minflux}->[$i];
+			$newcpd->{minFlux} = 0+$params->{minflux}->[$i];
 		}
 		my $cpdobj = $bio->searchForCompound($newcpd->{id});
 		if (defined($cpdobj)) {
@@ -2382,7 +2381,7 @@ sub func_import_media {
 		push(@{$media->{mediacompounds}},$newcpd);
 	}
 	#Saving media in database
-	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});  
+	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});
 	return { ref => $mc_metadata->[6]."/".$mc_metadata->[0]."/".$mc_metadata->[4] };
 }
 
@@ -2965,12 +2964,16 @@ sub func_importmodel {
 			$rxn->[8] = $eqn;
 		}
 	}
+	use Data::Dumper;
+	print Dumper($original_rxn_ids);
 	my $excludehash = {};
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		if (defined($original_rxn_ids->{$params->{biomass}->[$i]})) {
+			print "1:".$original_rxn_ids->{$params->{biomass}->[$i]}."\n";
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{$params->{biomass}->[$i]}} = 1;
 		} elsif (defined($original_rxn_ids->{"R_".$params->{biomass}->[$i]})) {
+			print "2:".$original_rxn_ids->{$params->{biomass}->[$i]}."\n";
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
 		}
@@ -3003,6 +3006,7 @@ sub func_importmodel {
 	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
 		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
 	}
+	print "Exclude:".Dumper($excludehash);
 	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
 		if (defined($excludehash->{$i})) {
 			next;
@@ -3072,6 +3076,7 @@ sub func_importmodel {
 	}
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		Bio::KBase::utilities::log("Biomass:".$params->{biomass}->[$i],"debugging");
+		print "Biomass:".$params->{biomass}->[$i];
 		my $report = $model->adjustBiomassReaction({
 			biomass => "bio".($i+1),
 			equation => $params->{biomass}->[$i],

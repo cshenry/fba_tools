@@ -3224,7 +3224,7 @@ sub tsv_file_to_media
     my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $mediadata = $self->util_parse_input_table($file_path,[
 		["compounds",1],
-		["concentrations",0,"0.001"],
+		["concentration",0,"0.001"],
 		["minflux",0,"-100"],
 		["maxflux",0,"100"],
 	]);
@@ -3326,7 +3326,7 @@ sub excel_file_to_media
 	my $Media = (grep { $_ =~ /[Mm]edia/ } keys %$sheets)[0];
     my $mediadata = $self->util_parse_input_table($sheets->{$Media},[
 		["compounds",1],
-		["concentrations",0,"0.001"],
+		["concentration",0,"0.001"],
 		["minflux",0,"-100"],
 		["maxflux",0,"100"],
 	]);

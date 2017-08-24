@@ -38,7 +38,7 @@ sub get_ws_name {
 # build_multiple_metabolic_models
 ok(
    defined(
-        my $retObj = $impl->build_multiple_metabolic_models({
+        $impl->build_multiple_metabolic_models({
             "genome_text"=>"79/11/1",
             "genome_ids"=>["79/5/1"],
             "media_id"=>undef,
@@ -70,19 +70,15 @@ ok(
 # compare_models
 ok(
     defined(
-        my $retObj = $impl->compare_models({
+        $impl->compare_models({
             mc_name       => "model_comparison",
-            model_refs    => [ "7601/20/1", "7601/29/1" ],
-            protcomp_ref  => undef,
-            pangenome_ref => undef,
+            model_refs    => [ "7601/20/9", "7601/18/9" ],
+            protcomp_ref => undef,
+            pangenome_ref => "7601/39/1",
             workspace     => get_ws_name()
         })
     ), 'Compare Models'
 );
-my $err = undef;
-if ($@) {
-    $err = $@;
-};
 # edit_metabolic_model
 
 # edit_media
@@ -90,7 +86,17 @@ if ($@) {
 # excel_file_to_model
 
 # sbml_file_to_model
-
+ok(
+    defined(
+        $impl->sbml_file_to_model({
+            model_file => {path => "/kb/module/test/data/e_coli_core.xml"},
+	        model_name => "sbml_test",
+	        workspace_name => "jjeffryes:narrative_1502586048308",
+	        genome => "Escherichia_coli_K-12_MG1655",
+	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
+        })
+    ), 'Compare Models'
+);
 # tsv_file_to_model
 
 # model_to_excel_file
@@ -117,22 +123,22 @@ if ($@) {
 ok(
     defined(
         my $retObj = $impl->tsv_file_to_media({
-            media_file => {path => "/kb/module/test/data/media_example.txt"},
+            media_file => {path => "/kb/module/test/data/media_example.tsv"},
 	        media_name => "tsv_media",
             workspace_name     => get_ws_name()
         })
-    ), 'Compare Models'
+    ), 'TSV to media'
 );
 
 # excel_file_to_media
 ok(
     defined(
         my $retObj = $impl->excel_file_to_media({
-            media_file => {path => "/kb/module/test/data/media_example.xlsx"},
+            media_file => {path => "/kb/module/test/data/media_example.xls"},
 	        media_name => "xls_media",
             workspace_name     => get_ws_name()
         })
-    ), 'Compare Models'
+    ), 'Excel to media'
 );
 
 # media_to_tsv_file
@@ -159,7 +165,8 @@ ok(
 
 # bulk_export_objects
 
-done_testing(print("DONE!"));
+done_testing();
+
 if (defined($ws_name)) {
         $ws_client->delete_workspace({workspace => $ws_name});
         print("Test workspace was deleted\n");

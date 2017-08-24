@@ -37,11 +37,6 @@ parameters :
             FBA Model
         short-hint : |
             An FBA Model to compare
-    protcomp_ref :
-        ui-name : |
-            Proteome Comparison
-        short-hint : |
-            A Proteome Comparison to use in comparing reaction-associated proteins between two models
     pangenome_ref :
         ui-name : |
             Pangenome
