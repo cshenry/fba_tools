@@ -2964,12 +2964,16 @@ sub func_importmodel {
 			$rxn->[8] = $eqn;
 		}
 	}
+	use Data::Dumper;
+	print Dumper($original_rxn_ids);
 	my $excludehash = {};
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		if (defined($original_rxn_ids->{$params->{biomass}->[$i]})) {
+			print "1:".$original_rxn_ids->{$params->{biomass}->[$i]}."\n";
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{$params->{biomass}->[$i]}} = 1;
 		} elsif (defined($original_rxn_ids->{"R_".$params->{biomass}->[$i]})) {
+			print "2:".$original_rxn_ids->{$params->{biomass}->[$i]}."\n";
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
 		}
@@ -3002,6 +3006,7 @@ sub func_importmodel {
 	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
 		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
 	}
+	print "Exclude:".Dumper($excludehash);
 	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
 		if (defined($excludehash->{$i})) {
 			next;
@@ -3071,6 +3076,7 @@ sub func_importmodel {
 	}
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		Bio::KBase::utilities::log("Biomass:".$params->{biomass}->[$i],"debugging");
+		print "Biomass:".$params->{biomass}->[$i];
 		my $report = $model->adjustBiomassReaction({
 			biomass => "bio".($i+1),
 			equation => $params->{biomass}->[$i],

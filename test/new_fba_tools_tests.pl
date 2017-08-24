@@ -35,6 +35,7 @@ sub get_ws_name {
 
 # build_metabolic_model
 
+# build_multiple_metabolic_models
 ok(
    defined(
         $impl->build_multiple_metabolic_models({
@@ -85,7 +86,17 @@ ok(
 # excel_file_to_model
 
 # sbml_file_to_model
-
+ok(
+    defined(
+        $impl->sbml_file_to_model({
+            model_file => {path => "/kb/module/test/data/e_coli_core.xml"},
+	        model_name => "sbml_test",
+	        workspace_name => "jjeffryes:narrative_1502586048308",
+	        genome => "Escherichia_coli_K-12_MG1655",
+	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
+        })
+    ), 'Compare Models'
+);
 # tsv_file_to_model
 
 # model_to_excel_file
@@ -109,7 +120,6 @@ ok(
 # export_fba_as_tsv_file
 
 # tsv_file_to_media
-
 ok(
     defined(
         my $retObj = $impl->tsv_file_to_media({
