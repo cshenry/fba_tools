@@ -1945,6 +1945,7 @@ sub func_compare_models {
 	my $gene_translation;
 	my %model2family;
 	my %ftr2family;
+	my $genomehash;
 	my $mc_families = {};
 	my $core_families = 0;
 
@@ -1973,6 +1974,7 @@ sub func_compare_models {
 				$ftr2family{$ortholog->[0]} = $family;
 				map { $gene_translation->{$ortholog->[0]}->{$_->[0]} = 1 } @{$family->{orthologs}};
 				foreach my $model (@{$models}) {
+					$genomehash->{$model->{genome_ref}} = $handler->util_get_object($model->{genome_ref},{raw => 1,parent => $model});
 					if (exists $ftr2model{$ortholog->[0]}->{$model->{id}}) {
 						map { $in_models->{$model->{id}}->{$_} = 1 } keys %{$ftr2reactions{$ortholog->[0]}};
 						push @{$model2family{$model->{id}}->{$family->{id}}}, $ortholog->[0];
@@ -2003,8 +2005,6 @@ sub func_compare_models {
 			}
 		}
 	}
-	
-	my $genomehash;
 	if (!defined($gene_translation)) {
 		foreach my $model1 (@{$models}) {
 			$genomehash->{$model1->{genome_ref}} = $handler->util_get_object($model1->{genome_ref},{raw => 1,parent => $model1});
@@ -2039,7 +2039,6 @@ sub func_compare_models {
 		$mc_model->{model_ref} = $model1->{model_ref};
 		$mc_model->{genome_ref} = $model1->{genome_ref};
 		$mc_model->{families} = exists $model2family{$model1->{id}} ? scalar keys %{$model2family{$model1->{id}}} : 0;
-	
 		eval {
 			$mc_model->{name} = $genomehash->{$model1->{genome_ref}}->{scientific_name};
 			$mc_model->{taxonomy} = $genomehash->{$model1->{genome_ref}}->{taxonomy};

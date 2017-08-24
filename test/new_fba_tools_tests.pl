@@ -34,6 +34,7 @@ sub get_ws_name {
 #=cut
 
 # build_metabolic_model
+=cut
 ok(
    defined(
         $impl->build_multiple_metabolic_models({
@@ -69,11 +70,11 @@ ok(
 =cut
 ok(
     defined(
-        my $retObj = $impl->compare_models({
+        $impl->compare_models({
             mc_name       => "model_comparison",
-            model_refs    => [ "7601/3/1", "7601/4/1" ],
+            model_refs    => [ "7601/20/9", "7601/18/9" ],
             protcomp_ref => undef,
-            pangenome_ref => undef, #"7601/39/1",
+            pangenome_ref => "7601/39/1",
             workspace     => "jjeffryes:narrative_1501623862202"
         })
     ), 'Compare Models'
@@ -130,7 +131,7 @@ ok(
         })
     ), 'Compare Models'
 );
-=cut
+
 # media_to_tsv_file
 
 # media_to_excel_file
