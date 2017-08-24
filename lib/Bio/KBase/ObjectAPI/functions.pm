@@ -2366,13 +2366,13 @@ sub func_import_media {
 			$newcpd->{inchikey} = $params->{inchikey}->{$params->{compounds}->[$i]};
 		}
 		if (defined($params->{concentrations}->[$i])) {
-			$newcpd->{concentration} = $params->{concentrations}->[$i];
+			$newcpd->{concentration} = 0+$params->{concentrations}->[$i];
 		}
 		if (defined($params->{maxflux}->[$i])) {
-			$newcpd->{maxFlux} = $params->{maxflux}->[$i];
+			$newcpd->{maxFlux} = 0+$params->{maxflux}->[$i];
 		}
 		if (defined($params->{minflux}->[$i])) {
-			$newcpd->{minFlux} = $params->{minflux}->[$i];
+			$newcpd->{minFlux} = 0+$params->{minflux}->[$i];
 		}
 		my $cpdobj = $bio->searchForCompound($newcpd->{id});
 		if (defined($cpdobj)) {
@@ -2382,7 +2382,7 @@ sub func_import_media {
 		push(@{$media->{mediacompounds}},$newcpd);
 	}
 	#Saving media in database
-	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});  
+	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});
 	return { ref => $mc_metadata->[6]."/".$mc_metadata->[0]."/".$mc_metadata->[4] };
 }
 

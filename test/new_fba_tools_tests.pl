@@ -36,6 +36,7 @@ sub get_ws_name {
 # build_metabolic_model
 
 # build_multiple_metabolic_models
+=cut
 ok(
    defined(
         my $retObj = $impl->build_multiple_metabolic_models({
@@ -72,17 +73,13 @@ ok(
     defined(
         my $retObj = $impl->compare_models({
             mc_name       => "model_comparison",
-            model_refs    => [ "7601/20/1", "7601/29/1" ],
-            protcomp_ref  => undef,
-            pangenome_ref => undef,
-            workspace     => get_ws_name()
+            model_refs    => [ "7601/3/1", "7601/4/1" ],
+            protcomp_ref => undef,
+            pangenome_ref => undef, #"7601/39/1",
+            workspace     => "jjeffryes:narrative_1499989472959"
         })
     ), 'Compare Models'
 );
-my $err = undef;
-if ($@) {
-    $err = $@;
-};
 # edit_metabolic_model
 
 # edit_media
@@ -114,10 +111,11 @@ if ($@) {
 # export_fba_as_tsv_file
 
 # tsv_file_to_media
+=cut
 ok(
     defined(
         my $retObj = $impl->tsv_file_to_media({
-            media_file => {path => "/kb/module/test/data/media_example.txt"},
+            media_file => {path => "/kb/module/test/data/media_example.tsv"},
 	        media_name => "tsv_media",
             workspace_name     => get_ws_name()
         })
@@ -128,7 +126,7 @@ ok(
 ok(
     defined(
         my $retObj = $impl->excel_file_to_media({
-            media_file => {path => "/kb/module/test/data/media_example.xlsx"},
+            media_file => {path => "/kb/module/test/data/media_example.xls"},
 	        media_name => "xls_media",
             workspace_name     => get_ws_name()
         })
@@ -159,7 +157,8 @@ ok(
 
 # bulk_export_objects
 
-done_testing(print("DONE!"));
+done_testing();
+
 if (defined($ws_name)) {
         $ws_client->delete_workspace({workspace => $ws_name});
         print("Test workspace was deleted\n");
