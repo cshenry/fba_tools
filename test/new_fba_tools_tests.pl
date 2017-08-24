@@ -34,7 +34,7 @@ sub get_ws_name {
 #=cut
 
 # build_metabolic_model
-=cut
+
 ok(
    defined(
         $impl->build_multiple_metabolic_models({
@@ -67,7 +67,6 @@ ok(
 # check_model_mass_balance
 
 # compare_models
-=cut
 ok(
     defined(
         $impl->compare_models({
@@ -75,7 +74,7 @@ ok(
             model_refs    => [ "7601/20/9", "7601/18/9" ],
             protcomp_ref => undef,
             pangenome_ref => "7601/39/1",
-            workspace     => "jjeffryes:narrative_1501623862202"
+            workspace     => get_ws_name()
         })
     ), 'Compare Models'
 );
@@ -118,7 +117,7 @@ ok(
 	        media_name => "tsv_media",
             workspace_name     => get_ws_name()
         })
-    ), 'Compare Models'
+    ), 'TSV to media'
 );
 
 # excel_file_to_media
@@ -129,7 +128,7 @@ ok(
 	        media_name => "xls_media",
             workspace_name     => get_ws_name()
         })
-    ), 'Compare Models'
+    ), 'Excel to media'
 );
 
 # media_to_tsv_file
