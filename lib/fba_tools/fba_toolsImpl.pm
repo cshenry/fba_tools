@@ -2044,7 +2044,9 @@ sub excel_file_to_model
 		["charge",0,undef],
 		["formula",0,undef],
 		["name",1],
-		["aliases",0,undef]
+		["aliases",0,undef],
+ 		['smiles',0,undef],
+ 		['inchikey',0,undef]
 	]);
     $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
     #END excel_file_to_model
@@ -2162,7 +2164,9 @@ sub sbml_file_to_model
 				["charge",0,undef],
 				["formula",0,undef],
 				["name",1],
-				["aliases",0,undef]
+				["aliases",0,undef],
+				['smiles',0,undef],
+		 		['inchikey',0,undef]
 			]);
 		}
 	}
@@ -2286,7 +2290,9 @@ sub tsv_file_to_model
 		["formula",0,undef],
 		["name",1],
 		["aliases",0,undef],
-		["compartment",0,undef]
+		["compartment",0,undef],
+ 		['smiles',0,undef],
+ 		['inchikey',0,undef]
 	]);
     $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
     #END tsv_file_to_model
