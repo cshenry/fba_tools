@@ -32,7 +32,7 @@ sub get_ws_name {
 
 #=head
 #=cut
-
+=cut
 # build_metabolic_model
 
 # build_multiple_metabolic_models
@@ -95,7 +95,19 @@ ok(
 	        genome => "Escherichia_coli_K-12_MG1655",
 	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
         })
-    ), 'Compare Models'
+    ), 'test "R_" prefix'
+);
+=cut
+ok(
+    defined(
+        $impl->sbml_file_to_model({
+            model_file => {path => "/kb/module/test/data/PUBLIC_150.xml"},
+	        model_name => "sbml_test2",
+	        workspace_name => "jjeffryes:narrative_1502586048308",
+	        genome => "Escherichia_coli_K-12_MG1655",
+	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
+        })
+    ), 'test "_refference" error'
 );
 # tsv_file_to_model
 

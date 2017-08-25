@@ -2965,7 +2965,7 @@ sub func_importmodel {
 		}
 	}
 	use Data::Dumper;
-	print Dumper($original_rxn_ids);
+	print "preblock";
 	my $excludehash = {};
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		if (defined($original_rxn_ids->{$params->{biomass}->[$i]})) {
@@ -2977,6 +2977,8 @@ sub func_importmodel {
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
 		}
+		else{print $params->{biomass}}
+		print "hi";
 		my $eqn = "| ".$params->{biomass}->[$i]." |";
 		foreach my $cpd (keys(%{$translation})) {
 			if (index($params->{biomass}->[$i],$cpd) >= 0 && $cpd ne $translation->{$cpd}) {
@@ -3006,7 +3008,6 @@ sub func_importmodel {
 	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
 		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
 	}
-	print "Exclude:".Dumper($excludehash);
 	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
 		if (defined($excludehash->{$i})) {
 			next;
