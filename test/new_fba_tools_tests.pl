@@ -32,7 +32,7 @@ sub get_ws_name {
 
 #=head
 #=cut
-=cut
+
 # build_metabolic_model
 
 # build_multiple_metabolic_models
@@ -91,21 +91,20 @@ ok(
         $impl->sbml_file_to_model({
             model_file => {path => "/kb/module/test/data/e_coli_core.xml"},
 	        model_name => "sbml_test",
-	        workspace_name => "jjeffryes:narrative_1502586048308",
+	        workspace_name => get_ws_name(),
 	        genome => "Escherichia_coli_K-12_MG1655",
 	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
         })
     ), 'test "R_" prefix'
 );
-=cut
 ok(
     defined(
         $impl->sbml_file_to_model({
             model_file => {path => "/kb/module/test/data/PUBLIC_150.xml"},
 	        model_name => "sbml_test2",
-	        workspace_name => "jjeffryes:narrative_1502586048308",
+	        workspace_name => get_ws_name(),
 	        genome => "Escherichia_coli_K-12_MG1655",
-	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
+	        biomass => ["bio00006"]
         })
     ), 'test "_refference" error'
 );

@@ -473,9 +473,7 @@ sub addModelReaction {
 	my $coefhash = {};
 	if ($rootid =~ m/^rxn\d+$/) {
 		my $rxnobj = $self->template()->searchForReaction($rootid,$cmp->id());
-		if (!defined($rxnobj) && !defined($eq)) {
-			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
-		} else {
+		if (defined($rxnobj)){
 			$reference = $rxnobj->_reference();
 			my $rgts = $rxnobj->templateReactionReagents();
 			my $cmpchange = 0;
@@ -502,6 +500,8 @@ sub addModelReaction {
 				});
 				$coefhash->{"~/modelcompounds/id/".$mdlcpd->id()} = $coefficient;
 			}
+		} elsif(!defined($eq)) {
+			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 		}
 	}
 	#Adding reaction
