@@ -1,6 +1,7 @@
 use strict;
 use Data::Dumper;
 use Test::More;
+use Test::Exception;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
@@ -32,7 +33,6 @@ sub get_ws_name {
 
 #=head
 #=cut
-
 # build_metabolic_model
 
 # build_multiple_metabolic_models
@@ -91,7 +91,7 @@ ok(
         $impl->sbml_file_to_model({
             model_file => {path => "/kb/module/test/data/e_coli_core.xml"},
 	        model_name => "sbml_test",
-	        workspace_name => get_ws_name(),
+	        workspace_name => "jjeffryes:narrative_1502586048308",
 	        genome => "Escherichia_coli_K-12_MG1655",
 	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
         })
@@ -102,12 +102,22 @@ ok(
         $impl->sbml_file_to_model({
             model_file => {path => "/kb/module/test/data/PUBLIC_150.xml"},
 	        model_name => "sbml_test2",
-	        workspace_name => get_ws_name(),
+	        workspace_name => "jjeffryes:narrative_1502586048308",
 	        genome => "Escherichia_coli_K-12_MG1655",
 	        biomass => ["bio00006"]
         })
     ), 'test "_refference" error'
 );
+dies_ok {
+        $impl->sbml_file_to_model({
+            model_file     =>
+            { path => "/kb/module/test/data/PUBLIC_150.xml" },
+            model_name     => "better_fail",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
+            biomass        => [ "foo" ]
+        })
+    }, 'biomass not found';
 # tsv_file_to_model
 
 # model_to_excel_file
