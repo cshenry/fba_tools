@@ -2416,6 +2416,7 @@ sub func_import_phenotype_set {
 }
 
 sub func_importmodel {
+	use Data::Dumper;
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["biomass","model_name","workspace_name"],{
 		sbml => undef,
@@ -2479,6 +2480,7 @@ sub func_importmodel {
 	#PARSING SBML IF PROVIDED
 	my $comptrans = Bio::KBase::constants::compartment_trans();
 	my $genetranslation;
+	# Parse SBML file if provided
 	if (defined($params->{sbml})) {
 		$params->{compounds} = [];
 		$params->{reactions} = [];
@@ -2964,16 +2966,13 @@ sub func_importmodel {
 			$rxn->[8] = $eqn;
 		}
 	}
-	use Data::Dumper;
-	print Dumper($original_rxn_ids);
+	print("Processing Biomass equations\n");
 	my $excludehash = {};
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		if (defined($original_rxn_ids->{$params->{biomass}->[$i]})) {
-			print "1:".$original_rxn_ids->{$params->{biomass}->[$i]}."\n";
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{$params->{biomass}->[$i]}} = 1;
 		} elsif (defined($original_rxn_ids->{"R_".$params->{biomass}->[$i]})) {
-			print "2:".$original_rxn_ids->{$params->{biomass}->[$i]}."\n";
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
 		}
@@ -3006,7 +3005,6 @@ sub func_importmodel {
 	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
 		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
 	}
-	print "Exclude:".Dumper($excludehash);
 	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
 		if (defined($excludehash->{$i})) {
 			next;
