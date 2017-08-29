@@ -2887,6 +2887,14 @@ sub func_importmodel {
 	if (ref($params->{biomass}) ne 'ARRAY') {
 		$params->{biomass} = [split(/;/,$params->{biomass})];
 	}
+	my %reaction_ids=map{$_->[0] =>1} @{$params->{reactions}};
+	# Strip "R_" if present in the biomass id
+	my @missing=grep(!defined($reaction_ids{$_ =~ s/R_//r}), @{$params->{biomass}});
+	if (@missing) {
+		print "Specified biomass reaction not in reaction list:\t$_\n" foreach (@missing);
+		Bio::KBase::utilities::error("Could not resolve one or more biomass reactions");
+	}
+
 	#CREATING EMPTY MODEL OBJECT
 	my $model = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		id => $params->{model_name},
@@ -2976,6 +2984,7 @@ sub func_importmodel {
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
 		}
+		else{print $params->{biomass}}
 		my $eqn = "| ".$params->{biomass}->[$i]." |";
 		foreach my $cpd (keys(%{$translation})) {
 			if (index($params->{biomass}->[$i],$cpd) >= 0 && $cpd ne $translation->{$cpd}) {

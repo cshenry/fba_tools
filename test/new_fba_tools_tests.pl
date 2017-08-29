@@ -1,6 +1,7 @@
 use strict;
 use Data::Dumper;
 use Test::More;
+use Test::Exception;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
@@ -94,8 +95,29 @@ ok(
 	        genome => "Escherichia_coli_K-12_MG1655",
 	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
         })
-    ), 'Compare Models'
+    ), 'test "R_" prefix'
 );
+ok(
+    defined(
+        $impl->sbml_file_to_model({
+            model_file => {path => "/kb/module/test/data/PUBLIC_150.xml"},
+	        model_name => "sbml_test2",
+	        workspace_name => "jjeffryes:narrative_1502586048308",
+	        genome => "Escherichia_coli_K-12_MG1655",
+	        biomass => ["bio00006"]
+        })
+    ), 'test "_refference" error'
+);
+dies_ok {
+        $impl->sbml_file_to_model({
+            model_file     =>
+            { path => "/kb/module/test/data/PUBLIC_150.xml" },
+            model_name     => "better_fail",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
+            biomass        => [ "foo" ]
+        })
+    }, 'biomass not found';
 # tsv_file_to_model
 ok(
     defined(
