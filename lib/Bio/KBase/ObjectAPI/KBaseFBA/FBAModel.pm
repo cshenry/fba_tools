@@ -227,6 +227,8 @@ sub addCompoundToModel {
 			compound_ref => $args->{compound}->_reference(),
 			charge => $args->{charge},
 			formula => $args->{formula},
+			inchikey => $args->{inchikey},
+			smiles => $args->{smiles}
 		});
 	}
 	return $mdlcpd;
@@ -248,6 +250,7 @@ Description:
 =cut
 #REFACTOR NEEDED HERE
 sub adjustBiomassReaction {
+	print("Adjust biomass\n");
     my $self = shift;
     my $args = Bio::KBase::ObjectAPI::utilities::args([],{
     	compound => undef,
@@ -301,6 +304,7 @@ sub adjustBiomassReaction {
 					potential => 0,
 	    		});
 	    	}
+			print("biomass add modelcompounds");
 	    	$mdlcpd = $self->add("modelcompounds",{
 	    		id => $cpdobj->id()."_".$args->{compartment}.$args->{compartmentIndex},
 				compound_ref => $cpdobj->_reference(),
@@ -599,7 +603,16 @@ sub LoadExternalReactionEquation {
 	    		$cpd =~ s/\+/PLUS/g;
 	    		$cpd =~ s/[\W_]//g;
 	    		my $cpdobj;
+				my $inchikey = "";
+				my $smiles = "";
 	    		if (defined($args->{compounds}->{$origid})) {
+					# at the moment smiles and inchi always come from source, never templates
+					if (defined($args->{compounds}->{$origid}->[-1])) {
+						$inchikey = $args->{compounds}->{$origid}->[-1];
+					}
+					if (defined($args->{compounds}->{$origid}->[-2])) {
+						$smiles = $args->{compounds}->{$origid}->[-2];
+					}
 	    			my $name = $args->{compounds}->{$origid}->[3];
 	    			if ($name =~ m/^(.+)\[([a-z])\]$/) {
 	    				$compartment = $2;
@@ -675,12 +688,13 @@ sub LoadExternalReactionEquation {
 							name => $name."_".$compartment.$index,
 							charge => $charge,
 							formula => $formula,
+							inchikey => $inchikey,
+							smiles => $smiles,
 							modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
 							aliases => ["mdlid:".$cpd]
 	    				});
 	    			}
 	    		} else {
-	    			#print $cpd." not found!\n";
 	    			$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
 	    			if (!defined($mdlcpd)) {
 	    				if (!defined($args->{compounds}->{$origid})) {
@@ -716,6 +730,8 @@ sub LoadExternalReactionEquation {
 								name => $cpd."_".$compartment.$index,
 								charge => $charge,
 								formula => $formula,
+								inchikey => $inchikey,
+								smiles => $smiles,
 								modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
 		    					aliases => ["mdlid:".$cpd]
 		    				});
@@ -1002,12 +1018,12 @@ sub printTSV {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
 	my $output = {
-		compounds_table => ["id\tname\tformula\tcharge\taliases"],
+		compounds_table => ["id\tname\tformula\tcharge\tinchikey\tsmiles\taliases"],
 		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tenzyme\tpathway\treference\tequation\tdefinition"]
 	};
 	my $compounds = $self->modelcompounds();
 	for (my $i=0; $i < @{$compounds}; $i++) {
-		push(@{$output->{compounds_table}},$compounds->[$i]->id()."\t".$compounds->[$i]->name()."\t".$compounds->[$i]->formula()."\t".$compounds->[$i]->charge()."\t");
+		push(@{$output->{compounds_table}},$compounds->[$i]->id()."\t".$compounds->[$i]->name()."\t".$compounds->[$i]->formula()."\t".$compounds->[$i]->charge()."\t".$compounds->[$i]->inchikey()."\t".$compounds->[$i]->smiles()."\t");
 	}
 	my $reactions = $self->modelreactions();
 	for (my $i=0; $i < @{$reactions}; $i++) {

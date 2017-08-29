@@ -119,13 +119,56 @@ dies_ok {
         })
     }, 'biomass not found';
 # tsv_file_to_model
+ok(
+    defined(
+        $impl->tsv_file_to_model({
+            model_file     =>
+            { path => "/kb/module/test/data/iMR1_799-reactions.tsv" },
+            model_name     => "iMR1_799",
+            workspace_name => "jjeffryes:narrative_1501623862202",
+            #get_ws_name(),
+            biomass        => [],
+            compounds_file =>
+            { path => "/kb/module/test/data/iMR1_799-compounds.tsv" }
+        })
+    ), 'tsv_to_model_no_structure'
+);
+ok(
+    defined(
+        $impl->tsv_file_to_model({
+            model_file     =>
+            { path => "/kb/module/test/data/FBAModelReactions.tsv" },
+            model_name     => "Pickaxe",
+            workspace_name => "jjeffryes:narrative_1501623862202",
+            #get_ws_name(),
+            biomass        => [],
+            compounds_file =>
+            { path => "/kb/module/test/data/FBAModelCompounds.tsv" }
+        })
+    ), 'tsv_to_model_with_structure'
+);
 
 # model_to_excel_file
 
 # model_to_sbml_file
 
 # model_to_tsv_file
-
+ok(
+    defined(
+        $impl->model_to_tsv_file({
+            model_name     => "iMR1_799",
+            workspace_name => "jjeffryes:narrative_1501623862202"
+        })
+    ), 'model_to_tsv_no_structure'
+);
+ok(
+    defined(
+        $impl->model_to_tsv_file({
+            model_name     => "Pickaxe",
+            workspace_name => "jjeffryes:narrative_1501623862202"
+        })
+    ), 'model_to_tsv_with_structure'
+);
 # export_model_as_excel_file
 
 # export_model_as_tsv_file
