@@ -41,10 +41,10 @@ sub export {
 sub printTSV {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tgrowth\tcustomBoundList"];
+	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tcustomBoundList\tgrowth"];
 	my $phenotypes = $self->phenotypes();
 	for (my $i=0; $i < @{$phenotypes}; $i++) {
-		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString()."\t".$phenotypes->[$i]->normalizedGrowth()."\t".$phenotypes->[$i]->customBoundString());
+		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString()."\t".$phenotypes->[$i]->customBoundString()."\t".$phenotypes->[$i]->normalizedGrowth());
 	}
 	if ($args->{file} == 1) {
 		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id().".tsv",$output);
