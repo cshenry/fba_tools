@@ -1,6 +1,6 @@
 geneko	mediaws	media	addtlCpd	growth	customBoundList
-none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	L-Malate;NH3	1	-5;NH3;5
-none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	L-Glutamate;NH3	1	-2;NH3;2|-3;L-Glutamate;3
+none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	0|L-Malate|10;NH3	1	-5|rxn00001|5;-5|rxn00002|5
+none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	L-Glutamate;NH3	1
 none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	Thymidine;NH3	1
 none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	D-Malate;NH3	1
 none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	L-Alanine;NH3	1
