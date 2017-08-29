@@ -3765,7 +3765,8 @@ sub tsv_file_to_phenotype_set
 		["media",1,""],
 		["mediaws",1,""],
 		["addtlcpd",0,"",";"],
-		["growth",1]
+		["growth",1],
+		['customboundlist',0,"","\\|"]
 	]);
 	for (my $i=0; $i < @{$phenodata}; $i++) {
 		if (defined($phenodata->[$i]->[0]->[0]) && $phenodata->[$i]->[0]->[0] eq "none") {
@@ -3782,6 +3783,7 @@ sub tsv_file_to_phenotype_set
     	genome => $p->{genome},
     	genome_workspace => $p->{genome_workspace}
     });
+	print "Phenotype Set Loaded\n";
     #END tsv_file_to_phenotype_set
     my @_bad_returns;
     (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");

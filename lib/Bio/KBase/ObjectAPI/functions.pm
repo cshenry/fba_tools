@@ -314,8 +314,7 @@ sub util_process_reactions_list {
 
 sub func_build_metabolic_model {
 	my ($params,$datachannel) = @_;
-	$params = Bio::KBase::utilities::args($params,["workspace","genome_id"],{
-		fbamodel_output_id => undef,
+	$params = Bio::KBase::utilities::args($params,["workspace","genome_id","fbamodel_output_id"],{
 		media_id => undef,
 		template_id => "auto",
 		genome_workspace => $params->{workspace},
@@ -340,28 +339,48 @@ sub func_build_metabolic_model {
 	});
 	#Getting genome
 	$handler->util_log("Retrieving genome.");
-	my $genome = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{genome_id},$params->{genome_workspace}));
-	if (!defined($params->{fbamodel_output_id})) {
-		$params->{fbamodel_output_id} = $genome->id().".fbamodel";
+	my $genome = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome_id});
+	#Classifying genome
+	if ($params->{template_id} eq "auto") {
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
+		$handler->util_log("Classifying genome in order to select template.");
+		if ($genome->template_classification() eq "plant") {
+			$params->{template_id} = "PlantModelTemplate";
+		} elsif ($genome->template_classification() eq "Gram negative") {
+			$params->{template_id} = "GramNegModelTemplate";
+		} elsif ($genome->template_classification() eq "Gram positive") {
+			$params->{template_id} = "GramPosModelTemplate";
+		}
+	} elsif ($params->{template_id} eq "grampos") {
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
+		$params->{template_id} = "GramPosModelTemplate";
+	} elsif ($params->{template_id} eq "gramneg") {
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
+		$params->{template_id} = "GramNegModelTemplate";
+	} elsif ($params->{template_id} eq "plant") {
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
+		$params->{template_id} = "PlantModelTemplate";
+	} elsif ($params->{template_id} eq "core") {
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = "NewKBaseModelTemplates";
+		}
+		$params->{template_id} = "CoreModelTemplate";
+	} else {
+		if (!defined($params->{template_workspace})) {
+			$params->{template_workspace} = $params->{workspace};
+		}
 	}
 	#Retrieving template
-	my $template_trans = Bio::KBase::constants::template_trans();
-	if (defined($template_trans->{$params->{template_id}})) {
-		if ($template_trans->{$params->{template_id}} eq "auto") {
-			$handler->util_log("Classifying genome in order to select template.");
-			if (defined($template_trans->{$genome->template_classification()})) {
-				$params->{template_id} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{$genome->template_classification()};
-			} else {
-				Bio::KBase::utilities::error("Genome classification ".$genome->template_classification()." not recognized!");
-			}
-		} else {
-			$params->{template_id} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{$params->{template_id}};
-		}
-	} elsif (!defined($params->{template_workspace})) {
-		$params->{template_workspace} = $params->{workspace};
-	}
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
-	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
+	my $template = $handler->util_get_object($params->{template_workspace}."/".$params->{template_id});
 	#Building the model
 	my $model = $template->buildModel({
 		genome => $genome,
@@ -399,8 +418,8 @@ sub func_build_metabolic_model {
 		#If not gapfilling, then we just save the model directly
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
-		$output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
-		my $wsmeta = $handler->util_save_object($model,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
+		my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
+		$output->{new_fbamodel_ref} = $params->{workspace}."/".$params->{fbamodel_output_id};
 		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.</p></div>"
 	}
 	$output->{new_fbamodel} = $model;
@@ -449,7 +468,7 @@ sub func_gapfill_metabolic_model {
 	}
 	if (!defined($model)) {
 		$handler->util_log("Retrieving model.");
-		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
 		$htmlreport .= Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>The genome-scale metabolic model ".$params->{fbamodel_id}." was gapfilled";
 	} else {
 		$printreport = 0;
@@ -466,11 +485,11 @@ sub func_gapfill_metabolic_model {
 	}
 	$htmlreport .= " in ".$params->{media_id}." media to force a minimum flux of ".$params->{minimum_target_flux}." through the ".$params->{target_reaction}." reaction.";
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");
-	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
+	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
 	$handler->util_log("Preparing flux balance analysis problem.");
 	if (defined($params->{source_fbamodel_id}) && !defined($source_model)) {
 		$htmlreport .= " During the gapfilling, the source biochemistry database was augmented with all the reactions contained in the existing ".$params->{source_fbamodel_id}." model.";
-		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));	
+		$source_model = $handler->util_get_object($params->{source_fbamodel_workspace}."/".$params->{source_fbamodel_id});
 	}
 	my $gfs = $model->gapfillings();
 	my $currentid = 0;
@@ -490,14 +509,14 @@ sub func_gapfill_metabolic_model {
 		Bio::KBase::utilities::error("Analysis completed, but no valid solutions found!");
 	}
 	$handler->util_log("Saving gapfilled model.");
-	my $wsmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
+	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	$handler->util_log("Saving FBA object with gapfilling sensitivity analysis and flux.");
 	$fba->fbamodel_ref($model->_reference());
 	if (!defined($params->{gapfill_output_id})) {
 		$params->{gapfill_output_id} = $params->{fbamodel_output_id}.".".$gfid;
 	}
 	$fba->id($params->{gapfill_output_id});
-	$wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{gapfill_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
+	$wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{gapfill_output_id},{type => "KBaseFBA.FBA"});
 	$htmlreport .= "</p>";
 	if ($printreport == 1) {
 		$htmlreport .= Bio::KBase::utilities::gapfilling_html_table()."</div>";
@@ -560,7 +579,7 @@ sub func_run_flux_balance_analysis {
 	}
 	if (!defined($model)) {
 		$handler->util_log("Retrieving model.");
-		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
 		Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
 	}
 	if (!defined($params->{media_id})) {
@@ -572,9 +591,9 @@ sub func_run_flux_balance_analysis {
 		}
 		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
 	}
-
+	
 	$handler->util_log("Retrieving ".$params->{media_id}." media or mediaset.");
-	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
+	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
 	if ($media->_wstype() eq "KBaseBiochem.MediaSet") {
 		$params->{mediaset_id} = $params->{media_id};
 		$params->{mediaset_workspace} = $params->{media_workspace};
@@ -614,13 +633,12 @@ sub func_run_flux_balance_analysis {
 	#};
 	if (!defined($objective)) {
 		Bio::KBase::utilities::error("FBA failed with no solution returned!");
-	}
+	}	
 	$handler->util_log("Saving FBA results.");
 	$fba->id($params->{fba_output_id});
-	my $wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{fba_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
+	my $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{fba_output_id},{type => "KBaseFBA.FBA"});
 	return {
-		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id},
-		objective => $objective
+		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id}
 	};
 }
 
@@ -791,7 +809,7 @@ sub func_compare_fba_solutions {
 					if ($rxnhash->{$rxn}->reaction_fluxes()->{$fbalist->[$i]}->[5] == 0 && $rxnhash->{$rxn}->reaction_fluxes()->{$fbalist->[$j]}->[5] == 0) {
 						$fbahash->{$fbalist->[$i]}->fba_similarity()->{$fbalist->[$j]}->[3]++;
 					}
-				}
+				}	
 			}
 		}
 		my $bestcount = 0;
@@ -833,7 +851,7 @@ sub func_compare_fba_solutions {
 					if ($cpdhash->{$cpd}->exchanges()->{$fbalist->[$i]}->[5] == 0 && $cpdhash->{$cpd}->exchanges()->{$fbalist->[$j]}->[5] == 0) {
 						$fbahash->{$fbalist->[$i]}->fba_similarity()->{$fbalist->[$j]}->[7]++;
 					}
-				}
+				}	
 			}
 		}
 		my $bestcount = 0;
@@ -854,7 +872,7 @@ sub func_compare_fba_solutions {
 	$fbacomp->common_compounds($commoncompounds);
 	$fbacomp->common_reactions($commonreactions);
 	$handler->util_log("Saving FBA comparison object.");
-	my $wsmeta = $handler->util_save_object($fbacomp,Bio::KBase::utilities::buildref($params->{fbacomparison_output_id},$params->{workspace}),{type => "KBaseFBA.FBAComparison"});
+	my $wsmeta = $handler->util_save_object($fbacomp,$params->{workspace}."/".$params->{fbacomparison_output_id},{type => "KBaseFBA.FBAComparison"});
 	return {
 		new_fbacomparison_ref => $params->{workspace}."/".$params->{fbacomparison_output_id}
 	};
@@ -887,12 +905,12 @@ sub func_propagate_model_to_new_genome {
 	});
 	#Getting genome
 	Bio::KBase::utilities::print_report_message({message => "A new genome-scale metabolic model was constructed by propagating the existing model ".$params->{fbamodel_id}." to the genome ".$params->{genome_id}.".",append => 0,html => 0});
-	my $source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+	my $source_model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
 	my $rxns = $source_model->modelreactions();
 	my $model = $source_model->cloneObject();
 	$model->parent($source_model->parent());
 	$handler->util_log("Retrieving proteome comparison.");
-	my $protcomp = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{proteincomparison_id},$params->{proteincomparison_workspace}));
+	my $protcomp = $handler->util_get_object($params->{proteincomparison_workspace}."/".$params->{proteincomparison_id});
 	$handler->util_log("Translating model.");
 	my $report = $model->translate_model({
 		proteome_comparison => $protcomp,
@@ -929,7 +947,7 @@ sub func_propagate_model_to_new_genome {
 		#If not gapfilling, then we just save the model directly
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
-		my $wsmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
+		my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 		$output->{new_fbamodel_ref} = $params->{workspace}."/".$params->{fbamodel_output_id};
 	}
 	return $output;
@@ -1003,7 +1021,7 @@ sub func_simulate_growth_on_phenotype_data {
 					$phenos->[$i]->phenotype()->normalizedGrowth()."</td><td>".
 					$phenos->[$i]->gapfilledReactionString()."</td></tr>";
 			}
-		}
+		}	
 		$htmltable .= "</table>";
 		if ($found == 1) {
 			$htmlreport .= $htmltable;
@@ -1096,7 +1114,7 @@ sub func_compare_flux_with_expression {
 	}
 	if ($params->{estimate_threshold} == 1) {
 		$handler->util_log("Expression threshold percentile for calling active genes set to:".100*$output->[1]."");
-		$params->{exp_threshold_percentile} = $output->[1];
+		$params->{exp_threshold_percentile} = $output->[1];	
 	}
 	$handler->util_log("Computing the cutoff expression value to use to call genes active.");
 	my $sortedgenes = [sort { $exphash->{$a} <=> $exphash->{$b} } keys(%{$exphash})];
@@ -1129,7 +1147,7 @@ sub func_compare_flux_with_expression {
 	}
 	my $noflux = @{$modelrxns} - $fluxcount - $gapfillcount;
 	$handler->util_log("Computing the ideal cutoff to maximize agreement with predicted flux.");
-	my $sortedrxns = [sort { $rxn_exp_hash->{$a} <=> $rxn_exp_hash->{$b} } keys(%{$rxn_exp_hash})];
+	my $sortedrxns = [sort { $rxn_exp_hash->{$a} <=> $rxn_exp_hash->{$b} } keys(%{$rxn_exp_hash})]; 
 	my $bestindex = 0;
 	my $currentscore = 1.5*$fluxcount-$noflux;
 	my $idealcutoff = $currentscore;
@@ -1161,7 +1179,7 @@ sub func_compare_flux_with_expression {
 	if ($params->{maximize_agreement} == 1) {
 		$handler->util_log("Expression threshold percentile for calling active genes set to:".100*$bestpercentile."");
 		$threshold_value = $idealcutoff;
-		$params->{exp_threshold_percentile} = $bestpercentile;
+		$params->{exp_threshold_percentile} = $bestpercentile;	
 	}
 	$handler->util_log("Retrieving biochemistry data.");
 	my $bc = $handler->util_get_object("kbase/plantdefault_obs");
@@ -1357,7 +1375,7 @@ sub func_compare_flux_with_expression {
 								}
 							}
 						}
-					}
+					}	
 				}
 			}
 		}
@@ -1444,7 +1462,7 @@ sub func_check_model_mass_balance {
 		for (my $i=0; $i < @{$array}; $i++) {
 			if ($array->[$i] =~ m/Reaction\s(.+)\simbalanced/) {
 				if (defined($id)) {
-					$htmlreport .= "<tr><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></tr>";
+					$htmlreport .= "<tr><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></tr>";	
 				}
 				$reactants = "";
 				$products = "";
@@ -1532,7 +1550,7 @@ sub func_create_or_edit_media {
 	for (my $i=0; $i < @{$params->{compounds_to_remove}}; $i++) {
 		$params->{compounds_to_remove}->[$i] =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
-			if ($mediacpds->[$j]->{compound_ref} =~ m/(cpd\d+)/) {
+			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
 				if ($1 eq $params->{compounds_to_remove}->[$i]) {
 					push(@{$removed_list},$params->{compounds_to_remove}->[$i]);
 					splice(@{$mediacpds}, $j, 1);
@@ -1545,7 +1563,7 @@ sub func_create_or_edit_media {
 		Bio::KBase::utilities::print_report_message({message => "No compounds removed from the media.",append => 0,html => 0});
 	} else {
 		my $count = @{$removed_list};
-		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});
+		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});	
 	}
 	my $change_list = [];
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
@@ -1631,7 +1649,7 @@ sub func_create_or_edit_media {
 		Bio::KBase::utilities::print_report_message({message => " No compounds added to the media.",append => 1,html => 0});
 	} else {
 		my $count = @{$add_list};
-		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds added to the media: ".join("; ",@{$add_list}).".",append => 1,html => 0});
+		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds added to the media: ".join("; ",@{$add_list}).".",append => 1,html => 0});	
 	}
 	for (my $i=0; $i < @{$mediacpds}; $i++) {
 		if ($mediacpds->[$i]->{compound_ref} =~ m/(cpd\d+)/) {
@@ -1648,9 +1666,8 @@ sub func_create_or_edit_media {
 		}
 	}
 	my $mediaobj = Bio::KBase::ObjectAPI::KBaseBiochem::Media->new($media);
-	$mediaobj->parent($handler->util_store());
 	my $mediaobjcpds = $mediaobj->mediacompounds();
-	my $wsmeta = $handler->util_save_object($mediaobj,$params->{workspace}."/".$params->{media_output_id});
+	my $wsmeta = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_output_id});
    	return {
 		new_media_ref => $params->{workspace}."/".$params->{media_output_id},
 		report_name => $params->{media_output_id}.".create_or_edit_media.report",
@@ -1696,7 +1713,7 @@ sub func_edit_metabolic_model {
 	$handler->util_log("Saving edited model to workspace");
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	my $message = "Name of edited model: ".$params->{fbamodel_output_id}."\n";
-	$message .= "Starting from: ".$params->{fbamodel_id}."\n";
+	$message .= "Starting from: ".$params->{fbamodel_id}."\n";	
 	$message .= "Compounds added:".join("\n",@{$editresults->{compounds_added}})."\n";
 	$message .= "Compounds changed:".join("\n",@{$editresults->{compounds_changed}})."\n";
 	$message .= "Biomass added:".join("\n",@{$editresults->{biomass_added}})."\n";
@@ -1750,7 +1767,7 @@ sub func_quantitative_optimization {
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");
 	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
 	$handler->util_log("Preparing flux balance analysis problem.");
-	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef); 
 	$fba->RunQuantitativeOptimization({
 		ReactionCoef => $params->{ReactionCoef},
 		DrainCoef => $params->{DrainCoef},
@@ -1789,16 +1806,14 @@ sub func_compare_models {
 	my $provenance = [{}];
 	my $models;
 	my $modelnames = ();
-	my $modelnamehash = {};
 	foreach my $model_ref (@{$params->{model_refs}}) {
 		my $model=undef;
 		eval {
 			$model = $handler->util_get_object($model_ref,{raw => 1});
 			print("Downloaded model: $model->{id}\n");
-			if (defined($modelnamehash->{$model->{id}})) {
+			if ($model->{id} ~~ $modelnames) {
 				die "Duplicate model names are not permitted\n";
 			}
-			$modelnamehash->{$model->{id}} = 1;
 			push(@{$modelnames},$model->{id});
 			$model->{model_ref} = $model_ref;
 			push @{$models}, $model;
@@ -1850,13 +1865,9 @@ sub func_compare_models {
 				$cpd->{name} = $cpd->{id};
 			}
 			$cpd->{name} =~ s/_[a-zA-z]\d+$//g;
-
+			
 			$model->{cpdhash}->{$cpd->{id}} = $cpd;
 			if ($cpd->{cpdkbid} ne "cpd00000") {
-				local $SIG{__WARN__} = sub { };
-				# The follow line works but throws a shit-ton of warnings.
-				# Rather than fix the implementation like I probably should,
-				# I'm silencing them with the preceding line
 				$model->{cpdhash}->{$cpd->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}}} = $cpd;
 			}
 		}
@@ -1929,7 +1940,7 @@ sub func_compare_models {
 			$rxn->{equation} = $reactants." ".$sign." ".$products;
 		}
 	}
-
+	
 	# PREPARE FEATURE COMPARISONS
 	my $gene_translation;
 	my %model2family;
@@ -1954,7 +1965,7 @@ sub func_compare_models {
 			$i++;
 		}
 	}
-
+	
 	if (defined $pangenome) {
 		foreach my $family (@{$pangenome->{orthologs}}) {
 			my $in_models = {};
@@ -2035,13 +2046,13 @@ sub func_compare_models {
 		if ($@) {
 			warn "Error loading genome from workspace:\n".$@;
 		}
-
+	
 		$mc_model->{reactions} = scalar @{$model1->{modelreactions}};
 		$mc_model->{compounds} = scalar @{$model1->{modelcompounds}};
 		$mc_model->{biomasses} = scalar @{$model1->{biomasses}};
-
+	
 		foreach my $model2 (@{$models}) {
-			next if $model1->{id} eq $model2->{id};
+			next if $model1->{id} eq $model2->{id};			
 			$mc_model->{model_similarity}->{$model2->{id}} = [0,0,0,0,0];
 		}
 
@@ -2085,7 +2096,7 @@ sub func_compare_models {
 			$mc_reaction->{reaction_model_data}->{$model1->{id}} = [1,$rxn->{direction},$ftrs,$rxn->{dispfeatures}];
 			foreach my $model2 (@{$models}) {
 			next if $model1->{id} eq $model2->{id};
-
+	
 			my $model2_ftrs;
 			if ($rxn->{rxnkbid} =~ "rxn00000" && defined $model2->{rxnhash}->{$rxn->{id}}) {
 				$mc_model->{model_similarity}->{$model2->{id}}->[0]++;
@@ -2095,7 +2106,7 @@ sub func_compare_models {
 				$mc_model->{model_similarity}->{$model2->{id}}->[0]++;
 				$model2_ftrs = $model2->{rxnhash}->{$rxn->{rxnkbid}."_".$rxn->{cmpkbid}}->{ftrhash};
 			}
-
+	
 			my $gpr_matched = 0;
 			if (scalar keys %{$rxn->{ftrhash}} > 0) {
 				$gpr_matched = 1;
@@ -2177,7 +2188,7 @@ sub func_compare_models {
 			}
 			foreach my $model2 (@{$models}) {
 			next if $model1->{id} eq $model2->{id};
-
+	
 			if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
 				(defined $model2->{cpdhash}->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}})) {
 				$mc_model->{model_similarity}->{$model2->{id}}->[1]++;
@@ -2218,7 +2229,7 @@ sub func_compare_models {
 			}
 			foreach my $model2 (@{$models}) {
 				next if $model1->{id} eq $model2->{id};
-
+	
 				if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
 				(defined $model2->{cpdhash}->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}})) {
 				$mc_model->{model_similarity}->{$model2->{id}}->[2]++;
@@ -2227,11 +2238,11 @@ sub func_compare_models {
 			}
 		}
 		$mc_model->{biomasscpds} = scalar keys %model1bcpds;
-
+	
 		foreach my $family (keys %{$model2family{$model1->{id}}}) {
 			foreach my $model2 (@{$models}) {
 				next if $model1->{id} eq $model2->{id};
-
+		
 				if (exists $model2family{$model2->{id}}->{$family}) {
 					$mc_model->{model_similarity}->{$model2->{id}}->[3]++;
 				}
@@ -2281,10 +2292,10 @@ sub func_compare_models {
 	$mc->{families} = [values %$mc_families];
 	$mc->{protcomp_ref} = $params->{protcomp_ref} if (defined $params->{protcomp_ref});
 	$mc->{pangenome_ref} = $params->{pangenome_ref} if (defined $params->{pangenome_ref});
-	my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});
+	my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});	   
 	Bio::KBase::utilities::print_report_message({message => "The compounds, reactions, genes, and biomass compositions in the following ".@{$models}." models were compared:".join("; ",@{$modelnames}).".",append => 0,html => 0});
 	Bio::KBase::utilities::print_report_message({message => " All models shared a common set of ".$core_compounds." compounds, ".$core_reactions." reactions, and ".$core_bcpds." biomass compounds.",append => 1,html => 0});
-	return {
+	return { 
 		'mc_ref' => $params->{workspace}."/".$params->{mc_name}
 	};
 }
@@ -2437,7 +2448,7 @@ sub func_importmodel {
 			$params->{template_id} = "GramNegModelTemplate";
 		} elsif ($genomeobj->template_classification() eq "Gram positive") {
 			$params->{template_id} = "GramPosModelTemplate";
-		}
+		} 
 	} elsif ($params->{template_id} eq "grampos") {
 		$params->{template_workspace} = "NewKBaseModelTemplates";
 		$params->{template_id} = "GramPosModelTemplate";
@@ -2468,7 +2479,6 @@ sub func_importmodel {
 	#PARSING SBML IF PROVIDED
 	my $comptrans = Bio::KBase::constants::compartment_trans();
 	my $genetranslation;
-	# Parse SBML file if provided
 	if (defined($params->{sbml})) {
 		$params->{compounds} = [];
 		$params->{reactions} = [];
@@ -2537,7 +2547,7 @@ sub func_importmodel {
 					} elsif ($cmpname =~ m/$term/i) {
 						$cmp_SEED_id = $nonexactcmptrans->{$term};
 					}
-				}
+				} 
 			}
 			if (!defined($cmp_SEED_id)) {
 				$cmp_SEED_id = $custom_comp_letters->[$custom_comp_index];
@@ -2563,8 +2573,6 @@ sub func_importmodel {
 			my $name;
 			my $id;
 			my $aliases;
-			my $smiles = "";
-			my $inchikey = "";
 			my $boundary = 0;
 			foreach my $attr ($cpd->getAttributes()->getValues()) {
 				my $nm = $attr->getName();
@@ -2679,7 +2687,7 @@ sub func_importmodel {
 						}
 					}
 				}
-			}
+			}	
 			if (!defined($name)) {
 				$name = $id;
 			}
@@ -2687,7 +2695,7 @@ sub func_importmodel {
 				$aliases = [];
 			}
 			if (!defined($cpdidhash->{$id})) {
-				$cpdidhash->{$id} = [$id,$charge,$formula,$name,$aliases,$smiles,$inchikey];
+				$cpdidhash->{$id} = [$id,$charge,$formula,$name,$aliases];
 				push(@{$params->{compounds}},$cpdidhash->{$id});
 			}
 			$cpdhash->{$sbmlid} = {
@@ -2877,14 +2885,6 @@ sub func_importmodel {
 	if (ref($params->{biomass}) ne 'ARRAY') {
 		$params->{biomass} = [split(/;/,$params->{biomass})];
 	}
-	my %reaction_ids=map{$_->[0] =>1} @{$params->{reactions}};
-	# Strip "R_" if present in the biomass id
-	my @missing=grep(!defined($reaction_ids{$_ =~ s/R_//r}), @{$params->{biomass}});
-	if (@missing) {
-		print "Specified biomass reaction not in reaction list:\t$_\n" foreach (@missing);
-		Bio::KBase::utilities::error("Could not resolve one or more biomass reactions");
-	}
-
 	#CREATING EMPTY MODEL OBJECT
 	my $model = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		id => $params->{model_name},
@@ -2964,13 +2964,16 @@ sub func_importmodel {
 			$rxn->[8] = $eqn;
 		}
 	}
-	print("Processing Biomass equations\n");
+	use Data::Dumper;
+	print Dumper($original_rxn_ids);
 	my $excludehash = {};
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		if (defined($original_rxn_ids->{$params->{biomass}->[$i]})) {
+			print "1:".$original_rxn_ids->{$params->{biomass}->[$i]}."\n";
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{$params->{biomass}->[$i]}} = 1;
 		} elsif (defined($original_rxn_ids->{"R_".$params->{biomass}->[$i]})) {
+			print "2:".$original_rxn_ids->{$params->{biomass}->[$i]}."\n";
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
 		}
@@ -3003,6 +3006,7 @@ sub func_importmodel {
 	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
 		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
 	}
+	print "Exclude:".Dumper($excludehash);
 	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
 		if (defined($excludehash->{$i})) {
 			next;
@@ -3072,6 +3076,7 @@ sub func_importmodel {
 	}
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		Bio::KBase::utilities::log("Biomass:".$params->{biomass}->[$i],"debugging");
+		print "Biomass:".$params->{biomass}->[$i];
 		my $report = $model->adjustBiomassReaction({
 			biomass => "bio".($i+1),
 			equation => $params->{biomass}->[$i],

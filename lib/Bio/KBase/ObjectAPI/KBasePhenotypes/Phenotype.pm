@@ -16,6 +16,7 @@ extends 'Bio::KBase::ObjectAPI::KBasePhenotypes::DB::Phenotype';
 #***********************************************************************************************************
 has geneKOString => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_geneKOString' );
 has additionalCpdString => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_additionalCpdString' );
+has customBoundString => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_customBoundString' );
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -53,6 +54,18 @@ sub _build_additionalCpdString {
 	return $output;
 }
 
+sub _build_customBoundString {
+	my ($self) = @_;
+	my $bounds = $self->custom_bound_list();
+	my $output = "";
+	for (my $i=0; $i < @{$bounds};$i++) {
+		if (length($output) > 0) {
+			$output .= "|";
+		}
+		$output .= $bounds->[$i];
+	}
+	return $output;
+}
 
 #***********************************************************************************************************
 # CONSTANTS:

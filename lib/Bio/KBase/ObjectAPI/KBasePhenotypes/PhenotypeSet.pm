@@ -41,10 +41,10 @@ sub export {
 sub printTSV {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tgrowth"];
+	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tgrowth\tcustomBoundList"];
 	my $phenotypes = $self->phenotypes();
 	for (my $i=0; $i < @{$phenotypes}; $i++) {
-		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString()."\t".$phenotypes->[$i]->normalizedGrowth());
+		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString()."\t".$phenotypes->[$i]->normalizedGrowth()."\t".$phenotypes->[$i]->customBoundString());
 	}
 	if ($args->{file} == 1) {
 		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id().".tsv",$output);
@@ -90,7 +90,7 @@ sub import_phenotype_table {
     	if (defined($mediaHash->{$output->[$i]->[7]}->{$output->[$i]->[1]})) {
     		$mediaHash->{$output->[$i]->[7]}->{$output->[$i]->[1]} = $output->[$i]->[6]."/".$output->[$i]->[0];
     	}
-    }		
+    }
     for (my $i=0; $i < @{$data}; $i++) {
     	my $phenotype = $data->[$i];
     	#Validating gene IDs
@@ -134,6 +134,7 @@ sub import_phenotype_table {
 			geneko_refs => $generefs,
 			additionalcompound_refs => $cpdrefs,
 			normalizedGrowth => $phenotype->[4],
+			custom_bound_list => $phenotype->[5],
 			name => $self->id().".phe.".$count
     	});
     	$count++;
@@ -149,7 +150,7 @@ sub import_phenotype_table {
     if (keys(%{$missingMedia}) > 0) {
     	$msg .= "Could not find media:".join(";",keys(%{$missingMedia}))."\n";
     }
-    print "ERRORS:".$msg."\n";
+    print "ERRORS:".$msg."\n" if $msg;
     $self->importErrors($msg);
 }
 
