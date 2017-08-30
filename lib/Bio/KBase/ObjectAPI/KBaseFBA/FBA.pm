@@ -2629,12 +2629,6 @@ sub parseFBAPhenotypeOutput {
 	my ($self) = @_;
 	my $directory = $self->jobDirectory();
 
-	# Other types of analyses that do not involve phenotype data (e.g. reaction sensitivity) use the same
-	# output file. So we need to check that the data we need exists.
-	
-		return;
-	}
-
 	if (-e $directory."/FBAExperimentOutput.txt") {
 		#Loading file results into a hash
 		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/FBAExperimentOutput.txt","\t");
@@ -2645,18 +2639,17 @@ sub parseFBAPhenotypeOutput {
 			foreach my $row (@{$tbl->{data}}) {
 				if (defined($row->[6])) {
 					#Setting objective to WTGrowth first, then standard growth - should always be the same
-					if ($row->[4] < 1e-7) {
-						push(@{$self->other_objectives()},0);	
-					}
 					if ($row->[5] < 1e-7) {
 						push(@{$self->other_objectives()},0);	
+					} else {
+						push(@{$self->other_objectives()},$row->[5]);
 					}
 					if (defined($row->[10]) && length($row->[10]) > 0) {
 						my $fluxList = [split(/;/,$row->[10])];
 						my $fluxhash = {};
 						for (my $j=0; $j < @{$fluxList}; $j++) {
 							my $temp = [split(/:/,$fluxList->[$j])];
-							$fluxhash->{$temp[0]} = $temp[1];
+							$fluxhash->{$temp->[0]} = $temp->[1];
 						}
 						my $vars = $self->FBAReactionVariables();
 						for (my $m=0; $m < @{$vars}; $m++) {
@@ -2670,6 +2663,15 @@ sub parseFBAPhenotypeOutput {
 						$vars = $self->FBACompoundVariables();
 						for (my $m=0; $m < @{$vars}; $m++) {
 							my $id = $vars->[$m]->modelcompound()->id();
+							if (defined($fluxhash->{$id})) {
+								push(@{$vars->[$m]->other_values()},$fluxhash->{$id});
+							} else {
+								push(@{$vars->[$m]->other_values()},0);
+							}
+						}
+						$vars = $self->FBABiomassVariables();
+						for (my $m=0; $m < @{$vars}; $m++) {
+							my $id = $vars->[$m]->biomass()->id();
 							if (defined($fluxhash->{$id})) {
 								push(@{$vars->[$m]->other_values()},$fluxhash->{$id});
 							} else {

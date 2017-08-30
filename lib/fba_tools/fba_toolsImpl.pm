@@ -3772,6 +3772,7 @@ sub tsv_file_to_phenotype_set
     	phenotypeset_id => $p->{phenotype_set_name},
     	workspace => $p->{workspace_name},
     	genome => $p->{genome},
+    	genome_workspace => $p->{genome_workspace}
     });
     #END tsv_file_to_phenotype_set
     my @_bad_returns;
