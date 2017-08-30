@@ -3766,7 +3766,8 @@ sub tsv_file_to_phenotype_set
 		["mediaws",1,""],
 		["addtlcpd",0,"",";"],
 		["growth",1],
-		['customboundlist',0,"","\\|"]
+		['addtlcpdbounds',0,""],
+		['customreactionbounds',0,""],
 	]);
 	for (my $i=0; $i < @{$phenodata}; $i++) {
 		if (defined($phenodata->[$i]->[0]->[0]) && $phenodata->[$i]->[0]->[0] eq "none") {

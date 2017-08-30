@@ -41,10 +41,10 @@ sub export {
 sub printTSV {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tcustomBoundList\tgrowth"];
+	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\taddtlCpdBounds\tcustomReactionBounds\tgrowth"];
 	my $phenotypes = $self->phenotypes();
 	for (my $i=0; $i < @{$phenotypes}; $i++) {
-		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString()."\t".$phenotypes->[$i]->customBoundString()."\t".$phenotypes->[$i]->normalizedGrowth());
+		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString() ."\t".$phenotypes->[$i]->compoundBoundsString()."\t".$phenotypes->[$i]->reactionBoundsString()."\t".$phenotypes->[$i]->normalizedGrowth());
 	}
 	if ($args->{file} == 1) {
 		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id().".tsv",$output);
@@ -127,6 +127,23 @@ sub import_phenotype_table {
     		$missingMedia->{$phenotype->[2]."/".$phenotype->[1]} = 1;
     		next;
     	}
+		use Data::Dumper;
+		sub nest_arr{
+			my $raw = shift;
+			return undef if !$raw;
+			my @nested;
+			my @sets = (split/;/, $raw);
+			while (my($ind, $set) = each @sets){
+				my @inner = split(/\|/, $set);
+				if (scalar @inner != 3){
+					print "Unable to parse $raw";
+					return undef
+				}
+				@{$nested[$ind]} = ($inner[0]+0, $inner[1], $inner[2]+0)
+			}
+			return @nested
+		}
+		print Dumper(nest_arr($phenotype->[6]));
     	#Adding phenotype to object
     	$self->add("phenotypes",{
     		id => $self->id().".phe.".$count,
@@ -134,7 +151,8 @@ sub import_phenotype_table {
 			geneko_refs => $generefs,
 			additionalcompound_refs => $cpdrefs,
 			normalizedGrowth => $phenotype->[4],
-			custom_bound_list => $phenotype->[5],
+			additionalcompound_bounds => nest_arr($phenotype->[5]),
+			custom_reaction_bounds => nest_arr($phenotype->[6]),
 			name => $self->id().".phe.".$count
     	});
     	$count++;

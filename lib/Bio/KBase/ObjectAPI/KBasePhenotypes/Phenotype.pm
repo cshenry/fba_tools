@@ -16,7 +16,9 @@ extends 'Bio::KBase::ObjectAPI::KBasePhenotypes::DB::Phenotype';
 #***********************************************************************************************************
 has geneKOString => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_geneKOString' );
 has additionalCpdString => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_additionalCpdString' );
-has customBoundString => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_customBoundString' );
+has compoundBoundsString => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_compoundBoundsString' );
+has reactionBoundsString => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_reactionBoundsString' );
+
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -54,19 +56,31 @@ sub _build_additionalCpdString {
 	return $output;
 }
 
-sub _build_customBoundString {
+sub _build_compoundBoundsString {
 	my ($self) = @_;
-	my $bounds = $self->custom_bound_list();
+	my $bounds = $self->additionalcompound_bounds();
 	my $output = "";
 	for (my $i=0; $i < @{$bounds};$i++) {
 		if (length($output) > 0) {
-			$output .= "|";
+			$output .= ";";
 		}
-		$output .= $bounds->[$i];
+		$output .= join("\|", $bounds->[$i]);
 	}
 	return $output;
 }
 
+sub _build_reactionBoundsString {
+	my ($self) = @_;
+	my $bounds = $self->custom_reaction_bounds();
+	my $output = "";
+	for (my $i=0; $i < @{$bounds};$i++) {
+		if (length($output) > 0) {
+			$output .= ";";
+		}
+		$output .= join("\|", $bounds->[$i]);
+	}
+	return $output;
+}
 #***********************************************************************************************************
 # CONSTANTS:
 #***********************************************************************************************************
