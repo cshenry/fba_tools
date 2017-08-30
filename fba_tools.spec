@@ -274,6 +274,8 @@ module fba_tools {
     typedef structure {
         ws_fba_id new_fba_ref;
         int objective;
+        string report_name;
+		ws_report_id report_ref;
     } RunFluxBalanceAnalysisResults;
     /*
         Run flux balance analysis and return ID of FBA object with results 

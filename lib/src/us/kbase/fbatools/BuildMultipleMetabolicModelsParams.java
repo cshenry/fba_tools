@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
     "genome_ids",
+    "genome_text",
     "genome_workspace",
     "media_id",
     "media_workspace",
@@ -49,6 +50,8 @@ public class BuildMultipleMetabolicModelsParams {
 
     @JsonProperty("genome_ids")
     private List<String> genomeIds;
+    @JsonProperty("genome_text")
+    private java.lang.String genomeText;
     @JsonProperty("genome_workspace")
     private java.lang.String genomeWorkspace;
     @JsonProperty("media_id")
@@ -109,6 +112,21 @@ public class BuildMultipleMetabolicModelsParams {
 
     public BuildMultipleMetabolicModelsParams withGenomeIds(List<String> genomeIds) {
         this.genomeIds = genomeIds;
+        return this;
+    }
+
+    @JsonProperty("genome_text")
+    public java.lang.String getGenomeText() {
+        return genomeText;
+    }
+
+    @JsonProperty("genome_text")
+    public void setGenomeText(java.lang.String genomeText) {
+        this.genomeText = genomeText;
+    }
+
+    public BuildMultipleMetabolicModelsParams withGenomeText(java.lang.String genomeText) {
+        this.genomeText = genomeText;
         return this;
     }
 
@@ -469,7 +487,7 @@ public class BuildMultipleMetabolicModelsParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((((((((((((((((((((((((((((("BuildMultipleMetabolicModelsParams"+" [genomeIds=")+ genomeIds)+", genomeWorkspace=")+ genomeWorkspace)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", fbamodelOutputId=")+ fbamodelOutputId)+", workspace=")+ workspace)+", templateId=")+ templateId)+", templateWorkspace=")+ templateWorkspace)+", coremodel=")+ coremodel)+", gapfillModel=")+ gapfillModel)+", thermodynamicConstraints=")+ thermodynamicConstraints)+", comprehensiveGapfill=")+ comprehensiveGapfill)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expressionCondition=")+ expressionCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", expThresholdMargin=")+ expThresholdMargin)+", activationCoefficient=")+ activationCoefficient)+", omega=")+ omega)+", objectiveFraction=")+ objectiveFraction)+", minimumTargetFlux=")+ minimumTargetFlux)+", numberOfSolutions=")+ numberOfSolutions)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((((((((((((((((((("BuildMultipleMetabolicModelsParams"+" [genomeIds=")+ genomeIds)+", genomeText=")+ genomeText)+", genomeWorkspace=")+ genomeWorkspace)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", fbamodelOutputId=")+ fbamodelOutputId)+", workspace=")+ workspace)+", templateId=")+ templateId)+", templateWorkspace=")+ templateWorkspace)+", coremodel=")+ coremodel)+", gapfillModel=")+ gapfillModel)+", thermodynamicConstraints=")+ thermodynamicConstraints)+", comprehensiveGapfill=")+ comprehensiveGapfill)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expressionCondition=")+ expressionCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", expThresholdMargin=")+ expThresholdMargin)+", activationCoefficient=")+ activationCoefficient)+", omega=")+ omega)+", objectiveFraction=")+ objectiveFraction)+", minimumTargetFlux=")+ minimumTargetFlux)+", numberOfSolutions=")+ numberOfSolutions)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

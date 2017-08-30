@@ -4,8 +4,8 @@ use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
 our $VERSION = '1.6.5';
-our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = 'c8042e971c32b9ed927068c086160556d22dd1f5';
+our $GIT_URL = 'git@github.com:cshenry/fba_tools.git';
+our $GIT_COMMIT_HASH = '426042da797a499dd30f864d73038cf607af28b6';
 
 =head1 NAME
 
@@ -447,6 +447,7 @@ $params is a fba_tools.BuildMultipleMetabolicModelsParams
 $return is a fba_tools.BuildMultipleMetabolicModelsResults
 BuildMultipleMetabolicModelsParams is a reference to a hash where the following keys are defined:
 	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+	genome_text has a value which is a string
 	genome_workspace has a value which is a fba_tools.workspace_name
 	media_id has a value which is a fba_tools.media_id
 	media_workspace has a value which is a fba_tools.workspace_name
@@ -494,6 +495,7 @@ $params is a fba_tools.BuildMultipleMetabolicModelsParams
 $return is a fba_tools.BuildMultipleMetabolicModelsResults
 BuildMultipleMetabolicModelsParams is a reference to a hash where the following keys are defined:
 	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+	genome_text has a value which is a string
 	genome_workspace has a value which is a fba_tools.workspace_name
 	media_id has a value which is a fba_tools.media_id
 	media_workspace has a value which is a fba_tools.workspace_name
@@ -836,7 +838,10 @@ expseries_id is a string
 RunFluxBalanceAnalysisResults is a reference to a hash where the following keys are defined:
 	new_fba_ref has a value which is a fba_tools.ws_fba_id
 	objective has a value which is an int
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
 ws_fba_id is a string
+ws_report_id is a string
 
 </pre>
 
@@ -892,7 +897,10 @@ expseries_id is a string
 RunFluxBalanceAnalysisResults is a reference to a hash where the following keys are defined:
 	new_fba_ref has a value which is a fba_tools.ws_fba_id
 	objective has a value which is an int
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
 ws_fba_id is a string
+ws_report_id is a string
 
 
 =end text
@@ -5336,6 +5344,7 @@ number_removed_biomass_compounds has a value which is an int
 <pre>
 a reference to a hash where the following keys are defined:
 genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+genome_text has a value which is a string
 genome_workspace has a value which is a fba_tools.workspace_name
 media_id has a value which is a fba_tools.media_id
 media_workspace has a value which is a fba_tools.workspace_name
@@ -5368,6 +5377,7 @@ number_of_solutions has a value which is an int
 
 a reference to a hash where the following keys are defined:
 genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+genome_text has a value which is a string
 genome_workspace has a value which is a fba_tools.workspace_name
 media_id has a value which is a fba_tools.media_id
 media_workspace has a value which is a fba_tools.workspace_name
@@ -5653,6 +5663,8 @@ massbalance has a value which is a string
 a reference to a hash where the following keys are defined:
 new_fba_ref has a value which is a fba_tools.ws_fba_id
 objective has a value which is an int
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
 
 </pre>
 
@@ -5663,6 +5675,8 @@ objective has a value which is an int
 a reference to a hash where the following keys are defined:
 new_fba_ref has a value which is a fba_tools.ws_fba_id
 objective has a value which is an int
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
 
 
 =end text
