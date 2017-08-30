@@ -1,7 +1,6 @@
 use strict;
 use Data::Dumper;
 use Test::More;
-use Test::Exception;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
@@ -54,6 +53,21 @@ ok(
 # gapfill_metabolic_model
 
 # run_flux_balance_analysis
+ok(
+   defined(
+        $impl->run_flux_balance_analysis({
+        fbamodel_id     => "sbml_test",
+        target_reaction => "bio1",
+        fba_output_id   => "fba_test",
+        workspace       => "jjeffryes:narrative_1502586048308",
+        fva             => 1,
+        minimize_flux   => 1,
+        simulate_ko     => 0,
+        find_min_media  => 0,
+        all_reversible  => 0,
+        })
+   ), "Run FBA"
+);
 
 # compare_fba_solutions
 
@@ -108,6 +122,7 @@ ok(
         })
     ), 'test "_refference" error'
 );
+=cut
 dies_ok {
         $impl->sbml_file_to_model({
             model_file     =>
@@ -118,6 +133,7 @@ dies_ok {
             biomass        => [ "foo" ]
         })
     }, 'biomass not found';
+=cut
 # tsv_file_to_model
 ok(
     defined(
