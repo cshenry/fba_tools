@@ -69,11 +69,11 @@ parameters :
 
     media_id :
         ui-name : |
-            Media
+            Media (defaults to complete media)
         short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used.
         long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed.
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run FBA with complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
         placeholder : |
             Growth condition for gapfilling
 

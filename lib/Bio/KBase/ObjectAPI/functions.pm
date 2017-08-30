@@ -1928,6 +1928,7 @@ sub func_compare_models {
 	my $gene_translation;
 	my %model2family;
 	my %ftr2family;
+	my $genomehash;
 	my $mc_families = {};
 	my $core_families = 0;
 
@@ -1956,6 +1957,7 @@ sub func_compare_models {
 				$ftr2family{$ortholog->[0]} = $family;
 				map { $gene_translation->{$ortholog->[0]}->{$_->[0]} = 1 } @{$family->{orthologs}};
 				foreach my $model (@{$models}) {
+					$genomehash->{$model->{genome_ref}} = $handler->util_get_object($model->{genome_ref},{raw => 1,parent => $model});
 					if (exists $ftr2model{$ortholog->[0]}->{$model->{id}}) {
 						map { $in_models->{$model->{id}}->{$_} = 1 } keys %{$ftr2reactions{$ortholog->[0]}};
 						push @{$model2family{$model->{id}}->{$family->{id}}}, $ortholog->[0];
@@ -1986,8 +1988,6 @@ sub func_compare_models {
 			}
 		}
 	}
-	
-	my $genomehash;
 	if (!defined($gene_translation)) {
 		foreach my $model1 (@{$models}) {
 			$genomehash->{$model1->{genome_ref}} = $handler->util_get_object($model1->{genome_ref},{raw => 1,parent => $model1});
@@ -2022,7 +2022,6 @@ sub func_compare_models {
 		$mc_model->{model_ref} = $model1->{model_ref};
 		$mc_model->{genome_ref} = $model1->{genome_ref};
 		$mc_model->{families} = exists $model2family{$model1->{id}} ? scalar keys %{$model2family{$model1->{id}}} : 0;
-	
 		eval {
 			$mc_model->{name} = $genomehash->{$model1->{genome_ref}}->{scientific_name};
 			$mc_model->{taxonomy} = $genomehash->{$model1->{genome_ref}}->{taxonomy};
@@ -2349,13 +2348,13 @@ sub func_import_media {
 			$newcpd->{inchikey} = $params->{inchikey}->{$params->{compounds}->[$i]};
 		}
 		if (defined($params->{concentrations}->[$i])) {
-			$newcpd->{concentration} = $params->{concentrations}->[$i];
+			$newcpd->{concentration} = 0+$params->{concentrations}->[$i];
 		}
 		if (defined($params->{maxflux}->[$i])) {
-			$newcpd->{maxFlux} = $params->{maxflux}->[$i];
+			$newcpd->{maxFlux} = 0+$params->{maxflux}->[$i];
 		}
 		if (defined($params->{minflux}->[$i])) {
-			$newcpd->{minFlux} = $params->{minflux}->[$i];
+			$newcpd->{minFlux} = 0+$params->{minflux}->[$i];
 		}
 		my $cpdobj = $bio->searchForCompound($newcpd->{id});
 		if (defined($cpdobj)) {
@@ -2365,7 +2364,7 @@ sub func_import_media {
 		push(@{$media->{mediacompounds}},$newcpd);
 	}
 	#Saving media in database
-	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});  
+	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});
 	return { ref => $mc_metadata->[6]."/".$mc_metadata->[0]."/".$mc_metadata->[4] };
 }
 
@@ -2400,6 +2399,7 @@ sub func_import_phenotype_set {
 }
 
 sub func_importmodel {
+	use Data::Dumper;
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["biomass","model_name","workspace_name"],{
 		sbml => undef,
@@ -2463,6 +2463,7 @@ sub func_importmodel {
 	#PARSING SBML IF PROVIDED
 	my $comptrans = Bio::KBase::constants::compartment_trans();
 	my $genetranslation;
+	# Parse SBML file if provided
 	if (defined($params->{sbml})) {
 		$params->{compounds} = [];
 		$params->{reactions} = [];
@@ -2869,6 +2870,14 @@ sub func_importmodel {
 	if (ref($params->{biomass}) ne 'ARRAY') {
 		$params->{biomass} = [split(/;/,$params->{biomass})];
 	}
+	my %reaction_ids=map{$_->[0] =>1} @{$params->{reactions}};
+	# Strip "R_" if present in the biomass id
+	my @missing=grep(!defined($reaction_ids{$_ =~ s/R_//r}), @{$params->{biomass}});
+	if (@missing) {
+		print "Specified biomass reaction not in reaction list:\t$_\n" foreach (@missing);
+		Bio::KBase::utilities::error("Could not resolve one or more biomass reactions");
+	}
+
 	#CREATING EMPTY MODEL OBJECT
 	my $model = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		id => $params->{model_name},
@@ -2948,6 +2957,7 @@ sub func_importmodel {
 			$rxn->[8] = $eqn;
 		}
 	}
+	print("Processing Biomass equations\n");
 	my $excludehash = {};
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		if (defined($original_rxn_ids->{$params->{biomass}->[$i]})) {
@@ -2957,6 +2967,7 @@ sub func_importmodel {
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
 		}
+		else{print $params->{biomass}}
 		my $eqn = "| ".$params->{biomass}->[$i]." |";
 		foreach my $cpd (keys(%{$translation})) {
 			if (index($params->{biomass}->[$i],$cpd) >= 0 && $cpd ne $translation->{$cpd}) {
@@ -3055,6 +3066,7 @@ sub func_importmodel {
 	}
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		Bio::KBase::utilities::log("Biomass:".$params->{biomass}->[$i],"debugging");
+		print "Biomass:".$params->{biomass}->[$i];
 		my $report = $model->adjustBiomassReaction({
 			biomass => "bio".($i+1),
 			equation => $params->{biomass}->[$i],

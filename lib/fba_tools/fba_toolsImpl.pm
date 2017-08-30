@@ -3,7 +3,7 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.5.3';
+our $VERSION = '1.6.5';
 our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
 our $GIT_COMMIT_HASH = 'c8042e971c32b9ed927068c086160556d22dd1f5';
 
@@ -124,12 +124,13 @@ sub util_get_file_path {
 
 sub util_parse_input_table {
 	my($self,$filename,$columns) = @_;
+	# $columns is a list(string column_name, bool required, ? default_value)
 	if (!-e $filename) {
 		Bio::KBase::utilities::error("Could not find input file:".$filename."!\n");
 	}
 	open(my $fh, "<", $filename) || die "Could not open file ".$filename;
 	my $headingline = <$fh>;
-	$headingline =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+	$headingline =~ tr/\r\n_//d;#This line removes line endings from nix and windows files and underscores
 	my $delim = undef;
 	if ($headingline =~ m/\t/) {
 		$delim = "\\t";
@@ -139,22 +140,28 @@ sub util_parse_input_table {
 	if (!defined($delim)) {
 		Bio::KBase::utilities::error("$filename either does not use commas or tabs as a separator!");
 	}
-	my $headings = [split(/$delim/,$headingline)];
+	# remove capitalization for column matching
+	my $headings = [split(/$delim/,lc($headingline))];
 	my $data = [];
 	while (my $line = <$fh>) {
 		$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
 		push(@{$data},[split(/$delim/,$line)]);
 	}
 	close($fh);
-	my $headingColums;
+	my $headingColumns;
 	for (my $i=0;$i < @{$headings}; $i++) {
-		$headingColums->{$headings->[$i]} = $i;
+		$headingColumns->{$headings->[$i]} = $i;
 	}
 	my $error = 0;
 	for (my $j=0;$j < @{$columns}; $j++) {
-		if (!defined($headingColums->{$columns->[$j]->[0]}) && defined($columns->[$j]->[1]) && $columns->[$j]->[1] == 1) {
-			$error = 1;
-			print "Model file missing required column '".$columns->[$j]->[0]."'!\n";
+		if (!defined($headingColumns->{$columns->[$j]->[0]})){
+			if (defined($columns->[$j]->[1]) && $columns->[$j]->[1] == 1) {
+				$error = 1;
+				print "ERROR: Model file missing required column '" . $columns->[$j]->[0] . "'!\n";
+			} else {
+				print "WARNING: Import file missing optional column '" .
+					$columns->[$j]->[0] . "' Defaults may be used.\n";
+			}
 		}
 	}
 	if ($error == 1) {
@@ -165,12 +172,15 @@ sub util_parse_input_table {
 		my $object = [];
 		for (my $j=0;$j < @{$columns}; $j++) {
 			$object->[$j] = undef;
+			# if default defined, start with default value
 			if (defined($columns->[$j]->[2])) {
 				$object->[$j] = $columns->[$j]->[2];
 			}
-			if (defined($headingColums->{$columns->[$j]->[0]}) && defined($item->[$headingColums->{$columns->[$j]->[0]}])) {
-				$object->[$j] = $item->[$headingColums->{$columns->[$j]->[0]}];
+			#if value defiend in $item, copy it over
+			if (defined($headingColumns->{$columns->[$j]->[0]}) && defined($item->[$headingColumns->{$columns->[$j]->[0]}])) {
+				$object->[$j] = $item->[$headingColumns->{$columns->[$j]->[0]}];
 			}
+			# ? this may have something to do with lists...
 			if (defined($columns->[$j]->[3])) {
 				if (defined($object->[$j]) && length($object->[$j]) > 0) {
 					my $d = $columns->[$j]->[3];
@@ -178,7 +188,7 @@ sub util_parse_input_table {
 				} else {
 					$object->[$j] = [];
 				}
-			}
+			};
 		}
 		push(@{$objects},$object);
 	}
@@ -2020,7 +2030,9 @@ sub excel_file_to_model
 		["charge",0,undef],
 		["formula",0,undef],
 		["name",1],
-		["aliases",0,undef]
+		["aliases",0,undef],
+ 		['smiles',0,undef],
+ 		['inchikey',0,undef]
 	]);
     $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
     #END excel_file_to_model
@@ -2138,7 +2150,9 @@ sub sbml_file_to_model
 				["charge",0,undef],
 				["formula",0,undef],
 				["name",1],
-				["aliases",0,undef]
+				["aliases",0,undef],
+				['smiles',0,undef],
+		 		['inchikey',0,undef]
 			]);
 		}
 	}
@@ -2262,7 +2276,9 @@ sub tsv_file_to_model
 		["formula",0,undef],
 		["name",1],
 		["aliases",0,undef],
-		["compartment",0,undef]
+		["compartment",0,undef],
+ 		['smiles',0,undef],
+ 		['inchikey',0,undef]
 	]);
     $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
     #END tsv_file_to_model
@@ -3200,9 +3216,9 @@ sub tsv_file_to_media
     my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $mediadata = $self->util_parse_input_table($file_path,[
 		["compounds",1],
-		["concentrations",0,"0.001"],
-		["minFlux",0,"-100"],
-		["maxFlux",0,"100"],
+		["concentration",0,"0.001"],
+		["minflux",0,"-100"],
+		["maxflux",0,"100"],
 	]);
 	my $input = {media_id => $p->{media_name},workspace => $p->{workspace_name}};
 	for (my $i=0; $i < @{$mediadata}; $i++) {
@@ -3302,7 +3318,7 @@ sub excel_file_to_media
 	my $Media = (grep { $_ =~ /[Mm]edia/ } keys %$sheets)[0];
     my $mediadata = $self->util_parse_input_table($sheets->{$Media},[
 		["compounds",1],
-		["concentrations",0,"0.001"],
+		["concentration",0,"0.001"],
 		["minflux",0,"-100"],
 		["maxflux",0,"100"],
 	]);
@@ -3740,7 +3756,7 @@ sub tsv_file_to_phenotype_set
 		["geneko",0,"",";"],
 		["media",1,""],
 		["mediaws",1,""],
-		["addtlCpd",0,"",";"],
+		["addtlcpd",0,"",";"],
 		["growth",1]
 	]);
 	for (my $i=0; $i < @{$phenodata}; $i++) {
