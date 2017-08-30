@@ -171,4 +171,18 @@ sub compartment_trans {
 	return $compartment_trans;
 }
 
+my $template_trans = {
+	auto => "auto",
+	plant => "PlantModelTemplate",
+	"Gram negative" => "GramNegModelTemplate",
+	"Gram positive" => "GramPosModelTemplate",
+	core => "CoreModelTemplate",
+	grampos => "GramPosModelTemplate",
+	gramneg => "GramNegModelTemplate"
+};
+
+sub template_trans {
+	return $template_trans;
+}
+
 1;

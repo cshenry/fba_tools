@@ -314,7 +314,8 @@ sub util_process_reactions_list {
 
 sub func_build_metabolic_model {
 	my ($params,$datachannel) = @_;
-	$params = Bio::KBase::utilities::args($params,["workspace","genome_id","fbamodel_output_id"],{
+	$params = Bio::KBase::utilities::args($params,["workspace","genome_id"],{
+		fbamodel_output_id => undef,
 		media_id => undef,
 		template_id => "auto",
 		genome_workspace => $params->{workspace},
@@ -339,48 +340,28 @@ sub func_build_metabolic_model {
 	});
 	#Getting genome
 	$handler->util_log("Retrieving genome.");
-	my $genome = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome_id});
-	#Classifying genome
-	if ($params->{template_id} eq "auto") {
-		if (!defined($params->{template_workspace})) {
-			$params->{template_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace");
-		}
-		$handler->util_log("Classifying genome in order to select template.");
-		if ($genome->template_classification() eq "plant") {
-			$params->{template_id} = "PlantModelTemplate";
-		} elsif ($genome->template_classification() eq "Gram negative") {
-			$params->{template_id} = "GramNegModelTemplate";
-		} elsif ($genome->template_classification() eq "Gram positive") {
-			$params->{template_id} = "GramPosModelTemplate";
-		}
-	} elsif ($params->{template_id} eq "grampos") {
-		if (!defined($params->{template_workspace})) {
-			$params->{template_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace");;
-		}
-		$params->{template_id} = "GramPosModelTemplate";
-	} elsif ($params->{template_id} eq "gramneg") {
-		if (!defined($params->{template_workspace})) {
-			$params->{template_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace");;
-		}
-		$params->{template_id} = "GramNegModelTemplate";
-	} elsif ($params->{template_id} eq "plant") {
-		if (!defined($params->{template_workspace})) {
-			$params->{template_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace");;
-		}
-		$params->{template_id} = "PlantModelTemplate";
-	} elsif ($params->{template_id} eq "core") {
-		if (!defined($params->{template_workspace})) {
-			$params->{template_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace");;
-		}
-		$params->{template_id} = "CoreModelTemplate";
-	} else {
-		if (!defined($params->{template_workspace})) {
-			$params->{template_workspace} = $params->{workspace};
-		}
+	my $genome = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{genome_id},$params->{genome_workspace}));
+	if (!defined($params->{fbamodel_output_id})) {
+		$params->{fbamodel_output_id} = $genome->id().".fbamodel";
 	}
 	#Retrieving template
+	my $template_trans = Bio::KBase::constants::template_trans();
+	if (defined($template_trans->{$params->{template_id}})) {
+		if ($template_trans->{$params->{template_id}} eq "auto") {
+			$handler->util_log("Classifying genome in order to select template.");
+			if (defined($template_trans->{$genome->template_classification()})) {
+				$params->{template_id} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{$genome->template_classification()};
+			} else {
+				Bio::KBase::utilities::error("Genome classification ".$genome->template_classification()." not recognized!");
+			}
+		} else {
+			$params->{template_id} = Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{$params->{template_id}};
+		}
+	} elsif (!defined($params->{template_workspace})) {
+		$params->{template_workspace} = $params->{workspace};
+	}
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
-	my $template = $handler->util_get_object($params->{template_workspace}."/".$params->{template_id});
+	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
 	#Building the model
 	my $model = $template->buildModel({
 		genome => $genome,
@@ -418,8 +399,8 @@ sub func_build_metabolic_model {
 		#If not gapfilling, then we just save the model directly
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
-		my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
-		$output->{new_fbamodel_ref} = $params->{workspace}."/".$params->{fbamodel_output_id};
+		$output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
+		my $wsmeta = $handler->util_save_object($model,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
 		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.</p></div>"
 	}
 	$output->{new_fbamodel} = $model;
@@ -468,7 +449,7 @@ sub func_gapfill_metabolic_model {
 	}
 	if (!defined($model)) {
 		$handler->util_log("Retrieving model.");
-		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 		$htmlreport .= Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>The genome-scale metabolic model ".$params->{fbamodel_id}." was gapfilled";
 	} else {
 		$printreport = 0;
@@ -485,11 +466,11 @@ sub func_gapfill_metabolic_model {
 	}
 	$htmlreport .= " in ".$params->{media_id}." media to force a minimum flux of ".$params->{minimum_target_flux}." through the ".$params->{target_reaction}." reaction.";
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");
-	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
 	$handler->util_log("Preparing flux balance analysis problem.");
 	if (defined($params->{source_fbamodel_id}) && !defined($source_model)) {
 		$htmlreport .= " During the gapfilling, the source biochemistry database was augmented with all the reactions contained in the existing ".$params->{source_fbamodel_id}." model.";
-		$source_model = $handler->util_get_object($params->{source_fbamodel_workspace}."/".$params->{source_fbamodel_id});
+		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));	
 	}
 	my $gfs = $model->gapfillings();
 	my $currentid = 0;
@@ -509,14 +490,14 @@ sub func_gapfill_metabolic_model {
 		Bio::KBase::utilities::error("Analysis completed, but no valid solutions found!");
 	}
 	$handler->util_log("Saving gapfilled model.");
-	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
+	my $wsmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
 	$handler->util_log("Saving FBA object with gapfilling sensitivity analysis and flux.");
 	$fba->fbamodel_ref($model->_reference());
 	if (!defined($params->{gapfill_output_id})) {
 		$params->{gapfill_output_id} = $params->{fbamodel_output_id}.".".$gfid;
 	}
 	$fba->id($params->{gapfill_output_id});
-	$wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{gapfill_output_id},{type => "KBaseFBA.FBA"});
+	$wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{gapfill_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
 	$htmlreport .= "</p>";
 	if ($printreport == 1) {
 		$htmlreport .= Bio::KBase::utilities::gapfilling_html_table()."</div>";
@@ -579,7 +560,7 @@ sub func_run_flux_balance_analysis {
 	}
 	if (!defined($model)) {
 		$handler->util_log("Retrieving model.");
-		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 		Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
 	}
 	if (!defined($params->{media_id})) {
@@ -593,7 +574,7 @@ sub func_run_flux_balance_analysis {
 	}
 	
 	$handler->util_log("Retrieving ".$params->{media_id}." media or mediaset.");
-	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
 	if ($media->_wstype() eq "KBaseBiochem.MediaSet") {
 		$params->{mediaset_id} = $params->{media_id};
 		$params->{mediaset_workspace} = $params->{media_workspace};
@@ -636,7 +617,7 @@ sub func_run_flux_balance_analysis {
 	}	
 	$handler->util_log("Saving FBA results.");
 	$fba->id($params->{fba_output_id});
-	my $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{fba_output_id},{type => "KBaseFBA.FBA"});
+	my $wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{fba_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
 	return {
 		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id}
 	};
@@ -872,7 +853,7 @@ sub func_compare_fba_solutions {
 	$fbacomp->common_compounds($commoncompounds);
 	$fbacomp->common_reactions($commonreactions);
 	$handler->util_log("Saving FBA comparison object.");
-	my $wsmeta = $handler->util_save_object($fbacomp,$params->{workspace}."/".$params->{fbacomparison_output_id},{type => "KBaseFBA.FBAComparison"});
+	my $wsmeta = $handler->util_save_object($fbacomp,Bio::KBase::utilities::buildref($params->{fbacomparison_output_id},$params->{workspace}),{type => "KBaseFBA.FBAComparison"});
 	return {
 		new_fbacomparison_ref => $params->{workspace}."/".$params->{fbacomparison_output_id}
 	};
@@ -905,12 +886,12 @@ sub func_propagate_model_to_new_genome {
 	});
 	#Getting genome
 	Bio::KBase::utilities::print_report_message({message => "A new genome-scale metabolic model was constructed by propagating the existing model ".$params->{fbamodel_id}." to the genome ".$params->{genome_id}.".",append => 0,html => 0});
-	my $source_model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+	my $source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 	my $rxns = $source_model->modelreactions();
 	my $model = $source_model->cloneObject();
 	$model->parent($source_model->parent());
 	$handler->util_log("Retrieving proteome comparison.");
-	my $protcomp = $handler->util_get_object($params->{proteincomparison_workspace}."/".$params->{proteincomparison_id});
+	my $protcomp = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{proteincomparison_id},$params->{proteincomparison_workspace}));
 	$handler->util_log("Translating model.");
 	my $report = $model->translate_model({
 		proteome_comparison => $protcomp,
@@ -947,7 +928,7 @@ sub func_propagate_model_to_new_genome {
 		#If not gapfilling, then we just save the model directly
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
-		my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
+		my $wsmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
 		$output->{new_fbamodel_ref} = $params->{workspace}."/".$params->{fbamodel_output_id};
 	}
 	return $output;
@@ -1806,14 +1787,16 @@ sub func_compare_models {
 	my $provenance = [{}];
 	my $models;
 	my $modelnames = ();
+	my $modelnamehash = {};
 	foreach my $model_ref (@{$params->{model_refs}}) {
 		my $model=undef;
 		eval {
 			$model = $handler->util_get_object($model_ref,{raw => 1});
 			print("Downloaded model: $model->{id}\n");
-			if ($model->{id} ~~ $modelnames) {
+			if (defined($modelnamehash->{$model->{id}})) {
 				die "Duplicate model names are not permitted\n";
 			}
+			$modelnamehash->{$model->{id}} = 1;
 			push(@{$modelnames},$model->{id});
 			$model->{model_ref} = $model_ref;
 			push @{$models}, $model;
