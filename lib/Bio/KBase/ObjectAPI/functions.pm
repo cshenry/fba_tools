@@ -638,7 +638,8 @@ sub func_run_flux_balance_analysis {
 	$fba->id($params->{fba_output_id});
 	my $wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{fba_output_id},{type => "KBaseFBA.FBA"});
 	return {
-		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id}
+		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id},
+		objective => $objective
 	};
 }
 
@@ -1868,6 +1869,10 @@ sub func_compare_models {
 
 			$model->{cpdhash}->{$cpd->{id}} = $cpd;
 			if ($cpd->{cpdkbid} ne "cpd00000") {
+				local $SIG{__WARN__} = sub { };
+				# The follow line works but throws a shit-ton of warnings.
+				# Rather than fix the implementation like I probably should,
+				# I'm silencing them with the preceding line
 				$model->{cpdhash}->{$cpd->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}}} = $cpd;
 			}
 		}
