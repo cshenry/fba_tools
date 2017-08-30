@@ -26,7 +26,7 @@ sub util_save_object {
 
 sub util_build_expression_hash {
 	my ($exp_matrix,$exp_condition) = @_;
-	my $exphash = {};	
+	my $exphash = {};
 	my $float_matrix = $exp_matrix->{data};
 	my $exp_sample_col = -1;
 	for (my $i=0; $i < @{$float_matrix->{"col_ids"}}; $i++) {
@@ -235,7 +235,7 @@ sub util_build_fba {
 			$input->{expression_threshold_percentile} = $params->{exp_threshold_percentile};
 			$input->{kappa} = $params->{exp_threshold_margin};
 			$fbaobj->expression_matrix_ref($params->{expseries_workspace}."/".$params->{expseries_id});
-			$fbaobj->expression_matrix_column($params->{expression_condition});	
+			$fbaobj->expression_matrix_column($params->{expression_condition});
 		}
 		if (defined($source_model)) {
 			$input->{source_model} = $source_model;
@@ -572,7 +572,7 @@ sub func_run_flux_balance_analysis {
 		}
 		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
 	}
-	
+
 	$handler->util_log("Retrieving ".$params->{media_id}." media or mediaset.");
 	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
 	if ($media->_wstype() eq "KBaseBiochem.MediaSet") {
@@ -614,7 +614,7 @@ sub func_run_flux_balance_analysis {
 	#};
 	if (!defined($objective)) {
 		Bio::KBase::utilities::error("FBA failed with no solution returned!");
-	}	
+	}
 	$handler->util_log("Saving FBA results.");
 	$fba->id($params->{fba_output_id});
 	my $wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{fba_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
@@ -790,7 +790,7 @@ sub func_compare_fba_solutions {
 					if ($rxnhash->{$rxn}->reaction_fluxes()->{$fbalist->[$i]}->[5] == 0 && $rxnhash->{$rxn}->reaction_fluxes()->{$fbalist->[$j]}->[5] == 0) {
 						$fbahash->{$fbalist->[$i]}->fba_similarity()->{$fbalist->[$j]}->[3]++;
 					}
-				}	
+				}
 			}
 		}
 		my $bestcount = 0;
@@ -832,7 +832,7 @@ sub func_compare_fba_solutions {
 					if ($cpdhash->{$cpd}->exchanges()->{$fbalist->[$i]}->[5] == 0 && $cpdhash->{$cpd}->exchanges()->{$fbalist->[$j]}->[5] == 0) {
 						$fbahash->{$fbalist->[$i]}->fba_similarity()->{$fbalist->[$j]}->[7]++;
 					}
-				}	
+				}
 			}
 		}
 		my $bestcount = 0;
@@ -1002,7 +1002,7 @@ sub func_simulate_growth_on_phenotype_data {
 					$phenos->[$i]->phenotype()->normalizedGrowth()."</td><td>".
 					$phenos->[$i]->gapfilledReactionString()."</td></tr>";
 			}
-		}	
+		}
 		$htmltable .= "</table>";
 		if ($found == 1) {
 			$htmlreport .= $htmltable;
@@ -1095,7 +1095,7 @@ sub func_compare_flux_with_expression {
 	}
 	if ($params->{estimate_threshold} == 1) {
 		$handler->util_log("Expression threshold percentile for calling active genes set to:".100*$output->[1]."");
-		$params->{exp_threshold_percentile} = $output->[1];	
+		$params->{exp_threshold_percentile} = $output->[1];
 	}
 	$handler->util_log("Computing the cutoff expression value to use to call genes active.");
 	my $sortedgenes = [sort { $exphash->{$a} <=> $exphash->{$b} } keys(%{$exphash})];
@@ -1128,7 +1128,7 @@ sub func_compare_flux_with_expression {
 	}
 	my $noflux = @{$modelrxns} - $fluxcount - $gapfillcount;
 	$handler->util_log("Computing the ideal cutoff to maximize agreement with predicted flux.");
-	my $sortedrxns = [sort { $rxn_exp_hash->{$a} <=> $rxn_exp_hash->{$b} } keys(%{$rxn_exp_hash})]; 
+	my $sortedrxns = [sort { $rxn_exp_hash->{$a} <=> $rxn_exp_hash->{$b} } keys(%{$rxn_exp_hash})];
 	my $bestindex = 0;
 	my $currentscore = 1.5*$fluxcount-$noflux;
 	my $idealcutoff = $currentscore;
@@ -1160,7 +1160,7 @@ sub func_compare_flux_with_expression {
 	if ($params->{maximize_agreement} == 1) {
 		$handler->util_log("Expression threshold percentile for calling active genes set to:".100*$bestpercentile."");
 		$threshold_value = $idealcutoff;
-		$params->{exp_threshold_percentile} = $bestpercentile;	
+		$params->{exp_threshold_percentile} = $bestpercentile;
 	}
 	$handler->util_log("Retrieving biochemistry data.");
 	my $bc = $handler->util_get_object("kbase/plantdefault_obs");
@@ -1356,7 +1356,7 @@ sub func_compare_flux_with_expression {
 								}
 							}
 						}
-					}	
+					}
 				}
 			}
 		}
@@ -1443,7 +1443,7 @@ sub func_check_model_mass_balance {
 		for (my $i=0; $i < @{$array}; $i++) {
 			if ($array->[$i] =~ m/Reaction\s(.+)\simbalanced/) {
 				if (defined($id)) {
-					$htmlreport .= "<tr><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></tr>";	
+					$htmlreport .= "<tr><td>".$id."</td><td>".$reactants."<td>".$products."</td><td>".$rimbal."</td><td>".$pimbal."</td></tr>";
 				}
 				$reactants = "";
 				$products = "";
@@ -1544,7 +1544,7 @@ sub func_create_or_edit_media {
 		Bio::KBase::utilities::print_report_message({message => "No compounds removed from the media.",append => 0,html => 0});
 	} else {
 		my $count = @{$removed_list};
-		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});	
+		Bio::KBase::utilities::print_report_message({message => $count." compounds removed from the media: ".join("; ",@{$removed_list}).".",append => 0,html => 0});
 	}
 	my $change_list = [];
 	for (my $i=0; $i < @{$params->{compounds_to_change}}; $i++) {
@@ -1630,7 +1630,7 @@ sub func_create_or_edit_media {
 		Bio::KBase::utilities::print_report_message({message => " No compounds added to the media.",append => 1,html => 0});
 	} else {
 		my $count = @{$add_list};
-		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds added to the media: ".join("; ",@{$add_list}).".",append => 1,html => 0});	
+		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds added to the media: ".join("; ",@{$add_list}).".",append => 1,html => 0});
 	}
 	for (my $i=0; $i < @{$mediacpds}; $i++) {
 		if ($mediacpds->[$i]->{compound_ref} =~ m/(cpd\d+)/) {
@@ -1695,7 +1695,7 @@ sub func_edit_metabolic_model {
 	$handler->util_log("Saving edited model to workspace");
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	my $message = "Name of edited model: ".$params->{fbamodel_output_id}."\n";
-	$message .= "Starting from: ".$params->{fbamodel_id}."\n";	
+	$message .= "Starting from: ".$params->{fbamodel_id}."\n";
 	$message .= "Compounds added:".join("\n",@{$editresults->{compounds_added}})."\n";
 	$message .= "Compounds changed:".join("\n",@{$editresults->{compounds_changed}})."\n";
 	$message .= "Biomass added:".join("\n",@{$editresults->{biomass_added}})."\n";
@@ -1749,7 +1749,7 @@ sub func_quantitative_optimization {
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");
 	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
 	$handler->util_log("Preparing flux balance analysis problem.");
-	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef); 
+	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
 	$fba->RunQuantitativeOptimization({
 		ReactionCoef => $params->{ReactionCoef},
 		DrainCoef => $params->{DrainCoef},
@@ -1849,7 +1849,7 @@ sub func_compare_models {
 				$cpd->{name} = $cpd->{id};
 			}
 			$cpd->{name} =~ s/_[a-zA-z]\d+$//g;
-			
+
 			$model->{cpdhash}->{$cpd->{id}} = $cpd;
 			if ($cpd->{cpdkbid} ne "cpd00000") {
 				local $SIG{__WARN__} = sub { };
@@ -1928,7 +1928,7 @@ sub func_compare_models {
 			$rxn->{equation} = $reactants." ".$sign." ".$products;
 		}
 	}
-	
+
 	# PREPARE FEATURE COMPARISONS
 	my $gene_translation;
 	my %model2family;
@@ -1953,7 +1953,7 @@ sub func_compare_models {
 			$i++;
 		}
 	}
-	
+
 	if (defined $pangenome) {
 		foreach my $family (@{$pangenome->{orthologs}}) {
 			my $in_models = {};
@@ -2034,13 +2034,13 @@ sub func_compare_models {
 		if ($@) {
 			warn "Error loading genome from workspace:\n".$@;
 		}
-	
+
 		$mc_model->{reactions} = scalar @{$model1->{modelreactions}};
 		$mc_model->{compounds} = scalar @{$model1->{modelcompounds}};
 		$mc_model->{biomasses} = scalar @{$model1->{biomasses}};
-	
+
 		foreach my $model2 (@{$models}) {
-			next if $model1->{id} eq $model2->{id};			
+			next if $model1->{id} eq $model2->{id};
 			$mc_model->{model_similarity}->{$model2->{id}} = [0,0,0,0,0];
 		}
 
@@ -2084,7 +2084,7 @@ sub func_compare_models {
 			$mc_reaction->{reaction_model_data}->{$model1->{id}} = [1,$rxn->{direction},$ftrs,$rxn->{dispfeatures}];
 			foreach my $model2 (@{$models}) {
 			next if $model1->{id} eq $model2->{id};
-	
+
 			my $model2_ftrs;
 			if ($rxn->{rxnkbid} =~ "rxn00000" && defined $model2->{rxnhash}->{$rxn->{id}}) {
 				$mc_model->{model_similarity}->{$model2->{id}}->[0]++;
@@ -2094,7 +2094,7 @@ sub func_compare_models {
 				$mc_model->{model_similarity}->{$model2->{id}}->[0]++;
 				$model2_ftrs = $model2->{rxnhash}->{$rxn->{rxnkbid}."_".$rxn->{cmpkbid}}->{ftrhash};
 			}
-	
+
 			my $gpr_matched = 0;
 			if (scalar keys %{$rxn->{ftrhash}} > 0) {
 				$gpr_matched = 1;
@@ -2176,7 +2176,7 @@ sub func_compare_models {
 			}
 			foreach my $model2 (@{$models}) {
 			next if $model1->{id} eq $model2->{id};
-	
+
 			if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
 				(defined $model2->{cpdhash}->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}})) {
 				$mc_model->{model_similarity}->{$model2->{id}}->[1]++;
@@ -2217,7 +2217,7 @@ sub func_compare_models {
 			}
 			foreach my $model2 (@{$models}) {
 				next if $model1->{id} eq $model2->{id};
-	
+
 				if (($cpd->{cpdkbid} =~ "cpd00000" && defined $model2->{cpdhash}->{$cpd->{id}}) ||
 				(defined $model2->{cpdhash}->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}})) {
 				$mc_model->{model_similarity}->{$model2->{id}}->[2]++;
@@ -2226,11 +2226,11 @@ sub func_compare_models {
 			}
 		}
 		$mc_model->{biomasscpds} = scalar keys %model1bcpds;
-	
+
 		foreach my $family (keys %{$model2family{$model1->{id}}}) {
 			foreach my $model2 (@{$models}) {
 				next if $model1->{id} eq $model2->{id};
-		
+
 				if (exists $model2family{$model2->{id}}->{$family}) {
 					$mc_model->{model_similarity}->{$model2->{id}}->[3]++;
 				}
@@ -2280,10 +2280,10 @@ sub func_compare_models {
 	$mc->{families} = [values %$mc_families];
 	$mc->{protcomp_ref} = $params->{protcomp_ref} if (defined $params->{protcomp_ref});
 	$mc->{pangenome_ref} = $params->{pangenome_ref} if (defined $params->{pangenome_ref});
-	my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});	   
+	my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});
 	Bio::KBase::utilities::print_report_message({message => "The compounds, reactions, genes, and biomass compositions in the following ".@{$models}." models were compared:".join("; ",@{$modelnames}).".",append => 0,html => 0});
 	Bio::KBase::utilities::print_report_message({message => " All models shared a common set of ".$core_compounds." compounds, ".$core_reactions." reactions, and ".$core_bcpds." biomass compounds.",append => 1,html => 0});
-	return { 
+	return {
 		'mc_ref' => $params->{workspace}."/".$params->{mc_name}
 	};
 }
@@ -2437,7 +2437,7 @@ sub func_importmodel {
 			$params->{template_id} = "GramNegModelTemplate";
 		} elsif ($genomeobj->template_classification() eq "Gram positive") {
 			$params->{template_id} = "GramPosModelTemplate";
-		} 
+		}
 	} elsif ($params->{template_id} eq "grampos") {
 		$params->{template_workspace} = "NewKBaseModelTemplates";
 		$params->{template_id} = "GramPosModelTemplate";
@@ -2537,7 +2537,7 @@ sub func_importmodel {
 					} elsif ($cmpname =~ m/$term/i) {
 						$cmp_SEED_id = $nonexactcmptrans->{$term};
 					}
-				} 
+				}
 			}
 			if (!defined($cmp_SEED_id)) {
 				$cmp_SEED_id = $custom_comp_letters->[$custom_comp_index];
@@ -2563,6 +2563,8 @@ sub func_importmodel {
 			my $name;
 			my $id;
 			my $aliases;
+			my $smiles = "";
+			my $inchikey = "";
 			my $boundary = 0;
 			foreach my $attr ($cpd->getAttributes()->getValues()) {
 				my $nm = $attr->getName();
@@ -2677,7 +2679,7 @@ sub func_importmodel {
 						}
 					}
 				}
-			}	
+			}
 			if (!defined($name)) {
 				$name = $id;
 			}
@@ -2685,7 +2687,7 @@ sub func_importmodel {
 				$aliases = [];
 			}
 			if (!defined($cpdidhash->{$id})) {
-				$cpdidhash->{$id} = [$id,$charge,$formula,$name,$aliases];
+				$cpdidhash->{$id} = [$id,$charge,$formula,$name,$aliases,$smiles,$inchikey];
 				push(@{$params->{compounds}},$cpdidhash->{$id});
 			}
 			$cpdhash->{$sbmlid} = {
@@ -2972,7 +2974,6 @@ sub func_importmodel {
 			$params->{biomass}->[$i] = $params->{reactions}->[$original_rxn_ids->{"R_".$params->{biomass}->[$i]}]->[8];
 			$excludehash->{$original_rxn_ids->{"R_".$params->{biomass}->[$i]}} = 1;
 		}
-		else{print $params->{biomass}}
 		my $eqn = "| ".$params->{biomass}->[$i]." |";
 		foreach my $cpd (keys(%{$translation})) {
 			if (index($params->{biomass}->[$i],$cpd) >= 0 && $cpd ne $translation->{$cpd}) {
