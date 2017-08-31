@@ -1647,6 +1647,7 @@ sub func_create_or_edit_media {
 		}
 	}
 	my $mediaobj = Bio::KBase::ObjectAPI::KBaseBiochem::Media->new($media);
+	$mediaobj->parent($handler->util_store());
 	my $mediaobjcpds = $mediaobj->mediacompounds();
 	my $wsmeta = $handler->util_save_object($mediaobj,$params->{workspace}."/".$params->{media_output_id});
    	return {
