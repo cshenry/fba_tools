@@ -1531,7 +1531,7 @@ sub func_create_or_edit_media {
 	for (my $i=0; $i < @{$params->{compounds_to_remove}}; $i++) {
 		$params->{compounds_to_remove}->[$i] =~ s/.+\///;
 		for (my $j=0; $j < @{$mediacpds}; $j++) {
-			if ($mediacpds->[$j]->compound_ref() =~ m/(cpd\d+)/) {
+			if ($mediacpds->[$j]->{compound_ref} =~ m/(cpd\d+)/) {
 				if ($1 eq $params->{compounds_to_remove}->[$i]) {
 					push(@{$removed_list},$params->{compounds_to_remove}->[$i]);
 					splice(@{$mediacpds}, $j, 1);
