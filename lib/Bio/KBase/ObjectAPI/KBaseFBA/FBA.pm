@@ -1934,7 +1934,8 @@ sub setupFBAExperiments {
 					$mediaHash->{$media.":".join("|",sort(@{$addnlCpds}))} = $self->createTemporaryMedia({
 						name => "Temp".$tempMediaIndex,
 						media => $pheno->media(),
-						additionalCpd => $pheno->additionalcompounds()
+						additionalCpd => $pheno->additionalcompounds(),
+						additionalBounds => $pheno->additionalcompound_bounds()
 					});
 					$tempMediaIndex++;
 				}
@@ -1967,10 +1968,10 @@ sub setupFBAExperiments {
 				push(@{$self->media_list_refs()},$mediaset->{elements}->[$i]->{"ref"});
 			}
 		}
-		my $medialist = $self->media_list();
-		for (my $i=0; $i < @{$medialist}; $i++) {
-			$mediaHash->{$medialist->[$i]->name()} = $medialist->[$i];
-			push(@{$phenoData},$medialist->[$i]->name()."\tnone\t".$medialist->[$i]->name()."\t1");
+		my $inmedialist = $self->media_list();
+		for (my $i=0; $i < @{$inmedialist}; $i++) {
+			$mediaHash->{$inmedialist->[$i]->name()} = $inmedialist->[$i];
+			push(@{$phenoData},$inmedialist->[$i]->name()."\tnone\t".$inmedialist->[$i]->name()."\t1");
 		}
 		foreach my $key (keys(%{$mediaHash})) {
 			push(@{$medialist},$mediaHash->{$key});
@@ -1995,7 +1996,9 @@ Description:
 
 sub createTemporaryMedia {
 	my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args(["name","media","additionalCpd"],{}, @_);
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["name","media","additionalCpd"],{
+		additionalBounds => []
+	}, @_);
 	my $newMedia = Bio::KBase::ObjectAPI::KBaseBiochem::Media->new({
 		source_id => $args->{name},
 		isDefined => 1,
@@ -2015,13 +2018,23 @@ sub createTemporaryMedia {
 			minFlux => $cpd->minFlux(),
 		};
 	}
-	foreach my $cpd (@{$args->{additionalCpd}}) {
-		$cpdHash->{$cpd->_reference()} = {
-			compound_ref => $cpd->_reference(),
-			concentration => 0.001,
-			maxFlux => 100,
-			minFlux => -100,
-		};
+	for (my $i=0; $i < @{$args->{additionalCpd}}; $i++) {
+		my $cpd = $args->{additionalCpd}->[$i];
+		if (defined($args->{additionalBounds}->[$i])) {
+			$cpdHash->{$cpd->_reference()} = {
+				compound_ref => $cpd->_reference(),
+				concentration => 0.001,
+				maxFlux => $args->{additionalBounds}->[$i]->[1],
+				minFlux => $args->{additionalBounds}->[$i]->[0],
+			};
+		} else {
+			$cpdHash->{$cpd->_reference()} = {
+				compound_ref => $cpd->_reference(),
+				concentration => 0.001,
+				maxFlux => 100,
+				minFlux => -100,
+			};
+		}
 	}
 	foreach my $cpd (keys(%{$cpdHash})) {
 		$newMedia->add("mediacompounds",$cpdHash->{$cpd});	
@@ -2642,7 +2655,7 @@ sub parseFBAPhenotypeOutput {
 					if ($row->[5] < 1e-7) {
 						push(@{$self->other_objectives()},0);	
 					} else {
-						push(@{$self->other_objectives()},$row->[5]);
+						push(@{$self->other_objectives()},$row->[5]+0);
 					}
 					if (defined($row->[10]) && length($row->[10]) > 0) {
 						my $fluxList = [split(/;/,$row->[10])];
@@ -2655,7 +2668,7 @@ sub parseFBAPhenotypeOutput {
 						for (my $m=0; $m < @{$vars}; $m++) {
 							my $id = $vars->[$m]->modelreaction()->id();
 							if (defined($fluxhash->{$id})) {
-								push(@{$vars->[$m]->other_values()},$fluxhash->{$id});
+								push(@{$vars->[$m]->other_values()},$fluxhash->{$id}+0);
 							} else {
 								push(@{$vars->[$m]->other_values()},0);
 							}
@@ -2664,7 +2677,7 @@ sub parseFBAPhenotypeOutput {
 						for (my $m=0; $m < @{$vars}; $m++) {
 							my $id = $vars->[$m]->modelcompound()->id();
 							if (defined($fluxhash->{$id})) {
-								push(@{$vars->[$m]->other_values()},$fluxhash->{$id});
+								push(@{$vars->[$m]->other_values()},$fluxhash->{$id}+0);
 							} else {
 								push(@{$vars->[$m]->other_values()},0);
 							}
@@ -2673,7 +2686,7 @@ sub parseFBAPhenotypeOutput {
 						for (my $m=0; $m < @{$vars}; $m++) {
 							my $id = $vars->[$m]->biomass()->id();
 							if (defined($fluxhash->{$id})) {
-								push(@{$vars->[$m]->other_values()},$fluxhash->{$id});
+								push(@{$vars->[$m]->other_values()},$fluxhash->{$id}+0);
 							} else {
 								push(@{$vars->[$m]->other_values()},0);
 							}
