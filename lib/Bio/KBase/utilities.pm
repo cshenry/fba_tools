@@ -213,6 +213,21 @@ sub read_config {
 	return $config;
 }
 
+sub buildref {
+	my $id = shift;
+	my $ws = shift;
+	#Check if the ID is a KBase workspace ID with a version
+	if ($id =~ m/^([^\/]+)\/([^\/]+)\/\d+$/) {
+		return $id;
+	#Check if the ID contains a "/" which indicates that it is a full ref
+	} elsif ($id =~ m/\//) {
+		return $id;
+	}
+	#Removing any "/" that may appear at the end of the ws
+	$ws =~ s/\/$//;
+	return $ws."/".$id;
+}
+
 sub parse_input_table {
 	my $filename = shift;
 	my $columns = shift;#[name,required?(0/1),default,delimiter]

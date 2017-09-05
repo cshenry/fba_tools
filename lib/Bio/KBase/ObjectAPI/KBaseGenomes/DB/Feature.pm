@@ -70,9 +70,8 @@ my $attributes = [
           {
             'req' => 0,
             'printOrder' => -1,
-            'name' => 'subsystems',
-            'default' => 'sub {return [];}',
-            'type' => 'ArrayRef',
+            'name' => 'md5',
+            'type' => 'Str',
             'perm' => 'rw'
           },
           {
@@ -200,17 +199,10 @@ my $attributes = [
             'type' => 'Str',
             'description' => undef,
             'perm' => 'rw'
-          },
-          {
-            'req' => 0,
-            'printOrder' => -1,
-            'name' => 'md5',
-            'type' => 'Str',
-            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {function => 0, subsystems => 1, atomic_regulons => 2, coexpressed_fids => 3, dna_sequence => 4, protein_translation => 5, co_occurring_fids => 6, regulon_data => 7, publications => 8, id => 9, location => 10, subsystem_data => 11, annotations => 12, dna_sequence_length => 13, orthologs => 14, protein_translation_length => 15, aliases => 16, type => 17, md5 => 18};
+my $attribute_map = {function => 0, md5 => 1, atomic_regulons => 2, coexpressed_fids => 3, dna_sequence => 4, protein_translation => 5, co_occurring_fids => 6, regulon_data => 7, publications => 8, id => 9, location => 10, subsystem_data => 11, annotations => 12, dna_sequence_length => 13, orthologs => 14, protein_translation_length => 15, aliases => 16, type => 17};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {
