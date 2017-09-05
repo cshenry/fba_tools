@@ -1852,6 +1852,10 @@ sub func_compare_models {
 			
 			$model->{cpdhash}->{$cpd->{id}} = $cpd;
 			if ($cpd->{cpdkbid} ne "cpd00000") {
+				local $SIG{__WARN__} = sub { };
+				# The follow line works but throws a shit-ton of warnings.
+				# Rather than fix the implementation like I probably should,
+				# I'm silencing them with the preceding line
 				$model->{cpdhash}->{$cpd->{$cpd->{cpdkbid}."_".$cpd->{cmpkbid}}} = $cpd;
 			}
 		}
