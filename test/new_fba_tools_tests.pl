@@ -216,22 +216,9 @@ dies_ok {
 lives_ok{
         $impl->tsv_file_to_model({
             model_file     =>
-            { path => "/kb/module/test/data/iMR1_799-reactions.tsv" },
-            model_name     => "iMR1_799",
-            workspace_name => "jjeffryes:narrative_1501623862202",
-            #get_ws_name(),
-            biomass        => [],
-            compounds_file =>
-            { path => "/kb/module/test/data/iMR1_799-compounds.tsv" }
-        })
-    }, 'tsv_to_model_no_structure';
-lives_ok{
-        $impl->tsv_file_to_model({
-            model_file     =>
             { path => "/kb/module/test/data/FBAModelReactions.tsv" },
             model_name     => "Pickaxe",
-            workspace_name => "jjeffryes:narrative_1501623862202",
-            #get_ws_name(),
+            workspace_name => get_ws_name(),
             biomass        => [],
             compounds_file =>
             { path => "/kb/module/test/data/FBAModelCompounds.tsv" }
@@ -241,8 +228,7 @@ lives_ok{
         $impl->tsv_file_to_model({
             model_file     => { path => "/kb/module/test/data/test_model-reactions.tsv" },
             model_name     => "tsv_import",
-            workspace_name => get_ws_name(),
-            genome_workspace => "chenry:narrative_1504151898593",
+            workspace_name => "chenry:narrative_1504151898593",
             genome => "Shewanella_amazonensis_SB2B",
             biomass        => ["bio1"],
             compounds_file => { path => "/kb/module/test/data/test_model-compounds.tsv" }

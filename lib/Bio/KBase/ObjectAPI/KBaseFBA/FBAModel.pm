@@ -605,7 +605,7 @@ sub LoadExternalReactionEquation {
 	    		my $cpdobj;
 				my $inchikey = "";
 				my $smiles = "";
-	    		if (defined($args->{compounds}->{$origid})) {
+	    		if (defined($args->{compounds}->{$origid}->[3])) {
 					# at the moment smiles and inchi always come from source, never templates
 					if (defined($args->{compounds}->{$origid}->[-1])) {
 						$inchikey = $args->{compounds}->{$origid}->[-1];
@@ -1023,6 +1023,8 @@ sub printTSV {
 	};
 	my $compounds = $self->modelcompounds();
 	for (my $i=0; $i < @{$compounds}; $i++) {
+		local $SIG{__WARN__} = sub { };
+		# The follow line works but throws a shit-ton of warnings.
 		push(@{$output->{compounds_table}},$compounds->[$i]->id()."\t".$compounds->[$i]->name()."\t".$compounds->[$i]->formula()."\t".$compounds->[$i]->charge()."\t".$compounds->[$i]->inchikey()."\t".$compounds->[$i]->smiles()."\t");
 	}
 	my $reactions = $self->modelreactions();
