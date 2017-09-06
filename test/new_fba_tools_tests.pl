@@ -96,14 +96,14 @@ lives_ok{
             minimum_target_flux         => 0.1,
             translation_policy          => "add_reactions_for_unique_genes"
         })
-    } "run_flux_balance_analysis";
+    } "propagate_model_to_new_genome";
 
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
             fbamodel_id            => "test_model",
-            phenotypeset_id        => "SB2B_biolog_data",
-            phenotypeset_workspace => "chenry:narrative_1504151898593",
+            phenotypeset_id        => "test_biolog_data",
+            phenotypeset_workspace => "jjeffryes:narrative_1502586048308",
             phenotypesim_output_id => "phenotype_simulation_test",
             workspace              => get_ws_name(),
             gapfill_phenotypes     => 1,
@@ -371,7 +371,7 @@ lives_ok{
 
 # tsv_file_to_phenotype_set
 lives_ok{
-        $impl->({
+        $impl->tsv_file_to_phenotype_set({
             phenotype_set_file => {path => "/kb/module/test/data/test_phenosim.tsv"},
 	        phenotype_set_name => "tsv_phenotypeset",
 	        workspace_name => get_ws_name(),
