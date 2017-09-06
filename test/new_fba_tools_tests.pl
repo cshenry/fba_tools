@@ -25,17 +25,15 @@ my $impl = new fba_tools::fba_toolsImpl();
 sub get_ws_name {
     if (!defined($ws_name)) {
         my $suffix = int(time * 1000);
-        $ws_name = 'test_kb_pickaxe_' . $suffix;
+        $ws_name = 'test_fba_tools_' . $suffix;
         $ws_client->create_workspace({workspace => $ws_name});
     }
     return $ws_name;
 }
-
 #=head
-#=cut
+=cut
 # build_metabolic_model
-ok(
-   defined(
+lives_ok{
         $impl->build_metabolic_model({
             genome_id => "Shewanella_amazonensis_SB2B",
 	        fbamodel_output_id =>  "test_model",
@@ -45,12 +43,10 @@ ok(
             genome_workspace => "chenry:narrative_1504151898593",
             workspace => get_ws_name()
         })
-   ), "build_metabolic_model"
-);
+   } "build_metabolic_model";
 
 # gapfill_metabolic_model
-ok(
-   defined(
+lives_ok{
         $impl->gapfill_metabolic_model({
             fbamodel_id => "test_model",
 	        fbamodel_workspace => get_ws_name(),
@@ -60,12 +56,10 @@ ok(
 	        workspace => get_ws_name(),
 	        target_reaction => "bio1"
         })
-   ), "gapfill_metabolic_model"
-);
+   } "gapfill_metabolic_model";
 
 # run_flux_balance_analysis
-ok(
-   defined(
+lives_ok{
         $impl->run_flux_balance_analysis({
             fbamodel_id => "test_model_minimal",
 	        fbamodel_workspace => get_ws_name(),
@@ -77,96 +71,79 @@ ok(
             fva => 1,
             minimize_flux => 1
         })
-   ), "run_flux_balance_analysis"
-);
-
+   } "run_flux_balance_analysis";
 # check_model_mass_balance
-ok(
-   defined(
+lives_ok{
         $impl->check_model_mass_balance({
-            fbamodel_id => "iMR1_799",
-            fbamodel_workspace => "chenry:narrative_1504151898593",
-            workspace => get_ws_name() 
+            fbamodel_id        => "test_model",
+            workspace          => get_ws_name()
         })
-   ), "check_model_mass_balance"
-);
-
+    } "check_model_mass_balance";
 # propagate_model_to_new_genome
-ok(
-   defined(
+lives_ok{
         $impl->propagate_model_to_new_genome({
-            fbamodel_id => "iMR1_799",
-            fbamodel_workspace => "chenry:narrative_1504151898593",
-	        proteincomparison_id => "MR1_to_SB2B_comparison",
-	        proteincomparison_workspace => "chenry:narrative_1504151898593",
-	        media_id => "Carbon-D-Glucose",
-	        media_workspace => "chenry:narrative_1504151898593",
-	        fbamodel_output_id => "test_propagated_model",
-	        workspace => get_ws_name(),
-	        keep_nogene_rxn => 1,
-	        gapfill_model => 1,
-	        custom_bound_list => [],
-	        media_supplement_list => "",
-	        minimum_target_flux => 0.1,
-	        translation_policy => "add_reactions_for_unique_genes"
+            fbamodel_id                 => "test_model",
+            proteincomparison_id        => "MR1_to_SB2B_comparison",
+            proteincomparison_workspace => "chenry:narrative_1504151898593",
+            media_id                    => "Carbon-D-Glucose",
+            media_workspace             => "chenry:narrative_1504151898593",
+            fbamodel_output_id          => "test_propagated_model",
+            workspace                   => get_ws_name(),
+            keep_nogene_rxn             => 1,
+            gapfill_model               => 1,
+            custom_bound_list           => [],
+            media_supplement_list       => "",
+            minimum_target_flux         => 0.1,
+            translation_policy          => "add_reactions_for_unique_genes"
         })
-   ), "run_flux_balance_analysis"
-);
+    } "propagate_model_to_new_genome";
 
 # simulate_growth_on_phenotype_data
-ok(
-   defined(
+lives_ok{
         $impl->simulate_growth_on_phenotype_data({
-            fbamodel_id => "iMR1_799",
-            fbamodel_workspace => "chenry:narrative_1504151898593",
-	        phenotypeset_id => "SB2B_biolog_data",
-	        phenotypeset_workspace => "chenry:narrative_1504151898593",
-	        phenotypesim_output_id => "phenotype_simulation_test",
-	        workspace => get_ws_name(),
-	        gapfill_phenotypes => 1,
-	        fit_phenotype_data => 0,
-	        target_reaction => "bio1"
+            fbamodel_id            => "test_model",
+            phenotypeset_id        => "test_biolog_data",
+            phenotypeset_workspace => "jjeffryes:narrative_1502586048308",
+            phenotypesim_output_id => "phenotype_simulation_test",
+            workspace              => get_ws_name(),
+            gapfill_phenotypes     => 1,
+            fit_phenotype_data     => 0,
+            target_reaction        => "bio1"
         })
-   ), "simulate_growth_on_phenotype_data"
-);
+    } "simulate_growth_on_phenotype_data";
 
 # compare_models
-ok(
-    defined(
+lives_ok{
         $impl->compare_models({
             mc_name       => "model_comparison",
             model_refs    => [ "7601/20/9", "7601/18/9" ],
             pangenome_ref => "7601/39/1",
             workspace     => get_ws_name()
         })
-    ), 'Compare Models'
-);
-ok(
-    defined(
+    } 'Compare Models';
+lives_ok{
         $impl->compare_models({
-            mc_name       => "model_comparison_test",
-            model_refs    => [ "chenry:narrative_1504151898593/iMR1_799", get_ws_name()."/test_model"],
-            workspace     => get_ws_name()
+            mc_name    => "model_comparison_test",
+            model_refs => [ "chenry:narrative_1504151898593/iMR1_799",
+                get_ws_name() . "/test_model" ],
+            workspace  => get_ws_name()
         })
-    ), 'Compare Models'
-);
+    } 'Compare Models';
 
 # build_multiple_metabolic_models
-ok(
-   defined(
+lives_ok{
         $impl->build_multiple_metabolic_models({
-            "genome_text"=>"79/11/1",
-            "genome_ids"=>["79/5/1"],
-            "media_id"=>undef,
-            "template_id"=>"auto",
-            "gapfill_model"=>1,
-            "custom_bound_list"=>[],
-            "media_supplement_list"=>[],
-            "minimum_target_flux"=>0.1,
-            "workspace"=>get_ws_name()
+            "genome_text"           => "79/11/1",
+            "genome_ids"            => [ "79/5/1" ],
+            "media_id"              => undef,
+            "template_id"           => "auto",
+            "gapfill_model"         => 1,
+            "custom_bound_list"     => [],
+            "media_supplement_list" => [],
+            "minimum_target_flux"   => 0.1,
+            "workspace"             => get_ws_name()
         })
-   ), "build_multiple_metabolic_models"
-);
+    } "build_multiple_metabolic_models";
 
 # compare_fba_solutions
 
@@ -179,54 +156,48 @@ ok(
 # edit_media
 
 # excel_file_to_model
-ok(
-    defined(
+lives_ok{
         $impl->excel_file_to_model({
             model_file => {path => "/kb/module/test/data/test_model.xls"},
 	        model_name => "excel_import",
-	        workspace_name => get_ws_name(),
-	        genome => "Shewanella_amazonensis_SB2B",
-	        genome_workspace => "chenry:narrative_1504151898593",
+	        workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
 	        biomass => ["bio1"]
         })
-    ), 'import model from excel'
-);
+    } 'import model from excel';
 
 # sbml_file_to_model
-ok(
-    defined(
+lives_ok{
         $impl->sbml_file_to_model({
-            model_file => {path => "/kb/module/test/data/e_coli_core.xml"},
-	        model_name => "sbml_test",
-	        workspace_name => "jjeffryes:narrative_1502586048308",
-	        genome => "Escherichia_coli_K-12_MG1655",
-	        biomass => ["R_BIOMASS_Ecoli_core_w_GAM"]
+            model_file     =>
+            { path => "/kb/module/test/data/e_coli_core.xml" },
+            model_name     => "sbml_test",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
+            biomass        => [ "R_BIOMASS_Ecoli_core_w_GAM" ]
         })
-    ), 'test "R_" prefix'
-);
-ok(
-    defined(
+    } 'test "R_" prefix';
+lives_ok{
         $impl->sbml_file_to_model({
-            model_file => {path => "/kb/module/test/data/PUBLIC_150.xml"},
-	        model_name => "sbml_test2",
-	        workspace_name => "jjeffryes:narrative_1502586048308",
-	        genome => "Escherichia_coli_K-12_MG1655",
-	        biomass => ["bio00006"]
+            model_file     =>
+            { path => "/kb/module/test/data/PUBLIC_150.xml" },
+            model_name     => "sbml_test2",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
+            biomass        => [ "bio00006" ]
         })
-    ), 'test "_refference" error'
-);
-ok(
-    defined(
+    } 'test "_refference" error';
+=cut
+lives_ok{
         $impl->sbml_file_to_model({
-            model_file => {path => "/kb/module/test/data/test_model.sbml"},
-	        model_name => "sbml_test3",
-	        workspace_name => get_ws_name(),
-	        genome => "Shewanella_amazonensis_SB2B",
-	        genome_workspace => "chenry:narrative_1504151898593",
-	        biomass => ["bio1"]
+            model_file       =>
+            { path => "/kb/module/test/data/test_model.sbml" },
+            model_name       => "sbml_test3",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
+            biomass          => [ "bio1" ]
         })
-    ), 'import model from SBML'
-);
+    } 'import model from SBML';
 dies_ok {
         $impl->sbml_file_to_model({
             model_file     =>
@@ -238,306 +209,230 @@ dies_ok {
         })
     }, 'biomass not found';
 # tsv_file_to_model
-ok(
-    defined(
-        $impl->tsv_file_to_model({
-            model_file     =>
-            { path => "/kb/module/test/data/iMR1_799-reactions.tsv" },
-            model_name     => "iMR1_799",
-            workspace_name => "jjeffryes:narrative_1501623862202",
-            #get_ws_name(),
-            biomass        => [],
-            compounds_file =>
-            { path => "/kb/module/test/data/iMR1_799-compounds.tsv" }
-        })
-    ), 'tsv_to_model_no_structure'
-);
-ok(
-    defined(
+lives_ok{
         $impl->tsv_file_to_model({
             model_file     =>
             { path => "/kb/module/test/data/FBAModelReactions.tsv" },
             model_name     => "Pickaxe",
-            workspace_name => "jjeffryes:narrative_1501623862202",
-            #get_ws_name(),
+            workspace_name => get_ws_name(),
             biomass        => [],
             compounds_file =>
             { path => "/kb/module/test/data/FBAModelCompounds.tsv" }
         })
-    ), 'tsv_to_model_with_structure'
-);
-ok(
-    defined(
+    } 'tsv_to_model_with_structure';
+lives_ok{
         $impl->tsv_file_to_model({
             model_file     => { path => "/kb/module/test/data/test_model-reactions.tsv" },
             model_name     => "tsv_import",
-            workspace_name => get_ws_name(),
-            genome_workspace => "chenry:narrative_1504151898593",
+            workspace_name => "chenry:narrative_1504151898593",
             genome => "Shewanella_amazonensis_SB2B",
             biomass        => ["bio1"],
             compounds_file => { path => "/kb/module/test/data/test_model-compounds.tsv" }
         })
-    ), 'import model from tsv'
-);
+    } 'import model from tsv';
 
 # model_to_excel_file
-ok(
-    defined(
+lives_ok{
         $impl->model_to_excel_file({
             model_name => "test_model_minimal",
 			workspace_name => "chenry:narrative_1504151898593"
         })
-    ), 'export model as excel'
-);
+    } 'export model as excel';
 		
 # model_to_sbml_file
-ok(
-    defined(
+lives_ok{
         $impl->model_to_sbml_file({
             model_name => "test_model_minimal",
 			workspace_name => "chenry:narrative_1504151898593"
         })
-    ), 'export model as sbml'
-);
+    } 'export model as sbml';
 
 # model_to_tsv_file
-ok(
-    defined(
-        $impl->model_to_tsv_file({
-            model_name     => "iMR1_799",
-            workspace_name => "jjeffryes:narrative_1501623862202"
-        })
-    ), 'model_to_tsv_no_structure'
-);
-ok(
-    defined(
-        $impl->model_to_tsv_file({
-            model_name     => "Pickaxe",
-            workspace_name => "jjeffryes:narrative_1501623862202"
-        })
-    ), 'model_to_tsv_with_structure'
-);
-ok(
-    defined(
+lives_ok{
         $impl->model_to_tsv_file({
             model_name => "test_model_minimal",
 			workspace_name => "chenry:narrative_1504151898593"
         })
-    ), 'export model as tsv'
-);
-
+    } 'export model as tsv';
+=cut
 # export_model_as_excel_file
-ok(
-    defined(
+lives_ok{
         $impl->export_model_as_excel_file({
            input_ref => "chenry:narrative_1504151898593/test_model_minimal"
         })
-    ), 'export model as excel'
-);
+    } 'export model as excel';
 		
 # export_model_as_tsv_file
-ok(
-    defined(
+lives_ok{
         $impl->export_model_as_tsv_file({
            input_ref => "chenry:narrative_1504151898593/test_model_minimal"
         })
-    ), 'export model as tsv'
-);
+    } 'export model as tsv';
 
 # export_model_as_sbml_file
-ok(
-    defined(
+lives_ok{
         $impl->export_model_as_sbml_file({
            input_ref => "chenry:narrative_1504151898593/test_model_minimal"
         })
-    ), 'export model as sbml'
-);
-
+    } 'export model as sbml';
+=cut
 # fba_to_excel_file
-ok(
-    defined(
+lives_ok{
         $impl->fba_to_excel_file({
 			fba_name => "test_minimal_fba",
 			workspace_name => "chenry:narrative_1504151898593"
         })
-    ), 'export fba as excel'
-);
+    } 'export fba as excel';
 
 # fba_to_tsv_file
-ok(
-    defined(
+lives_ok{
         $impl->fba_to_tsv_file({
 			fba_name => "test_minimal_fba",
 			workspace_name => "chenry:narrative_1504151898593"
         })
-    ), 'export fba as tsv'
-);
-
+    } 'export fba as tsv';
+=cut
 # export_fba_as_excel_file
-ok(
-    defined(
+lives_ok{
         $impl->export_fba_as_excel_file({
            input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
         })
-    ), 'export fba as excel'
-);
+    } 'export fba as excel';
 
 # export_fba_as_tsv_file
-ok(
-    defined(
+lives_ok{
         $impl->export_fba_as_tsv_file({
            input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
         })
-    ), 'export fba as tsv'
-);
-
+    } 'export fba as tsv';
+=cut
 # tsv_file_to_media
-ok(
-    defined(
-        my $retObj = $impl->tsv_file_to_media({
+lives_ok{
+        $impl->tsv_file_to_media({
             media_file => {path => "/kb/module/test/data/media_example.tsv"},
 	        media_name => "tsv_media",
             workspace_name     => get_ws_name()
         })
-    ), 'TSV to media'
-);
-ok(
-    defined(
-        my $retObj = $impl->tsv_file_to_media({
+    } 'TSV to media';
+lives_ok{
+        $impl->tsv_file_to_media({
             media_file => {path => "/kb/module/test/data/test_media.tsv"},
 	        media_name => "tsv_media2",
             workspace_name     => get_ws_name()
         })
-    ), 'TSV to media 2'
-);
+    } 'TSV to media 2';
 
 # excel_file_to_media
-ok(
-    defined(
-        my $retObj = $impl->excel_file_to_media({
+lives_ok{
+        $impl->excel_file_to_media({
             media_file => {path => "/kb/module/test/data/media_example.xls"},
 	        media_name => "xls_media",
             workspace_name     => get_ws_name()
         })
-    ), 'Excel to media'
-);
-ok(
-    defined(
-        my $retObj = $impl->excel_file_to_media({
+    } 'Excel to media';
+lives_ok{
+        $impl->excel_file_to_media({
             media_file => {path => "/kb/module/test/data/test_media.xls"},
 	        media_name => "xls_media2",
             workspace_name     => get_ws_name()
         })
-    ), 'Excel to media 2'
-);
+    } 'Excel to media 2';
 
 # media_to_tsv_file
-ok(
-    defined(
-        my $retObj = $impl->media_to_tsv_file({
+lives_ok{
+        $impl->media_to_tsv_file({
             media_name => "tsv_media",
 			workspace_name => get_ws_name()
         })
-    ), 'export media as tsv'
-);
+    } 'media to tsv file';
 
 # media_to_excel_file
-ok(
-    defined(
-        my $retObj = $impl->media_to_excel_file({
+lives_ok{
+        $impl->media_to_excel_file({
             media_name => "tsv_media",
 			workspace_name => get_ws_name()
         })
-    ), 'export media as excel'
-);
-
+    } 'media to excel file';
+=cut
 # export_media_as_excel_file
-
-# export_media_as_tsv_file
-ok(
-    defined(
-        my $retObj = $impl->export_media_as_tsv_file({
+lives_ok{
+        $impl->export_media_as_excel_file({
             input_ref => get_ws_name()."/tsv_media"
         })
-    ), 'export media as tsv'
-);
+    } 'export media as excel';
 
+# export_media_as_tsv_file
+lives_ok{
+        $impl->export_media_as_tsv_file({
+            input_ref => get_ws_name()."/tsv_media"
+        })
+    } 'export media as tsv';
+=cut
 # tsv_file_to_phenotype_set
-ok(
-    defined(
-        my $retObj = $impl->({
-            phenotype_set_file => {path => "/kb/module/test/data/test_phenosim.tsv"},
+lives_ok{
+        $impl->tsv_file_to_phenotype_set({
+            phenotype_set_file => {path => "/kb/module/test/data/phenotype_simulation.tsv"},
 	        phenotype_set_name => "tsv_phenotypeset",
 	        workspace_name => get_ws_name(),
 	        genome_workspace => "chenry:narrative_1504151898593",
 	        genome => "Shewanella_amazonensis_SB2B"
         })
-    ), 'import phenotype set from tsv'
-);
+    } 'import phenotype set from tsv';
 
 # phenotype_set_to_tsv_file
-ok(
-    defined(
-        my $retObj = $impl->phenotype_set_to_tsv_file({
+lives_ok{
+        $impl->phenotype_set_to_tsv_file({
             phenotype_set_name => "SB2B_biolog_data",
-			workspace_name => get_ws_name()
+			workspace_name => "chenry:narrative_1504151898593"
         })
-    ), 'export phenotypes as tsv'
-);
-
+    } 'export phenotypes as tsv';
+=cut
 # export_phenotype_set_as_tsv_file
-
-
-
-# phenotype_simulation_set_to_excel_file
-ok(
-    defined(
-        my $retObj = $impl->phenotype_simulation_set_to_excel_file({
-            phenotype_simulation_set_name => "phenotype_simulation_test",
-			workspace_name => get_ws_name()
+lives_ok{
+        $impl->export_phenotype_set_as_tsv_file({
+			input_ref => "chenry:narrative_1504151898593/SB2B_biolog_data"
         })
-    ), 'export phenosim as excel'
-);
+    } 'export phenotypes as tsv';
+=cut
+# phenotype_simulation_set_to_excel_file
+lives_ok{
+        $impl->phenotype_simulation_set_to_excel_file({
+            phenotype_simulation_set_name => "phenotype_simulation",
+			workspace_name => "jjeffryes:narrative_1502586048308"
+        })
+    } 'phenosim to excel';
 
 # phenotype_simulation_set_to_tsv_file
-ok(
-    defined(
-        my $retObj = $impl->phenotype_simulation_set_to_tsv_file({
-            phenotype_simulation_set_name => "phenotype_simulation_test",
-			workspace_name => get_ws_name()
+lives_ok{
+        $impl->phenotype_simulation_set_to_tsv_file({
+            phenotype_simulation_set_name => "phenotype_simulation",
+			workspace_name => "jjeffryes:narrative_1502586048308"
         })
-    ), 'export phenosim as tsv'
-);
-
+    } 'phenosim to tsv';
+=cut
 # export_phenotype_simulation_set_as_excel_file
-ok(
-    defined(
-        my $retObj = $impl->export_phenotype_simulation_set_as_excel_file({
-            input_ref => get_ws_name()."/phenotype_simulation_test"
+lives_ok{
+        $impl->export_phenotype_simulation_set_as_excel_file({
+            input_ref => "jjeffryes:narrative_1502586048308/phenotype_simulation"
         })
-    ), 'export phenotypes as excel'
-);
+    } 'export phenotypes sim set as excel';
 
 # export_phenotype_simulation_set_as_tsv_file
-ok(
-    defined(
-        my $retObj = $impl->export_phenotype_set_as_tsv_file({
-            input_ref => "narrative_1504151898593/SB2B_biolog_data"
+lives_ok{
+        $impl->export_phenotype_set_as_tsv_file({
+            input_ref => "jjeffryes:narrative_1502586048308/phenotype_simulation"
         })
-    ), 'export phenotypes as tsv'
-);
-
+    } 'export phenotype sim set as tsv';
+=cut
 # bulk_export_objects
-ok(
-    defined(
-        my $retObj = $impl->bulk_export_objects({
-            refs => ["test_model","iMR1_799"],
-	        workspace => "chenry:narrative_1504151898593",
+lives_ok{
+        $impl->bulk_export_objects({
+            refs => [ "7601/20/9", "7601/18/9" ],
+	        workspace => "jjeffryes:narrative_1502586048308",
 	        all_media => 1,
 	        media_format => "excel"
         })
-    ), 'bulk export of modeling objects'
-);
+    } 'bulk export of modeling objects';
 
 done_testing();
 
