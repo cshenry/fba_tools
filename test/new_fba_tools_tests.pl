@@ -1,7 +1,6 @@
 use strict;
 use Data::Dumper;
 use Test::More;
-use Test::Exception;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
@@ -61,7 +60,7 @@ lives_ok{
 # run_flux_balance_analysis
 lives_ok{
         $impl->run_flux_balance_analysis({
-            fbamodel_id => "test_model_minimal",
+          fbamodel_id => "test_model_minimal",
 	        fbamodel_workspace => get_ws_name(),
 	        media_id => "Carbon-D-Glucose",
 	        media_workspace => "chenry:narrative_1504151898593",
@@ -208,6 +207,7 @@ dies_ok {
             biomass        => [ "foo" ]
         })
     }, 'biomass not found';
+=cut
 # tsv_file_to_model
 lives_ok{
         $impl->tsv_file_to_model({

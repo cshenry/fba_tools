@@ -82,16 +82,16 @@ class fba_tools(object):
         Build multiple genome-scale metabolic models based on annotations in an input genome typed object
         :param params: instance of type "BuildMultipleMetabolicModelsParams"
            -> structure: parameter "genome_ids" of list of type "genome_id"
-           (A string representing a Genome id.), parameter "genome_workspace"
-           of type "workspace_name" (A string representing a workspace
-           name.), parameter "media_id" of type "media_id" (A string
-           representing a Media id.), parameter "media_workspace" of type
-           "workspace_name" (A string representing a workspace name.),
-           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
-           representing a FBAModel id.), parameter "workspace" of type
-           "workspace_name" (A string representing a workspace name.),
-           parameter "template_id" of type "template_id" (A string
-           representing a NewModelTemplate id.), parameter
+           (A string representing a Genome id.), parameter "genome_text" of
+           String, parameter "genome_workspace" of type "workspace_name" (A
+           string representing a workspace name.), parameter "media_id" of
+           type "media_id" (A string representing a Media id.), parameter
+           "media_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "fbamodel_output_id" of type
+           "fbamodel_id" (A string representing a FBAModel id.), parameter
+           "workspace" of type "workspace_name" (A string representing a
+           workspace name.), parameter "template_id" of type "template_id" (A
+           string representing a NewModelTemplate id.), parameter
            "template_workspace" of type "workspace_name" (A string
            representing a workspace name.), parameter "coremodel" of type
            "bool" (A binary boolean), parameter "gapfill_model" of type
@@ -208,7 +208,9 @@ class fba_tools(object):
         :returns: instance of type "RunFluxBalanceAnalysisResults" ->
            structure: parameter "new_fba_ref" of type "ws_fba_id" (The
            workspace ID for a FBA data object. @id ws KBaseFBA.FBA),
-           parameter "objective" of Long
+           parameter "objective" of Long, parameter "report_name" of String,
+           parameter "report_ref" of type "ws_report_id" (The workspace ID
+           for a Report object @id ws KBaseReport.Report)
         """
         return self._client.call_method(
             'fba_tools.run_flux_balance_analysis',
