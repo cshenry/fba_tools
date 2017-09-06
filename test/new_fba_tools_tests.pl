@@ -31,6 +31,7 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
+=cut
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -186,14 +187,14 @@ lives_ok{
             biomass        => [ "bio00006" ]
         })
     } 'test "_refference" error';
+=cut
 lives_ok{
         $impl->sbml_file_to_model({
             model_file       =>
             { path => "/kb/module/test/data/test_model.sbml" },
             model_name       => "sbml_test3",
-            workspace_name   => get_ws_name(),
-            genome           => "Shewanella_amazonensis_SB2B",
-            genome_workspace => "chenry:narrative_1504151898593",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
             biomass          => [ "bio1" ]
         })
     } 'import model from SBML';

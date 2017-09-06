@@ -2404,7 +2404,6 @@ sub func_import_phenotype_set {
 }
 
 sub func_importmodel {
-	use Data::Dumper;
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["biomass","model_name","workspace_name"],{
 		sbml => undef,
@@ -3072,7 +3071,6 @@ sub func_importmodel {
 	}
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		Bio::KBase::utilities::log("Biomass:".$params->{biomass}->[$i],"debugging");
-		print "Biomass:".$params->{biomass}->[$i];
 		my $report = $model->adjustBiomassReaction({
 			biomass => "bio".($i+1),
 			equation => $params->{biomass}->[$i],
