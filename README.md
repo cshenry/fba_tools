@@ -8,6 +8,13 @@ This SDK Module contains methods relating to the reconstruction and analysis of 
 
 ## Release notes
 ------------------------------------------
+### VERSION: 1.6.6 (Released 9/6/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Corrected bugs in media editing and model merging
+- Adding internal functional support for batch FBA (no UI yet)
+
+------------------------------------------
 ### VERSION: 1.6.5 (Released 8/23/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
