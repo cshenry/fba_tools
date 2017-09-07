@@ -344,6 +344,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: predict_auxotrophy</p>
+     * <pre>
+     * Identifies reactions in the model that are not mass balanced
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.PredictAuxotrophyParams PredictAuxotrophyParams}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.PredictAuxotrophyResults PredictAuxotrophyResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public PredictAuxotrophyResults predictAuxotrophy(PredictAuxotrophyParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<PredictAuxotrophyResults>> retType = new TypeReference<List<PredictAuxotrophyResults>>() {};
+        List<PredictAuxotrophyResults> res = caller.jsonrpcCall("fba_tools.predict_auxotrophy", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: compare_models</p>
      * <pre>
      * Compare models

@@ -82,16 +82,16 @@ class fba_tools(object):
         Build multiple genome-scale metabolic models based on annotations in an input genome typed object
         :param params: instance of type "BuildMultipleMetabolicModelsParams"
            -> structure: parameter "genome_ids" of list of type "genome_id"
-           (A string representing a Genome id.), parameter "genome_workspace"
-           of type "workspace_name" (A string representing a workspace
-           name.), parameter "media_id" of type "media_id" (A string
-           representing a Media id.), parameter "media_workspace" of type
-           "workspace_name" (A string representing a workspace name.),
-           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
-           representing a FBAModel id.), parameter "workspace" of type
-           "workspace_name" (A string representing a workspace name.),
-           parameter "template_id" of type "template_id" (A string
-           representing a NewModelTemplate id.), parameter
+           (A string representing a Genome id.), parameter "genome_text" of
+           String, parameter "genome_workspace" of type "workspace_name" (A
+           string representing a workspace name.), parameter "media_id" of
+           type "media_id" (A string representing a Media id.), parameter
+           "media_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "fbamodel_output_id" of type
+           "fbamodel_id" (A string representing a FBAModel id.), parameter
+           "workspace" of type "workspace_name" (A string representing a
+           workspace name.), parameter "template_id" of type "template_id" (A
+           string representing a NewModelTemplate id.), parameter
            "template_workspace" of type "workspace_name" (A string
            representing a workspace name.), parameter "coremodel" of type
            "bool" (A binary boolean), parameter "gapfill_model" of type
@@ -371,6 +371,24 @@ class fba_tools(object):
         """
         return self._client.call_method(
             'fba_tools.check_model_mass_balance',
+            [params], self._service_ver, context)
+
+    def predict_auxotrophy(self, params, context=None):
+        """
+        Identifies reactions in the model that are not mass balanced
+        :param params: instance of type "PredictAuxotrophyParams" ->
+           structure: parameter "genome_id" of type "genome_id" (A string
+           representing a Genome id.), parameter "media_output_id" of type
+           "media_id" (A string representing a Media id.), parameter
+           "genome_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "workspace" of type "workspace_name"
+           (A string representing a workspace name.)
+        :returns: instance of type "PredictAuxotrophyResults" -> structure:
+           parameter "new_report_ref" of type "ws_report_id" (The workspace
+           ID for a Report object @id ws KBaseReport.Report)
+        """
+        return self._client.call_method(
+            'fba_tools.predict_auxotrophy',
             [params], self._service_ver, context)
 
     def compare_models(self, params, context=None):

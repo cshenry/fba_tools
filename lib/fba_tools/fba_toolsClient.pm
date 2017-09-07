@@ -286,6 +286,7 @@ $params is a fba_tools.BuildMultipleMetabolicModelsParams
 $return is a fba_tools.BuildMultipleMetabolicModelsResults
 BuildMultipleMetabolicModelsParams is a reference to a hash where the following keys are defined:
 	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+	genome_text has a value which is a string
 	genome_workspace has a value which is a fba_tools.workspace_name
 	media_id has a value which is a fba_tools.media_id
 	media_workspace has a value which is a fba_tools.workspace_name
@@ -333,6 +334,7 @@ $params is a fba_tools.BuildMultipleMetabolicModelsParams
 $return is a fba_tools.BuildMultipleMetabolicModelsResults
 BuildMultipleMetabolicModelsParams is a reference to a hash where the following keys are defined:
 	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+	genome_text has a value which is a string
 	genome_workspace has a value which is a fba_tools.workspace_name
 	media_id has a value which is a fba_tools.media_id
 	media_workspace has a value which is a fba_tools.workspace_name
@@ -1481,6 +1483,110 @@ Identifies reactions in the model that are not mass balanced
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method check_model_mass_balance",
 					    status_line => $self->{client}->status_line,
 					    method_name => 'check_model_mass_balance',
+				       );
+    }
+}
+ 
+
+
+=head2 predict_auxotrophy
+
+  $results = $obj->predict_auxotrophy($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.PredictAuxotrophyParams
+$results is a fba_tools.PredictAuxotrophyResults
+PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	media_output_id has a value which is a fba_tools.media_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+media_id is a string
+workspace_name is a string
+PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.PredictAuxotrophyParams
+$results is a fba_tools.PredictAuxotrophyResults
+PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	media_output_id has a value which is a fba_tools.media_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+media_id is a string
+workspace_name is a string
+PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+Identifies reactions in the model that are not mass balanced
+
+=back
+
+=cut
+
+ sub predict_auxotrophy
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function predict_auxotrophy (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to predict_auxotrophy:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'predict_auxotrophy');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.predict_auxotrophy",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'predict_auxotrophy',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method predict_auxotrophy",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'predict_auxotrophy',
 				       );
     }
 }
@@ -5435,6 +5541,7 @@ number_removed_biomass_compounds has a value which is an int
 <pre>
 a reference to a hash where the following keys are defined:
 genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+genome_text has a value which is a string
 genome_workspace has a value which is a fba_tools.workspace_name
 media_id has a value which is a fba_tools.media_id
 media_workspace has a value which is a fba_tools.workspace_name
@@ -5467,6 +5574,7 @@ number_of_solutions has a value which is an int
 
 a reference to a hash where the following keys are defined:
 genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+genome_text has a value which is a string
 genome_workspace has a value which is a fba_tools.workspace_name
 media_id has a value which is a fba_tools.media_id
 media_workspace has a value which is a fba_tools.workspace_name
@@ -6209,6 +6317,72 @@ workspace has a value which is a fba_tools.workspace_name
 
 
 =head2 CheckModelMassBalanceResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictAuxotrophyParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+media_output_id has a value which is a fba_tools.media_id
+genome_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+media_output_id has a value which is a fba_tools.media_id
+genome_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictAuxotrophyResults
 
 =over 4
 
