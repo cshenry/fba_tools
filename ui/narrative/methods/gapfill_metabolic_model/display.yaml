@@ -9,6 +9,8 @@ screenshots :
     
     - gapfill_metabolic_model_input.png
     - gapfill_metabolic_model_output.png
+    - Gapfill_eq_1.jpg
+    - Gapfill_eq_2.jpg
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
