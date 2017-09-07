@@ -31,6 +31,7 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
+
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -102,16 +103,15 @@ lives_ok{
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
-            fbamodel_id            => "test_model",
-            phenotypeset_id        => "test_biolog_data",
-            phenotypeset_workspace => "jjeffryes:narrative_1502586048308",
-            phenotypesim_output_id => "phenotype_simulation_test",
-            workspace              => get_ws_name(),
+            fbamodel_id            => "sbml_test",
+            phenotypeset_id        => "tsv_phenotypeset",
+            phenotypesim_output_id => "custom_phenotype_sim",
+            workspace              => "jjeffryes:narrative_1502586048308",
             gapfill_phenotypes     => 1,
             fit_phenotype_data     => 0,
             target_reaction        => "bio1"
         })
-    } "simulate_growth_on_phenotype_data";
+    } "simulate_growth_on_phenotype_data_w_bounds";
 
 # compare_models
 lives_ok{
@@ -316,7 +316,7 @@ lives_ok{
         $impl->tsv_file_to_media({
             media_file => {path => "/kb/module/test/data/media_example.tsv"},
 	        media_name => "tsv_media",
-            workspace_name     => get_ws_name()
+            workspace_name => get_ws_name()
         })
     } 'TSV to media';
 
@@ -386,13 +386,22 @@ lives_ok{
         })
     } 'import phenotype set from tsv';
 
+lives_ok{
+    $impl->tsv_file_to_phenotype_set({
+                phenotype_set_file => {path => "/kb/module/test/data/NewPhenotypeSet.tsv"},
+                phenotype_set_name => "tsv_phenotypeset",
+                workspace_name => "jjeffryes:narrative_1502586048308",
+                genome => "Escherichia_coli_K-12_MG1655"
+        })
+    }, 'TSV to Phenotype Set';
+
 # phenotype_set_to_tsv_file
 lives_ok{
         $impl->phenotype_set_to_tsv_file({
-            phenotype_set_name => "SB2B_biolog_data",
-			workspace_name => "chenry:narrative_1504151898593"
+            phenotype_set_name => "tsv_phenotypeset",
+			workspace_name => "jjeffryes:narrative_1502586048308"
         })
-    } 'export phenotypes as tsv';
+    } 'phenotype_set_to_tsv_file';
 =cut
 # export_phenotype_set_as_tsv_file
 lives_ok{
@@ -404,7 +413,7 @@ lives_ok{
 # phenotype_simulation_set_to_excel_file
 lives_ok{
         $impl->phenotype_simulation_set_to_excel_file({
-            phenotype_simulation_set_name => "phenotype_simulation",
+            phenotype_simulation_set_name => "custom_phenotype_sim",
 			workspace_name => "jjeffryes:narrative_1502586048308"
         })
     } 'phenosim to excel';
@@ -412,7 +421,7 @@ lives_ok{
 # phenotype_simulation_set_to_tsv_file
 lives_ok{
         $impl->phenotype_simulation_set_to_tsv_file({
-            phenotype_simulation_set_name => "phenotype_simulation",
+            phenotype_simulation_set_name => "custom_phenotype_sim",
 			workspace_name => "jjeffryes:narrative_1502586048308"
         })
     } 'phenosim to tsv';

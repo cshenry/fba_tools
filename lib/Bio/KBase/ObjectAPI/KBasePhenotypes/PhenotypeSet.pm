@@ -127,23 +127,23 @@ sub import_phenotype_table {
     		$missingMedia->{$phenotype->[2]."/".$phenotype->[1]} = 1;
     		next;
     	}
-		use Data::Dumper;
 		sub nest_arr{
 			my $raw = shift;
 			return undef if !$raw;
-			my @nested;
-			my @sets = (split/;/, $raw);
-			while (my($ind, $set) = each @sets){
-				my @inner = split(/\|/, $set);
-				if (scalar @inner != 3){
+			my $nested = [];
+			my $sets = [split(/;/, $raw)];
+			while (my($ind, $set) = each $sets){
+				my $inner = [split(/\|/, $set)];
+				if (scalar @{$inner} < 2 || scalar @{$inner} > 3){
 					print "Unable to parse $raw";
 					return undef
 				}
-				@{$nested[$ind]} = ($inner[0]+0, $inner[1], $inner[2]+0)
+				$inner->[0] = $inner->[0]+0;
+				$inner->[-1] = $inner->[-1]+0;
+				$nested->[$ind] = $inner
 			}
-			return @nested
+			return $nested
 		}
-		print Dumper(nest_arr($phenotype->[6]));
     	#Adding phenotype to object
     	$self->add("phenotypes",{
     		id => $self->id().".phe.".$count,

@@ -64,7 +64,7 @@ sub _build_compoundBoundsString {
 		if (length($output) > 0) {
 			$output .= ";";
 		}
-		$output .= join("\|", $bounds->[$i]);
+		$output .= join("\|", @{$bounds->[$i]});
 	}
 	return $output;
 }
@@ -77,7 +77,7 @@ sub _build_reactionBoundsString {
 		if (length($output) > 0) {
 			$output .= ";";
 		}
-		$output .= join("\|", $bounds->[$i]);
+		$output .= join("\|", @{$bounds->[$i]});
 	}
 	return $output;
 }
