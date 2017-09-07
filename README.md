@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/chenry/fba_tools.svg?branch=master)](https://travis-ci.org/chenry/fba_tools)
+[![Build Status](https://travis-ci.org/cshenry/fba_tools.svg?branch=master)](https://travis-ci.org/cshenry/fba_tools)
 
 # fba_tools
 

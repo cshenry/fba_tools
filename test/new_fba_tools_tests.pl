@@ -1,6 +1,7 @@
 use strict;
 use Data::Dumper;
 use Test::More;
+use Test::Exception;
 use Config::Simple;
 use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
@@ -30,7 +31,6 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
-=cut
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -71,6 +71,7 @@ lives_ok{
             minimize_flux => 1
         })
    } "run_flux_balance_analysis";
+
 # check_model_mass_balance
 lives_ok{
         $impl->check_model_mass_balance({
@@ -78,6 +79,7 @@ lives_ok{
             workspace          => get_ws_name()
         })
     } "check_model_mass_balance";
+
 # propagate_model_to_new_genome
 lives_ok{
         $impl->propagate_model_to_new_genome({
@@ -176,6 +178,7 @@ lives_ok{
             biomass        => [ "R_BIOMASS_Ecoli_core_w_GAM" ]
         })
     } 'test "R_" prefix';
+
 lives_ok{
         $impl->sbml_file_to_model({
             model_file     =>
@@ -186,7 +189,7 @@ lives_ok{
             biomass        => [ "bio00006" ]
         })
     } 'test "_refference" error';
-=cut
+
 lives_ok{
         $impl->sbml_file_to_model({
             model_file       =>
@@ -197,6 +200,7 @@ lives_ok{
             biomass          => [ "bio1" ]
         })
     } 'import model from SBML';
+
 dies_ok {
         $impl->sbml_file_to_model({
             model_file     =>
@@ -207,7 +211,7 @@ dies_ok {
             biomass        => [ "foo" ]
         })
     }, 'biomass not found';
-=cut
+
 # tsv_file_to_model
 lives_ok{
         $impl->tsv_file_to_model({
@@ -220,6 +224,7 @@ lives_ok{
             { path => "/kb/module/test/data/FBAModelCompounds.tsv" }
         })
     } 'tsv_to_model_with_structure';
+
 lives_ok{
         $impl->tsv_file_to_model({
             model_file     => { path => "/kb/module/test/data/test_model-reactions.tsv" },
@@ -314,6 +319,7 @@ lives_ok{
             workspace_name     => get_ws_name()
         })
     } 'TSV to media';
+
 lives_ok{
         $impl->tsv_file_to_media({
             media_file => {path => "/kb/module/test/data/test_media.tsv"},
@@ -330,6 +336,7 @@ lives_ok{
             workspace_name     => get_ws_name()
         })
     } 'Excel to media';
+
 lives_ok{
         $impl->excel_file_to_media({
             media_file => {path => "/kb/module/test/data/test_media.xls"},
