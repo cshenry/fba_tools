@@ -2166,7 +2166,6 @@ sub translate_model {
 	}, @_);
 	my $protcomp = $args->{proteome_comparison};
 	my $genome = $self->genome();
-	print $genome->id();
 	my $ftrs = $genome->features();
 	my $numftrs = @{$ftrs};
 	my $ftrhash;

@@ -371,28 +371,7 @@ lives_ok{
 			workspace_name => "chenry:narrative_1504151898593"
         })
     } 'export model as tsv';
-=cut
-# export_model_as_excel_file
-lives_ok{
-        $impl->export_model_as_excel_file({
-           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
-        })
-    } 'export model as excel';
-		
-# export_model_as_tsv_file
-lives_ok{
-        $impl->export_model_as_tsv_file({
-           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
-        })
-    } 'export model as tsv';
 
-# export_model_as_sbml_file
-lives_ok{
-        $impl->export_model_as_sbml_file({
-           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
-        })
-    } 'export model as sbml';
-=cut
 # fba_to_excel_file
 lives_ok{
         $impl->fba_to_excel_file({
@@ -408,21 +387,7 @@ lives_ok{
 			workspace_name => "chenry:narrative_1504151898593"
         })
     } 'export fba as tsv';
-=cut
-# export_fba_as_excel_file
-lives_ok{
-        $impl->export_fba_as_excel_file({
-           input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
-        })
-    } 'export fba as excel';
 
-# export_fba_as_tsv_file
-lives_ok{
-        $impl->export_fba_as_tsv_file({
-           input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
-        })
-    } 'export fba as tsv';
-=cut
 # tsv_file_to_media
 lives_ok{
         $impl->tsv_file_to_media({
@@ -472,21 +437,7 @@ lives_ok{
 			workspace_name => get_ws_name()
         })
     } 'media to excel file';
-=cut
-# export_media_as_excel_file
-lives_ok{
-        $impl->export_media_as_excel_file({
-            input_ref => get_ws_name()."/tsv_media"
-        })
-    } 'export media as excel';
 
-# export_media_as_tsv_file
-lives_ok{
-        $impl->export_media_as_tsv_file({
-            input_ref => get_ws_name()."/tsv_media"
-        })
-    } 'export media as tsv';
-=cut
 # tsv_file_to_phenotype_set
 lives_ok{
         $impl->tsv_file_to_phenotype_set({
@@ -505,14 +456,7 @@ lives_ok{
 			workspace_name => "chenry:narrative_1504151898593"
         })
     } 'export phenotypes as tsv';
-=cut
-# export_phenotype_set_as_tsv_file
-lives_ok{
-        $impl->export_phenotype_set_as_tsv_file({
-			input_ref => "chenry:narrative_1504151898593/SB2B_biolog_data"
-        })
-    } 'export phenotypes as tsv';
-=cut
+
 # phenotype_simulation_set_to_excel_file
 lives_ok{
         $impl->phenotype_simulation_set_to_excel_file({
@@ -528,7 +472,74 @@ lives_ok{
 			workspace_name => "jjeffryes:narrative_1502586048308"
         })
     } 'phenosim to tsv';
+
+# bulk_export_objects
+lives_ok{
+        $impl->bulk_export_objects({
+            refs => [ "7601/20/9", "7601/18/9" ],
+	        workspace => "jjeffryes:narrative_1502586048308",
+	        all_media => 1,
+	        media_format => "excel"
+        })
+    } 'bulk export of modeling objects';
+
 =cut
+# export_model_as_excel_file
+lives_ok{
+        $impl->export_model_as_excel_file({
+           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
+        })
+    } 'export model as excel';
+
+# export_model_as_tsv_file
+lives_ok{
+        $impl->export_model_as_tsv_file({
+           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
+        })
+    } 'export model as tsv';
+
+# export_model_as_sbml_file
+lives_ok{
+        $impl->export_model_as_sbml_file({
+           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
+        })
+    } 'export model as sbml';
+
+# export_fba_as_excel_file
+lives_ok{
+        $impl->export_fba_as_excel_file({
+           input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
+        })
+    } 'export fba as excel';
+
+# export_fba_as_tsv_file
+lives_ok{
+        $impl->export_fba_as_tsv_file({
+           input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
+        })
+    } 'export fba as tsv';
+
+# export_media_as_excel_file
+lives_ok{
+        $impl->export_media_as_excel_file({
+            input_ref => get_ws_name()."/tsv_media"
+        })
+    } 'export media as excel';
+
+# export_media_as_tsv_file
+lives_ok{
+        $impl->export_media_as_tsv_file({
+            input_ref => get_ws_name()."/tsv_media"
+        })
+    } 'export media as tsv';
+
+# export_phenotype_set_as_tsv_file
+lives_ok{
+        $impl->export_phenotype_set_as_tsv_file({
+			input_ref => "chenry:narrative_1504151898593/SB2B_biolog_data"
+        })
+    } 'export phenotypes as tsv';
+
 # export_phenotype_simulation_set_as_excel_file
 lives_ok{
         $impl->export_phenotype_simulation_set_as_excel_file({
@@ -543,15 +554,6 @@ lives_ok{
         })
     } 'export phenotype sim set as tsv';
 =cut
-# bulk_export_objects
-lives_ok{
-        $impl->bulk_export_objects({
-            refs => [ "7601/20/9", "7601/18/9" ],
-	        workspace => "jjeffryes:narrative_1502586048308",
-	        all_media => 1,
-	        media_format => "excel"
-        })
-    } 'bulk export of modeling objects';
 
 done_testing();
 
