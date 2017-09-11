@@ -90,7 +90,7 @@ lives_ok{
             media_id                    => "Carbon-D-Glucose",
             media_workspace             => "chenry:narrative_1504151898593",
             fbamodel_output_id          => "test_propagated_model",
-            workspace                   => "chenry:narrative_1504151898593",
+            workspace                   => get_ws_name(),
             keep_nogene_rxn             => 1,
             gapfill_model               => 0,
             custom_bound_list           => [],
