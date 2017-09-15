@@ -2166,7 +2166,6 @@ sub translate_model {
 	}, @_);
 	my $protcomp = $args->{proteome_comparison};
 	my $genome = $self->genome();
-	print $genome->id();
 	my $ftrs = $genome->features();
 	my $numftrs = @{$ftrs};
 	my $ftrhash;
@@ -2282,15 +2281,22 @@ sub translate_model {
 			features => $extra_features
 		});
 	}
+	$self->translate_to_localrefs();
 	return {};
 }
 
 sub translate_to_localrefs {
 	my $self = shift;
+	my %seen = ();
 	my $compartments = $self->modelcompartments();
     for (my $i=0; $i < @{$compartments}; $i++) {
 		if ($compartments->[$i]->compartment_ref() =~ m/\/([^\/]+)$/) {
-    		$compartments->[$i]->compartment_ref("~/template/compartments/id/".$1);
+			if (! $seen{ $1 }++) {
+				$compartments->[$i]->compartment_ref("~/template/compartments/id/" . $1);
+			} else {
+				print "Removeing duplicated compartment: ".$compartments->[$i]->label()."\n";
+				$self->remove("modelcompartments",$compartments->[$i]);
+			}
 		}
     }
 	my $compounds = $self->modelcompounds();
