@@ -31,6 +31,7 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
+
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -91,7 +92,7 @@ lives_ok{
             fbamodel_output_id          => "test_propagated_model",
             workspace                   => get_ws_name(),
             keep_nogene_rxn             => 1,
-            gapfill_model               => 1,
+            gapfill_model               => 0,
             custom_bound_list           => [],
             media_supplement_list       => "",
             minimum_target_flux         => 0.1,
@@ -102,16 +103,15 @@ lives_ok{
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
-            fbamodel_id            => "test_model",
-            phenotypeset_id        => "test_biolog_data",
-            phenotypeset_workspace => "jjeffryes:narrative_1502586048308",
-            phenotypesim_output_id => "phenotype_simulation_test",
-            workspace              => get_ws_name(),
+            fbamodel_id            => "sbml_test",
+            phenotypeset_id        => "tsv_phenotypeset",
+            phenotypesim_output_id => "custom_phenotype_sim",
+            workspace              => "jjeffryes:narrative_1502586048308",
             gapfill_phenotypes     => 1,
             fit_phenotype_data     => 0,
             target_reaction        => "bio1"
         })
-    } "simulate_growth_on_phenotype_data";
+    } "simulate_growth_on_phenotype_data_w_bounds";
 
 # compare_models
 lives_ok{
@@ -147,14 +147,125 @@ lives_ok{
     } "build_multiple_metabolic_models";
 
 # compare_fba_solutions
+lives_ok{
+        $impl->compare_fba_solutions({
+            fba_id_list => ["8248/168/1", "8248/166/1"],
+			fbacomparison_output_id => "fba_comparison",
+			workspace => "chenry:narrative_1504151898593",
+        })
+    } "compare_fba_solutions";
 
 # merge_metabolic_models_into_community_model
+lives_ok{
+        $impl->merge_metabolic_models_into_community_model({
+            fbamodel_id_list => ["8248/162/23", "8248/15/1"],
+			fbamodel_output_id => "Community_model",
+			workspace => "chenry:narrative_1504151898593",
+			mixed_bag_model => 1
+        })
+    } "merge_metabolic_models_into_community_model";
 
 # compare_flux_with_expression
 
 # edit_metabolic_model
+lives_ok{
+        $impl->edit_metabolic_model({
+            workspace => "chenry:narrative_1504151898593",
+			fbamodel_id => "test_model",
+	    	compounds_to_add => [{
+	    		add_compound_id => "testcompound_c0",
+                add_compartment_id => "c0",
+                add_compound_name => "test_compound_name",
+                add_compound_charge => 0,
+                add_compound_formula => "C4H4"
+	    	},{
+	    		add_compound_id => "testcompound_e0",
+                add_compartment_id => "e0",
+                add_compound_name => "test_compound_name",
+                add_compound_charge => 0,
+                add_compound_formula => "C4H4"
+	    	}],
+	    	compounds_to_change => [{
+	    		compound_id => "cpd00036_c0",
+                compound_name => "testname",
+                compound_charge => 0,
+                compound_formula => "C4H4"
+	    	}],
+	    	biomasses_to_add => [{
+	    		biomass_name => "TestBiomass",
+				biomass_dna => 0,
+				biomass_rna => 0,
+				biomass_protein => 1,
+				biomass_cellwall => 0,
+				biomass_lipid => 0,
+				biomass_cofactor => 0,
+				biomass_energy => 0
+			}],
+	    	biomass_compounds_to_change => [{
+	    		biomass_id => "bio1",
+                biomass_compound_id => "cpd00220_c0",
+				biomass_coefficient => 0
+	    	},{
+	    		biomass_id => "bio1",
+                biomass_compound_id => "cpd15352_c0",
+				biomass_coefficient => -0.004
+	    	}],
+	    	reactions_to_remove => [
+	    		"rxn00016_c0"
+	    	],
+	    	reactions_to_change => [{
+	    		change_reaction_id => "rxn00015_c0",
+                change_reaction_name => "testname",
+                change_reaction_direction => "<",
+				change_reaction_gpr => "(fig|211586.9.peg.3166 and fig|211586.9.peg.3640)"
+	    	}],
+	    	reactions_to_add => [{
+	    		add_reaction_id => "rxn00021_c0",
+                reaction_compartment_id => "c0",
+                add_reaction_name => undef,
+                add_reaction_direction => undef,
+				add_reaction_gpr => "fig|211586.9.peg.3166",
+	    	},{
+	    		add_reaction_id => "testcustomreaction",
+                reaction_compartment_id => "c0",
+                add_reaction_name => "test_transporter",
+                add_reaction_direction => ">",
+				add_reaction_gpr => "fig|211586.9.peg.3166",
+	    	}],
+	    	edit_compound_stoichiometry => [{
+	    		stoich_reaction_id => "testcustomreaction_c0",
+                stoich_compound_id => "testcompound_c0",
+                stoich_coefficient =>  -1
+	    	},{
+	    		stoich_reaction_id => "testcustomreaction_c0",
+                stoich_compound_id => "testcompound_e0",
+                stoich_coefficient => 1
+	    	},{
+	    		stoich_reaction_id => "rxn00022_c0",
+                stoich_compound_id => "cpd00179_c0",
+                stoich_coefficient => 0
+	    	}],
+	    	fbamodel_output_id => "edited_model"
+        })
+    }, "Edit Model";
 
 # edit_media
+lives_ok{
+        $impl->edit_media({
+            workspace => "chenry:narrative_1504151898593",
+			media_output_id => "edited_media",
+			media_id => "BaseMedia",
+	    	compounds_to_remove => "cpd00204",
+	    	compounds_to_change => [{change_id => "cpd00001",change_concentration => 0.1,change_minflux => -100,change_maxflux => 1}],
+	    	compounds_to_add => [{add_id => "Acetate",add_concentration => 0.1,add_minflux => -100,add_maxflux => 1}],
+	    	pH_data => "8",
+	    	temperature => 303,
+	    	source_id => "edit_media_test_source_id",
+	    	source => "edit_media_test_source",
+	    	type => "test",
+	    	isDefined => 1
+        })
+    } "Edit Media";
 
 # excel_file_to_model
 lives_ok{
@@ -259,28 +370,7 @@ lives_ok{
 			workspace_name => "chenry:narrative_1504151898593"
         })
     } 'export model as tsv';
-=cut
-# export_model_as_excel_file
-lives_ok{
-        $impl->export_model_as_excel_file({
-           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
-        })
-    } 'export model as excel';
-		
-# export_model_as_tsv_file
-lives_ok{
-        $impl->export_model_as_tsv_file({
-           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
-        })
-    } 'export model as tsv';
 
-# export_model_as_sbml_file
-lives_ok{
-        $impl->export_model_as_sbml_file({
-           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
-        })
-    } 'export model as sbml';
-=cut
 # fba_to_excel_file
 lives_ok{
         $impl->fba_to_excel_file({
@@ -296,27 +386,13 @@ lives_ok{
 			workspace_name => "chenry:narrative_1504151898593"
         })
     } 'export fba as tsv';
-=cut
-# export_fba_as_excel_file
-lives_ok{
-        $impl->export_fba_as_excel_file({
-           input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
-        })
-    } 'export fba as excel';
 
-# export_fba_as_tsv_file
-lives_ok{
-        $impl->export_fba_as_tsv_file({
-           input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
-        })
-    } 'export fba as tsv';
-=cut
 # tsv_file_to_media
 lives_ok{
         $impl->tsv_file_to_media({
             media_file => {path => "/kb/module/test/data/media_example.tsv"},
 	        media_name => "tsv_media",
-            workspace_name     => get_ws_name()
+            workspace_name => get_ws_name()
         })
     } 'TSV to media';
 
@@ -360,7 +436,97 @@ lives_ok{
 			workspace_name => get_ws_name()
         })
     } 'media to excel file';
+
+# tsv_file_to_phenotype_set
+lives_ok{
+        $impl->tsv_file_to_phenotype_set({
+            phenotype_set_file => {path => "/kb/module/test/data/phenotype_simulation.tsv"},
+	        phenotype_set_name => "tsv_phenotypeset",
+	        workspace_name => get_ws_name(),
+	        genome_workspace => "chenry:narrative_1504151898593",
+	        genome => "Shewanella_amazonensis_SB2B"
+        })
+    } 'import phenotype set from tsv';
+
+lives_ok{
+    $impl->tsv_file_to_phenotype_set({
+                phenotype_set_file => {path => "/kb/module/test/data/NewPhenotypeSet.tsv"},
+                phenotype_set_name => "tsv_phenotypeset",
+                workspace_name => "jjeffryes:narrative_1502586048308",
+                genome => "Escherichia_coli_K-12_MG1655"
+        })
+    }, 'TSV to Phenotype Set';
+
+# phenotype_set_to_tsv_file
+lives_ok{
+        $impl->phenotype_set_to_tsv_file({
+            phenotype_set_name => "tsv_phenotypeset",
+			workspace_name => "jjeffryes:narrative_1502586048308"
+        })
+    } 'export phenotypes as tsv';
+
+# phenotype_simulation_set_to_excel_file
+lives_ok{
+        $impl->phenotype_simulation_set_to_excel_file({
+            phenotype_simulation_set_name => "custom_phenotype_sim",
+			workspace_name => "jjeffryes:narrative_1502586048308"
+        })
+    } 'phenosim to excel';
+
+# phenotype_simulation_set_to_tsv_file
+lives_ok{
+        $impl->phenotype_simulation_set_to_tsv_file({
+            phenotype_simulation_set_name => "custom_phenotype_sim",
+			workspace_name => "jjeffryes:narrative_1502586048308"
+        })
+    } 'phenosim to tsv';
+
+# bulk_export_objects
+lives_ok{
+        $impl->bulk_export_objects({
+            refs => [ "7601/20/9", "7601/18/9" ],
+	        workspace => "jjeffryes:narrative_1502586048308",
+	        all_media => 1,
+	        media_format => "excel"
+        })
+    } 'bulk export of modeling objects';
+
 =cut
+# export_model_as_excel_file
+lives_ok{
+        $impl->export_model_as_excel_file({
+           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
+        })
+    } 'export model as excel';
+
+# export_model_as_tsv_file
+lives_ok{
+        $impl->export_model_as_tsv_file({
+           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
+        })
+    } 'export model as tsv';
+
+# export_model_as_sbml_file
+lives_ok{
+        $impl->export_model_as_sbml_file({
+           input_ref => "chenry:narrative_1504151898593/test_model_minimal"
+        })
+    } 'export model as sbml';
+
+# export_fba_as_excel_file
+lives_ok{
+        $impl->export_fba_as_excel_file({
+           input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
+        })
+    } 'export fba as excel';
+
+# export_fba_as_tsv_file
+lives_ok{
+        $impl->export_fba_as_tsv_file({
+           input_ref => "chenry:narrative_1504151898593/test_minimal_fba"
+        })
+    } 'export fba as tsv';
+
 # export_media_as_excel_file
 lives_ok{
         $impl->export_media_as_excel_file({
@@ -374,49 +540,14 @@ lives_ok{
             input_ref => get_ws_name()."/tsv_media"
         })
     } 'export media as tsv';
-=cut
-# tsv_file_to_phenotype_set
-lives_ok{
-        $impl->tsv_file_to_phenotype_set({
-            phenotype_set_file => {path => "/kb/module/test/data/phenotype_simulation.tsv"},
-	        phenotype_set_name => "tsv_phenotypeset",
-	        workspace_name => get_ws_name(),
-	        genome_workspace => "chenry:narrative_1504151898593",
-	        genome => "Shewanella_amazonensis_SB2B"
-        })
-    } 'import phenotype set from tsv';
 
-# phenotype_set_to_tsv_file
-lives_ok{
-        $impl->phenotype_set_to_tsv_file({
-            phenotype_set_name => "SB2B_biolog_data",
-			workspace_name => "chenry:narrative_1504151898593"
-        })
-    } 'export phenotypes as tsv';
-=cut
 # export_phenotype_set_as_tsv_file
 lives_ok{
         $impl->export_phenotype_set_as_tsv_file({
 			input_ref => "chenry:narrative_1504151898593/SB2B_biolog_data"
         })
     } 'export phenotypes as tsv';
-=cut
-# phenotype_simulation_set_to_excel_file
-lives_ok{
-        $impl->phenotype_simulation_set_to_excel_file({
-            phenotype_simulation_set_name => "phenotype_simulation",
-			workspace_name => "jjeffryes:narrative_1502586048308"
-        })
-    } 'phenosim to excel';
 
-# phenotype_simulation_set_to_tsv_file
-lives_ok{
-        $impl->phenotype_simulation_set_to_tsv_file({
-            phenotype_simulation_set_name => "phenotype_simulation",
-			workspace_name => "jjeffryes:narrative_1502586048308"
-        })
-    } 'phenosim to tsv';
-=cut
 # export_phenotype_simulation_set_as_excel_file
 lives_ok{
         $impl->export_phenotype_simulation_set_as_excel_file({
@@ -431,15 +562,6 @@ lives_ok{
         })
     } 'export phenotype sim set as tsv';
 =cut
-# bulk_export_objects
-lives_ok{
-        $impl->bulk_export_objects({
-            refs => [ "7601/20/9", "7601/18/9" ],
-	        workspace => "jjeffryes:narrative_1502586048308",
-	        all_media => 1,
-	        media_format => "excel"
-        })
-    } 'bulk export of modeling objects';
 
 done_testing();
 
