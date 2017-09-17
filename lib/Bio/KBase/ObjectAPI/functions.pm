@@ -242,6 +242,9 @@ sub util_build_fba {
 		}
 		$fbaobj->PrepareForGapfilling($input);
 	}
+	if (defined($params->{save_fluxes})) {
+		$fbaobj->parameters()->{"save phenotype simulation fluxes"} = 1;
+	}
 	if(defined($params->{MFASolver})){
 		$fbaobj->parameters()->{"MFASolver"}=$params->{MFASolver};
 	}
@@ -941,6 +944,7 @@ sub func_simulate_growth_on_phenotype_data {
 		fbamodel_workspace => $params->{workspace},
 		phenotypeset_workspace => $params->{workspace},
 		thermodynamic_constraints => 0,
+		save_fluxes => 0,
 		all_reversible => 0,
 		feature_ko_list => [],
 		reaction_ko_list => [],

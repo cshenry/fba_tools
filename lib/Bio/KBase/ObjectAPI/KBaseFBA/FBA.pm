@@ -2747,7 +2747,7 @@ sub parseFBAPhenotypeOutput {
 						my @fluxList = split(/;/,$row->[10]);
 						for (my $j=0; $j < @fluxList; $j++) {
 							my @temp = split(/:/,$fluxList[$j]);
-							$phenoOutputHash->{$row->[0]}->{fluxes}->{$temp[0]} = $temp[1];
+							$phenoOutputHash->{$row->[0]}->{fluxes}->{$temp[0]} = $temp[1]+0;
 						}
 					}
 				}

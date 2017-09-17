@@ -23,7 +23,7 @@ has simulatedGrowth => (is => 'rw', isa => 'Num', printOrder => '-1', type => 'a
 has simulatedGrowthFraction => (is => 'rw', isa => 'Num', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has id => (is => 'rw', isa => 'Str', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
 has phenoclass => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
-
+has fluxes => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 
 # LINKS:
 has phenotype => (is => 'rw', type => 'link(PhenotypeSet,phenotypes,phenotype_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_phenotype', clearer => 'clear_phenotype', isa => 'Bio::KBase::ObjectAPI::KBasePhenotypes::Phenotype', weak_ref => 1);
@@ -94,10 +94,18 @@ my $attributes = [
             'name' => 'phenoclass',
             'type' => 'Str',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'fluxes',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {gapfilledReactions => 0, phenotype_ref => 1, numGapfilledReactions => 2, simulatedGrowth => 3, simulatedGrowthFraction => 4, id => 5, phenoclass => 6};
+my $attribute_map = {gapfilledReactions => 0, phenotype_ref => 1, numGapfilledReactions => 2, simulatedGrowth => 3, simulatedGrowthFraction => 4, id => 5, phenoclass => 6,fluxes => 7};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

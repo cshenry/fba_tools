@@ -66,6 +66,23 @@
          "id" : "fit_phenotype_data"
       },
       {
+         "default_values" : [
+            "0"
+         ],
+         "advanced" : true,
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "save_fluxes"
+      },
+      {
          "id" : "target_reaction",
          "field_type" : "textsubdata",
          "allow_multiple" : false,
@@ -285,6 +302,10 @@
             {
                "input_parameter" : "fit_phenotype_data",
                "target_property" : "fit_phenotype_data"
+            },
+            {
+               "input_parameter" : "save_fluxes",
+               "target_property" : "save_fluxes"
             },
             {
                "input_parameter" : "phenotypesim_output_id",
