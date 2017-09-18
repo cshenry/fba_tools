@@ -1018,7 +1018,7 @@ sub printTSV {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
 	my $output = {
-		compounds_table => ["id\tname\tformula\tcharge\tinchikey\tsmiles\tdeltaG(kcal/mol)\tkegg id"],
+		compounds_table => ["id\tname\tformula\tcharge\tinchikey\tsmiles\tdeltag\tkegg id"],
 		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tenzyme\tdeltag\treference\tequation\tdefinition\tbigg id\tkegg id\tkegg pathways\tmetacyc pathways"]
 	};
 	my $kegghash = Bio::KBase::utilities::kegg_hash();
@@ -1094,17 +1094,13 @@ sub printTSV {
 				$rxndata = $rxnhash->{$baseid};
 			}
 		}
-		my $keggid = "";
-		if (defined($rxndata) && defined($rxndata->{kegg_aliases}->[0])) {
-			$keggid = $rxndata->{kegg_aliases}->[0];
-		}
 		my $deltag = "";
 		if (defined($rxndata) && defined($rxndata->{deltag}) && $rxndata->{deltag} != 10000000) {
 			$deltag = $rxndata->{deltag};
 		}
 		my $ec = "";
 		if (defined($rxndata) && defined($rxndata->{ec_numbers}) && defined($rxndata->{ec_numbers}->[0])) {
-			$ec = join("|"@{$rxndata->{ec_numbers}});
+			$ec = join("|", @{$rxndata->{ec_numbers}});
 		}
 		my $biggid = "";
 		if (defined($rxndata) && defined($rxndata->{bigg_aliases}) && defined($rxndata->{bigg_aliases}->[0])) {
@@ -1115,8 +1111,8 @@ sub printTSV {
 			$keggid = $rxndata->{kegg_aliases}->[0];
 		}
 		my $keggpath = "";
-		if (defined($rxndata) && defined($rxndata->{ec_numbers}) && defined($rxndata->{ec_numbers}->[0])) {
-			$keggpath = join("|"@{$rxndata->{ec_numbers}});
+		if (defined($rxndata) && defined($rxndata->{kegg_pathways}) && defined($rxndata->{kegg_pathways}->[0])) {
+			$keggpath = join("|", @{$rxndata->{kegg_pathways}});
 		}
 		my $metapath = "";
 		if (defined($rxndata) && defined($rxndata->{metacyc_pathways}) && defined($rxndata->{metacyc_pathways}->[0])) {
