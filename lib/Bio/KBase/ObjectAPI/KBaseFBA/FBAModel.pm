@@ -1056,12 +1056,14 @@ sub printTSV {
 		my $inchikey = "";
 		if (defined($compounds->[$i]->inchikey()) && length($compounds->[$i]->inchikey()) > 0) {
 			$inchikey = $compounds->[$i]->inchikey();
+		} elsif (defined($cpddata) && defined($cpddata->{inchikey})) {
+			$inchikey = $cpddata->{inchikey};
 		}
 		my $smiles = "";
 		if (defined($compounds->[$i]->smiles()) && length($compounds->[$i]->smiles()) > 0) {
 			$smiles = $compounds->[$i]->smiles();
-		} elsif (defined($cpddata) && defined($cpddata->{structure})) {
-			$smiles = $cpddata->{structure};
+		} elsif (defined($cpddata) && defined($cpddata->{smiles})) {
+			$smiles = $cpddata->{smiles};
 		}
 		my $deltag = "";
 		if (defined($cpddata) && defined($cpddata->{deltag}) && $cpddata->{deltag} != 10000000) {
