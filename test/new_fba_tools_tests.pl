@@ -270,7 +270,7 @@ lives_ok{
 # excel_file_to_model
 lives_ok{
         $impl->excel_file_to_model({
-            model_file => {path => "/kb/module/test/data/test_model.xls"},
+            model_file => {path => "/kb/module/test/data/test_model.xlsx"},
 	        model_name => "excel_import",
 	        workspace_name => "jjeffryes:narrative_1502586048308",
             genome         => "Escherichia_coli_K-12_MG1655",

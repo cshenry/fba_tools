@@ -2020,8 +2020,8 @@ sub excel_file_to_model
 	};
 	my $file_path = $self->util_get_file_path($p->{model_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $sheets = $self->util_parse_excel($file_path);
-	my $compounds = (grep { $_ =~ /Compound/ } keys %$sheets)[0];
-	my $reactions = (grep { $_ =~ /Reaction/ } keys %$sheets)[0];
+	my $compounds = (grep { $_ =~ /Compound/i } keys %$sheets)[0];
+	my $reactions = (grep { $_ =~ /Reaction/i } keys %$sheets)[0];
     $input->{reactions} = $self->util_parse_input_table($sheets->{$reactions},[
 		["id",1],
 		["direction",0,"="],
