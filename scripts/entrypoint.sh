@@ -13,15 +13,6 @@ elif [ "${1}" = "async" ] ; then
   sh ./scripts/run_async.sh
 elif [ "${1}" = "init" ] ; then
   echo "Initialize module"
-  cd /data
-  curl http://bioseed.mcs.anl.gov/~chenry/Reactions.json > /data/Reactions.json
-  curl http://bioseed.mcs.anl.gov/~chenry/Compounds.json > /data/Compounds.json
-  curl http://bioseed.mcs.anl.gov/~chenry/KEGG_pathways > /data/KEGG_pathways
-  if [ -e /data/Reactions.json ] ; then
-  	touch __READY__
-  else
-    echo "Init failed"
-  fi
 elif [ "${1}" = "bash" ] ; then
   bash
 elif [ "${1}" = "report" ] ; then
