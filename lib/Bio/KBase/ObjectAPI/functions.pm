@@ -66,11 +66,11 @@ sub util_build_fba {
 	my $exphash = {};
 	if (defined($params->{expseries_id})) {
 		$handler->util_log("Retrieving expression matrix.");
-		$exp_matrix = $handler->util_get_object($params->{expseries_workspace}."/".$params->{expseries_id});
+		$exp_matrix = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{expseries_id},$params->{expseries_workspace}));
 		if (!defined($params->{expression_condition})) {
 			Bio::KBase::utilities::error("Input must specify the column to select from the expression matrix");
 		}
-		$exphash = Bio::KBase::ObjectAPI::functions::util_build_expression_hash($exp_matrix,$params->{expression_condition});
+		$exphash = util_build_expression_hash($exp_matrix,$params->{expression_condition});
 	}
 	my $fbaobj = Bio::KBase::ObjectAPI::KBaseFBA::FBA->new({
 		id => $id,
@@ -195,8 +195,8 @@ sub util_build_fba {
 		}
 	}
 	if (defined($params->{probanno_id})) {
-		$handler->util_log("Getting reaction likelihoods from ".$params->{probanno_workspace}."/".$params->{probanno_id});
-		my $rxnprobs = $handler->util_get_object($params->{probanno_workspace}."/".$params->{probanno_id});
+		$handler->util_log("Getting reaction likelihoods from ".$params->{probanno_id});
+		my $rxnprobs = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{probanno_id},$params->{probanno_workspace}));
 		$fbaobj->{parameters}->{"Objective coefficient file"} = "ProbModelReactionCoefficients.txt";
 		$fbaobj->{inputfiles}->{"ProbModelReactionCoefficients.txt"} = [];
 		my $rxncosts = {};
@@ -207,7 +207,7 @@ sub util_build_fba {
 			push(@{$fbaobj->{inputfiles}->{"ProbModelReactionCoefficients.txt"}},"forward\t".$rxn."\t".$rxncosts->{$rxn});
 			push(@{$fbaobj->{inputfiles}->{"ProbModelReactionCoefficients.txt"}},"reverse\t".$rxn."\t".$rxncosts->{$rxn});
 		}
-		$handler->util_log("Added reaction coefficients from reaction likelihoods in ".$params->{probanno_workspace}."/".$params->{probanno_id});
+		$handler->util_log("Added reaction coefficients from reaction likelihoods");
  	}
 	if (defined($exp_matrix) || (defined($gapfilling) && $gapfilling == 1)) {
 		if ($params->{minimum_target_flux} < 0.1) {
@@ -585,11 +585,11 @@ sub func_run_flux_balance_analysis {
 		shift(@{$media->{elements}});
 		my $array = [split(/\//,$firstmedia)];
 		$params->{media_id} = pop(@{$array});
-		$media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+		$media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
 	}
 	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
 	$handler->util_log("Preparing flux balance analysis problem.");
-	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
 	if (defined($params->{mediaset_id})) {
 		$fba->mediaset_ref($params->{mediaset_workspace}."/".$params->{mediaset_id});
 	}
@@ -959,10 +959,10 @@ sub func_simulate_growth_on_phenotype_data {
 	});
 	if (!defined($model)) {
 		$handler->util_log("Retrieving model.");
-		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 	}
 	$handler->util_log("Retrieving phenotype set.");
-	my $pheno = $handler->util_get_object($params->{phenotypeset_workspace}."/".$params->{phenotypeset_id});
+	my $pheno = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{phenotypeset_id},$params->{phenotypeset_workspace}));
 	if ( $params->{all_transporters} ) {
 		$model->addPhenotypeTransporters({phenotypes => $pheno,positiveonly => 0});
 	} elsif ( $params->{positive_transporters} ) {
@@ -1081,9 +1081,9 @@ sub func_compare_flux_with_expression {
 		maximize_agreement => 0
 	});
 	$handler->util_log("Retrieving FBA solution.");
-	my $fb = $handler->util_get_object($params->{fba_workspace}."/".$params->{fba_id});
+	my $fb = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fba_id},$params->{fba_workspace}));
    	$handler->util_log("Retrieving expression matrix.");
-   	my $em = $handler->util_get_object($params->{expseries_workspace}."/".$params->{expseries_id});
+   	my $em = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{expseries_id},$params->{expseries_workspace}));
 	$handler->util_log("Retrieving FBA model.");
 	my $fm = $fb->fbamodel();
 	$handler->util_log("Retriveing genome.");
@@ -1433,9 +1433,9 @@ sub func_check_model_mass_balance {
 		fbamodel_workspace => $params->{workspace},
 	});
 	$handler->util_log("Retrieving model.");
-	my $model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+	my $model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 	my $media = $handler->util_get_object("KBaseMedia/Complete");
-	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,"tempfba",0,0,undef);
+	my $fba = util_build_fba($params,$model,$media,"tempfba",0,0,undef);
 	$fba->parameters()->{"Mass balance atoms"} = "C;S;P;O;N";
 	$handler->util_log("Checking model mass balance.");
    	my $objective = $fba->runFBA();
@@ -1516,7 +1516,7 @@ sub func_create_or_edit_media {
 		mediacompounds => [],
 	};
 	if (defined($params->{media_id})) {
-		$media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id},{raw => 1});
+		$media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}),{raw => 1});
 	}
 	$media->{id} = $params->{media_output_id};
 	$media->{name} = $params->{media_output_id};
@@ -1685,7 +1685,7 @@ sub func_edit_metabolic_model {
 	#Getting genome
 	$handler->util_log("Loading model from workspace");
 	if (!defined($model)) {
-		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 	}
 	(my $editresults,my $detaileditresults) = $model->edit_metabolic_model({
 		compounds_to_add => $params->{compounds_to_add},
@@ -1745,7 +1745,7 @@ sub func_quantitative_optimization {
 	$handler->util_log("Loading model from workspace");
 	if (!defined($model)) {
 		$handler->util_log("Retrieving model.");
-		$model = $handler->util_get_object($params->{fbamodel_workspace}."/".$params->{fbamodel_id});
+		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 	}
 	if (!defined($params->{media_id})) {
 		$params->{default_max_uptake} = 100;
@@ -1753,7 +1753,7 @@ sub func_quantitative_optimization {
 		$params->{media_workspace} = "KBaseMedia";
 	}
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");
-	my $media = $handler->util_get_object($params->{media_workspace}."/".$params->{media_id});
+	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
 	$handler->util_log("Preparing flux balance analysis problem.");
 	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
 	$fba->RunQuantitativeOptimization({
@@ -2388,7 +2388,7 @@ sub func_import_phenotype_set {
 		type => "unspecified",
 		ignore_errors => 0
 	});
-	my $genomeobj = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome},{});
+	my $genomeobj = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{genome},$params->{genome_workspace}));
 	my $phenoset = Bio::KBase::ObjectAPI::KBasePhenotypes::PhenotypeSet->new({
 		id => $params->{phenotypeset_id},
 		source_id => $params->{phenotypeset_id},
@@ -2431,7 +2431,7 @@ sub func_importmodel {
 		$params->{template_workspace} = "NewKBaseModelTemplates";
 		$params->{template_id} = "GramNegModelTemplate";
 	}
-	my $genomeobj = $handler->util_get_object($params->{genome_workspace}."/".$params->{genome},{});
+	my $genomeobj = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{genome},$params->{genome_workspace}),{});
 	#RETRIEVING THE TEMPLATE FOR THE MODEL
 	if ($params->{template_id} eq "auto") {
 		$params->{template_workspace} = "NewKBaseModelTemplates";
@@ -2456,7 +2456,7 @@ sub func_importmodel {
 		$params->{template_workspace} = "NewKBaseModelTemplates";
 		$params->{template_id} = "CoreModelTemplate";
 	}
-	my $templateobj = $handler->util_get_object($params->{template_workspace}."/".$params->{template_id},{});
+	my $templateobj = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}),{});
 	#HANDLING SBML FILENAMES IF PROVIDED
 	if (defined($params->{model_file})) {
 		$params->{model_file} = $handler->util_get_file_path($params->{model_file});
@@ -3104,7 +3104,7 @@ sub func_export {
 		path => Bio::KBase::utilities::conf("fba_tools","scratch")
 	});
 	my $ref;
-	if ($args->{file_util} == 1) {
+	if ($args->{file_util} == 1 && !defined $params->{input_ref}) {
 		$ref = $params->{workspace_name}."/";
 		if ($args->{object} eq "phenosim") {
 			$ref .= $params->{phenotype_simulation_set_name};
