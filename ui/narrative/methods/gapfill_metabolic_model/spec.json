@@ -9,11 +9,13 @@
             },
             {
                "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
+               "input_parameter" : "fbamodel_id",
+               "target_type_transform": "ref"
             },
             {
                "input_parameter" : "media_id",
-               "target_property" : "media_id"
+               "target_property" : "media_id",
+               "target_type_transform": "ref"
             },
             {
                "input_parameter" : "target_reaction",

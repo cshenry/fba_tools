@@ -321,7 +321,8 @@
 		},
 		{
 			"target_property" : "media_id",
-			"input_parameter" : "media_id"
+			"input_parameter" : "media_id",
+           "target_type_transform": "ref"
 		},
 		{
 			"target_property" : "media_output_id",
