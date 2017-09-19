@@ -24,6 +24,11 @@ sub util_save_object {
 	return $handler->util_save_object($ref,$parameters);
 }
 
+sub util_get_ref{
+	my $metadata = shift;
+	return $metadata->[6]."/".$metadata->[0]."/".$metadata->[4]
+}
+
 sub util_build_expression_hash {
 	my ($exp_matrix,$exp_condition) = @_;
 	my $exphash = {};
@@ -234,7 +239,7 @@ sub util_build_fba {
 			$input->{expsample} = $exphash;
 			$input->{expression_threshold_percentile} = $params->{exp_threshold_percentile};
 			$input->{kappa} = $params->{exp_threshold_margin};
-			$fbaobj->expression_matrix_ref($params->{expseries_workspace}."/".$params->{expseries_id});
+			$fbaobj->expression_matrix_ref(Bio::KBase::utilities::buildref($params->{expseries_id},$params->{expseries_workspace}));
 			$fbaobj->expression_matrix_column($params->{expression_condition});
 		}
 		if (defined($source_model)) {
@@ -500,7 +505,7 @@ sub func_gapfill_metabolic_model {
 		$params->{gapfill_output_id} = $params->{fbamodel_output_id}.".".$gfid;
 	}
 	$fba->id($params->{gapfill_output_id});
-	$wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{gapfill_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
+	my $wsmeta2 = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{gapfill_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
 	$htmlreport .= "</p>";
 	if ($printreport == 1) {
 		$htmlreport .= Bio::KBase::utilities::gapfilling_html_table()."</div>";
@@ -509,8 +514,8 @@ sub func_gapfill_metabolic_model {
 	return {
 		new_fbamodel => $model,
 		html_report => $htmlreport,
-		new_fba_ref => $params->{workspace}."/".$params->{fbamodel_output_id}.".".$gfid,
-		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},
+		new_fba_ref => util_get_ref($wsmeta2),
+		new_fbamodel_ref => util_get_ref($wsmeta),
 		number_gapfilled_reactions => 0,
 		number_removed_biomass_compounds => 0
 	};
@@ -622,7 +627,7 @@ sub func_run_flux_balance_analysis {
 	$fba->id($params->{fba_output_id});
 	my $wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{fba_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
 	return {
-		new_fba_ref => $params->{workspace}."/".$params->{fba_output_id},
+		new_fba_ref => util_get_ref($wsmeta),
 		objective => $objective
 	};
 }
@@ -859,7 +864,7 @@ sub func_compare_fba_solutions {
 	$handler->util_log("Saving FBA comparison object.");
 	my $wsmeta = $handler->util_save_object($fbacomp,Bio::KBase::utilities::buildref($params->{fbacomparison_output_id},$params->{workspace}),{type => "KBaseFBA.FBAComparison"});
 	return {
-		new_fbacomparison_ref => $params->{workspace}."/".$params->{fbacomparison_output_id}
+		new_fbacomparison_ref => util_get_ref($wsmeta)
 	};
 }
 
@@ -934,7 +939,7 @@ sub func_propagate_model_to_new_genome {
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
 		my $wsmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
-		$output->{new_fbamodel_ref} = $params->{workspace}."/".$params->{fbamodel_output_id};
+		$output->{new_fbamodel_ref} = util_get_ref($wsmeta);
 	}
 	return $output;
 }
@@ -1026,7 +1031,7 @@ sub func_simulate_growth_on_phenotype_data {
 	$fba->phenotypesimulationset_ref($phenoset->_reference());
 	$wsmeta = $handler->util_save_object($fba,$params->{workspace}."/".$params->{phenotypesim_output_id}.".fba",{hidden => 1,type => "KBaseFBA.FBA"});
 	return {
-		new_phenotypesim_ref => $params->{workspace}."/".$params->{phenotypesim_output_id}
+		new_phenotypesim_ref => util_get_ref($wsmeta)
 	};
 }
 
@@ -1067,7 +1072,7 @@ sub func_merge_metabolic_models_into_community_model {
 	my $wsmeta = $handler->util_save_object($genomeObj,$params->{workspace}."/".$params->{fbamodel_output_id}.".genome",,{type => "KBaseGenomes.Genome"});
 	$wsmeta = $handler->util_save_object($commdl,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	return {
-		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id}
+		new_fbamodel_ref => util_get_ref($wsmeta)
 	};
 }
 
@@ -1416,12 +1421,12 @@ sub func_compare_flux_with_expression {
 	$handler->util_log("Saving FBAPathwayAnalysis object.");
 	my $meta = $handler->util_save_object($all_analyses->[0],$params->{workspace}."/".$params->{fbapathwayanalysis_output_id},{hash => 1,type => "KBaseFBA.FBAPathwayAnalysis"});
 	my $outputobj = {
-		new_fbapathwayanalysis_ref => $params->{workspace}."/".$params->{fbapathwayanalysis_output_id}
+		new_fbapathwayanalysis_ref => util_get_ref($meta)
 	};
 	if (@{$all_analyses} > 1) {
 		for (my $m=1; $m < @{$all_analyses}; $m++) {
 			$meta = $handler->util_save_object($all_analyses->[$m],$params->{workspace}."/".$params->{fbapathwayanalysis_output_id}.".".$m,{hash => 1,type => "KBaseFBA.FBAPathwayAnalysis"});
-			push(@{$outputobj->{additional_fbapathwayanalysis_ref}},$params->{workspace}."/".$params->{fbapathwayanalysis_output_id}.".".$m);
+			push(@{$outputobj->{additional_fbapathwayanalysis_ref}},util_get_ref($meta));
 		}
 	}
 	return $outputobj;
@@ -1657,7 +1662,7 @@ sub func_create_or_edit_media {
 	my $mediaobjcpds = $mediaobj->mediacompounds();
 	my $wsmeta = $handler->util_save_object($mediaobj,$params->{workspace}."/".$params->{media_output_id});
    	return {
-		new_media_ref => $params->{workspace}."/".$params->{media_output_id},
+		new_media_ref => util_get_ref($wsmeta),
 		report_name => $params->{media_output_id}.".create_or_edit_media.report",
 		ws_report_id => $params->{workspace}.'/'.$params->{media_output_id}.".create_or_edit_media.report"
 	};
@@ -1713,7 +1718,7 @@ sub func_edit_metabolic_model {
 	$message .= "Reactions removed:".join("\n",@{$editresults->{reactions_removed}})."\n";
 	Bio::KBase::utilities::print_report_message({message => $message,append => 0,html => 0});
    	return {
-		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id},
+		new_fbamodel_ref => util_get_ref($wsmeta),
 		detailed_edit_results => $detaileditresults
    	};
 }
@@ -1776,7 +1781,7 @@ sub func_quantitative_optimization {
 	$model->AddQuantitativeOptimization($fba,1);
 	$handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	return {
-		new_fbamodel_ref => $params->{workspace}."/".$params->{fbamodel_output_id}
+		new_fbamodel_ref => util_get_ref($wsmeta)
 	};
 }
 
@@ -2286,11 +2291,11 @@ sub func_compare_models {
 	$mc->{families} = [values %$mc_families];
 	$mc->{protcomp_ref} = $params->{protcomp_ref} if (defined $params->{protcomp_ref});
 	$mc->{pangenome_ref} = $params->{pangenome_ref} if (defined $params->{pangenome_ref});
-	my $mc_metadata = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});
+	my $wsmeta = $handler->util_save_object($mc,$params->{workspace}."/".$params->{mc_name},{hash => 1,type => "KBaseFBA.ModelComparison"});
 	Bio::KBase::utilities::print_report_message({message => "The compounds, reactions, genes, and biomass compositions in the following ".@{$models}." models were compared:".join("; ",@{$modelnames}).".",append => 0,html => 0});
 	Bio::KBase::utilities::print_report_message({message => " All models shared a common set of ".$core_compounds." compounds, ".$core_reactions." reactions, and ".$core_bcpds." biomass compounds.",append => 1,html => 0});
 	return {
-		'mc_ref' => $params->{workspace}."/".$params->{mc_name}
+		'mc_ref' => util_get_ref($wsmeta)
 	};
 }
 
@@ -2375,8 +2380,8 @@ sub func_import_media {
 		push(@{$media->{mediacompounds}},$newcpd);
 	}
 	#Saving media in database
-	my $mc_metadata = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});
-	return { ref => $mc_metadata->[6]."/".$mc_metadata->[0]."/".$mc_metadata->[4] };
+	my $wsmeta = $handler->util_save_object($media,$params->{workspace}."/".$params->{media_id},{type => "KBaseBiochem.Media",hash => 1});
+	return { ref => util_get_ref($wsmeta) };
 }
 
 sub func_import_phenotype_set {
@@ -2405,8 +2410,8 @@ sub func_import_phenotype_set {
 		data => $params->{data},
 		biochem => $bio
 	});
-	my $mc_metadata = $handler->util_save_object($phenoset,$params->{workspace}."/".$params->{phenotypeset_id},{type => "KBasePhenotypes.PhenotypeSet"});
-	return { ref => $mc_metadata->[6]."/".$mc_metadata->[0]."/".$mc_metadata->[4] };
+	my $wsmeta = $handler->util_save_object($phenoset,$params->{workspace}."/".$params->{phenotypeset_id},{type => "KBasePhenotypes.PhenotypeSet"});
+	return { ref => util_get_ref($wsmeta) };
 }
 
 sub func_importmodel {
@@ -3091,7 +3096,7 @@ sub func_importmodel {
 	}
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace_name}."/".$params->{model_name},{type => "KBaseFBA.FBAModel"});
 	Bio::KBase::utilities::log("Saved new FBA Model to: ".$params->{workspace_name}."/".$params->{model_name}."\n");
-	return { ref => $wsmeta->[6]."/".$wsmeta->[0]."/".$wsmeta->[4] };
+	return { ref => util_get_ref($wsmeta) };
 }
 
 sub func_export {
