@@ -2281,7 +2281,6 @@ sub translate_model {
 			features => $extra_features
 		});
 	}
-	$self->translate_to_localrefs();
 	return {};
 }
 

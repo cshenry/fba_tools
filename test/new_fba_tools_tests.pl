@@ -31,7 +31,7 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
-
+=cut
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -59,9 +59,9 @@ lives_ok{
 lives_ok{
         $impl->run_flux_balance_analysis({
             fbamodel_id => "8248/15/1",
-	        media_id => "8248/10/1",
+	        #media_id => "8248/10/1",
 	        fba_output_id =>  "test_minimal_fba",
-	        workspace => get_ws_name(),
+	        workspace => "jjeffryes:narrative_1502586048308",
 	        target_reaction => "bio1",
             fva => 1,
             minimize_flux => 1
@@ -92,7 +92,7 @@ lives_ok{
             translation_policy          => "add_reactions_for_unique_genes"
         })
     } "propagate_model_to_new_genome";
-
+=cut
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({

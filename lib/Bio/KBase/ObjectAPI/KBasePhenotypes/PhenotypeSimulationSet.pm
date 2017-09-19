@@ -122,5 +122,15 @@ sub export_text {
     return $output;
 }
 
+sub translate_to_localrefs {
+	my $self = shift;
+	for (my $j = 0; $j < @{$self->phenotypeSimulations()}; $j++) {
+		print('hi\n');
+		if ($self->phenotypeSimulations()->[$j]->phenotype_ref() =~ m/\/([^\/]+)$/) {
+			$self->phenotypeSimulations()->[$j]->phenotype_ref("~/phenotypeset/phenotypes/id/" . $1);
+		}
+	}
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

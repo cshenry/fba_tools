@@ -278,6 +278,10 @@ sub serializeToDB {
     my ($self) = @_;
     my $data = {};
 	$self->fix_references();
+	if ($self->can('translate_to_localrefs')) {
+		print("Converting to local references\n");
+		$self->translate_to_localrefs();
+	}
 	$data = { __VERSION__ => $self->__version__() } if defined $self->__version__();
     my $attributes = $self->_attributes();
     foreach my $item (@{$attributes}) {
