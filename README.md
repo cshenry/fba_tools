@@ -4,15 +4,30 @@
 
 ## OVERVIEW
 -----------------------------------------
-This SDK Module contains methods relating to the reconstruction and analysis of metabolic models in KBase.
+This SDK Module contains methods relating to the reconstruction and analysis of
+metabolic models in KBase. Check out the [Developer Guide](developer_guide.md)
+for an overview on the module structure and help getting started. 
 
 ## Release notes
+------------------------------------------
+### VERSION: 1.6.7 (Released 9/19/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Added the ability to specify custom bounds on additional compounds and 
+reactions in a phenotype set
+- Model download now includes many additional information types like 
+thermodynamics, pathways and chemical structure
+- Flux information from phenotype sets are retained for inspection
+- Fixed duplicate compartments in propagate model
+- Fixed Genome ID not being updated for propagate model
+
 ------------------------------------------
 ### VERSION: 1.6.6 (Released 9/6/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
-- Corrected bugs in media editing and model merging
+- Corrected bugs in media editing and SBML model upload
 - Adding internal functional support for batch FBA (no UI yet)
+- Inchikey and SMILES may be uploaded to models
 
 ------------------------------------------
 ### VERSION: 1.6.5 (Released 8/23/2017)
