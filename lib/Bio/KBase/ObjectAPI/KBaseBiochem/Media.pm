@@ -136,5 +136,14 @@ sub printExchange {
 	return $output;
 }
 
+sub translate_to_localrefs {
+	my $self = shift;
+	for (my $j = 0; $j < @{$self->mediacompounds()}; $j++) {
+		print('hi\n');
+		if ($self->mediacompounds()->[$j]->compound_ref() =~ m/\/([^\/]+)$/) {
+			$self->mediacompounds()->[$j]->compound_ref("kbase/default/compounds/id" . $1);
+		}
+	}
+}
 __PACKAGE__->meta->make_immutable;
 1;

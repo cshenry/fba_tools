@@ -92,7 +92,7 @@ lives_ok{
             translation_policy          => "add_reactions_for_unique_genes"
         })
     } "propagate_model_to_new_genome";
-=cut
+
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
@@ -156,8 +156,20 @@ lives_ok{
 			mixed_bag_model => 1
         })
     } "merge_metabolic_models_into_community_model";
-
+=cut
 # compare_flux_with_expression
+lives_ok{
+        $impl->compare_flux_with_expression({
+            "estimate_threshold" => 0,
+            "maximize_agreement" => 0,
+            "expression_condition" => "22c.5h_r1[sodium_chloride:0 mM,culture_temperature:22 Celsius,casamino_acids:0.3 mg/mL]",
+            "fba_id"=> "7601/61/1",
+            "fbapathwayanalysis_output_id" => "test",
+            "exp_threshold_percentile" => 0.5,
+            "expseries_id" => "7601/132/1",
+            "workspace" => get_ws_name()
+        })
+    } "compare_flux_with_expression";
 
 # edit_metabolic_model
 lives_ok{
