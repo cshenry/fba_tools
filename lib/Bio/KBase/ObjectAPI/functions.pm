@@ -962,6 +962,7 @@ sub func_view_flux_network {
 		description => "Network viewer",
 		html => 1
 	});
+	return {};
 }
 
 sub func_simulate_growth_on_phenotype_data {
