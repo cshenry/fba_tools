@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.6.5';
-our $GIT_URL = 'git@github.com:cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = '426042da797a499dd30f864d73038cf607af28b6';
+our $VERSION = '1.6.7';
+our $GIT_URL = 'https://github.com/cshenry/fba_tools.git';
+our $GIT_COMMIT_HASH = 'c1ea4db6ec32125a5370c30d1d79b149f38505b6';
 
 =head1 NAME
 
@@ -41,13 +41,15 @@ sub util_finalize_call {
 	my ($self,$params) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","report_name"],{
 		output => {},
+		direct_html_link_index => undef,
 	});
 	if ((!defined(Bio::KBase::utilities::report_html()) || length(Bio::KBase::utilities::report_html()) == 0) && defined(Bio::KBase::utilities::report_message()) && length(Bio::KBase::utilities::report_message()) > 0) {
 		Bio::KBase::utilities::print_report_message({message => "<p>".Bio::KBase::utilities::report_message()."</p>",append => 1,html => 1});
 	}
 	my $reportout = Bio::KBase::kbaseenv::create_report({
     	workspace_name => $params->{workspace},
-    	report_object_name => $params->{report_name}
+    	report_object_name => $params->{report_name},
+    	direct_html_link_index => $params->{direct_html_link_index}
     });
     $params->{output}->{report_ref} = $reportout->{"ref"};
 	$params->{output}->{report_name} = $params->{report_name};
@@ -1409,6 +1411,99 @@ sub merge_metabolic_models_into_community_model
 	my $msg = "Invalid returns passed to merge_metabolic_models_into_community_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'merge_metabolic_models_into_community_model');
+    }
+    return($results);
+}
+
+
+
+
+=head2 view_flux_network
+
+  $results = $obj->view_flux_network($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ViewFluxNetworkParams
+$results is a fba_tools.ViewFluxNetworkResults
+ViewFluxNetworkParams is a reference to a hash where the following keys are defined:
+	fba_id has a value which is a fba_tools.fba_id
+	fba_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+fba_id is a string
+workspace_name is a string
+ViewFluxNetworkResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ViewFluxNetworkParams
+$results is a fba_tools.ViewFluxNetworkResults
+ViewFluxNetworkParams is a reference to a hash where the following keys are defined:
+	fba_id has a value which is a fba_tools.fba_id
+	fba_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+fba_id is a string
+workspace_name is a string
+ViewFluxNetworkResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Merge two or more metabolic models into a compartmentalized community model
+
+=back
+
+=cut
+
+sub view_flux_network
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to view_flux_network:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'view_flux_network');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($results);
+    #BEGIN view_flux_network
+    $self->util_initialize_call($params,$ctx);
+	$results = {};
+	$results = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
+    $self->util_finalize_call({
+		output => $results,
+		workspace => $params->{workspace},
+		report_name => $params->{fba_id}.".view_flux_network.report",
+		direct_html_link_index => 0
+	});
+    #END view_flux_network
+    my @_bad_returns;
+    (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to view_flux_network:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'view_flux_network');
     }
     return($results);
 }
@@ -6010,6 +6105,70 @@ new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 
 a reference to a hash where the following keys are defined:
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+
+=end text
+
+=back
+
+
+
+=head2 ViewFluxNetworkParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fba_id has a value which is a fba_tools.fba_id
+fba_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fba_id has a value which is a fba_tools.fba_id
+fba_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 ViewFluxNetworkResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
 
 
 =end text

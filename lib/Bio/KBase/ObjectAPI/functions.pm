@@ -944,6 +944,27 @@ sub func_propagate_model_to_new_genome {
 	return $output;
 }
 
+sub func_view_flux_network {
+	my ($params) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","fba_id"],{
+		fba_workspace => $params->{workspace}
+	});
+	$handler->util_log("Retrieving FBA.");
+	my $fba = $handler->util_get_object($params->{fba_workspace}."/".$params->{fba_id});
+	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir");
+	if (!-d $path) {
+		File::Path::mkpath ($path);
+	}
+	system("cd ".$path.";tar -xzf ".Bio::KBase::utilities::conf("ModelSEED","network_viewer"));
+	Bio::KBase::utilities::add_report_file({
+		path => $path."NetworkViewer",
+		name => "Network viewer",
+		description => "Network viewer",
+		html => 1
+	});
+	return {};
+}
+
 sub func_simulate_growth_on_phenotype_data {
 	my ($params,$model) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","phenotypeset_id","phenotypesim_output_id"],{
