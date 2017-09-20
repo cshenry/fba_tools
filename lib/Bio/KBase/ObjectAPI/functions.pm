@@ -951,13 +951,13 @@ sub func_view_flux_network {
 	});
 	$handler->util_log("Retrieving FBA.");
 	my $fba = $handler->util_get_object($params->{fba_workspace}."/".$params->{fba_id});
-	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir")."/WebDir";
+	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir");
 	if (!-d $path) {
 		File::Path::mkpath ($path);
 	}
 	system("cd ".$path.";tar -xzf ".Bio::KBase::utilities::conf("ModelSEED","network_viewer"));
 	Bio::KBase::utilities::add_report_file({
-		path => $path,
+		path => $path."/NetworkViewer/",
 		name => "Network viewer",
 		description => "Network viewer",
 		html => 1
