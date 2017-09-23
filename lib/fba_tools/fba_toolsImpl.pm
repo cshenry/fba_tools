@@ -1489,26 +1489,29 @@ sub view_flux_network
     my($results);
     #BEGIN view_flux_network
     $self->util_initialize_call($params,$ctx);
-	$results = {};
-	$results = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
+	my $output = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
     my $meta = $handler->util_save_object({
-	   "direct_html_link_index" : 0,
-	   "html_window_height" : null,
-	   "html_links" : [
+	   direct_html_link_index => 0,
+	   html_window_height => undef,
+	   html_links => [
 	      {
-	         "label" : "Species interaction view",
-	         "name" : "index.html",
-	         "handle" : "KBH_942037",
-	         "description" : "Species interaction view",
-	         "URL" : "https://kbase.us/services/shock-api/node/74e18f6b-90a5-4932-999f-91af83a65f84"
+	         label => "Species interaction view",
+	         name => "index.html",
+	         handle => "KBH_942037",
+	         description => "Species interaction view",
+	         URL => "https://kbase.us/services/shock-api/node/74e18f6b-90a5-4932-999f-91af83a65f84"
 	      }
 	   ],
-	   "file_links" : [],
-	   "direct_html" : null,
-	   "text_message" : null,
-	   "summary_window_height" : null,
-	   "objects_created" : []
+	   file_links => [],
+	   direct_html => undef,
+	   text_message => undef,
+	   summary_window_height => undef,
+	   objects_created => []
 	},$params->{workspace}."/".$params->{fba_id}.".view_flux_network.report",{hash => 1,type => "KBaseReport.Report"});
+    $results = {
+    	report_ref => $meta->[6]."/".$meta->[0]."/".$meta->[4],
+		report_name => $params->{fba_id}.".view_flux_network.report"
+    };
     #END view_flux_network
     my @_bad_returns;
     (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
