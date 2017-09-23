@@ -1490,7 +1490,7 @@ sub view_flux_network
     #BEGIN view_flux_network
     $self->util_initialize_call($params,$ctx);
 	my $output = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
-    my $meta = $handler->util_save_object({
+    my $meta = $self->util_save_object({
 	   direct_html_link_index => 0,
 	   html_window_height => undef,
 	   html_links => [
