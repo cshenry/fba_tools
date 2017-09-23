@@ -1491,12 +1491,24 @@ sub view_flux_network
     $self->util_initialize_call($params,$ctx);
 	$results = {};
 	$results = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
-    $self->util_finalize_call({
-		output => $results,
-		workspace => $params->{workspace},
-		report_name => $params->{fba_id}.".view_flux_network.report",
-		direct_html_link_index => 0
-	});
+    my $meta = $handler->util_save_object({
+	   "direct_html_link_index" : 0,
+	   "html_window_height" : null,
+	   "html_links" : [
+	      {
+	         "label" : "Species interaction view",
+	         "name" : "index.html",
+	         "handle" : "KBH_942037",
+	         "description" : "Species interaction view",
+	         "URL" : "https://kbase.us/services/shock-api/node/74e18f6b-90a5-4932-999f-91af83a65f84"
+	      }
+	   ],
+	   "file_links" : [],
+	   "direct_html" : null,
+	   "text_message" : null,
+	   "summary_window_height" : null,
+	   "objects_created" : []
+	},$params->{workspace}."/".$params->{fba_id}.".view_flux_network.report",{hash => 1,type => "KBaseReport.Report"});
     #END view_flux_network
     my @_bad_returns;
     (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
