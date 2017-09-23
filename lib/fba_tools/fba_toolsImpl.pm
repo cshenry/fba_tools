@@ -25,6 +25,8 @@ use Bio::KBase::ObjectAPI::functions;
 use Bio::KBase::utilities;
 use Bio::KBase::kbaseenv;
 use DataFileUtil::DataFileUtilClient;
+use Bio::KBase::HandleService;
+use Archive::Zip;
 
 #Initialization function for call
 sub util_initialize_call {
@@ -1488,25 +1490,43 @@ sub view_flux_network
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN view_flux_network
-    $self->util_initialize_call($params,$ctx);
+	$self->util_initialize_call($params,$ctx);
 	my $output = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
-    my $meta = $self->util_save_object({
-	   direct_html_link_index => 0,
-	   html_window_height => undef,
-	   html_links => [
-	      {
-	         label => "Species interaction view",
-	         name => "index.html",
-	         handle => "KBH_942037",
-	         description => "Species interaction view",
-	         URL => "https://kbase.us/services/shock-api/node/74e18f6b-90a5-4932-999f-91af83a65f84"
-	      }
-	   ],
-	   file_links => [],
-	   direct_html => undef,
-	   text_message => undef,
-	   summary_window_height => undef,
-	   objects_created => []
+	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir")."zippedhtml";
+	my $zip = Archive::Zip->new();
+	$zip->addTree( $output->{path} );
+	File::Path::mkpath([$path], 1);
+	$zip->writeToFileNamed($path."/NetworkViewer.zip");
+    my $file = $path."/NetworkViewer.zip";
+	my $token = Bio::KBase::utilities::token();
+	my $url   = Bio::KBase::utilities::conf("fba_tools","shock-url");
+	my $attr  = q('{"file":"reporter"}');
+	my $cmd   = 'curl --connect-timeout 100 -s -X POST -F attributes=@- -F upload=@'.$file." $url/node ";
+	$cmd     .= " -H 'Authorization: OAuth $token'";
+	my $out   = `echo $attr | $cmd` or die "Connection timeout uploading file to Shock: $file\n";
+	my $json  = Bio::KBase::ObjectAPI::utilities::FROMJSON($out);
+	$json->{status} == 200 or die "Error uploading file: $file\n".$json->{status}." ".$json->{error}->[0]."\n";
+	my $handle_service = Bio::KBase::HandleService->new(Bio::KBase::utilities::conf("fba_tools","handle-service-url"));
+	my $hid = $handle_service->persist_handle({
+		url => $url,
+		type => 'shock',
+		id => $json->{data}->{id}
+	});
+	my $meta = $self->util_save_object({
+		direct_html_link_index => 0,
+		html_window_height => undef,
+		html_links => [{
+			label => "Species interaction view",
+			name => "index.html",
+			handle => $hid,
+			description => "Species interaction view",
+			URL => $url."/node/".$json->{data}->{id}
+		}],
+		file_links => [],
+		direct_html => undef,
+		text_message => undef,
+		summary_window_height => undef,
+		objects_created => []
 	},$params->{workspace}."/".$params->{fba_id}.".view_flux_network.report",{hash => 1,type => "KBaseReport.Report"});
     $results = {
     	report_ref => $meta->[6]."/".$meta->[0]."/".$meta->[4],

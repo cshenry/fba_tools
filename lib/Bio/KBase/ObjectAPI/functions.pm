@@ -956,13 +956,7 @@ sub func_view_flux_network {
 		File::Path::mkpath ($path);
 	}
 	system("cd ".$path.";tar -xzf ".Bio::KBase::utilities::conf("ModelSEED","network_viewer"));
-	Bio::KBase::utilities::add_report_file({
-		path => $path."/NetworkViewer/",
-		name => "Network viewer",
-		description => "Network viewer",
-		html => 1
-	});
-	return {};
+	return {path => $path."/NetworkViewer"};
 }
 
 sub func_simulate_growth_on_phenotype_data {
