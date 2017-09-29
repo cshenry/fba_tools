@@ -1938,6 +1938,9 @@ sub edit_metabolic_model {
 				}
 			}
 		}
+		if (!defined $params->{compounds_to_add}->[$i]->{add_compartment_id}){
+			Bio::KBase::utilities::error("Must specify a compartment id for new compounds");
+		}
 		my $mdlcpd = $self->add("modelcompounds",{
 			id => $params->{compounds_to_add}->[$i]->{add_compound_id}."_".$params->{compounds_to_add}->[$i]->{add_compartment_id},
 			modelcompartment_ref => "~/modelcompartments/id/".$params->{compounds_to_add}->[$i]->{add_compartment_id},
@@ -2075,6 +2078,9 @@ sub edit_metabolic_model {
 			$rxnobj = $self->template()->biochemistry()->getObject("reactions",$rxnadd->{add_reaction_id});
 		}
 		my $rxnref = "~/template/reactions/id/rxn00000_c";
+		if (!defined $rxnadd->{reaction_compartment_id}){
+			Bio::KBase::utilities::error("Must specify a compartment id for new reactions");
+		}
 		if (defined($rxnobj)) {
 			if (!defined($rxnadd->{add_reaction_name}) || $rxnadd->{add_reaction_name} eq "") {
 				$rxnadd->{add_reaction_name} = $rxnobj->name();
