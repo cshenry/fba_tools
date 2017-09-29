@@ -540,13 +540,13 @@
 			"id" : "add_reaction_id",
 			"field_type" : "text",
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"text_options" : {
 				"valid_ws_types" : []
 			}
 		},
 		{
-         "optional" : true,
+         "optional" : false,
          "allow_multiple" : false,
          "field_type" : "dropdown",
          "dropdown_options" : {
@@ -573,7 +573,7 @@
          },
          "id" : "add_reaction_direction",
          "advanced" : false,
-         "default_values" : [""],
+         "default_values" : ["="],
          "text_options" : {
             "valid_ws_types" : []
          }
@@ -584,7 +584,7 @@
 			"id" : "add_reaction_name",
 			"field_type" : "text",
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"text_options" : {
 				"valid_ws_types" : []
 			}
@@ -633,7 +633,7 @@
 		},
 		{
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"field_type" : "textsubdata",
 			"id" : "reaction_compartment_id",
 			"advanced" : false,
@@ -664,7 +664,7 @@
 		},
 		{
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"field_type" : "textsubdata",
 			"id" : "stoich_reaction_id",
 			"advanced" : false,
@@ -695,7 +695,7 @@
 		},
 		{
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"field_type" : "textsubdata",
 			"id" : "stoich_compound_id",
 			"advanced" : false,
@@ -732,7 +732,7 @@
 			"default_values" : [""],
 			"advanced" : false,
 			"field_type" : "text",
-			"optional" : true,
+			"optional" : false,
 			"allow_multiple" : false
 		}
 	],

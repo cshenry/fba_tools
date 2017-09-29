@@ -174,7 +174,7 @@
          ],
          "advanced" : false,
          "field_type" : "text",
-         "optional" : true,
+         "optional" : false,
          "allow_multiple" : false
       },
       {
@@ -187,7 +187,7 @@
          ],
          "advanced" : false,
          "field_type" : "text",
-         "optional" : true,
+         "optional" : false,
          "allow_multiple" : false
       },
       {
@@ -200,7 +200,7 @@
          ],
          "advanced" : false,
          "field_type" : "text",
-         "optional" : true,
+         "optional" : false,
          "allow_multiple" : false
       },
       {
@@ -213,7 +213,7 @@
          ],
          "advanced" : false,
          "field_type" : "text",
-         "optional" : true,
+         "optional" : false,
          "allow_multiple" : false
       },
       {
