@@ -837,7 +837,7 @@ sub printSBML {
 	push(@{$output},'<listOfCompartments>');
 	for (my $i=0; $i < @{$self->modelcompartments()}; $i++) {
 		my $cmp = $self->modelcompartments()->[$i];
-    	push(@{$output},'<compartment '.$self->CleanNames("id",$cmp->id()).' '.$self->CleanNames("name",$cmp->label()).' />');
+    	push(@{$output},'<compartment '.$self->CleanNames("id","M_".$cmp->id()).' '.$self->CleanNames("name",$cmp->label()).' />');
     }
 	push(@{$output},'</listOfCompartments>');
 	#Printing the list of metabolites involved in the model
@@ -846,13 +846,13 @@ sub printSBML {
 		my $cpd = $self->modelcompounds()->[$i];
 		push(@{$output},'<species '.$self->CleanNames("id",$cpd->id()).' '.$self->CleanNames("name",$cpd->name()).' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="false"/>');
 		if ($cpd->msid() eq "cpd11416" || $cpd->msid() eq "cpd15302" || $cpd->msid() eq "cpd08636" || $cpd->msid() eq "cpd02701") {
-			push(@{$output},'<species '.$self->CleanNames("id",$cpd->msid()."_b").' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
+			push(@{$output},'<species '.$self->CleanNames("id","M_".$cpd->msid()."_b").' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
 		}
 	}
 	for (my $i=0; $i < @{$self->modelcompounds()}; $i++) {
 		my $cpd = $self->modelcompounds()->[$i];
 		if ($cpd->modelCompartmentLabel() =~ m/^e/) {
-			push(@{$output},'<species '.$self->CleanNames("id",$cpd->id()."_b").' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
+			push(@{$output},'<species '.$self->CleanNames("id","M_".$cpd->id()."_b").' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
 		}
 	}
 	push(@{$output},'</listOfSpecies>');
@@ -866,7 +866,7 @@ sub printSBML {
 			$lb = 0;
 			$reversibility = "false";
 		}
-		push(@{$output},'<reaction '.$self->CleanNames("id",$rxn->id()).' '.$self->CleanNames("name",$rxn->name()).' '.$self->CleanNames("reversible",$reversibility).'>');
+		push(@{$output},'<reaction '.$self->CleanNames("id","R_".$rxn->id()).' '.$self->CleanNames("name",$rxn->name()).' '.$self->CleanNames("reversible",$reversibility).'>');
 		push(@{$output},"<notes>");
 		my $ec = $rxn->enzyme();
 		my $keggID = $rxn->kegg();
