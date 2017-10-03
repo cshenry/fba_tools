@@ -2573,6 +2573,7 @@ sub func_importmodel {
 			my $compartment = "c0";
 			my $name;
 			my $id;
+			my $striped_id;
 			my $aliases;
 			my $smiles = "";
 			my $inchikey = "";
@@ -2592,7 +2593,7 @@ sub func_importmodel {
 					}
 					$id =~ s/\!/__/g;
 					#strip the compartment in ID if present
-					$id =~ s/_[a-z]$//;
+					$striped_id = $id =~ s/_[a-z]$//r;
 				} elsif ($nm eq "name") {
 					$name = $value;
 					$name =~ s/_plus_/+/g;
@@ -2702,10 +2703,8 @@ sub func_importmodel {
 			if (!defined($aliases)) {
 				$aliases = [];
 			}
-			if (!defined($cpdidhash->{$id})) {
-				$cpdidhash->{$id} = [$id."_".$compartment,$charge,$formula,$name,$aliases,$smiles,$inchikey];
-				push(@{$params->{compounds}},$cpdidhash->{$id});
-			}
+			# not going to try to deduplicate here(confuseing for users)
+			push(@{$params->{compounds}},[$id."_".$compartment,$charge,$formula,$name,$aliases,$smiles,$inchikey]);
 			$cpdhash->{$sbmlid} = {
 				id => $sbmlid,
 				rootid => $id,
@@ -3025,6 +3024,7 @@ sub func_importmodel {
 	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
 		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
 	}
+	print("Adding Reactions");
 	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
 		if (defined($excludehash->{$i})) {
 			next;

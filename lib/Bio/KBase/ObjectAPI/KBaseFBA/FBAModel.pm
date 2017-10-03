@@ -581,46 +581,54 @@ sub LoadExternalReactionEquation {
 	    			$coef = $1;
 	    			$cpd = $2;
 	    		}
-	    		if ($cpd =~ m/^(.+)\[([a-z]\d*)\]$/) {
-	    			$cpd = $1;
-	    			$compartment = $2;	
-	    		}
-	    		if ($cpd =~m/(.+)_([a-z]\d+)$/) {
+				if ($cpd =~ m/^(.+)\[([a-z]\d*)\]$/) {
 	    			$cpd = $1;
 	    			$compartment = $2;
-	    		}
-	    		if (defined($args->{compounds}->{$cpd}->[5])) {
+                    print("1 $cpd, $compartment\n");
+	    		} elsif ($cpd =~m/(.+)_([a-z]\d+)$/) {
+	    			$cpd = $1;
+	    			$compartment = $2;
+                    print("2 $cpd, $compartment\n");
+	    		} elsif (defined($args->{compounds}->{$cpd}->[5])) {
 	    			$compartment = $args->{compounds}->{$cpd}->[5];
+                    print("3 $cpd, $compartment\n");
 	    		}
-	    		if ($compartment =~ m/([a-z])(\d+)/) {
+				if ($compartment =~ m/([a-z])(\d+)/) {
 	    			$index = $2;
-	    			$compartment = $1;	
+	    			$compartment = $1;
+                    print("4 $index, $compartment\n");
 	    		}
 	    		if ($i == 0) {
 	    			$coef = -1*$coef;
 	    		}
-	    		my $origid = $cpd;
+	    		my $origid = $cpd."_".$compartment.$index;
 	    		$cpd =~ s/\+/PLUS/g;
 	    		$cpd =~ s/[\W_]//g;
 	    		my $cpdobj;
 				my $inchikey = "";
 				my $smiles = "";
-	    		if (defined($args->{compounds}->{$origid}->[3])) {
+
+				my $compound_rec = $args->{compounds}->{$origid};
+				if (!defined $compound_rec){
+					Bio::KBase::ObjectAPI::utilities::error("Undefined compound used as reactant: $origid");
+				}
+				#if compoud has a parsed name
+	    		if (defined($compound_rec->[3])) {
 					# at the moment smiles and inchi always come from source, never templates
-					if (defined($args->{compounds}->{$origid}->[-1])) {
-						$inchikey = $args->{compounds}->{$origid}->[-1];
+					if (defined($compound_rec->[-1])) {
+						$inchikey = $compound_rec->[-1];
 					}
-					if (defined($args->{compounds}->{$origid}->[-2])) {
-						$smiles = $args->{compounds}->{$origid}->[-2];
+					if (defined($compound_rec->[-2])) {
+						$smiles = $compound_rec->[-2];
 					}
-	    			my $name = $args->{compounds}->{$origid}->[3];
+	    			my $name = $compound_rec->[3];
 	    			if ($name =~ m/^(.+)\[([a-z])\]$/) {
 	    				$compartment = $2;
 	    				$name = $1;
 	    			}
 	    			$cpdobj = $self->template()->searchForCompound($name,1);
-	    			if (!defined($cpdobj) && defined($args->{compounds}->{$origid}->[4])) {
-	    				my $aliases = [split(/\|/,$args->{compounds}->{$origid}->[4])];
+	    			if (!defined($cpdobj) && defined($compound_rec->[4])) {
+	    				my $aliases = [split(/\|/,$compound_rec->[4])];
 	    				foreach my $alias (@{$aliases}) {
 	    					if ($alias =~ m/^(.+):(.+)/) {
 	    						$alias = $2;
@@ -655,14 +663,14 @@ sub LoadExternalReactionEquation {
 	    			my $newcpd = 1;
 	    			my $newcpdid = $cpdobj->id();
 	    			my $formula = $cpdobj->formula();
-	    			if (defined($args->{compounds}->{$origid}->[2])) {
-	    				$formula = $args->{compounds}->{$origid}->[2];
+	    			if (defined($compound_rec->[2])) {
+	    				$formula = $compound_rec->[2];
 	    			} else {
 	    				$formula = $cpdobj->formula();
 	    			}
 	    			my $charge;
-	    			if (defined($args->{compounds}->{$origid}->[1])) {
-	    				$charge = $args->{compounds}->{$origid}->[1];
+	    			if (defined($compound_rec->[1])) {
+	    				$charge = $compound_rec->[1];
 	    			} else {
 	    				$charge = $cpdobj->defaultCharge();
 	    			}
@@ -670,10 +678,12 @@ sub LoadExternalReactionEquation {
 	    			my $reference = $cpdobj->_reference();
 	    			if (defined($mdlcpd)) {
 	    				$newcpd = 0;
+=cut
 	    				my $aliases = $mdlcpd->aliases();
 	    				foreach my $alias (@{$aliases}) {
 	    					if ($alias =~ m/^mdlid:(.+)/) {
 	    						if ($1 ne $cpd) {
+                                    print("exception: $1\n");
 	    							$newcpd = 1;
 	    							$newcpdid = $cpd;
 	    							$name = $newcpdid;
@@ -681,9 +691,9 @@ sub LoadExternalReactionEquation {
 	    						}
 	    					}
 	    				}
+=cut
 	    			}
 	    			if ($newcpd == 1) {
-						#print("new compound: $newcpdid\n");
 	    				$mdlcpd = $self->add("modelcompounds",{
 	    					id => $newcpdid."_".$compartment.$index,
 							compound_ref => $reference,
@@ -699,7 +709,7 @@ sub LoadExternalReactionEquation {
 	    		} else {
 	    			$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
 	    			if (!defined($mdlcpd)) {
-	    				if (!defined($args->{compounds}->{$origid})) {
+	    				if (!defined($compound_rec)) {
 	    					Bio::KBase::utilities::log("Ill defined compound:".$cpd."!");
 	    					$cpd =~ s/[^\w]/_/g;
 	    					$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
@@ -718,14 +728,15 @@ sub LoadExternalReactionEquation {
 		    				}
 		    			}
 		    			my $formula = "";
-		    			if (defined($args->{compounds}->{$origid}->[2])) {
-		    				$formula = $args->{compounds}->{$origid}->[2];
+		    			if (defined($compound_rec->[2])) {
+		    				$formula = $compound_rec->[2];
 		    			}
 		    			my $charge = 0;
-		    			if (defined($args->{compounds}->{$origid}->[1])) {
-		    				$charge = $args->{compounds}->{$origid}->[1];
+		    			if (defined($compound_rec->[1])) {
+		    				$charge = $compound_rec->[1];
 		    			}
 		    			if ($newcpd == 1) {
+							print("new custom compound: $origid\n");
 	    					$mdlcpd = $self->add("modelcompounds",{
 		    					id => $cpd."_".$compartment.$index,
 								compound_ref => $self->template()->_reference()."/compounds/id/cpd00000",
@@ -841,7 +852,7 @@ sub printSBML {
 	for (my $i=0; $i < @{$self->modelcompounds()}; $i++) {
 		my $cpd = $self->modelcompounds()->[$i];
 		if ($cpd->modelCompartmentLabel() =~ m/^e/) {
-			push(@{$output},'<species '.$self->CleanNames("id",$cpd->msid()."_b").' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
+			push(@{$output},'<species '.$self->CleanNames("id",$cpd->id()."_b").' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
 		}
 	}
 	push(@{$output},'</listOfSpecies>');
