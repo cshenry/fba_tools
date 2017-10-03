@@ -31,7 +31,7 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
-
+=cut
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -61,7 +61,7 @@ lives_ok{
             fbamodel_id => "8248/15/1",
 	        #media_id => "8248/10/1",
 	        fba_output_id =>  "test_minimal_fba",
-	        workspace => "jjeffryes:narrative_1502586048308",
+	        workspace => get_ws_name(),
 	        target_reaction => "bio1",
             fva => 1,
             minimize_flux => 1
@@ -288,7 +288,7 @@ lives_ok{
             model_file     =>
             { path => "/kb/module/test/data/e_coli_core.xml" },
             model_name     => "sbml_test",
-            workspace_name => get_ws_name(),
+            workspace_name => "jjeffryes:narrative_1502586048308",
             genome         => "7601/4/1",
             biomass        => [ "R_BIOMASS_Ecoli_core_w_GAM" ]
         })
@@ -308,13 +308,24 @@ lives_ok{
 lives_ok{
         $impl->sbml_file_to_model({
             model_file       =>
-            { path => "/kb/module/test/data/Community_model.xml" },
+            { path => "/kb/module/test/data/Community_model.sbml" },
             model_name       => "sbml_test3",
-            workspace_name => get_ws_name(),
+            workspace_name => "jjeffryes:narrative_1502586048308",
             genome         => "7601/4/1",
-            biomass          => [ "bio1" ]
+            biomass          => [ "bio1", "bio2", 'bio3' ]
         })
     } 'SBML import: community model';
+
+lives_ok{
+        $impl->sbml_file_to_model({
+            model_file     =>
+            { path => "/kb/module/test/data/iYL1228.xml" },
+            model_name     => "sbml_test4",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "7601/4/1",
+            biomass        => [ "R_BIOMASS_" ]
+        })
+    } 'SBML import: annother model from BiGG';
 
 dies_ok {
         $impl->sbml_file_to_model({
@@ -328,7 +339,7 @@ dies_ok {
     }, 'SBML import: biomass not found';
 
 # tsv_file_to_model
-lives_ok{
+dies_ok{
         $impl->tsv_file_to_model({
             model_file     =>
             { path => "/kb/module/test/data/FBAModelReactions.tsv" },
@@ -344,7 +355,7 @@ lives_ok{
         $impl->tsv_file_to_model({
             model_file     => { path => "/kb/module/test/data/test_model-reactions.tsv" },
             model_name     => "tsv_import",
-            workspace_name => get_ws_name(),
+            workspace_name => "jjeffryes:narrative_1502586048308",
             genome         => "8248/9/1",
             biomass        => ["bio1"],
             compounds_file => { path => "/kb/module/test/data/test_model-compounds.tsv" }
@@ -357,11 +368,11 @@ lives_ok{
             input_ref => "8248/18/1",
         })
     } 'export model as excel';
-		
+=cut
 # model_to_sbml_file
 lives_ok{
         $impl->model_to_sbml_file({
-            input_ref => "8248/18/1",
+            input_ref => "7601/167",
         })
     } 'export model as sbml';
 
