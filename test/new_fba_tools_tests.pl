@@ -31,7 +31,7 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
-=cut
+
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -156,7 +156,7 @@ lives_ok{
 			mixed_bag_model => 1
         })
     } "merge_metabolic_models_into_community_model";
-=cut
+
 # compare_flux_with_expression
 lives_ok{
         $impl->compare_flux_with_expression({
@@ -292,40 +292,40 @@ lives_ok{
             genome         => "7601/4/1",
             biomass        => [ "R_BIOMASS_Ecoli_core_w_GAM" ]
         })
-    } 'test "R_" prefix';
+    } 'SBML import: test "R_" prefix';
 
 lives_ok{
         $impl->sbml_file_to_model({
             model_file     =>
             { path => "/kb/module/test/data/PUBLIC_150.xml" },
             model_name     => "sbml_test2",
-            workspace_name => get_ws_name(),
-            genome         => "7601/4/1",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
             biomass        => [ "bio00006" ]
         })
-    } 'test "_refference" error';
+    } 'SBML import: test "_refference" error';
 
 lives_ok{
         $impl->sbml_file_to_model({
             model_file       =>
-            { path => "/kb/module/test/data/test_model.sbml" },
+            { path => "/kb/module/test/data/Community_model.xml" },
             model_name       => "sbml_test3",
             workspace_name => get_ws_name(),
             genome         => "7601/4/1",
             biomass          => [ "bio1" ]
         })
-    } 'import model from SBML';
+    } 'SBML import: community model';
 
 dies_ok {
         $impl->sbml_file_to_model({
             model_file     =>
             { path => "/kb/module/test/data/PUBLIC_150.xml" },
             model_name     => "better_fail",
-            workspace_name => get_ws_name(),
-            genome         => "7601/4/1",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "Escherichia_coli_K-12_MG1655",
             biomass        => [ "foo" ]
         })
-    }, 'biomass not found';
+    }, 'SBML import: biomass not found';
 
 # tsv_file_to_model
 lives_ok{
@@ -555,6 +555,7 @@ lives_ok{
         })
     } 'export phenotype sim set as tsv';
 =cut
+
 done_testing();
 
 if (defined($ws_name)) {

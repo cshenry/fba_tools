@@ -639,6 +639,7 @@ sub LoadExternalReactionEquation {
 	    		}
 	    		my $mdlcmp = $self->getObject("modelcompartments",$compartment.$index);
 	    		if (!defined($mdlcmp)) {
+					#print("New compartment: $compartment.$index\n");
 	    			$mdlcmp = $self->add("modelcompartments",{
 	    				id => $compartment.$index,
 						compartment_ref => "~/template/compartments/id/".$compartment,
@@ -682,6 +683,7 @@ sub LoadExternalReactionEquation {
 	    				}
 	    			}
 	    			if ($newcpd == 1) {
+						#print("new compound: $newcpdid\n");
 	    				$mdlcpd = $self->add("modelcompounds",{
 	    					id => $newcpdid."_".$compartment.$index,
 							compound_ref => $reference,
@@ -1112,10 +1114,7 @@ sub printTSV {
 		if (defined($rxndata) && defined($rxndata->{kegg_aliases}) && defined($rxndata->{kegg_aliases}->[0])) {
 			$keggid = $rxndata->{kegg_aliases}->[0];
 		}
-		my $keggpath = "";
-		if (defined($rxndata) && defined($rxndata->{kegg_pathways}) && defined($rxndata->{kegg_pathways}->[0])) {
-			$keggpath = join("|", @{$rxndata->{kegg_pathways}});
-		}
+
 		my $metapath = "";
 		if (defined($rxndata) && defined($rxndata->{metacyc_pathways}) && defined($rxndata->{metacyc_pathways}->[0])) {
 			for (my $j=0; $j < @{$rxndata->{metacyc_pathways}}; $j++) {

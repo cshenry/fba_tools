@@ -164,7 +164,9 @@ our $compartment_trans = {
 	"CCO-VACUOLE" => "v",
 	"CCO-VES-LUM" => "s",
 	"CCO-VESICLE" => "s",
-	"CCO-VESICLE-MEM" => "f"	
+	"CCO-VESICLE-MEM" => "f",
+	"Extracellular" => "e",
+	"Cytosol" => "c",
 };
 
 sub compartment_trans {
