@@ -639,7 +639,7 @@ sub LoadExternalReactionEquation {
 	    		}
 	    		my $mdlcmp = $self->getObject("modelcompartments",$compartment.$index);
 	    		if (!defined($mdlcmp)) {
-					#print("New compartment: $compartment.$index\n");
+					print("New compartment: $compartment$index\n");
 	    			$mdlcmp = $self->add("modelcompartments",{
 	    				id => $compartment.$index,
 						compartment_ref => "~/template/compartments/id/".$compartment,
@@ -2392,7 +2392,8 @@ sub translate_to_localrefs {
 	my $compartments = $self->modelcompartments();
     for (my $i=0; $i < @{$compartments}; $i++) {
 		if ($compartments->[$i]->compartment_ref() =~ m/\/([^\/]+)$/) {
-			if (! $seen{ $1 }++) {
+			my $ind = $compartments->[$i]->compartmentIndex();
+			if (! $seen{ $1.$ind }++) {
 				$compartments->[$i]->compartment_ref("~/template/compartments/id/" . $1);
 			} else {
 				print "Removeing duplicated compartment: ".$compartments->[$i]->label()."\n";
