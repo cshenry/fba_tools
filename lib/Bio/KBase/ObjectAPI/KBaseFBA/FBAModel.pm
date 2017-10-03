@@ -584,19 +584,15 @@ sub LoadExternalReactionEquation {
 				if ($cpd =~ m/^(.+)\[([a-z]\d*)\]$/) {
 	    			$cpd = $1;
 	    			$compartment = $2;
-                    print("1 $cpd, $compartment\n");
 	    		} elsif ($cpd =~m/(.+)_([a-z]\d+)$/) {
 	    			$cpd = $1;
 	    			$compartment = $2;
-                    print("2 $cpd, $compartment\n");
 	    		} elsif (defined($args->{compounds}->{$cpd}->[5])) {
 	    			$compartment = $args->{compounds}->{$cpd}->[5];
-                    print("3 $cpd, $compartment\n");
 	    		}
 				if ($compartment =~ m/([a-z])(\d+)/) {
 	    			$index = $2;
 	    			$compartment = $1;
-                    print("4 $index, $compartment\n");
 	    		}
 	    		if ($i == 0) {
 	    			$coef = -1*$coef;
@@ -678,20 +674,6 @@ sub LoadExternalReactionEquation {
 	    			my $reference = $cpdobj->_reference();
 	    			if (defined($mdlcpd)) {
 	    				$newcpd = 0;
-=cut
-	    				my $aliases = $mdlcpd->aliases();
-	    				foreach my $alias (@{$aliases}) {
-	    					if ($alias =~ m/^mdlid:(.+)/) {
-	    						if ($1 ne $cpd) {
-                                    print("exception: $1\n");
-	    							$newcpd = 1;
-	    							$newcpdid = $cpd;
-	    							$name = $newcpdid;
-	    							$reference = $self->template()->_reference()."/compounds/id/cpd00000";
-	    						}
-	    					}
-	    				}
-=cut
 	    			}
 	    			if ($newcpd == 1) {
 	    				$mdlcpd = $self->add("modelcompounds",{
