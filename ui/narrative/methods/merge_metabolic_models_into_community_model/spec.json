@@ -37,7 +37,8 @@
             },
             {
                "input_parameter" : "fbamodel_id_list",
-               "target_property" : "fbamodel_id_list"
+               "target_property" : "fbamodel_id_list",
+               "target_type_transform": "list<ref>"
             },
             {
                "input_parameter" : "fbamodel_output_id",

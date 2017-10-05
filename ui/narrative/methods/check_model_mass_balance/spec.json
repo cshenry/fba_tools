@@ -11,7 +11,8 @@
             },
             {
                "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
+               "input_parameter" : "fbamodel_id",
+               "target_type_transform": "ref"
             }
          ],
          "name" : "fba_tools",

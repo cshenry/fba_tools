@@ -18,11 +18,13 @@
             },
             {
                "target_property" : "fba_id",
-               "input_parameter" : "fba_id"
+               "input_parameter" : "fba_id",
+               "target_type_transform": "ref"
             },
             {
                "target_property" : "expseries_id",
-               "input_parameter" : "expseries_id"
+               "input_parameter" : "expseries_id",
+               "target_type_transform": "ref"
             },
             {
                "target_property" : "expression_condition",
