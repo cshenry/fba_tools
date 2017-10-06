@@ -156,7 +156,7 @@ lives_ok{
 			mixed_bag_model => 1
         })
     } "merge_metabolic_models_into_community_model";
-=cut
+
 # compare_flux_with_expression
 lives_ok{
         $impl->compare_flux_with_expression({
@@ -452,7 +452,16 @@ lives_ok{
                 genome => "7601/4/1"
         })
     }, 'TSV to Phenotype Set';
-
+=cut
+dies_ok{
+        $impl->tsv_file_to_phenotype_set({
+            phenotype_set_file => {path => "/kb/module/test/data/EmptyPhenotypeSet.tsv"},
+	        phenotype_set_name => "tsv_phenotypeset",
+	        workspace_name => get_ws_name(),
+            genome => "7601/4/1"
+        })
+    } 'import empty phenotype set fails';
+die;
 # phenotype_set_to_tsv_file
 lives_ok{
         $impl->phenotype_set_to_tsv_file({

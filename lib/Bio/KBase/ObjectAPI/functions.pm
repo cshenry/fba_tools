@@ -2410,6 +2410,9 @@ sub func_import_phenotype_set {
 		data => $params->{data},
 		biochem => $bio
 	});
+	if (!scalar(@{$phenoset->phenotypes()})){
+		Bio::KBase::utilities::error("No phenotypes imported. File may be empty or file parseing failed.\n")
+	}
 	my $wsmeta = $handler->util_save_object($phenoset,$params->{workspace}."/".$params->{phenotypeset_id},{type => "KBasePhenotypes.PhenotypeSet"});
 	return { ref => util_get_ref($wsmeta) };
 }
