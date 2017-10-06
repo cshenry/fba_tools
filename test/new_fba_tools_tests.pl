@@ -31,7 +31,7 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
-=cut
+
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -368,7 +368,7 @@ lives_ok{
             input_ref => "8248/18/1",
         })
     } 'export model as excel';
-=cut
+
 # model_to_sbml_file
 lives_ok{
         $impl->model_to_sbml_file({
