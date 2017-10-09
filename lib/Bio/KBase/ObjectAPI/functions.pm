@@ -2483,6 +2483,7 @@ sub func_importmodel {
 	my $genetranslation;
 	# Parse SBML file if provided
 	if (defined($params->{sbml})) {
+		print("Parseing SBML text\n");
 		$params->{compounds} = [];
 		$params->{reactions} = [];
 		require "XML/DOM.pm";
@@ -2490,24 +2491,23 @@ sub func_importmodel {
 		my $doc = $parser->parse($params->{sbml});
 		#Parsing compartments
 		my $cmpts = [$doc->getElementsByTagName("compartment")];
-		my $cmptrans;
 		my $compdata = {};
 		my $custom_comp_index = 0;
 		my $custom_comp_letters = [qw(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)];
 		my $nonexactcmptrans = {
-			xtra => "e",
-			wall => "w",
-			peri => "p",
-			cyto => "c",
-			retic => "r",
-			lys => "l",
-			nucl => "n",
-			chlor => "d",
-			mito => "m",
-			perox => "x",
-			vacu => "v",
-			plast => "d",
-			golg => "g"
+			xtra => "e0",
+			wall => "w0",
+			peri => "p0",
+			cyto => "c0",
+			retic => "r0",
+			lys => "l0",
+			nucl => "n0",
+			chlor => "d0",
+			mito => "m0",
+			perox => "x0",
+			vacu => "v0",
+			plast => "d0",
+			golg => "g0"
 		};
 		foreach my $cmpt (@$cmpts){
 			my $cmp_SEED_id;
@@ -2553,6 +2553,7 @@ sub func_importmodel {
 				}
 			}
 			if (!defined($cmp_SEED_id)) {
+				print("not_defined\n");
 				$cmp_SEED_id = $custom_comp_letters->[$custom_comp_index];
 				$custom_comp_index++;
 			}
@@ -2572,9 +2573,10 @@ sub func_importmodel {
 			my $formula = "Unknown";
 			my $charge = "0";
 			my $sbmlid;
-			my $compartment = "c";
+			my $compartment = "c0";
 			my $name;
 			my $id;
+			my $striped_id;
 			my $aliases;
 			my $smiles = "";
 			my $inchikey = "";
@@ -2593,6 +2595,8 @@ sub func_importmodel {
 						$id = $1.chr($2).$3;
 					}
 					$id =~ s/\!/__/g;
+					#strip the compartment in ID if present
+					$striped_id = $id =~ s/_[a-z]$//r;
 				} elsif ($nm eq "name") {
 					$name = $value;
 					$name =~ s/_plus_/+/g;
@@ -2611,8 +2615,11 @@ sub func_importmodel {
 						$compartment = $1.chr($2).$3;
 					}
 					$compartment =~ s/\!/__/g;
-					if (defined($cmptrans->{$compartment})) {
-						$compartment = $cmptrans->{$compartment};
+					if (defined($comptrans->{$compartment})) {
+						$compartment = $comptrans->{$compartment}
+					}
+					if (length $compartment == 1){
+						$compartment .= "0"
 					}
 				} elsif ($nm eq "charge" || $nm eq "fbc:charge") {
 					$charge = $value;
@@ -2699,10 +2706,8 @@ sub func_importmodel {
 			if (!defined($aliases)) {
 				$aliases = [];
 			}
-			if (!defined($cpdidhash->{$id})) {
-				$cpdidhash->{$id} = [$id,$charge,$formula,$name,$aliases,$smiles,$inchikey];
-				push(@{$params->{compounds}},$cpdidhash->{$id});
-			}
+			# not going to try to deduplicate here(confuseing for users)
+			push(@{$params->{compounds}},[$id."_".$compartment,$charge,$formula,$name,$aliases,$smiles,$inchikey]);
 			$cpdhash->{$sbmlid} = {
 				id => $sbmlid,
 				rootid => $id,
@@ -2725,7 +2730,7 @@ sub func_importmodel {
 			my $direction = "=";
 			my $reactants = "";
 			my $products = "";
-			my $compartment = "c";
+			my $compartment = "c0";
 			my $gpr;
 			my $pathway;
 			my $enzyme;
@@ -2745,6 +2750,10 @@ sub func_importmodel {
 						$id = $1.chr($2).$3;
 					}
 					$id =~ s/\!/__/g;
+					# look for compartment suffix in reaction ID
+					if ($id =~ m/_([a-z])(\d?)$/){
+						$compartment = (length $2) ? $1.$2 : $1."0";
+					}
 					$original_rxn_ids->{$sbmlid} = $rxncount;
 				} elsif ($nm eq "name") {
 					if ($value =~ m/^R_(.+)/) {
@@ -2778,7 +2787,7 @@ sub func_importmodel {
 								if (defined($cpdhash->{$spec})) {
 									$boundary = $cpdhash->{$spec}->{boundary};
 									my $cpt = $cpdhash->{$spec}->{compartment};
-									$spec = $cpdhash->{$spec}->{rootid}."[".$compdata->{$cpt}->{seed}."]";
+									$spec = $cpdhash->{$spec}->{rootid}."[".$cpdhash->{$spec}->{compartment}."]";
 									$cpd_compartments{$cpt} = 1;
 								}
 							} elsif ($attr->getName() eq "stoichiometry") {
@@ -2879,6 +2888,8 @@ sub func_importmodel {
 			$original_rxn_ids->{$params->{reactions}->[$i]->[0]} = $i;
 		}
 	}
+	#print(Dumper($params->{compounds}));
+	#print(Dumper($params->{reactions}));
 	#ENSURING THAT THERE ARE REACTIONS AND COMPOUNDS FOR THE MODEL AT THIS STAGE
 	if (!defined($params->{compounds}) || @{$params->{compounds}} == 0) {
 		Bio::KBase::utilities::error("Must have compounds for model!");
@@ -3016,6 +3027,7 @@ sub func_importmodel {
 	for (my $i=0; $i < @{$params->{compounds}}; $i++) {
 		$compoundhash->{$params->{compounds}->[$i]->[0]} = $params->{compounds}->[$i];
 	}
+	print("Adding Reactions");
 	for (my  $i=0; $i < @{$params->{reactions}}; $i++) {
 		if (defined($excludehash->{$i})) {
 			next;
