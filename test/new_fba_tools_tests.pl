@@ -31,7 +31,7 @@ sub get_ws_name {
     return $ws_name;
 }
 #=head
-=cut
+
 # build_metabolic_model
 lives_ok{
         $impl->build_metabolic_model({
@@ -156,7 +156,7 @@ lives_ok{
 			mixed_bag_model => 1
         })
     } "merge_metabolic_models_into_community_model";
-=cut
+
 # compare_flux_with_expression
 lives_ok{
         $impl->compare_flux_with_expression({
@@ -437,21 +437,30 @@ lives_ok{
 # tsv_file_to_phenotype_set
 lives_ok{
         $impl->tsv_file_to_phenotype_set({
-            phenotype_set_file => {path => "/kb/module/test/data/phenotype_simulation.tsv"},
-	        phenotype_set_name => "tsv_phenotypeset",
+            phenotype_set_file => {path => "/kb/module/test/data/JZ_UW_Phynotype_Set_test.txt"},
+	        phenotype_set_name => "return_delimited",
 	        workspace_name => get_ws_name(),
 	        genome => "8248/9/1"
         })
-    } 'import phenotype set from tsv';
+    } 'TSV to Phenotype Set: import return delimented';
 
 lives_ok{
     $impl->tsv_file_to_phenotype_set({
                 phenotype_set_file => {path => "/kb/module/test/data/NewPhenotypeSet.tsv"},
                 phenotype_set_name => "tsv_phenotypeset",
-                workspace_name => "jjeffryes:narrative_1502586048308",
+                workspace_name => get_ws_name(),
                 genome => "7601/4/1"
         })
-    }, 'TSV to Phenotype Set';
+    }, 'TSV to Phenotype Set: custom columns';
+
+dies_ok{
+        $impl->tsv_file_to_phenotype_set({
+            phenotype_set_file => {path => "/kb/module/test/data/EmptyPhenotypeSet.tsv"},
+	        phenotype_set_name => "tsv_phenotypeset",
+	        workspace_name => get_ws_name(),
+            genome => "7601/4/1"
+        })
+    } 'import empty phenotype set fails';
 
 # phenotype_set_to_tsv_file
 lives_ok{

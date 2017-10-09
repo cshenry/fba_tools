@@ -130,6 +130,12 @@ sub util_parse_input_table {
 	}
 	open(my $fh, "<", $filename) || die "Could not open file ".$filename;
 	my $headingline = <$fh>;
+	my @split_text;
+	if (eof $fh){
+		print('Useing alternate parseing');
+		@split_text = split(/\r/, $headingline);
+		$headingline = shift(@split_text)
+	}
 	$headingline =~ tr/\r\n_//d;#This line removes line endings from nix and windows files and underscores
 	my $delim = undef;
 	if ($headingline =~ m/\t/) {
@@ -140,6 +146,7 @@ sub util_parse_input_table {
 	if (!defined($delim)) {
 		Bio::KBase::utilities::error("$filename either does not use commas or tabs as a separator!");
 	}
+	print($headingline);
 	# remove capitalization for column matching
 	my $headings = [split(/$delim/,lc($headingline))];
 	my $data = [];
@@ -148,6 +155,15 @@ sub util_parse_input_table {
 		push(@{$data},[split(/$delim/,$line)]);
 	}
 	close($fh);
+	# fix for \r delimeted files that perl's fh does not recognize
+	if (@split_text) {
+		while (my $line = shift(@split_text)) {
+			$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+			push(@{$data}, [ split(/$delim/, $line) ]);
+		}
+	}
+	use Data::Dumper;
+	print(Dumper($data));
 	my $headingColumns;
 	for (my $i=0;$i < @{$headings}; $i++) {
 		$headingColumns->{$headings->[$i]} = $i;
