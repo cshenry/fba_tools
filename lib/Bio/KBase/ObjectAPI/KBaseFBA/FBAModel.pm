@@ -2216,7 +2216,7 @@ sub edit_metabolic_model {
 						if ($params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient} == 0) {
 							$mdlrxn->remove("modelReactionReagents",$reactants->[$j]);
 						} else {
-							$reactants->[$j]->coefficient() = $params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient};
+							$reactants->[$j]->coefficient($params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient});
 						}
 						last;
 					}

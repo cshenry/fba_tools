@@ -498,6 +498,7 @@ sub func_gapfill_metabolic_model {
 		Bio::KBase::utilities::error("Analysis completed, but no valid solutions found!");
 	}
 	$handler->util_log("Saving gapfilled model.");
+	$model->genome_ref($model->_reference().";".$model->genome_ref());
 	my $wsmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
 	$handler->util_log("Saving FBA object with gapfilling sensitivity analysis and flux.");
 	$fba->fbamodel_ref($model->_reference());
@@ -900,6 +901,7 @@ sub func_propagate_model_to_new_genome {
 	my $model = $source_model->cloneObject();
 	$model->parent($source_model->parent());
 	$model->id($params->{fbamodel_output_id});
+	$model->genome_ref($source_model->_reference().";".$source_model->genome_ref());
 	$handler->util_log("Retrieving proteome comparison.");
 	my $protcomp = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{proteincomparison_id},$params->{proteincomparison_workspace}));
 	$handler->util_log("Translating model.");
@@ -1020,6 +1022,7 @@ sub func_simulate_growth_on_phenotype_data {
 		}
 		if ($params->{fit_phenotype_data} == 1) {
 			$handler->util_log("Saving gapfilled model.");
+			$model->genome_ref($model->_reference().";".$model->genome_ref());
 			my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 			$fba->fbamodel_ref($model->_reference());
 		}
@@ -1704,6 +1707,7 @@ sub func_edit_metabolic_model {
 	});
 	#Creating message to report all modifications made
 	$handler->util_log("Saving edited model to workspace");
+	$model->genome_ref($model->_reference().";".$model->genome_ref());
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	my $message = "Name of edited model: ".$params->{fbamodel_output_id}."\n";
 	$message .= "Starting from: ".$params->{fbamodel_id}."\n";
@@ -2036,7 +2040,7 @@ sub func_compare_models {
 		push @{$mc_models}, $mc_model;
 		$mc_model->{id} = $model1->{id};
 		$mc_model->{model_ref} = $model1->{model_ref};
-		$mc_model->{genome_ref} = $model1->{genome_ref};
+		$mc_model->{genome_ref} = $model1->{model_ref}.";".$model1->{genome_ref};
 		$mc_model->{families} = exists $model2family{$model1->{id}} ? scalar keys %{$model2family{$model1->{id}}} : 0;
 		eval {
 			$mc_model->{name} = $genomehash->{$model1->{genome_ref}}->{scientific_name};
