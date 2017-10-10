@@ -950,7 +950,7 @@ sub func_view_flux_network {
 		fba_workspace => $params->{workspace}
 	});
 	$handler->util_log("Retrieving FBA.");
-	my $fba = $handler->util_get_object($params->{fba_workspace}."/".$params->{fba_id});
+	my $fba = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fba_id},$params->{fba_workspace}));
 	my $network = {
 		nodes => []
 	};

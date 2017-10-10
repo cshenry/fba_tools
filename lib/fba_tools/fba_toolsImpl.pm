@@ -1527,7 +1527,7 @@ sub view_flux_network
 		text_message => undef,
 		summary_window_height => undef,
 		objects_created => []
-	},$params->{workspace}."/".$params->{fba_id}.".view_flux_network.report",{hash => 1,type => "KBaseReport.Report"});
+	},Bio::KBase::utilities::buildref($params->{fba_id},$params->{workspace}).".view_flux_network.report",{hash => 1,type => "KBaseReport.Report"});
     $results = {
     	report_ref => $meta->[6]."/".$meta->[0]."/".$meta->[4],
 		report_name => $params->{fba_id}.".view_flux_network.report"
