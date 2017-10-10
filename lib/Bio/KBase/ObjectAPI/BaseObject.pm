@@ -679,13 +679,18 @@ sub remove {
 
 sub getLinkedObject {
     my ($self, $ref) = @_;
+	my $debug = 0;
 	my $refchain = $self->ref_chain();
+	print("ref: $ref\n");
+	print("refchain: $refchain\n");
 	if (length($refchain) > 0) {
 		$refchain .= ";";
 	}
 	if ($ref =~ m/^~$/) {
+		print('branch 1') if $debug;
 		return $self->topparent();
 	} elsif ($ref =~ m/(.+)\|\|(.*)/) {
+		print('branch 2') if $debug;
     	my $objpath = $1;
     	my $internalref = $2;
     	if ($objpath !~ m/^\//) {
@@ -701,32 +706,41 @@ sub getLinkedObject {
     		return $obj->queryObject($1,{$2 => $3});
     	}
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print('branch 3') if $debug;
 		my $linkedobject = $1;
 		my $otherlinkedobject = $2;
 		my $field = $3;
     	my $query = {$4 => $5};
 		return $self->topparent()->$linkedobject()->$otherlinkedobject()->queryObject($field,$query);
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print('branch 4') if $debug;
 		my $linkedobject = $1;
 		my $field = $2;
     	my $query = {$3 => $4};
 		return $self->topparent()->$linkedobject()->queryObject($field,$query);
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print('branch 5') if $debug;
 		return $self->topparent()->queryObject($1,{$2 => $3});
 	} elsif ($ref =~ m/^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$/) {
+		print('branch 6') if $debug;
 		return $self->store()->getObjectByUUID($ref);
 	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-]+)$/) {
+		print('branch 7') if $debug;
 		Bio::KBase::ObjectAPI::utilities::error("FAILED!");
 	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-]+$/) {
+		print('branch 8') if $debug;
     	return $self->store()->get_object($refchain.$ref);
     } elsif ($ref =~ m/^([:\w]+\/\w+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print('branch 9') if $debug;
     	my $field = $2;
     	my $query = {$3 => $4};
     	my $object = $self->store()->get_object($refchain.$1);
     	return $object->queryObject($field,$query);
     } elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+$/) {
+		print('branch 10') if $debug;
     	return $self->store()->get_object($refchain.$ref);
     } elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print('branch 11') if $debug;
     	my $field = $2;
     	my $query = {$3 => $4};
     	my $object = $self->store()->get_object($refchain.$1);

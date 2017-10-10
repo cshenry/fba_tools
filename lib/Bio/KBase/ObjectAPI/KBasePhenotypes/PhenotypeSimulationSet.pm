@@ -125,7 +125,6 @@ sub export_text {
 sub translate_to_localrefs {
 	my $self = shift;
 	for (my $j = 0; $j < @{$self->phenotypeSimulations()}; $j++) {
-		print('hi\n');
 		if ($self->phenotypeSimulations()->[$j]->phenotype_ref() =~ m/\/([^\/]+)$/) {
 			$self->phenotypeSimulations()->[$j]->phenotype_ref("~/phenotypeset/phenotypes/id/" . $1);
 		}
