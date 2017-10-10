@@ -331,6 +331,22 @@ class fba_tools(object):
             'fba_tools.merge_metabolic_models_into_community_model',
             [params], self._service_ver, context)
 
+    def view_flux_network(self, params, context=None):
+        """
+        Merge two or more metabolic models into a compartmentalized community model
+        :param params: instance of type "ViewFluxNetworkParams" -> structure:
+           parameter "fba_id" of type "fba_id" (A string representing a FBA
+           id.), parameter "fba_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.)
+        :returns: instance of type "ViewFluxNetworkResults" -> structure:
+           parameter "new_report_ref" of type "ws_report_id" (The workspace
+           ID for a Report object @id ws KBaseReport.Report)
+        """
+        return self._client.call_method(
+            'fba_tools.view_flux_network',
+            [params], self._service_ver, context)
+
     def compare_flux_with_expression(self, params, context=None):
         """
         Merge two or more metabolic models into a compartmentalized community model

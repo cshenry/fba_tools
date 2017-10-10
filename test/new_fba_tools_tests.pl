@@ -157,6 +157,14 @@ lives_ok{
         })
     } "merge_metabolic_models_into_community_model";
 
+# view_flux_network
+lives_ok{
+        $impl->view_flux_network({
+            fba_id => "7601/135/11",
+			workspace => get_ws_name(),
+        })
+    } "view_flux_network";
+
 # compare_flux_with_expression
 lives_ok{
         $impl->compare_flux_with_expression({

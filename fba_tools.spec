@@ -375,6 +375,20 @@ module fba_tools {
          Merge two or more metabolic models into a compartmentalized community model
     */
 	funcdef merge_metabolic_models_into_community_model(MergeMetabolicModelsIntoCommunityModelParams params) returns (MergeMetabolicModelsIntoCommunityModelResults results) authentication required;
+
+	typedef structure {
+		fba_id fba_id;
+		workspace_name fba_workspace;
+		workspace_name workspace;
+    } ViewFluxNetworkParams;
+    
+    typedef structure {
+        ws_report_id new_report_ref;
+    } ViewFluxNetworkResults;
+    /*
+         Merge two or more metabolic models into a compartmentalized community model
+    */
+	funcdef view_flux_network(ViewFluxNetworkParams params) returns (ViewFluxNetworkResults results) authentication required;
 	
 	typedef structure {
 		fba_id fba_id;

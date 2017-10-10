@@ -944,6 +944,166 @@ sub func_propagate_model_to_new_genome {
 	return $output;
 }
 
+sub func_view_flux_network {
+	my ($params) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","fba_id"],{
+		fba_workspace => $params->{workspace}
+	});
+	$handler->util_log("Retrieving FBA.");
+	my $fba = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fba_id},$params->{fba_workspace}));
+	my $network = {
+		nodes => []
+	};
+	my $nodelist;
+	my $extcpdhash = {};
+	my $comphash = {};
+	my $rxns = $fba->FBAReactionVariables();
+	for (my $i=0; $i < @{$rxns}; $i++) {
+		my $rxn = $rxns->[$i];
+		if (abs($rxn->value()) > 0.0000001) {
+			my $mdlrxn = $rxn->modelreaction();
+			my $genome;
+			my $prots = $mdlrxn->modelReactionProteins();
+			for (my $j=0; $j < @{$prots}; $j++) {
+				my $sus = $prots->[$j]->modelReactionProteinSubunits();
+				for (my $k=0; $k < @{$sus}; $k++) {
+					my $ftrs = $sus->[$k]->features();
+					for (my $m=0; $m < @{$ftrs}; $m++) {
+						$genome = $ftrs->[$m]->parent();
+						last;
+					}
+					if (defined($genome)) {
+						last;
+					}
+				}
+				if (defined($genome)) {
+					last;
+				}
+			}
+			my $label;
+			if ($mdlrxn->id() =~ m/_([a-zA-Z]\d+)$/) {
+				$label = $1;
+			}
+			if (!defined($comphash->{$label})) {
+				$comphash->{$label} = {
+					media => 0,
+					node_type => "compound",
+					compound => $label,
+					id => $label,
+					compartment => "e0"
+				};
+				push(@{$nodelist},$comphash->{$label});
+			}
+			if (!defined($comphash->{$label}->{name}) && defined($genome)) {
+				$comphash->{$label}->{name} = "Species_".$label;
+			}
+			my $rgts = $mdlrxn->modelReactionReagents();
+			for (my $j=0; $j < @{$rgts}; $j++) {
+				if ($rgts->[$j]->modelcompound()->id() =~ m/_e0$/ && $rgts->[$j]->modelcompound()->id() !~ m/cpd00067/ && $rgts->[$j]->modelcompound()->id() !~ m/cpd00001/) {
+					if (!defined($extcpdhash->{$rgts->[$j]->modelcompound()->id()})) {
+						my $name = $rgts->[$j]->modelcompound()->name();
+						$name =~ s/_e0$//;
+						my $id = $rgts->[$j]->modelcompound()->id();
+						$id =~ s/_e0$//;
+						if (length($name) > 10) {
+							$name = $id;
+						}
+						$extcpdhash->{$rgts->[$j]->modelcompound()->id()} = {
+							flux => 0,
+							node => {
+								name => $name,
+								media => 0,
+								node_type => "compound",
+								compound => $id,
+								id => $id,
+								compartment => "e0"
+							},
+							species_flux => {}
+						};
+						push(@{$nodelist},$extcpdhash->{$rgts->[$j]->modelcompound()->id()}->{node});
+					}
+					$extcpdhash->{$rgts->[$j]->modelcompound()->id()}->{flux} += $rgts->[$j]->coefficient()*$rxn->value();
+					if (!defined($extcpdhash->{$rgts->[$j]->modelcompound()->id()}->{species_flux}->{$label})) {
+						$extcpdhash->{$rgts->[$j]->modelcompound()->id()}->{species_flux}->{$label} = 0;
+					}
+					$extcpdhash->{$rgts->[$j]->modelcompound()->id()}->{species_flux}->{$label} += $rgts->[$j]->coefficient()*$rxn->value();
+				}
+			}
+		}
+	}
+	for (my $i=0; $i < @{$nodelist}; $i++) {
+		push(@{$network->{nodes}},{
+			data => $nodelist->[$i]
+		});
+	}
+	foreach my $mdlcpd (keys(%{$extcpdhash})) {
+		foreach my $species (keys(%{$extcpdhash->{$mdlcpd}->{species_flux}})) {
+			if ($extcpdhash->{$mdlcpd}->{species_flux}->{$species} > 0.0000001) {
+				push(@{$network->{nodes}},{
+					data => {
+						reaction =>  $mdlcpd."_".$species, 
+		                direction => "=", 
+		                features => [], 
+		                definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0]",
+		                products => [{
+							compartment => "e0", 
+							id => $extcpdhash->{$mdlcpd}->{node}->{id}, 
+							stoich => "1", 
+							compound => $extcpdhash->{$mdlcpd}->{node}->{id}
+						}], 
+		                flux => $extcpdhash->{$mdlcpd}->{species_flux}->{$species}, 
+		                node_type => "reaction", 
+		                reactants => [{
+							compartment => $species, 
+							id => $species, 
+							stoich => "1", 
+							compound => $species
+		                }], 
+		                gapfilled => 0, 
+		                compartment => $species, 
+		                id => $mdlcpd."_".$species, 
+		                name => $mdlcpd."_".$species
+					}
+				});
+			} elsif ($extcpdhash->{$mdlcpd}->{species_flux}->{$species} < -0.0000001) {
+				push(@{$network->{nodes}},{
+					data => {
+						reaction =>  $mdlcpd."_".$species, 
+		                direction => "=", 
+		                features => [], 
+		                definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."]",
+		                reactants => [{
+							compartment => "e0", 
+							id => $extcpdhash->{$mdlcpd}->{node}->{id}, 
+							stoich => "1", 
+							compound => $extcpdhash->{$mdlcpd}->{node}->{id}
+						}], 
+		                flux => abs($extcpdhash->{$mdlcpd}->{species_flux}->{$species}), 
+		                node_type => "reaction", 
+		                products => [{
+							compartment => $species, 
+							id => $species, 
+							stoich => "1", 
+							compound => $species
+		                }], 
+		                gapfilled => 0, 
+		                compartment => $species, 
+		                id => $mdlcpd."_".$species, 
+		                name => $mdlcpd."_".$species
+					}
+				});
+			}
+		}
+	}
+	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir");
+	if (!-d $path) {
+		File::Path::mkpath ($path);
+	}
+	system("cd ".$path.";tar -xzf ".Bio::KBase::utilities::conf("ModelSEED","network_viewer"));
+	Bio::KBase::ObjectAPI::utilities::PRINTFILE($path."/NetworkViewer/data/Network.json",[Bio::KBase::ObjectAPI::utilities::TOJSON($network)]);
+	return {path => $path."/NetworkViewer"};
+}
+
 sub func_simulate_growth_on_phenotype_data {
 	my ($params,$model) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","phenotypeset_id","phenotypesim_output_id"],{
