@@ -11,7 +11,8 @@
             },
             {
                "target_property" : "fba_id",
-               "input_parameter" : "fba_id"
+               "input_parameter" : "fba_id",
+               "target_type_transform": "ref"
             }
          ],
          "name" : "fba_tools",

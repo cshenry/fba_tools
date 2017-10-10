@@ -7,8 +7,7 @@ tooltip  : |
     Views a network of flux through all reactions in an FBA solution.
 
 screenshots :
-    - check_model_mass_balance_input.png
-    - check_model_mass_balance_output.png
+    []
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -42,7 +41,8 @@ icon: fba-teal.png
 
 description : |
     
-    <p>Views a network of flux through all reactions in an FBA solution.</p>
+    <p>Views a network of flux through all reactions in an FBA solution using
+    the metabolic network view developed by the Theoretical biology group at the Mayo Clinic.</p>
     
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry, Matt DeJongh. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+    Chris Henry, James Jeffryes For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
