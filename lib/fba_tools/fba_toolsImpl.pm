@@ -150,7 +150,6 @@ sub util_parse_input_table {
 	if (!defined($delim)) {
 		Bio::KBase::utilities::error("$filename either does not use commas or tabs as a separator!");
 	}
-	print($headingline);
 	# remove capitalization for column matching
 	my $headings = [split(/$delim/,lc($headingline))];
 	my $data = [];
@@ -166,8 +165,6 @@ sub util_parse_input_table {
 			push(@{$data}, [ split(/$delim/, $line) ]);
 		}
 	}
-	use Data::Dumper;
-	print(Dumper($data));
 	my $headingColumns;
 	for (my $i=0;$i < @{$headings}; $i++) {
 		$headingColumns->{$headings->[$i]} = $i;
