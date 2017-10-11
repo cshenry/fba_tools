@@ -146,6 +146,37 @@
 			}
 		},
 		{
+			"allow_multiple" : false,
+			"optional" : false,
+			"field_type" : "textsubdata",
+			"id" : "add_compartment_id",
+			"advanced" : false,
+			"default_values" : [""],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelcompartments"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"label"
+					],
+					"subdata_included" : [
+						"modelcompartments/[*]/id",
+						"modelcompartments/[*]/label"
+					],
+					"description_template" : "- {{label}}"
+				},
+				"multiselection" : false
+			}
+		},
+		{
 			"default_values" : [""],
 			"advanced" : false,
 			"id" : "add_compound_name",
@@ -598,37 +629,6 @@
 			"optional" : true,
 			"text_options" : {
 				"valid_ws_types" : []
-			}
-		},
-		{
-			"allow_multiple" : false,
-			"optional" : true,
-			"field_type" : "textsubdata",
-			"id" : "add_compartment_id",
-			"advanced" : false,
-			"default_values" : [""],
-			"text_options" : {
-				"valid_ws_types" : []
-			},
-			"textsubdata_options" : {
-				"allow_custom" : false,
-				"show_src_obj" : false,
-				"subdata_selection" : {
-					"parameter_id" : "fbamodel_id",
-					"path_to_subdata" : [
-						"modelcompartments"
-					],
-					"selection_id" : "id",
-					"selection_description" : [
-						"label"
-					],
-					"subdata_included" : [
-						"modelcompartments/[*]/id",
-						"modelcompartments/[*]/label"
-					],
-					"description_template" : "- {{label}}"
-				},
-				"multiselection" : false
 			}
 		},
 		{
