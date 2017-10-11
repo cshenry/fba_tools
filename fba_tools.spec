@@ -318,6 +318,7 @@ module fba_tools {
 		expseries_id expseries_id;
 		workspace_name expseries_workspace;
 		string expression_condition;
+		string translation_policy;
 		float exp_threshold_percentile;
 		float exp_threshold_margin;
 		float activation_coefficient;
@@ -346,6 +347,12 @@ module fba_tools {
 		phenotypesim_id phenotypesim_output_id;
 		workspace_name workspace;
 		bool all_reversible;
+		bool gapfill_phenotypes;
+		bool fit_phenotype_data;
+		bool save_fluxes;
+		bool add_all_transporters;
+		bool add_positive_transporters;
+		reaction_id target_reaction;
 		list<feature_id> feature_ko_list;
 		list<reaction_id> reaction_ko_list;
 		list<string> custom_bound_list;
@@ -457,7 +464,14 @@ module fba_tools {
 		workspace_name fbamodel_workspace;
 		ws_fbamodel_id fbamodel_id;
 		ws_fbamodel_id fbamodel_output_id;
-		mapping<string,list<list<string>>> data;
+		list<mapping<string, string>> compounds_to_add;
+		list<mapping<string, string>> compounds_to_change;
+		list<mapping<string, string>> biomasses_to_add;
+		list<mapping<string, string>> biomass_compounds_to_change;
+		list<mapping<string, string>> reactions_to_remove;
+		list<mapping<string, string>> reactions_to_change;
+		list<mapping<string, string>> reactions_to_add;
+		list<mapping<string, string>> edit_compound_stoichiometry;
     } EditMetabolicModelParams;
     
     typedef structure {
@@ -481,6 +495,10 @@ module fba_tools {
 		list<compound_id> compounds_to_remove;
 		list<tuple<compound_id,float concentration,float min_flux,float max_flux>> compounds_to_change;
 		list<tuple<compound_id,float concentration,float min_flux,float max_flux>> compounds_to_add;
+		string pH_data;
+		float temperature;
+		bool isDefined;
+		string type;
 		media_id media_output_id;
     } EditMediaParams;
     
@@ -652,6 +670,7 @@ module fba_tools {
         string media_format;
         string phenotype_format;
         string phenosim_format;
+        string workspace;
     } BulkExportObjectsParams;
     
     typedef structure {

@@ -29,6 +29,10 @@ import us.kbase.common.service.Tuple4;
     "compounds_to_remove",
     "compounds_to_change",
     "compounds_to_add",
+    "pH_data",
+    "temperature",
+    "isDefined",
+    "type",
     "media_output_id"
 })
 public class EditMediaParams {
@@ -45,6 +49,14 @@ public class EditMediaParams {
     private List<Tuple4 <String, Double, Double, Double>> compoundsToChange;
     @JsonProperty("compounds_to_add")
     private List<Tuple4 <String, Double, Double, Double>> compoundsToAdd;
+    @JsonProperty("pH_data")
+    private java.lang.String pHData;
+    @JsonProperty("temperature")
+    private java.lang.Double temperature;
+    @JsonProperty("isDefined")
+    private Long isDefined;
+    @JsonProperty("type")
+    private java.lang.String type;
     @JsonProperty("media_output_id")
     private java.lang.String mediaOutputId;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
@@ -139,6 +151,66 @@ public class EditMediaParams {
         return this;
     }
 
+    @JsonProperty("pH_data")
+    public java.lang.String getPHData() {
+        return pHData;
+    }
+
+    @JsonProperty("pH_data")
+    public void setPHData(java.lang.String pHData) {
+        this.pHData = pHData;
+    }
+
+    public EditMediaParams withPHData(java.lang.String pHData) {
+        this.pHData = pHData;
+        return this;
+    }
+
+    @JsonProperty("temperature")
+    public java.lang.Double getTemperature() {
+        return temperature;
+    }
+
+    @JsonProperty("temperature")
+    public void setTemperature(java.lang.Double temperature) {
+        this.temperature = temperature;
+    }
+
+    public EditMediaParams withTemperature(java.lang.Double temperature) {
+        this.temperature = temperature;
+        return this;
+    }
+
+    @JsonProperty("isDefined")
+    public Long getIsDefined() {
+        return isDefined;
+    }
+
+    @JsonProperty("isDefined")
+    public void setIsDefined(Long isDefined) {
+        this.isDefined = isDefined;
+    }
+
+    public EditMediaParams withIsDefined(Long isDefined) {
+        this.isDefined = isDefined;
+        return this;
+    }
+
+    @JsonProperty("type")
+    public java.lang.String getType() {
+        return type;
+    }
+
+    @JsonProperty("type")
+    public void setType(java.lang.String type) {
+        this.type = type;
+    }
+
+    public EditMediaParams withType(java.lang.String type) {
+        this.type = type;
+        return this;
+    }
+
     @JsonProperty("media_output_id")
     public java.lang.String getMediaOutputId() {
         return mediaOutputId;
@@ -166,7 +238,7 @@ public class EditMediaParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((("EditMediaParams"+" [workspace=")+ workspace)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", compoundsToRemove=")+ compoundsToRemove)+", compoundsToChange=")+ compoundsToChange)+", compoundsToAdd=")+ compoundsToAdd)+", mediaOutputId=")+ mediaOutputId)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((("EditMediaParams"+" [workspace=")+ workspace)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", compoundsToRemove=")+ compoundsToRemove)+", compoundsToChange=")+ compoundsToChange)+", compoundsToAdd=")+ compoundsToAdd)+", pHData=")+ pHData)+", temperature=")+ temperature)+", isDefined=")+ isDefined)+", type=")+ type)+", mediaOutputId=")+ mediaOutputId)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

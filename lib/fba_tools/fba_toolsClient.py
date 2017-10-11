@@ -261,6 +261,7 @@ class fba_tools(object):
            expression matrix id.), parameter "expseries_workspace" of type
            "workspace_name" (A string representing a workspace name.),
            parameter "expression_condition" of String, parameter
+           "translation_policy" of String, parameter
            "exp_threshold_percentile" of Double, parameter
            "exp_threshold_margin" of Double, parameter
            "activation_coefficient" of Double, parameter "omega" of Double,
@@ -294,7 +295,14 @@ class fba_tools(object):
            representing a phenotype simulation id.), parameter "workspace" of
            type "workspace_name" (A string representing a workspace name.),
            parameter "all_reversible" of type "bool" (A binary boolean),
-           parameter "feature_ko_list" of list of type "feature_id" (A string
+           parameter "gapfill_phenotypes" of type "bool" (A binary boolean),
+           parameter "fit_phenotype_data" of type "bool" (A binary boolean),
+           parameter "save_fluxes" of type "bool" (A binary boolean),
+           parameter "add_all_transporters" of type "bool" (A binary
+           boolean), parameter "add_positive_transporters" of type "bool" (A
+           binary boolean), parameter "target_reaction" of type "reaction_id"
+           (A string representing a reaction id.), parameter
+           "feature_ko_list" of list of type "feature_id" (A string
            representing a feature id.), parameter "reaction_ko_list" of list
            of type "reaction_id" (A string representing a reaction id.),
            parameter "custom_bound_list" of list of String, parameter
@@ -429,8 +437,17 @@ class fba_tools(object):
            "ws_fbamodel_id" (The workspace ID for a FBAModel data object. @id
            ws KBaseFBA.FBAModel), parameter "fbamodel_output_id" of type
            "ws_fbamodel_id" (The workspace ID for a FBAModel data object. @id
-           ws KBaseFBA.FBAModel), parameter "data" of mapping from String to
-           list of list of String
+           ws KBaseFBA.FBAModel), parameter "compounds_to_add" of list of
+           mapping from String to String, parameter "compounds_to_change" of
+           list of mapping from String to String, parameter
+           "biomasses_to_add" of list of mapping from String to String,
+           parameter "biomass_compounds_to_change" of list of mapping from
+           String to String, parameter "reactions_to_remove" of list of
+           mapping from String to String, parameter "reactions_to_change" of
+           list of mapping from String to String, parameter
+           "reactions_to_add" of list of mapping from String to String,
+           parameter "edit_compound_stoichiometry" of list of mapping from
+           String to String
         :returns: instance of type "EditMetabolicModelResult" -> structure:
            parameter "report_name" of String, parameter "report_ref" of type
            "ws_report_id" (The workspace ID for a Report object @id ws
@@ -460,8 +477,10 @@ class fba_tools(object):
            list of tuple of size 4: type "compound_id" (A string representing
            a compound id.), parameter "concentration" of Double, parameter
            "min_flux" of Double, parameter "max_flux" of Double, parameter
-           "media_output_id" of type "media_id" (A string representing a
-           Media id.)
+           "pH_data" of String, parameter "temperature" of Double, parameter
+           "isDefined" of type "bool" (A binary boolean), parameter "type" of
+           String, parameter "media_output_id" of type "media_id" (A string
+           representing a Media id.)
         :returns: instance of type "EditMediaResult" -> structure: parameter
            "report_name" of String, parameter "report_ref" of type
            "ws_report_id" (The workspace ID for a Report object @id ws
@@ -840,7 +859,7 @@ class fba_tools(object):
            "bool" (A binary boolean), parameter "model_format" of String,
            parameter "fba_format" of String, parameter "media_format" of
            String, parameter "phenotype_format" of String, parameter
-           "phenosim_format" of String
+           "phenosim_format" of String, parameter "workspace" of String
         :returns: instance of type "BulkExportObjectsResult" -> structure:
            parameter "report_name" of String, parameter "report_ref" of type
            "ws_report_id" (The workspace ID for a Report object @id ws
