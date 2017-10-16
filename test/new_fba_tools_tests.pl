@@ -47,7 +47,7 @@ lives_ok{
 # gapfill_metabolic_model
 lives_ok{
         $impl->gapfill_metabolic_model({
-            fbamodel_id => "8248/15/1",
+            fbamodel_id => "7601/194/1",
 	        media_id => "8248/10/1",
 	        fbamodel_output_id =>  "test_model_minimal",
 	        workspace => get_ws_name(),
@@ -59,7 +59,7 @@ lives_ok{
 lives_ok{
         $impl->run_flux_balance_analysis({
             fbamodel_id => "8248/15/1",
-	        #media_id => "8248/10/1",
+	        media_id => "8248/10/1",
 	        fba_output_id =>  "test_minimal_fba",
 	        workspace => get_ws_name(),
 	        target_reaction => "bio1",
@@ -83,7 +83,7 @@ lives_ok{
             proteincomparison_id        => "8248/14/1",
             media_id                    => "8248/10/1",
             fbamodel_output_id          => "test_propagated_model",
-            workspace                   => get_ws_name(),
+            workspace                   => "jjeffryes:narrative_1502586048308",
             keep_nogene_rxn             => 1,
             gapfill_model               => 0,
             custom_bound_list           => [],
@@ -96,7 +96,7 @@ lives_ok{
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
-            fbamodel_id            => "7601/45",
+            fbamodel_id            => "7601/194/1",
             phenotypeset_id        => "7601/50",
             phenotypesim_output_id => "custom_phenotype_sim",
             workspace              => "jjeffryes:narrative_1502586048308",
@@ -115,10 +115,11 @@ lives_ok{
             workspace     => get_ws_name()
         })
     } 'Compare Models';
+
 lives_ok{
         $impl->compare_models({
             mc_name    => "model_comparison_test",
-            model_refs => [ "8248/12/1", "8248/15/1"],
+            model_refs => [ "7601/194/1", "7601/18/9"],
             workspace  => get_ws_name()
         })
     } 'Compare Models';
@@ -152,7 +153,7 @@ lives_ok{
         $impl->merge_metabolic_models_into_community_model({
             fbamodel_id_list => ["8248/162/23", "8248/15/1"],
 			fbamodel_output_id => "Community_model",
-			workspace => "chenry:narrative_1504151898593",
+			workspace => get_ws_name(),
 			mixed_bag_model => 1
         })
     } "merge_metabolic_models_into_community_model";
@@ -182,8 +183,8 @@ lives_ok{
 # edit_metabolic_model
 lives_ok{
         $impl->edit_metabolic_model({
-            workspace => "chenry:narrative_1504151898593",
-			fbamodel_id => "8248/15/1",
+            workspace => "jjeffryes:narrative_1502586048308",
+			fbamodel_id => "7601/194/1",
 	    	compounds_to_add => [{
 	    		add_compound_id => "testcompound_c0",
                 add_compartment_id => "c0",
@@ -421,6 +422,14 @@ lives_ok{
             workspace_name     => get_ws_name()
         })
     } 'TSV to media 2';
+
+lives_ok{
+        $impl->tsv_file_to_media({
+            media_file => {path => "/kb/module/test/data/medio.tsv"},
+	        media_name => "tsv_media3",
+            workspace_name     => get_ws_name()
+        })
+    } 'TSV to media: blank lines and trailing spaces';
 
 # excel_file_to_media
 lives_ok{

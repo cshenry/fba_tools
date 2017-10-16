@@ -150,24 +150,23 @@ sub util_parse_input_table {
 	if (!defined($delim)) {
 		Bio::KBase::utilities::error("$filename either does not use commas or tabs as a separator!");
 	}
-	print($headingline);
 	# remove capitalization for column matching
 	my $headings = [split(/$delim/,lc($headingline))];
 	my $data = [];
 	while (my $line = <$fh>) {
 		$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
-		push(@{$data},[split(/$delim/,$line)]);
+		#chop up line while accounting for blank lines and leading and trailing spaces
+		push(@{$data},[map{(my $s = $_) =~ s/^\s+|\s+$//g; $s} split(/$delim/,$line)])  if $line;
 	}
 	close($fh);
 	# fix for \r delimeted files that perl's fh does not recognize
 	if (@split_text) {
 		while (my $line = shift(@split_text)) {
 			$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
-			push(@{$data}, [ split(/$delim/, $line) ]);
+			#chop up line while accounting for blank lines and leading and trailing spaces
+			push(@{$data}, [map{(my $s = $_) =~ s/^\s+|\s+$//g; $s} split(/$delim/, $line)]) if $line;
 		}
 	}
-	use Data::Dumper;
-	print(Dumper($data));
 	my $headingColumns;
 	for (my $i=0;$i < @{$headings}; $i++) {
 		$headingColumns->{$headings->[$i]} = $i;
