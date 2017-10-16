@@ -2867,7 +2867,7 @@ sub func_importmodel {
 				$aliases = [];
 			}
 			# not going to try to deduplicate here(confuseing for users)
-			push(@{$params->{compounds}},[$id."_".$compartment,$charge,$formula,$name,$aliases,$smiles,$inchikey]);
+			push(@{$params->{compounds}},[$striped_id."_".$compartment,$charge,$formula,$name,$aliases,$smiles,$inchikey]);
 			$cpdhash->{$sbmlid} = {
 				id => $sbmlid,
 				rootid => $id,

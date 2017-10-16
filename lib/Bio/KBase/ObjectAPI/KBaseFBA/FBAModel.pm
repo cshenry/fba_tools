@@ -439,12 +439,14 @@ sub addModelReaction {
     	$rootid = $1;
     	$args->{compartment} = lc($2);
     } elsif ($rootid =~ m/^(.+)\[([a-zA-Z]+)(\d+)\]$/) {
+		print("3");
     	$rootid = $1;
     	$args->{compartment} = lc($2);
     	$args->{compartmentIndex} = $3;
     }
     #Standardizing and fetching compartment
     if ($args->{compartment} =~ m/^([a-z]+)(\d+)$/ || $args->{compartment} =~ m/(.+)_(\d+)/) {
+		print("4");
     	$args->{compartment} = $1;
     	$args->{compartmentIndex} = $2;
     }
@@ -584,10 +586,12 @@ sub LoadExternalReactionEquation {
 				if ($cpd =~ m/^(.+)\[([a-z]\d*)\]$/) {
 	    			$cpd = $1;
 	    			$compartment = $2;
-	    		} elsif ($cpd =~m/(.+)_([a-z]\d+)$/) {
+	    		}
+				if ($cpd =~m/(.+)_([a-z]\d*)$/) {
 	    			$cpd = $1;
 	    			$compartment = $2;
-	    		} elsif (defined($args->{compounds}->{$cpd}->[5])) {
+	    		}
+				if (defined($args->{compounds}->{$cpd}->[5])) {
 	    			$compartment = $args->{compounds}->{$cpd}->[5];
 	    		}
 				if ($compartment =~ m/([a-z])(\d+)/) {
