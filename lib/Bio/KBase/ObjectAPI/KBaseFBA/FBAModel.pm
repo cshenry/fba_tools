@@ -2364,7 +2364,7 @@ sub translate_model {
 			}
 		}
 	}
-	$self->genome_ref($ref);
+	$self->genome_ref($protcomp->{'_reference'}.";".$ref);
 	$self->name($newgenome->scientific_name());
 	$self->genome($newgenome);
 	if ($args->{translation_policy} ne "translate_only") {

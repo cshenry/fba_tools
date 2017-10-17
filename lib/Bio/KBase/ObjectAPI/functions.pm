@@ -901,7 +901,6 @@ sub func_propagate_model_to_new_genome {
 	my $model = $source_model->cloneObject();
 	$model->parent($source_model->parent());
 	$model->id($params->{fbamodel_output_id});
-	$model->genome_ref($source_model->_reference().";".$source_model->genome_ref());
 	$handler->util_log("Retrieving proteome comparison.");
 	my $protcomp = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{proteincomparison_id},$params->{proteincomparison_workspace}));
 	$handler->util_log("Translating model.");
