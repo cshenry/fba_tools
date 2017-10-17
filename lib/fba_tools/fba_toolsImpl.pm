@@ -166,8 +166,6 @@ sub util_parse_input_table {
 			push(@{$data}, [ split(/$delim/, $line) ]);
 		}
 	}
-	use Data::Dumper;
-	print(Dumper($data));
 	my $headingColumns;
 	for (my $i=0;$i < @{$headings}; $i++) {
 		$headingColumns->{$headings->[$i]} = $i;

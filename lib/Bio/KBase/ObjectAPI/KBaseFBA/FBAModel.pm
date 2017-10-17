@@ -439,14 +439,12 @@ sub addModelReaction {
     	$rootid = $1;
     	$args->{compartment} = lc($2);
     } elsif ($rootid =~ m/^(.+)\[([a-zA-Z]+)(\d+)\]$/) {
-		print("3");
     	$rootid = $1;
     	$args->{compartment} = lc($2);
     	$args->{compartmentIndex} = $3;
     }
     #Standardizing and fetching compartment
     if ($args->{compartment} =~ m/^([a-z]+)(\d+)$/ || $args->{compartment} =~ m/(.+)_(\d+)/) {
-		print("4");
     	$args->{compartment} = $1;
     	$args->{compartmentIndex} = $2;
     }

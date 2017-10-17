@@ -2756,7 +2756,7 @@ sub func_importmodel {
 					}
 					$id =~ s/\!/__/g;
 					#strip the compartment in ID if present
-					$striped_id = $id =~ s/_[a-z]$//r;
+					$striped_id = $id =~ s/_[a-z]\d*$//r;
 				} elsif ($nm eq "name") {
 					$name = $value;
 					$name =~ s/_plus_/+/g;
