@@ -422,6 +422,14 @@ lives_ok{
         })
     } 'TSV to media 2';
 
+lives_ok{
+        $impl->tsv_file_to_media({
+            media_file => {path => "/kb/module/test/data/medio.tsv"},
+	        media_name => "tsv_media3",
+            workspace_name     => get_ws_name()
+        })
+    } 'TSV to media: blank lines and trailing spaces';
+
 # excel_file_to_media
 lives_ok{
         $impl->excel_file_to_media({
