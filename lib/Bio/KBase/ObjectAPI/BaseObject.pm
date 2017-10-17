@@ -226,6 +226,8 @@ sub ref_chain {
 
 sub fix_reference {
 	my ($self,$ref) = @_;
+	# can't use "self" in refpaths
+	$ref =~ s/^~;//;
 	if ($ref =~ m/^~/) {
 		return $ref;
 	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})/) {
@@ -679,13 +681,18 @@ sub remove {
 
 sub getLinkedObject {
     my ($self, $ref) = @_;
+	my $debug = 0;
 	my $refchain = $self->ref_chain();
+	print("ref: $ref\n") if $debug;
+	print("refchain: $refchain\n") if $debug;
 	if (length($refchain) > 0) {
 		$refchain .= ";";
 	}
 	if ($ref =~ m/^~$/) {
+		print("Branch 1\n") if $debug;
 		return $self->topparent();
 	} elsif ($ref =~ m/(.+)\|\|(.*)/) {
+		print("Branch 2\n") if $debug;
     	my $objpath = $1;
     	my $internalref = $2;
     	if ($objpath !~ m/^\//) {
@@ -701,36 +708,49 @@ sub getLinkedObject {
     		return $obj->queryObject($1,{$2 => $3});
     	}
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print("Branch 3\n") if $debug;
 		my $linkedobject = $1;
 		my $otherlinkedobject = $2;
 		my $field = $3;
     	my $query = {$4 => $5};
 		return $self->topparent()->$linkedobject()->$otherlinkedobject()->queryObject($field,$query);
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print("Branch 4\n") if $debug;
 		my $linkedobject = $1;
 		my $field = $2;
     	my $query = {$3 => $4};
 		return $self->topparent()->$linkedobject()->queryObject($field,$query);
 	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print("Branch 5\n") if $debug;
 		return $self->topparent()->queryObject($1,{$2 => $3});
 	} elsif ($ref =~ m/^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$/) {
+		print("Branch 6\n") if $debug;
 		return $self->store()->getObjectByUUID($ref);
 	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-]+)$/) {
+		print("Branch 7\n") if $debug;
 		Bio::KBase::ObjectAPI::utilities::error("FAILED!");
 	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-]+$/) {
+		print("Branch 8\n") if $debug;
     	return $self->store()->get_object($refchain.$ref);
     } elsif ($ref =~ m/^([:\w]+\/\w+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print("Branch 9\n") if $debug;
     	my $field = $2;
     	my $query = {$3 => $4};
     	my $object = $self->store()->get_object($refchain.$1);
     	return $object->queryObject($field,$query);
     } elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+$/) {
+		print("Branch 0\n") if $debug;
     	return $self->store()->get_object($refchain.$ref);
     } elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+		print("Branch 1\n") if $debug;
     	my $field = $2;
     	my $query = {$3 => $4};
     	my $object = $self->store()->get_object($refchain.$1);
     	return $object->queryObject($field,$query);
+	# if refereance is already a ref_chain, stand out of the way
+    } elsif ($ref =~ m/^(\d+\/\d+\/\d+;)+\d+\/\d+\/\d+$/) {
+		print("Branch 12: Already a ref_chain\n") if $debug;
+    	return $self->store()->get_object($ref);
     }
     Bio::KBase::ObjectAPI::utilities::error("Unrecognized reference format:".$ref);
 }
