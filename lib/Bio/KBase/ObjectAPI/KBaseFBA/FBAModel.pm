@@ -584,10 +584,12 @@ sub LoadExternalReactionEquation {
 				if ($cpd =~ m/^(.+)\[([a-z]\d*)\]$/) {
 	    			$cpd = $1;
 	    			$compartment = $2;
-	    		} elsif ($cpd =~m/(.+)_([a-z]\d+)$/) {
+	    		}
+				if ($cpd =~m/(.+)_([a-z]\d*)$/) {
 	    			$cpd = $1;
 	    			$compartment = $2;
-	    		} elsif (defined($args->{compounds}->{$cpd}->[5])) {
+	    		}
+				if (defined($args->{compounds}->{$cpd}->[5])) {
 	    			$compartment = $args->{compounds}->{$cpd}->[5];
 	    		}
 				if ($compartment =~ m/([a-z])(\d+)/) {

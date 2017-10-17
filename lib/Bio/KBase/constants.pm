@@ -166,6 +166,7 @@ our $compartment_trans = {
 	"CCO-VESICLE" => "s",
 	"CCO-VESICLE-MEM" => "f",
 	"Extracellular" => "e",
+	"Extra_organism" => "e",
 	"Cytosol" => "c",
 };
 

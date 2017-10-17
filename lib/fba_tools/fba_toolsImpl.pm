@@ -168,8 +168,6 @@ sub util_parse_input_table {
 			push(@{$data}, [map{(my $s = $_) =~ s/^\s+|\s+$//g; $s} split(/$delim/, $line)]) if $line;
 		}
 	}
-	use Data::Dumper;
-	print(Dumper($data));
 	my $headingColumns;
 	for (my $i=0;$i < @{$headings}; $i++) {
 		$headingColumns->{$headings->[$i]} = $i;

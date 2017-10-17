@@ -335,6 +335,17 @@ lives_ok{
         })
     } 'SBML import: annother model from BiGG';
 
+lives_ok{
+        $impl->sbml_file_to_model({
+            model_file     =>
+            { path => "/kb/module/test/data/Ec_iJR904.xml" },
+            model_name     => "sbml_test5",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "7601/4/1",
+            biomass        => [ "bio1" ]
+        })
+    } 'SBML import: yet annother model from BiGG';
+
 dies_ok {
         $impl->sbml_file_to_model({
             model_file     =>
