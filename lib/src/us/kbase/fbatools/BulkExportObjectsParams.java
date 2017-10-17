@@ -30,7 +30,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "fba_format",
     "media_format",
     "phenotype_format",
-    "phenosim_format"
+    "phenosim_format",
+    "workspace"
 })
 public class BulkExportObjectsParams {
 
@@ -56,6 +57,8 @@ public class BulkExportObjectsParams {
     private java.lang.String phenotypeFormat;
     @JsonProperty("phenosim_format")
     private java.lang.String phenosimFormat;
+    @JsonProperty("workspace")
+    private java.lang.String workspace;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("refs")
@@ -223,6 +226,21 @@ public class BulkExportObjectsParams {
         return this;
     }
 
+    @JsonProperty("workspace")
+    public java.lang.String getWorkspace() {
+        return workspace;
+    }
+
+    @JsonProperty("workspace")
+    public void setWorkspace(java.lang.String workspace) {
+        this.workspace = workspace;
+    }
+
+    public BulkExportObjectsParams withWorkspace(java.lang.String workspace) {
+        this.workspace = workspace;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -235,7 +253,7 @@ public class BulkExportObjectsParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((("BulkExportObjectsParams"+" [refs=")+ refs)+", allModels=")+ allModels)+", allFba=")+ allFba)+", allMedia=")+ allMedia)+", allPhenotypes=")+ allPhenotypes)+", allPhenosims=")+ allPhenosims)+", modelFormat=")+ modelFormat)+", fbaFormat=")+ fbaFormat)+", mediaFormat=")+ mediaFormat)+", phenotypeFormat=")+ phenotypeFormat)+", phenosimFormat=")+ phenosimFormat)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((("BulkExportObjectsParams"+" [refs=")+ refs)+", allModels=")+ allModels)+", allFba=")+ allFba)+", allMedia=")+ allMedia)+", allPhenotypes=")+ allPhenotypes)+", allPhenosims=")+ allPhenosims)+", modelFormat=")+ modelFormat)+", fbaFormat=")+ fbaFormat)+", mediaFormat=")+ mediaFormat)+", phenotypeFormat=")+ phenotypeFormat)+", phenosimFormat=")+ phenosimFormat)+", workspace=")+ workspace)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

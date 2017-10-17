@@ -10,6 +10,25 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
+### VERSION: 1.7.0 (Released 9/20/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Added View Flux Network app which visualises a FBA solution in an interactive
+ diagram
+- Removed View FBA Expression Comparison app which is no longer needed due to
+ the report from Compare FLux with Expression App
+- Refactored all apps to accept IDs as permanent numerical references (eg. 133/124/1)
+ and updated tests & UI accordingly
+- Use reference chains to ensure that a model does not become uneditable if
+ its genome is inaccessible.
+- Updated table parseing to accept '\r' line delimination and error if uploaded
+ phenotype set is empty
+- Updated SBML parsing to address compound duplication bug and prefix all
+ ids in SBML export to be compliant with SBML schema.
+- Update Edit Media and Edit Model UI to ensure that users provide all needed
+ parameters when loading a new compound
+ 
+------------------------------------------
 ### VERSION: 1.6.7 (Released 9/19/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:

@@ -26,7 +26,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "fbamodel_workspace",
     "fbamodel_id",
     "fbamodel_output_id",
-    "data"
+    "compounds_to_add",
+    "compounds_to_change",
+    "biomasses_to_add",
+    "biomass_compounds_to_change",
+    "reactions_to_remove",
+    "reactions_to_change",
+    "reactions_to_add",
+    "edit_compound_stoichiometry"
 })
 public class EditMetabolicModelParams {
 
@@ -38,8 +45,22 @@ public class EditMetabolicModelParams {
     private java.lang.String fbamodelId;
     @JsonProperty("fbamodel_output_id")
     private java.lang.String fbamodelOutputId;
-    @JsonProperty("data")
-    private Map<String, List<List<String>>> data;
+    @JsonProperty("compounds_to_add")
+    private List<Map<String, String>> compoundsToAdd;
+    @JsonProperty("compounds_to_change")
+    private List<Map<String, String>> compoundsToChange;
+    @JsonProperty("biomasses_to_add")
+    private List<Map<String, String>> biomassesToAdd;
+    @JsonProperty("biomass_compounds_to_change")
+    private List<Map<String, String>> biomassCompoundsToChange;
+    @JsonProperty("reactions_to_remove")
+    private List<Map<String, String>> reactionsToRemove;
+    @JsonProperty("reactions_to_change")
+    private List<Map<String, String>> reactionsToChange;
+    @JsonProperty("reactions_to_add")
+    private List<Map<String, String>> reactionsToAdd;
+    @JsonProperty("edit_compound_stoichiometry")
+    private List<Map<String, String>> editCompoundStoichiometry;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("workspace")
@@ -102,18 +123,123 @@ public class EditMetabolicModelParams {
         return this;
     }
 
-    @JsonProperty("data")
-    public Map<String, List<List<String>>> getData() {
-        return data;
+    @JsonProperty("compounds_to_add")
+    public List<Map<String, String>> getCompoundsToAdd() {
+        return compoundsToAdd;
     }
 
-    @JsonProperty("data")
-    public void setData(Map<String, List<List<String>>> data) {
-        this.data = data;
+    @JsonProperty("compounds_to_add")
+    public void setCompoundsToAdd(List<Map<String, String>> compoundsToAdd) {
+        this.compoundsToAdd = compoundsToAdd;
     }
 
-    public EditMetabolicModelParams withData(Map<String, List<List<String>>> data) {
-        this.data = data;
+    public EditMetabolicModelParams withCompoundsToAdd(List<Map<String, String>> compoundsToAdd) {
+        this.compoundsToAdd = compoundsToAdd;
+        return this;
+    }
+
+    @JsonProperty("compounds_to_change")
+    public List<Map<String, String>> getCompoundsToChange() {
+        return compoundsToChange;
+    }
+
+    @JsonProperty("compounds_to_change")
+    public void setCompoundsToChange(List<Map<String, String>> compoundsToChange) {
+        this.compoundsToChange = compoundsToChange;
+    }
+
+    public EditMetabolicModelParams withCompoundsToChange(List<Map<String, String>> compoundsToChange) {
+        this.compoundsToChange = compoundsToChange;
+        return this;
+    }
+
+    @JsonProperty("biomasses_to_add")
+    public List<Map<String, String>> getBiomassesToAdd() {
+        return biomassesToAdd;
+    }
+
+    @JsonProperty("biomasses_to_add")
+    public void setBiomassesToAdd(List<Map<String, String>> biomassesToAdd) {
+        this.biomassesToAdd = biomassesToAdd;
+    }
+
+    public EditMetabolicModelParams withBiomassesToAdd(List<Map<String, String>> biomassesToAdd) {
+        this.biomassesToAdd = biomassesToAdd;
+        return this;
+    }
+
+    @JsonProperty("biomass_compounds_to_change")
+    public List<Map<String, String>> getBiomassCompoundsToChange() {
+        return biomassCompoundsToChange;
+    }
+
+    @JsonProperty("biomass_compounds_to_change")
+    public void setBiomassCompoundsToChange(List<Map<String, String>> biomassCompoundsToChange) {
+        this.biomassCompoundsToChange = biomassCompoundsToChange;
+    }
+
+    public EditMetabolicModelParams withBiomassCompoundsToChange(List<Map<String, String>> biomassCompoundsToChange) {
+        this.biomassCompoundsToChange = biomassCompoundsToChange;
+        return this;
+    }
+
+    @JsonProperty("reactions_to_remove")
+    public List<Map<String, String>> getReactionsToRemove() {
+        return reactionsToRemove;
+    }
+
+    @JsonProperty("reactions_to_remove")
+    public void setReactionsToRemove(List<Map<String, String>> reactionsToRemove) {
+        this.reactionsToRemove = reactionsToRemove;
+    }
+
+    public EditMetabolicModelParams withReactionsToRemove(List<Map<String, String>> reactionsToRemove) {
+        this.reactionsToRemove = reactionsToRemove;
+        return this;
+    }
+
+    @JsonProperty("reactions_to_change")
+    public List<Map<String, String>> getReactionsToChange() {
+        return reactionsToChange;
+    }
+
+    @JsonProperty("reactions_to_change")
+    public void setReactionsToChange(List<Map<String, String>> reactionsToChange) {
+        this.reactionsToChange = reactionsToChange;
+    }
+
+    public EditMetabolicModelParams withReactionsToChange(List<Map<String, String>> reactionsToChange) {
+        this.reactionsToChange = reactionsToChange;
+        return this;
+    }
+
+    @JsonProperty("reactions_to_add")
+    public List<Map<String, String>> getReactionsToAdd() {
+        return reactionsToAdd;
+    }
+
+    @JsonProperty("reactions_to_add")
+    public void setReactionsToAdd(List<Map<String, String>> reactionsToAdd) {
+        this.reactionsToAdd = reactionsToAdd;
+    }
+
+    public EditMetabolicModelParams withReactionsToAdd(List<Map<String, String>> reactionsToAdd) {
+        this.reactionsToAdd = reactionsToAdd;
+        return this;
+    }
+
+    @JsonProperty("edit_compound_stoichiometry")
+    public List<Map<String, String>> getEditCompoundStoichiometry() {
+        return editCompoundStoichiometry;
+    }
+
+    @JsonProperty("edit_compound_stoichiometry")
+    public void setEditCompoundStoichiometry(List<Map<String, String>> editCompoundStoichiometry) {
+        this.editCompoundStoichiometry = editCompoundStoichiometry;
+    }
+
+    public EditMetabolicModelParams withEditCompoundStoichiometry(List<Map<String, String>> editCompoundStoichiometry) {
+        this.editCompoundStoichiometry = editCompoundStoichiometry;
         return this;
     }
 
@@ -129,7 +255,7 @@ public class EditMetabolicModelParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((("EditMetabolicModelParams"+" [workspace=")+ workspace)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", fbamodelId=")+ fbamodelId)+", fbamodelOutputId=")+ fbamodelOutputId)+", data=")+ data)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((("EditMetabolicModelParams"+" [workspace=")+ workspace)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", fbamodelId=")+ fbamodelId)+", fbamodelOutputId=")+ fbamodelOutputId)+", compoundsToAdd=")+ compoundsToAdd)+", compoundsToChange=")+ compoundsToChange)+", biomassesToAdd=")+ biomassesToAdd)+", biomassCompoundsToChange=")+ biomassCompoundsToChange)+", reactionsToRemove=")+ reactionsToRemove)+", reactionsToChange=")+ reactionsToChange)+", reactionsToAdd=")+ reactionsToAdd)+", editCompoundStoichiometry=")+ editCompoundStoichiometry)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
