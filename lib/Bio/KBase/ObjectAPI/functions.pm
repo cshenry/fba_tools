@@ -1506,28 +1506,32 @@ sub func_predict_auxotrophy {
 		$cpddatahash->{$cpddata->[$i]->{id}} = $cpddata->[$i];
 	}
 	my $auxotrophy_hash;
-	for (my $i=0;$i = @{$genomes}; $i++) {
+	for (my $i=0; $i < @{$genomes}; $i++) {
 		my $datachannel = {};
 		my $genomeid = $genomes->[$i];
+		print "Prcoessing ".$genomeid."\n";
 		my $current_media = $media->cloneObject();
-		Bio::KBase::utilities::func_build_metabolic_model({
-			workspace => $params->{workspace},
+		Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
+			workspace => "NULL",
 			fbamodel_output_id => $genomeid.".fbamodel",
 			genome_id => $genomeid,
+			genome_workspace => $params->{genome_workspace},
 			media_id => "Carbon-D-Glucose",
 			media_workspace => "KBaseMedia",
 			gapfill_model => 1
 		},$datachannel);
 		foreach my $rxn (keys(%{$transporthash})) {
-			$datachannel->{fbamodel}->addModelReaction({
-				reaction => $rxn,
-				direction => "=",
-				addReaction => 1
-			});
+			if (!defined($datachannel->{fbamodel}->queryObject("modelreactions",{id => $rxn."_c0"}))) {
+				$datachannel->{fbamodel}->addModelReaction({
+					reaction => $rxn,
+					direction => "=",
+					addReaction => 1
+				});
+			}
 		}
-		Bio::KBase::utilities::func_run_flux_balance_analysis({
-			workspace => $params->{workspace},
-			fbamodel_id => $params->{fbamodel_id},
+		Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+			workspace => "NULL",
+			fbamodel_id => $genomeid.".fbamodel",
 			fba_output_id => $genomeid.".fba_min",
 			media_id => "Carbon-D-Glucose",
 			media_workspace => "KBaseMedia",
@@ -1535,9 +1539,9 @@ sub func_predict_auxotrophy {
 			fva => 1,
 			minimize_flux => 1,
 		},$datachannel->{fbamodel});
-		Bio::KBase::utilities::func_run_flux_balance_analysis({
-			workspace => $params->{workspace},
-			fbamodel_id => $params->{fbamodel_id},
+		Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+			workspace => "NULL",
+			fbamodel_id => $genomeid.".fbamodel",
 			fba_output_id => $genomeid.".fba_com",
 			media_id => "Complete",
 			media_workspace => "KBaseMedia",
@@ -1552,30 +1556,30 @@ sub func_predict_auxotrophy {
 			$rxnid =~ s/_[a-z]+\d+$//;
 			$rxnhash->{$rxnid} = $rxns->[$i];
 		}
-		my $fba = $handler->util_get_object($params->{workspace}."/".$genomeid.".fba_min");
+		my $fba = $handler->util_get_object("NULL/".$genomeid.".fba_min");
 		my $fbarxns = $fba->FBAReactionVariables();
 		for (my $i=0; $i < @{$fbarxns}; $i++) {
 			my $rxnid = $fbarxns->[$i]->modelreaction()->id();
 			$rxnid =~ s/_[a-z]+\d+$//;
 			$rxnhash->{$rxnid}->{minclass} = "ne";
-			if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > -1e-7) {
+			if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > 1e-7) {
 				$rxnhash->{$rxnid}->{minclass} = "e";
 			}
 		}
-		$fba = $handler->util_get_object($params->{workspace}."/".$genomeid.".fba_com");
+		$fba = $handler->util_get_object("NULL/".$genomeid.".fba_com");
 		$fbarxns = $fba->FBAReactionVariables();
 		for (my $i=0; $i < @{$fbarxns}; $i++) {
 			my $rxnid = $fbarxns->[$i]->modelreaction()->id();
 			$rxnid =~ s/_[a-z]+\d+$//;
 			$rxnhash->{$rxnid}->{comclass} = "ne";
-			if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > -1e-7) {
-				$rxnhash->{$rxnid}->{comclass} = "e";
+			if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > 1e-7) {
+				$rxnhash->{$rxnid}->{comclass} = "ne";
 			}
 		}
 		foreach my $rxn (keys(%{$rxnhash})) {
 			#Reaction is mapped to a biomass component and it's carrying flux in MM
 			if (defined($rxndata->{$rxn}) && $rxnhash->{$rxn}->{minclass} eq "e" && $rxnhash->{$rxn}->{comclass} ne "e") {
-				foreach my $biocpd (keys(%{$rxndata->{$rxn}})) {
+				foreach my $biocpd (keys(%{$rxndata->{$rxn}->{biomass_cpds}})) {
 					if (!defined($auxotrophy_hash->{$biocpd}->{$genomeid})) {
 						$auxotrophy_hash->{$biocpd}->{$genomeid} = {
 							rxn => 0,
@@ -1586,7 +1590,7 @@ sub func_predict_auxotrophy {
 					}
 					$auxotrophy_hash->{$biocpd}->{$genomeid}->{rxns}->{$rxn} = $rxnhash->{$rxn};
 					$auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn}++;
-					if ($rxnhash->{$rxn}->{obj}->gprString() ne "") {
+					if ($rxnhash->{$rxn}->gprString() eq "Unknown") {
 						$auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxns}->{$rxn} = $rxnhash->{$rxn};
 						$auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn}++;
 					}
@@ -1605,6 +1609,7 @@ sub func_predict_auxotrophy {
 				});
 			}
 		}
+		$current_media->parent($handler->util_store());
 		my $wsmeta = $handler->util_save_object($current_media,$params->{workspace}."/".$genomeid.".auxo_media");
 	}
 	my $htmlreport = "<div style=\"height: 600px; overflow-y: scroll;\"><table class=\"reporttbl\"><tr><th>Class</th><th>Compound</th><th>Ave gf</th>";
@@ -1616,14 +1621,15 @@ sub func_predict_auxotrophy {
 		$htmlreport .= "<tr><td>".$cpddata->[$i]->{class}."</td><td>".$cpddata->[$i]->{name}."<br>(".$cpddata->[$i]->{id}.")</td><td>".$cpddata->[$i]->{avegf}."</td>";
 		for (my $j=0; $j < @{$genomes}; $j++) {
 			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
-				print "<td>".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."</td>";
+				$htmlreport .= "<td>".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."</td>";
 			} else {
-				print "<td>-</td>";
+				$htmlreport .= "<td>-</td>";
 			}
 		}
 		$htmlreport .= "</tr>";
 	}
 	$htmlreport .= "</table></div>";
+	print $htmlreport;
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 }
 
