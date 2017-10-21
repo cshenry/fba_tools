@@ -472,7 +472,7 @@ sub transform_media_from_ws {
 		source_id => $meta->[0],
 		mediacompounds => []
 	};
-	my $array = [split(/\n/,$data)];
+	my $array = [split(/\r\n?|\n/,$data)];
 	my $heading = [split(/\t/,$array->[0])];
 	my $headinghash = {};
 	for (my $i=1; $i < @{$heading}; $i++) {
