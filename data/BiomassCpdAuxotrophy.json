@@ -1,0 +1,671 @@
+[
+   {
+      "name" : "L-Arginine",
+      "id" : "cpd00051",
+      "model_count" : 957,
+      "biomass_cpds" : [
+         "cpd00051"
+      ],
+      "low" : null,
+      "transporter" : "rxn05303",
+      "lowgf" : 0,
+      "class" : "Amino acid",
+      "ave" : 11.6081504702194,
+      "highgf" : 6,
+      "pathway" : "Arginine and proline metabolism",
+      "avegf" : 0.606060606060606,
+      "high" : 19
+   },
+   {
+      "avegf" : 0.541274817136886,
+      "high" : 14,
+      "pathway" : "Arginine and proline metabolism",
+      "lowgf" : 0,
+      "highgf" : 5,
+      "class" : "Amino acid",
+      "ave" : 9.30407523510972,
+      "model_count" : 957,
+      "id" : "cpd00129",
+      "name" : "L-Proline",
+      "transporter" : "rxn05638",
+      "biomass_cpds" : [
+         "cpd00129"
+      ],
+      "low" : null
+   },
+   {
+      "model_count" : 957,
+      "name" : "Glycine",
+      "id" : "cpd00033",
+      "transporter" : "rxn05582",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00033"
+      ],
+      "lowgf" : 0,
+      "highgf" : 7,
+      "ave" : 8.13166144200627,
+      "class" : "Amino acid",
+      "pathway" : "Glycine, serine and threonine metabolism",
+      "avegf" : 0.788923719958203,
+      "high" : 12
+   },
+   {
+      "lowgf" : 0,
+      "class" : "Amino acid",
+      "ave" : 9.83385579937304,
+      "highgf" : 6,
+      "name" : "L-Serine",
+      "id" : "cpd00054",
+      "model_count" : 957,
+      "biomass_cpds" : [
+         "cpd00054"
+      ],
+      "low" : null,
+      "transporter" : "rxn05307",
+      "avegf" : 0.734587251828631,
+      "high" : 15,
+      "pathway" : "Glycine, serine and threonine metabolism"
+   },
+   {
+      "pathway" : "Glycine, serine and threonine metabolism",
+      "avegf" : 0.791013584117032,
+      "high" : 15,
+      "name" : "L-Threonine",
+      "id" : "cpd00161",
+      "model_count" : 957,
+      "biomass_cpds" : [
+         "cpd00161"
+      ],
+      "low" : null,
+      "transporter" : "rxn05300",
+      "lowgf" : 0,
+      "class" : "Amino acid",
+      "ave" : 10.128526645768,
+      "highgf" : 7
+   },
+   {
+      "avegf" : 0.376175548589342,
+      "high" : 11,
+      "pathway" : "Alanine, aspartate and glutamate metabolism",
+      "lowgf" : 0,
+      "highgf" : 7,
+      "ave" : 6.23510971786834,
+      "class" : "Amino acid",
+      "model_count" : 957,
+      "id" : "cpd00035",
+      "name" : "L-Alanine",
+      "transporter" : "rxn05496",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00035"
+      ]
+   },
+   {
+      "lowgf" : 0,
+      "class" : "Amino acid",
+      "ave" : 6.73563218390805,
+      "highgf" : 7,
+      "id" : "cpd00041",
+      "name" : "L-Aspartate",
+      "model_count" : 957,
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00041"
+      ],
+      "transporter" : "rxn05217",
+      "avegf" : 0.442006269592476,
+      "high" : 11,
+      "pathway" : "Alanine, aspartate and glutamate metabolism"
+   },
+   {
+      "lowgf" : 0,
+      "highgf" : 7,
+      "ave" : 8.79519331243469,
+      "class" : "Amino acid",
+      "model_count" : 957,
+      "id" : "cpd00132",
+      "name" : "L-Asparagine",
+      "transporter" : "rxn05508",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00132"
+      ],
+      "avegf" : 0.681295715778474,
+      "high" : 14,
+      "pathway" : "Alanine, aspartate and glutamate metabolism"
+   },
+   {
+      "avegf" : 0.547544409613375,
+      "high" : 13,
+      "pathway" : "Alanine, aspartate and glutamate metabolism",
+      "lowgf" : 0,
+      "class" : "Amino acid",
+      "ave" : 8.45350052246604,
+      "highgf" : 7,
+      "name" : "L-Glutamate",
+      "id" : "cpd00023",
+      "model_count" : 957,
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00023"
+      ],
+      "transporter" : "rxn05297"
+   },
+   {
+      "highgf" : 12,
+      "class" : "Amino acid",
+      "ave" : 12.423197492163,
+      "lowgf" : 0,
+      "transporter" : "rxn05663",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00065"
+      ],
+      "model_count" : 957,
+      "id" : "cpd00065",
+      "name" : "L-Tryptophan",
+      "high" : 13,
+      "avegf" : 1.40020898641588,
+      "pathway" : "Phenylalanine, tyrosine and tryptophan biosynthesis"
+   },
+   {
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00069"
+      ],
+      "transporter" : "rxn05301",
+      "id" : "cpd00069",
+      "name" : "L-Tyrosine",
+      "model_count" : 957,
+      "ave" : 12.4681295715778,
+      "class" : "Amino acid",
+      "highgf" : 12,
+      "lowgf" : 0,
+      "pathway" : "Phenylalanine, tyrosine and tryptophan biosynthesis",
+      "high" : 16,
+      "avegf" : 1.70950888192267
+   },
+   {
+      "avegf" : 1.72100313479624,
+      "high" : 15,
+      "pathway" : "Phenylalanine, tyrosine and tryptophan biosynthesis",
+      "lowgf" : 0,
+      "class" : "Amino acid",
+      "ave" : 11.9613375130617,
+      "highgf" : 13,
+      "id" : "cpd00066",
+      "name" : "L-Phenylalanine",
+      "model_count" : 957,
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00066"
+      ],
+      "transporter" : "rxn05306"
+   },
+   {
+      "lowgf" : 0,
+      "highgf" : 4,
+      "ave" : 5.04075235109718,
+      "class" : "Amino acid",
+      "model_count" : 957,
+      "name" : "L-Valine",
+      "id" : "cpd00156",
+      "transporter" : "rxn05669",
+      "biomass_cpds" : [
+         "cpd00156"
+      ],
+      "low" : null,
+      "avegf" : 0.350052246603971,
+      "high" : 7,
+      "pathway" : "Valine, leucine and isoleucine biosynthesis"
+   },
+   {
+      "transporter" : "rxn05244",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00322"
+      ],
+      "model_count" : 957,
+      "id" : "cpd00322",
+      "name" : "L-Isoleucine",
+      "highgf" : 7,
+      "ave" : 9.4085684430512,
+      "class" : "Amino acid",
+      "lowgf" : 0,
+      "pathway" : "Valine, leucine and isoleucine biosynthesis",
+      "high" : 13,
+      "avegf" : 0.696969696969697
+   },
+   {
+      "ave" : 10.1912225705329,
+      "class" : "Amino acid",
+      "highgf" : 7,
+      "lowgf" : 0,
+      "biomass_cpds" : [
+         "cpd00107"
+      ],
+      "low" : null,
+      "transporter" : "rxn05243",
+      "id" : "cpd00107",
+      "name" : "L-Leucine",
+      "model_count" : 957,
+      "high" : 14,
+      "avegf" : 0.698014629049112,
+      "pathway" : "Valine, leucine and isoleucine biosynthesis"
+   },
+   {
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00119"
+      ],
+      "transporter" : "rxn05299",
+      "name" : "L-Histidine",
+      "id" : "cpd00119",
+      "model_count" : 957,
+      "class" : "Amino acid",
+      "ave" : 7.96969696969697,
+      "highgf" : 8,
+      "lowgf" : 0,
+      "pathway" : "Histidine metabolism",
+      "high" : 13,
+      "avegf" : 0.940438871473354
+   },
+   {
+      "pathway" : "Lysine biosynthesis",
+      "avegf" : 2.52873563218391,
+      "high" : 11,
+      "model_count" : 957,
+      "name" : "L-Lysine",
+      "id" : "cpd00039",
+      "transporter" : "rxn05305",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00039"
+      ],
+      "lowgf" : null,
+      "highgf" : 6,
+      "ave" : 6.33855799373041,
+      "class" : "Amino acid"
+   },
+   {
+      "transporter" : "rxn09690",
+      "biomass_cpds" : [
+         "cpd00084"
+      ],
+      "low" : null,
+      "model_count" : 957,
+      "name" : "L-Cysteine",
+      "id" : "cpd00084",
+      "highgf" : 6,
+      "ave" : 7.04284221525601,
+      "class" : "Amino acid",
+      "lowgf" : 0,
+      "pathway" : "Cysteine and methionine metabolism",
+      "high" : 11,
+      "avegf" : 0.51828631138976
+   },
+   {
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00053"
+      ],
+      "transporter" : "rxn09678",
+      "name" : "L-Glutamine",
+      "id" : "cpd00053",
+      "model_count" : 957,
+      "ave" : 8.8380355276907,
+      "class" : "Amino acid",
+      "highgf" : 7,
+      "lowgf" : 0,
+      "pathway" : "Alanine, aspartate and glutamate metabolism",
+      "high" : 13,
+      "avegf" : 0.531870428422153
+   },
+   {
+      "lowgf" : 0,
+      "highgf" : 7,
+      "ave" : 10.7324973876698,
+      "class" : "Amino acid",
+      "model_count" : 957,
+      "name" : "L-Methionine",
+      "id" : "cpd00060",
+      "transporter" : "rxn09672",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00060"
+      ],
+      "avegf" : 0.910135841170324,
+      "high" : 17,
+      "pathway" : "Cysteine and methionine metabolism"
+   },
+   {
+      "avegf" : 0.910135841170324,
+      "high" : 17,
+      "pathway" : "Cysteine and methionine metabolism",
+      "lowgf" : 0,
+      "highgf" : 7,
+      "class" : "Cofactor",
+      "ave" : 10.7324973876698,
+      "model_count" : 957,
+      "name" : "S-Adenosyl-L-methionine",
+      "id" : "cpd00017",
+      "transporter" : "rxn09696",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00017"
+      ]
+   },
+   {
+      "model_count" : 957,
+      "id" : "cpd00118",
+      "name" : "Putrescine",
+      "transporter" : "rxn05687",
+      "biomass_cpds" : [
+         "cpd00118"
+      ],
+      "low" : null,
+      "lowgf" : 0,
+      "highgf" : 7,
+      "class" : "Cofactor",
+      "ave" : 12.3636363636364,
+      "pathway" : "Arginine and proline metabolism",
+      "avegf" : 0.684430512016719,
+      "high" : 21
+   },
+   {
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00264"
+      ],
+      "transporter" : "rxn05652",
+      "id" : "cpd00264",
+      "name" : "Spermidine",
+      "model_count" : 957,
+      "class" : "Cofactor",
+      "ave" : 13.4294670846395,
+      "highgf" : 7,
+      "lowgf" : 0,
+      "pathway" : "Arginine and proline metabolism",
+      "high" : 24,
+      "avegf" : 0.845350052246604
+   },
+   {
+      "id" : "cpd00028",
+      "name" : "Heme",
+      "model_count" : 957,
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00028"
+      ],
+      "transporter" : "rxn05148",
+      "lowgf" : 0,
+      "ave" : 9.6687565308255,
+      "class" : "Cofactor",
+      "highgf" : 10,
+      "pathway" : "Porphyrin and chlorophyll metabolism",
+      "avegf" : 2.82445141065831,
+      "high" : 13
+   },
+   {
+      "pathway" : "Porphyrin and chlorophyll metabolism",
+      "high" : 12,
+      "avegf" : 3.93730407523511,
+      "transporter" : null,
+      "biomass_cpds" : [
+         "cpd00557"
+      ],
+      "low" : null,
+      "model_count" : 957,
+      "name" : "Siroheme",
+      "id" : "cpd00557",
+      "highgf" : 11,
+      "class" : "Cofactor",
+      "ave" : 9.09090909090909,
+      "lowgf" : null
+   },
+   {
+      "avegf" : 0.795193312434692,
+      "high" : 15,
+      "pathway" : "Glycine, serine and threonine metabolism",
+      "lowgf" : 0,
+      "highgf" : 7,
+      "ave" : 10.3730407523511,
+      "class" : "Cofactor",
+      "model_count" : 957,
+      "name" : "GSH",
+      "id" : "cpd00042",
+      "transporter" : "rxn10829",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00042"
+      ]
+   },
+   {
+      "class" : "Quinone",
+      "ave" : 5.03866248693835,
+      "highgf" : 5,
+      "lowgf" : 0,
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd15500"
+      ],
+      "transporter" : null,
+      "name" : "Menaquinone 8",
+      "id" : "cpd15500",
+      "model_count" : 957,
+      "high" : 7,
+      "avegf" : 2.53082549634274,
+      "pathway" : "Ubiquinone and other terpenoid-quinone biosynthesis"
+   },
+   {
+      "pathway" : "Ubiquinone and other terpenoid-quinone biosynthesis",
+      "avegf" : 0,
+      "high" : 0,
+      "model_count" : 0,
+      "name" : "Ubiquinone-8",
+      "id" : "cpd15560",
+      "transporter" : null,
+      "low" : 1000,
+      "biomass_cpds" : [
+         "cpd15560"
+      ],
+      "lowgf" : 1000,
+      "highgf" : 0,
+      "class" : "Quinone",
+      "ave" : 0
+   },
+   {
+      "high" : 14,
+      "avegf" : 6.7533960292581,
+      "pathway" : "Ubiquinone and other terpenoid-quinone biosynthesis",
+      "ave" : 11.3510971786834,
+      "class" : "Quinone",
+      "highgf" : 11,
+      "lowgf" : 0,
+      "biomass_cpds" : [
+         "cpd15560"
+      ],
+      "low" : null,
+      "transporter" : null,
+      "id" : "cpd15352",
+      "name" : "2-Demethylmenaquinone 8",
+      "model_count" : 957
+   },
+   {
+      "name" : "Folate",
+      "id" : "cpd00393",
+      "model_count" : 957,
+      "biomass_cpds" : [
+         "cpd00087",
+         "cpd00345",
+         "cpd00201"
+      ],
+      "low" : null,
+      "transporter" : "rxn05255",
+      "lowgf" : 0,
+      "class" : "Vitamin",
+      "ave" : 7.4576802507837,
+      "highgf" : 6,
+      "pathway" : "Folate biosynthesis",
+      "avegf" : 1.34169278996865,
+      "high" : 10
+   },
+   {
+      "pathway" : "Pantothenate and CoA biosynthesis",
+      "avegf" : 1.61337513061651,
+      "high" : 17,
+      "name" : "PAN",
+      "id" : "cpd00644",
+      "model_count" : 957,
+      "biomass_cpds" : [
+         "cpd00010",
+         "cpd11493"
+      ],
+      "low" : null,
+      "transporter" : "rxn05308",
+      "lowgf" : 0,
+      "class" : "Vitamin",
+      "ave" : 12.2424242424242,
+      "highgf" : 12
+   },
+   {
+      "lowgf" : 0,
+      "class" : "Vitamin",
+      "ave" : 8.77742946708464,
+      "highgf" : 7,
+      "id" : "cpd00218",
+      "name" : "Niacin",
+      "model_count" : 957,
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00006",
+         "cpd00003"
+      ],
+      "transporter" : "rxn05310",
+      "avegf" : 1.15673981191223,
+      "high" : 14,
+      "pathway" : "Nicotinate and nicotinamide metabolism"
+   },
+   {
+      "avegf" : 4.19122257053292,
+      "high" : 10,
+      "pathway" : "Porphyrin and chlorophyll metabolism",
+      "lowgf" : 0,
+      "highgf" : 10,
+      "ave" : 7.65830721003135,
+      "class" : "Vitamin",
+      "model_count" : 957,
+      "id" : "cpd00635",
+      "name" : "Cbl",
+      "transporter" : "rxn10147",
+      "biomass_cpds" : [
+         "cpd00166"
+      ],
+      "low" : null
+   },
+   {
+      "lowgf" : 0,
+      "ave" : 3.92580982236155,
+      "class" : "Vitamin",
+      "highgf" : 3,
+      "id" : "cpd00305",
+      "name" : "Thiamin",
+      "model_count" : 957,
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00056"
+      ],
+      "transporter" : "rxn09657",
+      "avegf" : 0.628004179728318,
+      "high" : 7,
+      "pathway" : "Thiamine metabolism"
+   },
+   {
+      "high" : 10,
+      "avegf" : 2.07210031347962,
+      "pathway" : "Riboflavin metabolism",
+      "highgf" : 10,
+      "class" : "Vitamin",
+      "ave" : 8.98119122257053,
+      "lowgf" : 0,
+      "transporter" : "rxn05645",
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00015",
+         "cpd00220"
+      ],
+      "model_count" : 957,
+      "id" : "cpd00220",
+      "name" : "Riboflavin"
+   },
+   {
+      "pathway" : "Vitamin B6 metabolism",
+      "avegf" : 0.06478578892372,
+      "high" : 7,
+      "model_count" : 957,
+      "name" : "Pyridoxal",
+      "id" : "cpd00215",
+      "transporter" : "rxn12666",
+      "biomass_cpds" : [
+         "cpd00016"
+      ],
+      "low" : null,
+      "lowgf" : null,
+      "highgf" : 1,
+      "class" : "Vitamin",
+      "ave" : 0.984326018808777
+   },
+   {
+      "low" : null,
+      "biomass_cpds" : [
+         "cpd00104"
+      ],
+      "transporter" : "rxn09693",
+      "id" : "cpd00104",
+      "name" : "Biotin",
+      "model_count" : 957,
+      "ave" : 3.09299895506792,
+      "class" : "Vitamin",
+      "highgf" : 4,
+      "lowgf" : 0,
+      "pathway" : "Biotin metabolism",
+      "high" : 4,
+      "avegf" : 1.33646812957158
+   },
+   {
+      "biomass_cpds" : [
+         "cpd15666"
+      ],
+      "low" : 1000,
+      "transporter" : null,
+      "id" : "cpd15666",
+      "name" : "Peptidoglycan polymer (n-1 subunits)",
+      "model_count" : 0,
+      "class" : "Cell wall",
+      "ave" : 0,
+      "highgf" : 0,
+      "lowgf" : 1000,
+      "pathway" : "Peptidoglycan biosynthesis",
+      "high" : 0,
+      "avegf" : 0
+   },
+   {
+      "model_count" : 0,
+      "id" : "cpd11459",
+      "name" : "tcam",
+      "transporter" : null,
+      "biomass_cpds" : [
+         "cpd11459"
+      ],
+      "low" : 1000,
+      "lowgf" : 1000,
+      "highgf" : 0,
+      "ave" : 0,
+      "class" : "Cell wall",
+      "pathway" : "Peptidoglycan biosynthesis",
+      "avegf" : 0,
+      "high" : 0
+   }
+]
+
