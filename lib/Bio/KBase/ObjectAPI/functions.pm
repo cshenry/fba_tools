@@ -1559,8 +1559,8 @@ sub func_predict_auxotrophy {
 		my $fba = $handler->util_get_object("NULL/".$genomeid.".fba_min");
 		my $fbarxns = $fba->FBAReactionVariables();
 		for (my $i=0; $i < @{$fbarxns}; $i++) {
+			my $rxnid = $fbarxns->[$i]->modelreaction()->id();
 			if (abs($fbarxns->[$i]->value()) > 1e-7) {
-				my $rxnid = $fbarxns->[$i]->modelreaction()->id();
 				$rxnid =~ s/_[a-z]+\d+$//;
 				$rxnhash->{$rxnid}->{minclass} = "f";
 				if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > 1e-7) {
@@ -1632,6 +1632,7 @@ sub func_predict_auxotrophy {
 		}
 		print "\n";
 	}
+	my $htmlreport = "";
 #	my $htmlreport = "<div style=\"height: 600px; overflow-y: scroll;\"><table class=\"reporttbl\"><tr><th>Class</th><th>Compound</th><th>Ave gf</th>";
 #	for (my $i=0; $i < @{$genomes}; $i++) {
 #		$htmlreport .= "<th>".$genomes->[$i]."</th>";
