@@ -1559,11 +1559,15 @@ sub func_predict_auxotrophy {
 		my $fba = $handler->util_get_object("NULL/".$genomeid.".fba_min");
 		my $fbarxns = $fba->FBAReactionVariables();
 		for (my $i=0; $i < @{$fbarxns}; $i++) {
-			my $rxnid = $fbarxns->[$i]->modelreaction()->id();
-			$rxnid =~ s/_[a-z]+\d+$//;
-			$rxnhash->{$rxnid}->{minclass} = "ne";
-			if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > 1e-7) {
-				$rxnhash->{$rxnid}->{minclass} = "e";
+			if (abs($fbarxns->[$i]->value()) > 1e-7) {
+				my $rxnid = $fbarxns->[$i]->modelreaction()->id();
+				$rxnid =~ s/_[a-z]+\d+$//;
+				$rxnhash->{$rxnid}->{minclass} = "f";
+				if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > 1e-7) {
+					$rxnhash->{$rxnid}->{minclass} = "e";
+				}
+			} else {
+				$rxnhash->{$rxnid}->{minclass} = "n";
 			}
 		}
 		$fba = $handler->util_get_object("NULL/".$genomeid.".fba_com");
@@ -1573,12 +1577,12 @@ sub func_predict_auxotrophy {
 			$rxnid =~ s/_[a-z]+\d+$//;
 			$rxnhash->{$rxnid}->{comclass} = "ne";
 			if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > 1e-7) {
-				$rxnhash->{$rxnid}->{comclass} = "ne";
+				$rxnhash->{$rxnid}->{comclass} = "ne";#TODO: this is technically wrong
 			}
 		}
 		foreach my $rxn (keys(%{$rxnhash})) {
 			#Reaction is mapped to a biomass component and it's carrying flux in MM
-			if (defined($rxndata->{$rxn}) && $rxnhash->{$rxn}->{minclass} eq "e" && $rxnhash->{$rxn}->{comclass} ne "e") {
+			if (defined($rxndata->{$rxn}) && $rxnhash->{$rxn}->{minclass} ne "n" && $rxnhash->{$rxn}->{comclass} ne "e") {
 				foreach my $biocpd (keys(%{$rxndata->{$rxn}->{biomass_cpds}})) {
 					if (!defined($auxotrophy_hash->{$biocpd}->{$genomeid})) {
 						$auxotrophy_hash->{$biocpd}->{$genomeid} = {
@@ -1612,24 +1616,39 @@ sub func_predict_auxotrophy {
 		$current_media->parent($handler->util_store());
 		my $wsmeta = $handler->util_save_object($current_media,$params->{workspace}."/".$genomeid.".auxo_media");
 	}
-	my $htmlreport = "<div style=\"height: 600px; overflow-y: scroll;\"><table class=\"reporttbl\"><tr><th>Class</th><th>Compound</th><th>Ave gf</th>";
+	print "Class\tCompound\tAve gf";
 	for (my $i=0; $i < @{$genomes}; $i++) {
-		$htmlreport .= "<th>".$genomes->[$i]."</th>";
+		print "\t".$genomes->[$i];
 	}
-	$htmlreport .= "</tr>";
+	print "\n";
 	for (my $i=0; $i < @{$cpddata}; $i++) {
-		$htmlreport .= "<tr><td>".$cpddata->[$i]->{class}."</td><td>".$cpddata->[$i]->{name}."<br>(".$cpddata->[$i]->{id}.")</td><td>".$cpddata->[$i]->{avegf}."</td>";
+		print $cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\t".$cpddata->[$i]->{avegf};
 		for (my $j=0; $j < @{$genomes}; $j++) {
 			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
-				$htmlreport .= "<td>".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."</td>";
+				print "\t".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn};
 			} else {
-				$htmlreport .= "<td>-</td>";
+				print "\t-";
 			}
 		}
-		$htmlreport .= "</tr>";
+		print "\n";
 	}
-	$htmlreport .= "</table></div>";
-	print $htmlreport;
+#	my $htmlreport = "<div style=\"height: 600px; overflow-y: scroll;\"><table class=\"reporttbl\"><tr><th>Class</th><th>Compound</th><th>Ave gf</th>";
+#	for (my $i=0; $i < @{$genomes}; $i++) {
+#		$htmlreport .= "<th>".$genomes->[$i]."</th>";
+#	}
+#	$htmlreport .= "</tr>";
+#	for (my $i=0; $i < @{$cpddata}; $i++) {
+#		$htmlreport .= "<tr><td>".$cpddata->[$i]->{class}."</td><td>".$cpddata->[$i]->{name}."<br>(".$cpddata->[$i]->{id}.")</td><td>".$cpddata->[$i]->{avegf}."</td>";
+#		for (my $j=0; $j < @{$genomes}; $j++) {
+#			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
+#				$htmlreport .= "<td>".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."</td>";
+#			} else {
+#				$htmlreport .= "<td>-</td>";
+#			}
+#		}
+#		$htmlreport .= "</tr>";
+#	}
+#	$htmlreport .= "</table></div>";
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 }
 
