@@ -1506,12 +1506,17 @@ sub func_predict_auxotrophy {
 		$cpddatahash->{$cpddata->[$i]->{id}} = $cpddata->[$i];
 	}
 	my $auxotrophy_hash;
+	my $template_trans = Bio::KBase::constants::template_trans();
 	for (my $i=0; $i < @{$genomes}; $i++) {
 		my $datachannel = {};
 		my $genomeid = $genomes->[$i];
+		my $genomeobj = $handler->util_get_object(Bio::KBase::utilities::buildref($genomeid,$params->{genome_workspace}));
 		print "Prcoessing ".$genomeid."\n";
 		my $current_media = $media->cloneObject();
+		my $tid = $template_trans->{$genomeobj->template_classification()};
 		Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
+			template_id => $tid,
+			template_workspace => "chenry:narrative_1493181437626",
 			workspace => "NULL",
 			fbamodel_output_id => $genomeid.".fbamodel",
 			genome_id => $genomeid,
