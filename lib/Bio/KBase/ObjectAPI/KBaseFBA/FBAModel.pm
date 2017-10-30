@@ -2411,7 +2411,7 @@ sub translate_to_localrefs {
 		my $array = [split(/_/,$reactions->[$i]->id())];
 	 	my $comp = pop(@{$array});
 	 	$comp =~ s/\d+//;
-		if ($reactions->[$i]->reaction_ref() =~ m/\/([^\/]+)$/) {
+		if ($reactions->[$i]->reaction_ref() =~ m/\/([^\/]+?)(_[^\/])?$/) {
 			$reactions->[$i]->reaction_ref("~/template/reactions/id/".$1."_".$comp);
 		}
 		my $prots = $reactions->[$i]->modelReactionProteins();
