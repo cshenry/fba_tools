@@ -10,7 +10,7 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
-### VERSION: 1.7.0 (Released 9/20/2017)
+### VERSION: 1.7.0 (Released 10/20/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
 - Added View Flux Network app which visualises a FBA solution in an interactive
