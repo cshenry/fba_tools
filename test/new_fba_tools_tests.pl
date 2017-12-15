@@ -347,6 +347,17 @@ lives_ok{
         })
     } 'SBML import: yet annother model from BiGG';
 
+lives_ok{
+        $impl->sbml_file_to_model({
+            model_file     =>
+            { path => "/kb/module/test/data/iMB155.xml" },
+            model_name     => "sbml_test6",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "7601/4/1",
+            biomass        => [ "R_BIOMASS" ]
+        })
+    } 'SBML import: yet annother model from BiGG';
+
 dies_ok {
         $impl->sbml_file_to_model({
             model_file     =>
