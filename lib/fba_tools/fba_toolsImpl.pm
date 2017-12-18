@@ -594,6 +594,7 @@ sub build_multiple_metabolic_models
 	for (my $i=0; $i < @{$genomes}; $i++) {
 		$params->{genome_workspace} = $orig_genome_workspace;
 		$params->{genome_id} = $genomes->[$i];
+		$params->{fbamodel_output_id} = undef;
 		print "Now building model of ".$params->{genome_id}."\n";
 		eval {
 			my $output = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
