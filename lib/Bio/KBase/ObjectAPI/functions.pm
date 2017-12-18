@@ -2760,6 +2760,8 @@ sub func_importmodel {
 					$id =~ s/\!/__/g;
 					#strip the compartment in ID if present
 					$striped_id = $id =~ s/_[a-z]\d*$//r;
+					$striped_id =~ s/[^\w]/_/g;
+					$striped_id =~ s/-/_/g;
 				} elsif ($nm eq "name") {
 					$name = $value;
 					$name =~ s/_plus_/+/g;
@@ -2873,7 +2875,7 @@ sub func_importmodel {
 			push(@{$params->{compounds}},[$striped_id."_".$compartment,$charge,$formula,$name,$aliases,$smiles,$inchikey]);
 			$cpdhash->{$sbmlid} = {
 				id => $sbmlid,
-				rootid => $id,
+				rootid => $striped_id,
 				name => $name,
 				formula => $formula,
 				charge => $charge,
