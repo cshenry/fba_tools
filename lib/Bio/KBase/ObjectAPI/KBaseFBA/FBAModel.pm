@@ -1339,6 +1339,7 @@ sub add_gapfilling {
 	my $biomass_removals = $args->{object}->biomassRemovals();
 	my $brkeys = [keys(%{$biomass_removals})];
 	if (@{$brkeys} > 0) {
+		Bio::KBase::utilities::error("Gapfilling impossible without modifying biomass reaction!");
 		my $biomass = "bio1";
 		if (!defined($biomass_removals->{bio1})) {
 			$biomass = $brkeys->[0];
