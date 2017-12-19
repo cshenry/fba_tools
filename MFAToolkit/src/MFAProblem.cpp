@@ -4209,7 +4209,7 @@ int MFAProblem::LoadAdditionalReactions(Data* InData,OptimizationParameter* InPa
 }
 
 int MFAProblem::BuildCoreProblem(Data* InData,OptimizationParameter*& InParameters) {
-	this->LoadBiomassDrainReactions(InData,InParameters);
+	//this->LoadBiomassDrainReactions(InData,InParameters);
 	this->LoadAdditionalReactions(InData,InParameters);
 	if (InParameters == NULL) {
 		InParameters = ReadParameters();
@@ -7008,7 +7008,7 @@ int MFAProblem::CompleteGapFilling(Data* InData, OptimizationParameter* InParame
 	}
 	ClearSolutions();
 	//First we load the complete reaction list from file
-	this->LoadBiomassDrainReactions(InData,InParameters);
+	//this->LoadBiomassDrainReactions(InData,InParameters);
 	if (GetParameter("Add DB reactions for gapfilling").compare("1") == 0) {
 		if (this->LoadGapFillingReactions(InData,InParameters) != SUCCESS) {
 			return FAIL;
