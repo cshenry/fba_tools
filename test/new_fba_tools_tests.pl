@@ -55,6 +55,16 @@ lives_ok{
         })
    } "gapfill_metabolic_model";
 
+lives_ok{
+        $impl->gapfill_metabolic_model({
+            fbamodel_id => "7601/194/1",
+	        media_id => "8681/16/3",
+	        fbamodel_output_id =>  "test_model_pyrdine",
+	        workspace => get_ws_name(),
+	        target_reaction => "bio1"
+        })
+   } "gapfill_metabolic_model_fails";
+
 # run_flux_balance_analysis
 lives_ok{
         $impl->run_flux_balance_analysis({

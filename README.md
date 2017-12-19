@@ -10,6 +10,14 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
+### VERSION: 1.7.1 (Released 12/19/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Fixed PUBLIC-256 build multiple metabolic saving to same name
+- Fixed metabolic model upload for compounds with dashes and spaces
+- Fixed Gapfilling drops compounds from biomass to grow
+
+------------------------------------------
 ### VERSION: 1.7.0 (Released 10/20/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
