@@ -376,7 +376,6 @@ sub func_build_metabolic_model {
 		modelid => $params->{fbamodel_output_id},
 		fulldb => 0
 	});
-	$datachannel->{fbamodel} = $model;
 	#Gapfilling model if requested
 	my $output;
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
@@ -411,7 +410,8 @@ sub func_build_metabolic_model {
 		my $wsmeta = $handler->util_save_object($model,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
 		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.</p></div>"
 	}
-	$output->{new_fbamodel} = $model;
+	$datachannel->{fbamodel} = $model;
+	#$output->{new_fbamodel} = $model;
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return $output;
 }
@@ -1657,6 +1657,177 @@ sub func_check_model_mass_balance {
 		}
 		$htmlreport .= "</table></div>";
 	}
+	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+}
+
+sub func_predict_auxotrophy {
+	my ($params) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","genome_ids"],{
+		genome_workspace => $params->{workspace}
+	});
+	my $genomedata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","genome auxotrophy data filename"))}));
+	my $rxndata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","reaction auxotrophy data filename"))}));
+	my $cpddata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","biomass compound data filename"))}));
+	my $media = $handler->util_get_object("KBaseMedia/Carbon-D-Glucose");
+	my $genomes = $params->{genome_ids};
+	my $transporthash = {};
+	my $cpddatahash = {};
+	for (my $i=0; $i < @{$cpddata}; $i++) {
+		if (defined($cpddata->[$i]->{transporter})) {
+			$transporthash->{$cpddata->[$i]->{transporter}} = 1;
+		}
+		$cpddatahash->{$cpddata->[$i]->{id}} = $cpddata->[$i];
+	}
+	my $auxotrophy_hash;
+	my $template_trans = Bio::KBase::constants::template_trans();
+	for (my $i=0; $i < @{$genomes}; $i++) {
+		my $datachannel = {};
+		my $genomeid = $genomes->[$i];
+		my $genomeobj = $handler->util_get_object(Bio::KBase::utilities::buildref($genomeid,$params->{genome_workspace}));
+		print "Prcoessing ".$genomeid."\n";
+		my $current_media = $media->cloneObject();
+		my $tid = $template_trans->{$genomeobj->template_classification()};
+		Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
+			template_id => $tid,
+			template_workspace => "chenry:narrative_1493181437626",
+			workspace => "NULL",
+			fbamodel_output_id => $genomeid.".fbamodel",
+			genome_id => $genomeid,
+			genome_workspace => $params->{genome_workspace},
+			media_id => "Carbon-D-Glucose",
+			media_workspace => "KBaseMedia",
+			gapfill_model => 1
+		},$datachannel);
+		foreach my $rxn (keys(%{$transporthash})) {
+			if (!defined($datachannel->{fbamodel}->queryObject("modelreactions",{id => $rxn."_c0"}))) {
+				$datachannel->{fbamodel}->addModelReaction({
+					reaction => $rxn,
+					direction => "=",
+					addReaction => 1
+				});
+			}
+		}
+		Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+			workspace => "NULL",
+			fbamodel_id => $genomeid.".fbamodel",
+			fba_output_id => $genomeid.".fba_min",
+			media_id => "Carbon-D-Glucose",
+			media_workspace => "KBaseMedia",
+			target_reaction => "bio1",
+			fva => 1,
+			minimize_flux => 1,
+		},$datachannel->{fbamodel});
+		Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+			workspace => "NULL",
+			fbamodel_id => $genomeid.".fbamodel",
+			fba_output_id => $genomeid.".fba_com",
+			media_id => "Complete",
+			media_workspace => "KBaseMedia",
+			target_reaction => "bio1",
+			fva => 1,
+			minimize_flux => 1,
+		},$datachannel->{fbamodel});
+		my $rxnhash;
+		my $rxns = $datachannel->{fbamodel}->modelreactions();
+		for (my $i=0; $i < @{$rxns}; $i++) {
+			my $rxnid = $rxns->[$i]->id();
+			$rxnid =~ s/_[a-z]+\d+$//;
+			$rxnhash->{$rxnid} = $rxns->[$i];
+		}
+		my $fba = $handler->util_get_object("NULL/".$genomeid.".fba_min");
+		my $fbarxns = $fba->FBAReactionVariables();
+		for (my $i=0; $i < @{$fbarxns}; $i++) {
+			my $rxnid = $fbarxns->[$i]->modelreaction()->id();
+			if (abs($fbarxns->[$i]->value()) > 1e-7) {
+				$rxnid =~ s/_[a-z]+\d+$//;
+				$rxnhash->{$rxnid}->{minclass} = "f";
+				if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > 1e-7) {
+					$rxnhash->{$rxnid}->{minclass} = "e";
+				}
+			} else {
+				$rxnhash->{$rxnid}->{minclass} = "n";
+			}
+		}
+		$fba = $handler->util_get_object("NULL/".$genomeid.".fba_com");
+		$fbarxns = $fba->FBAReactionVariables();
+		for (my $i=0; $i < @{$fbarxns}; $i++) {
+			my $rxnid = $fbarxns->[$i]->modelreaction()->id();
+			$rxnid =~ s/_[a-z]+\d+$//;
+			$rxnhash->{$rxnid}->{comclass} = "ne";
+			if ($fbarxns->[$i]->max() < -1e-7 || $fbarxns->[$i]->min() > 1e-7) {
+				$rxnhash->{$rxnid}->{comclass} = "ne";#TODO: this is technically wrong
+			}
+		}
+		foreach my $rxn (keys(%{$rxnhash})) {
+			#Reaction is mapped to a biomass component and it's carrying flux in MM
+			if (defined($rxndata->{$rxn}) && $rxnhash->{$rxn}->{minclass} ne "n" && $rxnhash->{$rxn}->{comclass} ne "e") {
+				foreach my $biocpd (keys(%{$rxndata->{$rxn}->{biomass_cpds}})) {
+					if (!defined($auxotrophy_hash->{$biocpd}->{$genomeid})) {
+						$auxotrophy_hash->{$biocpd}->{$genomeid} = {
+							rxn => 0,
+							gfrxn => 0,
+							gfrxns => {},
+							rxns => {}
+						};
+					}
+					$auxotrophy_hash->{$biocpd}->{$genomeid}->{rxns}->{$rxn} = $rxnhash->{$rxn};
+					$auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn}++;
+					if ($rxnhash->{$rxn}->gprString() eq "Unknown") {
+						$auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxns}->{$rxn} = $rxnhash->{$rxn};
+						$auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn}++;
+					}
+				}
+			}
+		}
+		foreach my $biocpd (keys(%{$auxotrophy_hash})) {
+			if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && $auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= 2) {
+				$current_media->add("mediacompounds",{
+					compound_ref => "kbase/default/compounds/id/".$biocpd,
+					id => $biocpd,
+					name => $cpddatahash->{$biocpd}->{name},
+					concentration => 0.001,
+					maxFlux => 100,
+					minFlux => -100
+				});
+			}
+		}
+		$current_media->parent($handler->util_store());
+		my $wsmeta = $handler->util_save_object($current_media,$params->{workspace}."/".$genomeid.".auxo_media");
+	}
+	print "Class\tCompound\tAve gf";
+	for (my $i=0; $i < @{$genomes}; $i++) {
+		print "\t".$genomes->[$i];
+	}
+	print "\n";
+	for (my $i=0; $i < @{$cpddata}; $i++) {
+		print $cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\t".$cpddata->[$i]->{avegf};
+		for (my $j=0; $j < @{$genomes}; $j++) {
+			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
+				print "\t".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn};
+			} else {
+				print "\t-";
+			}
+		}
+		print "\n";
+	}
+	my $htmlreport = "";
+#	my $htmlreport = "<div style=\"height: 600px; overflow-y: scroll;\"><table class=\"reporttbl\"><tr><th>Class</th><th>Compound</th><th>Ave gf</th>";
+#	for (my $i=0; $i < @{$genomes}; $i++) {
+#		$htmlreport .= "<th>".$genomes->[$i]."</th>";
+#	}
+#	$htmlreport .= "</tr>";
+#	for (my $i=0; $i < @{$cpddata}; $i++) {
+#		$htmlreport .= "<tr><td>".$cpddata->[$i]->{class}."</td><td>".$cpddata->[$i]->{name}."<br>(".$cpddata->[$i]->{id}.")</td><td>".$cpddata->[$i]->{avegf}."</td>";
+#		for (my $j=0; $j < @{$genomes}; $j++) {
+#			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
+#				$htmlreport .= "<td>".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."</td>";
+#			} else {
+#				$htmlreport .= "<td>-</td>";
+#			}
+#		}
+#		$htmlreport .= "</tr>";
+#	}
+#	$htmlreport .= "</table></div>";
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 }
 

@@ -431,6 +431,20 @@ module fba_tools {
          Identifies reactions in the model that are not mass balanced
     */
 	funcdef check_model_mass_balance(CheckModelMassBalanceParams params) returns (CheckModelMassBalanceResults results) authentication required;
+	
+	typedef structure {
+		list<genome_id> genome_ids;
+		workspace_name genome_workspace;
+		workspace_name workspace;
+    } PredictAuxotrophyParams;
+    
+    typedef structure {
+        ws_report_id new_report_ref;
+    } PredictAuxotrophyResults;
+    /*
+         Identifies reactions in the model that are not mass balanced
+    */
+	funcdef predict_auxotrophy(PredictAuxotrophyParams params) returns (PredictAuxotrophyResults results) authentication required;
 
     /*
     ModelComparisonParams object: a list of models and optional pangenome and protein comparison; mc_name is the name for the new object.

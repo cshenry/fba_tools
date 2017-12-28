@@ -424,37 +424,56 @@ sub save_objects {
 		} else {
 			$objdata->{name} = $array->[1];
 		}
-		if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
-			require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("ModelSEED","call_back_url"));
-			my $gaout = $ga->save_one_genome_v1({
-				workspace => $array->[0],
-		        name => $array->[1],
-		        data => $objdata->{data},
-		        provenance => $objdata->{provenance},
-		        hidden => $obj->{hidden}
-			});
-			my $info = $gaout->{info};
-	    	$self->cache()->{$gaout->{info}->[6]."/".$gaout->{info}->[0]."/".$gaout->{info}->[4]} = $obj->{object};
-	    	$self->cache()->{$gaout->{info}->[7]."/".$gaout->{info}->[1]."/".$gaout->{info}->[4]} = $obj->{object};
-		    $self->uuid_refs()->{$obj->{object}->uuid()} = $gaout->{info}->[7]."/".$gaout->{info}->[1]."/".$gaout->{info}->[4];
-		    $refobjhash->{$ref}->{object}->_reference($gaout->{info}->[6]."/".$gaout->{info}->[0]."/".$gaout->{info}->[4]);
-	    	$refobjhash->{$ref}->{object}->_wsobjid($gaout->{info}->[0]);
-			$refobjhash->{$ref}->{object}->_wsname($gaout->{info}->[1]);
-			$refobjhash->{$ref}->{object}->_wstype($gaout->{info}->[2]);
-			$refobjhash->{$ref}->{object}->_wssave_date($gaout->{info}->[3]);
-			$refobjhash->{$ref}->{object}->_wsversion($gaout->{info}->[4]);
-			$refobjhash->{$ref}->{object}->_wssaved_by($gaout->{info}->[5]);
-			$refobjhash->{$ref}->{object}->_wswsid($gaout->{info}->[6]);
-			$refobjhash->{$ref}->{object}->_wsworkspace($gaout->{info}->[7]);
-			$refobjhash->{$ref}->{object}->_wschsum($gaout->{info}->[8]);
-			$refobjhash->{$ref}->{object}->_wssize($gaout->{info}->[9]);
-			$refobjhash->{$ref}->{object}->_wsmeta($gaout->{info}->[10]);
-	    	$output->{$ref} = $gaout->{info};
-			next;
+		if ($array->[0] eq "NULL") {
+			#This enables us to write "cache only" objects that won't ever be stored permanently in the workspace
+			$self->cache()->{$ref} = $obj->{object};
+	    	$self->uuid_refs()->{$obj->{object}->uuid()} = $ref;
+		    $refobjhash->{$ref}->{object}->_reference($ref);
+	    	$refobjhash->{$ref}->{object}->_wsobjid(0);
+			$refobjhash->{$ref}->{object}->_wsname($array->[1]);
+			$refobjhash->{$ref}->{object}->_wstype($objdata->{type});
+			$refobjhash->{$ref}->{object}->_wssave_date("");
+			$refobjhash->{$ref}->{object}->_wsversion(0);
+			$refobjhash->{$ref}->{object}->_wssaved_by("");
+			$refobjhash->{$ref}->{object}->_wswsid(0);
+			$refobjhash->{$ref}->{object}->_wsworkspace($array->[0]);
+			$refobjhash->{$ref}->{object}->_wschsum("");
+			$refobjhash->{$ref}->{object}->_wssize(0);
+			$refobjhash->{$ref}->{object}->_wsmeta({});
+			$output->{$ref} = [0,$array->[1],$objdata->{type},"",0,"",0,$array->[0],"",0,{}];
+		} else {
+			if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
+				require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
+				my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("ModelSEED","call_back_url"));
+				my $gaout = $ga->save_one_genome_v1({
+					workspace => $array->[0],
+			        name => $array->[1],
+			        data => $objdata->{data},
+			        provenance => $objdata->{provenance},
+			        hidden => $obj->{hidden}
+				});
+				my $info = $gaout->{info};
+		    	$self->cache()->{$gaout->{info}->[6]."/".$gaout->{info}->[0]."/".$gaout->{info}->[4]} = $obj->{object};
+		    	$self->cache()->{$gaout->{info}->[7]."/".$gaout->{info}->[1]."/".$gaout->{info}->[4]} = $obj->{object};
+			    $self->uuid_refs()->{$obj->{object}->uuid()} = $gaout->{info}->[7]."/".$gaout->{info}->[1]."/".$gaout->{info}->[4];
+			    $refobjhash->{$ref}->{object}->_reference($gaout->{info}->[6]."/".$gaout->{info}->[0]."/".$gaout->{info}->[4]);
+		    	$refobjhash->{$ref}->{object}->_wsobjid($gaout->{info}->[0]);
+				$refobjhash->{$ref}->{object}->_wsname($gaout->{info}->[1]);
+				$refobjhash->{$ref}->{object}->_wstype($gaout->{info}->[2]);
+				$refobjhash->{$ref}->{object}->_wssave_date($gaout->{info}->[3]);
+				$refobjhash->{$ref}->{object}->_wsversion($gaout->{info}->[4]);
+				$refobjhash->{$ref}->{object}->_wssaved_by($gaout->{info}->[5]);
+				$refobjhash->{$ref}->{object}->_wswsid($gaout->{info}->[6]);
+				$refobjhash->{$ref}->{object}->_wsworkspace($gaout->{info}->[7]);
+				$refobjhash->{$ref}->{object}->_wschsum($gaout->{info}->[8]);
+				$refobjhash->{$ref}->{object}->_wssize($gaout->{info}->[9]);
+				$refobjhash->{$ref}->{object}->_wsmeta($gaout->{info}->[10]);
+		    	$output->{$ref} = $gaout->{info};
+			} else {
+				push(@{$wsdata->{$array->[0]}->{refs}},$ref);
+				push(@{$wsdata->{$array->[0]}->{objects}},$objdata);
+			}
 		}
-		push(@{$wsdata->{$array->[0]}->{refs}},$ref);
-		push(@{$wsdata->{$array->[0]}->{objects}},$objdata);
     }
 	foreach my $ws (keys(%{$wsdata})) {
     	my $input = {objects => $wsdata->{$ws}->{objects}};
@@ -497,8 +516,8 @@ sub save_objects {
 	    	}
 	    	$output->{$wsdata->{$ws}->{refs}->[$i]} = $listout->[$i];
 	    }
-	    return $output;
     }
+    return $output;
 }
 
 sub list_objects {
