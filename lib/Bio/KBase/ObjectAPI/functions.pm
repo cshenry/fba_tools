@@ -1672,6 +1672,7 @@ sub func_predict_auxotrophy {
 	my $genomes = $params->{genome_ids};
 	my $transporthash = {};
 	my $cpddatahash = {};
+	my $auxotrophy_threshold_hash = Bio::KBase::constants::auxotrophy_thresholds();
 	for (my $i=0; $i < @{$cpddata}; $i++) {
 		if (defined($cpddata->[$i]->{transporter})) {
 			$transporthash->{$cpddata->[$i]->{transporter}} = 1;
@@ -1780,7 +1781,9 @@ sub func_predict_auxotrophy {
 			}
 		}
 		foreach my $biocpd (keys(%{$auxotrophy_hash})) {
-			if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && $auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= 2) {
+			$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 0;
+			if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && ($auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= $auxotrophy_threshold_hash->{$biocpd}->[1] || $auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn} >= $auxotrophy_threshold_hash->{$biocpd}->[0])) {
+				$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 1;
 				$current_media->add("mediacompounds",{
 					compound_ref => "kbase/default/compounds/id/".$biocpd,
 					id => $biocpd,
@@ -1829,6 +1832,7 @@ sub func_predict_auxotrophy {
 #	}
 #	$htmlreport .= "</table></div>";
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	return $auxotrophy_hash;
 }
 
 sub func_create_or_edit_media {
