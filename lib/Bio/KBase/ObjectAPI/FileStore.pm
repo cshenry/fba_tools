@@ -198,6 +198,11 @@ sub save_objects {
     return $output;
 }
 
+sub get_ref_from_metadata {
+	my ($self,$metadata) = @_;
+	return $metadata->{"ref"};
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 1;

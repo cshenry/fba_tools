@@ -26,7 +26,7 @@ sub util_save_object {
 
 sub util_get_ref{
 	my $metadata = shift;
-	return $metadata->[6]."/".$metadata->[0]."/".$metadata->[4]
+	return $handler->util_store()->get_ref_from_metadata($metadata);
 }
 
 sub util_build_expression_hash {
@@ -1761,7 +1761,7 @@ sub func_predict_auxotrophy {
 		}
 		foreach my $rxn (keys(%{$rxnhash})) {
 			#Reaction is mapped to a biomass component and it's carrying flux in MM
-			if (defined($rxndata->{$rxn}) && $rxnhash->{$rxn}->{minclass} ne "n" && $rxnhash->{$rxn}->{comclass} ne "e") {
+			if (defined($rxndata->{$rxn}) && defined($rxnhash->{$rxn}->{minclass}) && defined($rxnhash->{$rxn}->{comclass}) && $rxnhash->{$rxn}->{minclass} ne "n" && $rxnhash->{$rxn}->{comclass} ne "e") {
 				foreach my $biocpd (keys(%{$rxndata->{$rxn}->{biomass_cpds}})) {
 					if (!defined($auxotrophy_hash->{$biocpd}->{$genomeid})) {
 						$auxotrophy_hash->{$biocpd}->{$genomeid} = {
@@ -1782,16 +1782,18 @@ sub func_predict_auxotrophy {
 		}
 		foreach my $biocpd (keys(%{$auxotrophy_hash})) {
 			$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 0;
-			if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && ($auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= $auxotrophy_threshold_hash->{$biocpd}->[1] || $auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn} >= $auxotrophy_threshold_hash->{$biocpd}->[0])) {
-				$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 1;
-				$current_media->add("mediacompounds",{
-					compound_ref => "kbase/default/compounds/id/".$biocpd,
-					id => $biocpd,
-					name => $cpddatahash->{$biocpd}->{name},
-					concentration => 0.001,
-					maxFlux => 100,
-					minFlux => -100
-				});
+			if (defined($auxotrophy_threshold_hash->{$biocpd})) {
+				if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && ($auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= $auxotrophy_threshold_hash->{$biocpd}->[1] || $auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn} <= $auxotrophy_threshold_hash->{$biocpd}->[0])) {
+					$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 1;
+					$current_media->add("mediacompounds",{
+						compound_ref => "kbase/default/compounds/id/".$biocpd,
+						id => $biocpd,
+						name => $cpddatahash->{$biocpd}->{name},
+						concentration => 0.001,
+						maxFlux => 100,
+						minFlux => -100
+					});
+				}
 			}
 		}
 		$current_media->parent($handler->util_store());
@@ -1806,7 +1808,7 @@ sub func_predict_auxotrophy {
 		print $cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\t".$cpddata->[$i]->{avegf};
 		for (my $j=0; $j < @{$genomes}; $j++) {
 			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
-				print "\t".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn};
+				print "\t".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{auxotrophic};
 			} else {
 				print "\t-";
 			}

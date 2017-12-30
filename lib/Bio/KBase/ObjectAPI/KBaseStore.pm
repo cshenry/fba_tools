@@ -535,6 +535,11 @@ sub updated_reference {
 	return $self->updated_refs()->{$oldref};
 }
 
+sub get_ref_from_metadata {
+	my ($self,$metadata) = @_;
+	return $metadata->[6]."/".$metadata->[0]."/".$metadata->[4]
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 1;
