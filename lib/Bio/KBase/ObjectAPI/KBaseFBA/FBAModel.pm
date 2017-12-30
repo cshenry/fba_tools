@@ -7,7 +7,6 @@
 ########################################################################
 use strict;
 use YAML::XS;
-use XML::LibXML;
 use File::Temp;
 use Bio::KBase::ObjectAPI::KBaseFBA::DB::FBAModel;
 package Bio::KBase::ObjectAPI::KBaseFBA::FBAModel;
