@@ -606,7 +606,7 @@ sub LoadExternalReactionEquation {
 				my $smiles = "";
 
 				my $compound_rec = $args->{compounds}->{$origid};
-				if (!defined $compound_rec){
+				if (!defined $compound_rec && $origid !~ m/^cpd\d+_[a-z]\d+$/){
 					Bio::KBase::ObjectAPI::utilities::error("Undefined compound used as reactant: $origid");
 				}
 				#if compoud has a parsed name
