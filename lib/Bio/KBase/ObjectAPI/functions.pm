@@ -1658,6 +1658,7 @@ sub func_check_model_mass_balance {
 		$htmlreport .= "</table></div>";
 	}
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	return $model->name()
 }
 
 sub func_predict_auxotrophy {
