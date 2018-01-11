@@ -1784,6 +1784,11 @@ sub merge_models {
 					compound_ref => $cpd->compound_ref(),
 					charge => $cpd->charge(),
 					formula => $cpd->formula(),
+					name => $cpd->name(),
+					smiles => $cpd->smiles(),
+					inchikey => $cpd->inchikey(),
+					dblinks => $cpd->dblinks(),
+					aliases => $cpd->aliases(),
 					modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{$cpd->modelcompartment()->compartment()->id()}->id()
 				});
 			}
