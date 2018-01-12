@@ -1608,6 +1608,9 @@ sub func_check_model_mass_balance {
    	my $objective = $fba->runFBA();
    	my $htmlreport = "<p>No mass imbalance found</p>";
 	my $message = "No mass imbalance found";
+	if ($fba->MFALog =~ /Couldn't open MFALog.txt/){
+		die("Model triggered fatal solver error. Check logs.");
+	}
 	if (length($fba->MFALog) > 0) {
 		$message = $fba->MFALog();
 		$htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 400px; overflow-y: scroll;\"><table class=\"reporttbl\"><row><td>Reaction</td><td>Reactants</td><td>Products</td><td>Extra atoms in reactants</td><td>Extra atoms in products</td></row>";
@@ -1658,6 +1661,7 @@ sub func_check_model_mass_balance {
 		$htmlreport .= "</table></div>";
 	}
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	return $model->id()
 }
 
 sub func_predict_auxotrophy {

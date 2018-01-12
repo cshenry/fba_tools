@@ -27,6 +27,7 @@ use Bio::KBase::kbaseenv;
 use DataFileUtil::DataFileUtilClient;
 use Bio::KBase::HandleService;
 use Archive::Zip;
+use Data::Dumper;
 
 #Initialization function for call
 sub util_initialize_call {
@@ -1743,12 +1744,12 @@ sub check_model_mass_balance
     #BEGIN check_model_mass_balance
     $self->util_initialize_call($params,$ctx);
 	$results = {};
-	Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
+	my $model_name = Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
 	$params->{fbamodel_id} =~ s/\//-/g;
     $self->util_finalize_call({
 		output => $results,
 		workspace => $params->{workspace},
-		report_name => $params->{fbamodel_id}.".check_mass_balance.report",
+		report_name => $model_name.".check_mass_balance.report",
 	});
     #END check_model_mass_balance
     my @_bad_returns;
