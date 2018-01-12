@@ -26,7 +26,7 @@ sub util_save_object {
 
 sub util_get_ref{
 	my $metadata = shift;
-	return $metadata->[6]."/".$metadata->[0]."/".$metadata->[4]
+	return $handler->util_store()->get_ref_from_metadata($metadata);
 }
 
 sub util_build_expression_hash {
@@ -1136,7 +1136,7 @@ sub func_simulate_growth_on_phenotype_data {
 	}
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");
 	$params->{default_max_uptake} = 100;
-	my $media = $handler->util_get_object("KBaseMedia/Complete");
+	my $media = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_media_workspace")."/Complete");
 	$handler->util_log("Preparing flux balance analysis problem.");
 	my $fba;
 	if ($params->{gapfill_phenotypes} == 0 && $params->{fit_phenotype_data} == 0) {
@@ -1601,7 +1601,7 @@ sub func_check_model_mass_balance {
 	});
 	$handler->util_log("Retrieving model.");
 	my $model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
-	my $media = $handler->util_get_object("KBaseMedia/Complete");
+	my $media = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_media_workspace")."/Complete");
 	my $fba = util_build_fba($params,$model,$media,"tempfba",0,0,undef);
 	$fba->parameters()->{"Mass balance atoms"} = "C;S;P;O;N";
 	$handler->util_log("Checking model mass balance.");
@@ -1672,10 +1672,11 @@ sub func_predict_auxotrophy {
 	my $genomedata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","genome auxotrophy data filename"))}));
 	my $rxndata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","reaction auxotrophy data filename"))}));
 	my $cpddata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","biomass compound data filename"))}));
-	my $media = $handler->util_get_object("KBaseMedia/Carbon-D-Glucose");
+	my $media = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_media_workspace")."/Carbon-D-Glucose");
 	my $genomes = $params->{genome_ids};
 	my $transporthash = {};
 	my $cpddatahash = {};
+	my $auxotrophy_threshold_hash = Bio::KBase::constants::auxotrophy_thresholds();
 	for (my $i=0; $i < @{$cpddata}; $i++) {
 		if (defined($cpddata->[$i]->{transporter})) {
 			$transporthash->{$cpddata->[$i]->{transporter}} = 1;
@@ -1693,13 +1694,13 @@ sub func_predict_auxotrophy {
 		my $tid = $template_trans->{$genomeobj->template_classification()};
 		Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
 			template_id => $tid,
-			template_workspace => "chenry:narrative_1493181437626",
+			template_workspace => Bio::KBase::utilities::conf("ModelSEED","default_template_workspace"),
 			workspace => "NULL",
 			fbamodel_output_id => $genomeid.".fbamodel",
 			genome_id => $genomeid,
 			genome_workspace => $params->{genome_workspace},
 			media_id => "Carbon-D-Glucose",
-			media_workspace => "KBaseMedia",
+			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
 			gapfill_model => 1
 		},$datachannel);
 		foreach my $rxn (keys(%{$transporthash})) {
@@ -1716,7 +1717,7 @@ sub func_predict_auxotrophy {
 			fbamodel_id => $genomeid.".fbamodel",
 			fba_output_id => $genomeid.".fba_min",
 			media_id => "Carbon-D-Glucose",
-			media_workspace => "KBaseMedia",
+			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
 			target_reaction => "bio1",
 			fva => 1,
 			minimize_flux => 1,
@@ -1726,7 +1727,7 @@ sub func_predict_auxotrophy {
 			fbamodel_id => $genomeid.".fbamodel",
 			fba_output_id => $genomeid.".fba_com",
 			media_id => "Complete",
-			media_workspace => "KBaseMedia",
+			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
 			target_reaction => "bio1",
 			fva => 1,
 			minimize_flux => 1,
@@ -1764,7 +1765,7 @@ sub func_predict_auxotrophy {
 		}
 		foreach my $rxn (keys(%{$rxnhash})) {
 			#Reaction is mapped to a biomass component and it's carrying flux in MM
-			if (defined($rxndata->{$rxn}) && $rxnhash->{$rxn}->{minclass} ne "n" && $rxnhash->{$rxn}->{comclass} ne "e") {
+			if (defined($rxndata->{$rxn}) && defined($rxnhash->{$rxn}->{minclass}) && defined($rxnhash->{$rxn}->{comclass}) && $rxnhash->{$rxn}->{minclass} ne "n" && $rxnhash->{$rxn}->{comclass} ne "e") {
 				foreach my $biocpd (keys(%{$rxndata->{$rxn}->{biomass_cpds}})) {
 					if (!defined($auxotrophy_hash->{$biocpd}->{$genomeid})) {
 						$auxotrophy_hash->{$biocpd}->{$genomeid} = {
@@ -1784,15 +1785,19 @@ sub func_predict_auxotrophy {
 			}
 		}
 		foreach my $biocpd (keys(%{$auxotrophy_hash})) {
-			if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && $auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= 2) {
-				$current_media->add("mediacompounds",{
-					compound_ref => "kbase/default/compounds/id/".$biocpd,
-					id => $biocpd,
-					name => $cpddatahash->{$biocpd}->{name},
-					concentration => 0.001,
-					maxFlux => 100,
-					minFlux => -100
-				});
+			$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 0;
+			if (defined($auxotrophy_threshold_hash->{$biocpd})) {
+				if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && ($auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= $auxotrophy_threshold_hash->{$biocpd}->[1] || $auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn} <= $auxotrophy_threshold_hash->{$biocpd}->[0])) {
+					$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 1;
+					$current_media->add("mediacompounds",{
+						compound_ref => "kbase/default/compounds/id/".$biocpd,
+						id => $biocpd,
+						name => $cpddatahash->{$biocpd}->{name},
+						concentration => 0.001,
+						maxFlux => 100,
+						minFlux => -100
+					});
+				}
 			}
 		}
 		$current_media->parent($handler->util_store());
@@ -1807,7 +1812,7 @@ sub func_predict_auxotrophy {
 		print $cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\t".$cpddata->[$i]->{avegf};
 		for (my $j=0; $j < @{$genomes}; $j++) {
 			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
-				print "\t".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn};
+				print "\t".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{auxotrophic};
 			} else {
 				print "\t-";
 			}
@@ -1833,6 +1838,7 @@ sub func_predict_auxotrophy {
 #	}
 #	$htmlreport .= "</table></div>";
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	return $auxotrophy_hash;
 }
 
 sub func_create_or_edit_media {
@@ -2093,7 +2099,7 @@ sub func_quantitative_optimization {
 	if (!defined($params->{media_id})) {
 		$params->{default_max_uptake} = 100;
 		$params->{media_id} = "Complete";
-		$params->{media_workspace} = "KBaseMedia";
+		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
 	}
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");
 	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
