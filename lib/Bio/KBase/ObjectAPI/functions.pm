@@ -2696,7 +2696,7 @@ sub func_import_media {
 			concentration => 0.001,
 			maxFlux => 1000,
 			minFlux => -1000,
-			compound_ref => "/kbase/default/compounds/id/cpd00000"
+			compound_ref => "kbase/default/compounds/id/cpd00000"
 		};
 		if (defined($params->{compound_names}->{$params->{compounds}->[$i]})) {
 			$newcpd->{name} = $params->{compound_names}->{$params->{compounds}->[$i]};
