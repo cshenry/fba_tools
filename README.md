@@ -10,6 +10,12 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
+### VERSION: 1.7.2 (Released 1/2/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Hotfix: remonve link which was breaking UI for propagate models app
+
+------------------------------------------
 ### VERSION: 1.7.1 (Released 12/19/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
