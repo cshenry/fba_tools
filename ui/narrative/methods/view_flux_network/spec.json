@@ -12,7 +12,7 @@
             {
                "target_property" : "fba_id",
                "input_parameter" : "fba_id",
-               "target_type_transform": "ref"
+               "target_type_transform": "resolved-ref"
             }
          ],
          "name" : "fba_tools",
