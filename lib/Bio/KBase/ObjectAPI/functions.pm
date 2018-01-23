@@ -1790,7 +1790,7 @@ sub func_predict_auxotrophy {
 				if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && ($auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= $auxotrophy_threshold_hash->{$biocpd}->[1] || $auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn} <= $auxotrophy_threshold_hash->{$biocpd}->[0])) {
 					$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 1;
 					$current_media->add("mediacompounds",{
-						compound_ref => "kbase/default/compounds/id/".$biocpd,
+						compound_ref => Bio::KBase::utilities::conf("ModelSEED","default_biochemistry")."/compounds/id/".$biocpd,
 						id => $biocpd,
 						name => $cpddatahash->{$biocpd}->{name},
 						concentration => 0.001,
@@ -1926,7 +1926,7 @@ sub func_create_or_edit_media {
 		Bio::KBase::utilities::print_report_message({message => " ".$count." compounds changed in the media: ".join("; ",@{$change_list}).".",append => 1,html => 0});
 	}
 	my $add_list = [];
-	my $bio = $handler->util_get_object("kbase/default",{});
+	my $bio = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_biochemistry"),{});
 	for (my $i=0; $i < @{$params->{compounds_to_add}}; $i++) {
 		my $found = 0;
 		my $cpd;
@@ -1964,11 +1964,11 @@ sub func_create_or_edit_media {
 			if (defined($cpd)) {
 				$newmediacpd->{id} = $cpd->id();
 				$newmediacpd->{name} = $cpd->name();
-				$newmediacpd->{compound_ref} = "kbase/default/compounds/id/".$cpd->id();
+				$newmediacpd->{compound_ref} = Bio::KBase::utilities::conf("ModelSEED","default_biochemistry")."/compounds/id/".$cpd->id();
 			} else {
 				$newmediacpd->{id} = $params->{compounds_to_add}->[$i]->{add_id};
 				$newmediacpd->{name} = $params->{compounds_to_add}->[$i]->{add_id};
-				$newmediacpd->{compound_ref} = "kbase/default/compounds/id/cpd00000";
+				$newmediacpd->{compound_ref} = Bio::KBase::utilities::conf("ModelSEED","default_biochemistry")."/compounds/id/cpd00000";
 			}
 			if (defined($params->{compounds_to_add}->[$i]->{smiles})) {
 				$newmediacpd->{smiles} = $params->{compounds_to_add}->[$i]->{smiles};
@@ -2665,7 +2665,7 @@ sub func_import_media {
 		minflux => []
 	});
 	#Creating the media object from the specifications
-	my $bio = $handler->util_get_object("kbase/default",{});
+	my $bio = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_biochemistry"),{});
 	my $media = {
 		id => $params->{media_id},
 		name => $params->{name},
@@ -2696,7 +2696,7 @@ sub func_import_media {
 			concentration => 0.001,
 			maxFlux => 1000,
 			minFlux => -1000,
-			compound_ref => "kbase/default/compounds/id/cpd00000"
+			compound_ref => Bio::KBase::utilities::conf("ModelSEED","default_biochemistry")."/compounds/id/cpd00000"
 		};
 		if (defined($params->{compound_names}->{$params->{compounds}->[$i]})) {
 			$newcpd->{name} = $params->{compound_names}->{$params->{compounds}->[$i]};
@@ -2749,7 +2749,7 @@ sub func_import_phenotype_set {
 		type => $params->{type}
 	});
 	$phenoset->parent($handler->util_store());
-	my $bio = $handler->util_get_object("kbase/default",{});
+	my $bio = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_biochemistry"),{});
 	$phenoset->import_phenotype_table({
 		data => $params->{data},
 		biochem => $bio
