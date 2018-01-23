@@ -47,7 +47,7 @@ Client or server class for accessing a KBase workspace
 package Bio::KBase::ObjectAPI::KBaseStore;
 use Moose;
 use Bio::KBase::ObjectAPI::utilities;
-
+use Data::Dumper;
 use Class::Autouse qw(
     Bio::KBase::kbaseenv
     Bio::KBase::utilities
@@ -190,7 +190,7 @@ sub process_object {
 			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
 			my $gaoutput = $ga->get_genome_v1({
 				genomes => [{
-					"ref" => $info->[6]."/".$info->[0]."/".$info->[4]
+					"ref" => $origref
 				}],
 				ignore_errors => 1,
 				no_data => 0,
@@ -443,9 +443,9 @@ sub save_objects {
 			$output->{$ref} = [0,$array->[1],$objdata->{type},"",0,"",0,$array->[0],"",0,{}];
 		} else {
 			if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
-				require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-				my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("ModelSEED","call_back_url"));
-				my $gaout = $ga->save_one_genome_v1({
+				require "GenomeFileUtil/GenomeFileUtilClient.pm";
+				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::conf("ModelSEED","call_back_url"));
+				my $gaout = $ga->save_one_genome({
 					workspace => $array->[0],
 			        name => $array->[1],
 			        data => $objdata->{data},
