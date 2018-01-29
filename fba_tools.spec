@@ -576,6 +576,7 @@ module fba_tools {
         string workspace_name;
         string model_name;
         boolean save_to_shock;
+        bool fulldb;
     } ModelObjectSelectionParams;
 
     funcdef model_to_excel_file(ModelObjectSelectionParams model) returns(File f) authentication required;

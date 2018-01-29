@@ -2652,11 +2652,15 @@ sub model_to_excel_file
     my($f);
     #BEGIN model_to_excel_file
     $self->util_initialize_call($model,$ctx);
-    $f = Bio::KBase::ObjectAPI::functions::func_export($model,{
+    my $input = {
 		object => "model",
 		format => "excel",
 		file_util => 1
-	});
+	};
+    if (defined($model->{fulldb}) && $model->{fulldb} == 1) {
+    	$input->{format} = "fullexcel";
+    }
+    $f = Bio::KBase::ObjectAPI::functions::func_export($model,$input);
     #END model_to_excel_file
     my @_bad_returns;
     (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
@@ -2834,11 +2838,15 @@ sub model_to_tsv_file
     my($files);
     #BEGIN model_to_tsv_file
     $self->util_initialize_call($model,$ctx);
-    $files = Bio::KBase::ObjectAPI::functions::func_export($model,{
+    my $input = {
 		object => "model",
 		format => "tsv",
 		file_util => 1
-	});
+	};
+    if (defined($model->{fulldb}) && $model->{fulldb} == 1) {
+    	$input->{format} = "fulltsv";
+    }
+    $files = Bio::KBase::ObjectAPI::functions::func_export($model,$input);
     #END model_to_tsv_file
     my @_bad_returns;
     (ref($files) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"files\" (value was \"$files\")");
@@ -2914,10 +2922,14 @@ sub export_model_as_excel_file
     my($output);
     #BEGIN export_model_as_excel_file
     $self->util_initialize_call($params,$ctx);
-    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+    my $input = {
 		object => "model",
 		format => "excel"
-	});
+	};
+    if (defined($params->{fulldb}) && $params->{fulldb} == 1) {
+    	$input->{format} = "fullexcel";
+    }
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,$input);
     #END export_model_as_excel_file
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -2993,10 +3005,14 @@ sub export_model_as_tsv_file
     my($output);
     #BEGIN export_model_as_tsv_file
     $self->util_initialize_call($params,$ctx);
-    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+    my $input = {
 		object => "model",
 		format => "tsv"
-	});
+	};
+    if (defined($params->{fulldb}) && $params->{fulldb} == 1) {
+    	$input->{format} = "fulltsv";
+    }
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,$input);
     #END export_model_as_tsv_file
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
