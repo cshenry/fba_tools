@@ -498,7 +498,10 @@ sub func_gapfill_metabolic_model {
 		Bio::KBase::utilities::error("Analysis completed, but no valid solutions found!");
 	}
 	$handler->util_log("Saving gapfilled model.");
-	$model->genome_ref($model->_reference().";".$model->genome_ref());
+	# If the model is saved in the workspace, add it to the genome reference path
+	if ($model->_reference() =~ m/^(\w+\/\w+\/\w+)/) {
+		$model->genome_ref($model->_reference() . ";" . $model->genome_ref());
+	}
 	my $wsmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
 	$handler->util_log("Saving FBA object with gapfilling sensitivity analysis and flux.");
 	$fba->fbamodel_ref($model->_reference());
