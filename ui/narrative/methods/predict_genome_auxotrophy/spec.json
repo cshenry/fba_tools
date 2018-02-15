@@ -1,0 +1,81 @@
+{
+   "name" : "predict_genome_auxotrophy",
+   "ver" : "1.0.0",
+   "authors" : [
+      "chenry"
+   ],
+   "contact" : "http://kbase.us/contact-us/",
+   "visible" : true,
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "widgets" : {
+      "output" : "no-display",
+      "input" : null
+   },
+   "parameters" : [
+      {
+        "id": "genome_text",
+        "optional": true,
+        "advanced": false,
+        "allow_multiple": false,
+        "default_values": [ "" ],
+        "field_type": "textarea",
+        "textarea_options" : {
+            "n_rows" : 10
+    	}
+      },{
+         "id" : "genome_ids",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : true,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseGenomes.Genome","KBaseGenomeAnnotations.GenomeAnnotation"
+            ]
+         }
+      }
+   ], 
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "name" : "fba_tools",
+         "method" : "predict_auxotrophy",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "input_parameter" : "genome_text",
+               "target_property" : "genome_text"
+            },
+            {
+               "input_parameter" : "genome_ids",
+               "target_property" : "genome_ids",
+               "target_type_transform": "list<resolved-ref>"
+            }
+         ],
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			}
+         ]
+      }
+   },
+   "job_id_output_field" : "docker"
+}

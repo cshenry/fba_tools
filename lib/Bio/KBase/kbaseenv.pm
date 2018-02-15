@@ -7,6 +7,7 @@ use Workspace::WorkspaceClient;
 our $ws_client = undef;
 our $ga_client = undef;
 our $ac_client = undef;
+our $handle_client = undef;
 our $data_file_client = undef;
 our $objects_created = [];
 
@@ -130,6 +131,18 @@ sub ac_client {
 		$ac_client = new AssemblyUtil::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ac_client;
+}
+
+sub handle_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($handle_client)) {
+		require "Bio/KBase/HandleService.pm";
+		$handle_client = new Bio::KBase::HandleService(Bio::KBase::utilities::conf("fba_tools","handle-service-url"),token => Bio::KBase::utilities::token());
+	}
+	return $handle_client;
 }
 
 sub get_object {

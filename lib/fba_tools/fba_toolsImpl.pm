@@ -1840,6 +1840,12 @@ sub predict_auxotrophy
     my($results);
     #BEGIN predict_auxotrophy
     $self->util_initialize_call($params,$ctx);
+	$params = Bio::KBase::utilities::args($params,[],{genome_workspace => $params->{workspace}});
+	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
+	for (my $i=0; $i < @{$new_genome_list}; $i++) {
+		push(@{$params->{genome_ids}},Bio::KBase::utilities::buildref($new_genome_list->[$i],$params->{genome_workspace}));
+	}
+	delete $params->{genome_text};
 	$results = Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy($params);
 	$self->util_finalize_call({
 		output => $results,
