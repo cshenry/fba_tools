@@ -95,7 +95,7 @@ lives_ok{
             fbamodel_output_id          => "test_propagated_model",
             workspace                   => "jjeffryes:narrative_1502586048308",
             keep_nogene_rxn             => 1,
-            gapfill_model               => 0,
+            gapfill_model               => 1,
             custom_bound_list           => [],
             media_supplement_list       => "",
             minimum_target_flux         => 0.1,

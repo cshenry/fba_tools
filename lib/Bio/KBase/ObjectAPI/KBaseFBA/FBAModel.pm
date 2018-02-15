@@ -1768,9 +1768,10 @@ sub merge_models {
 		my $biomassCpd = $model->getObject("modelcompounds","cpd11416_c0");
 		#Adding genome, features, and roles to master mapping and annotation
 		my $mdlgenome = $model->genome();
+		my $prior_size = $genomeObj->dna_size();
 		$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
 		$genomeObj->num_contigs($genomeObj->num_contigs()+$mdlgenome->num_contigs());
-		$genomeObj->gc_content($genomeObj->gc_content()+$mdlgenome->dna_size()*$mdlgenome->gc_content());
+		$genomeObj->gc_content(($genomeObj->gc_content()*$prior_size+$mdlgenome->dna_size()*$mdlgenome->gc_content())/$genomeObj->dna_size());
 		push(@{$genomeObj->{contig_lengths}},@{$mdlgenome->{contig_lengths}});
 		push(@{$genomeObj->{contig_ids}},@{$mdlgenome->{contig_ids}});	
 		print "Loading features\n";
