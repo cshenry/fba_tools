@@ -444,7 +444,7 @@ sub save_objects {
 		} else {
 			if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
 				require "GenomeFileUtil/GenomeFileUtilClient.pm";
-				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::conf("ModelSEED","call_back_url"));
+				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
 				my $gaout = $ga->save_one_genome({
 					workspace => $array->[0],
 			        name => $array->[1],
