@@ -1496,7 +1496,7 @@ sub createJobDirectory {
 	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00215/cpd00016/;
 	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00218/cpd00003/;
 	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00644/cpd00010/;
-	if ($self->parameters()->{"Perform auxotrophy analysis"} == 1) {
+	if (defined($self->parameters()->{"Perform auxotrophy analysis"}) && $self->parameters()->{"Perform auxotrophy analysis"} == 1) {
 		my $rxndata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","reaction auxotrophy data filename"))}));
 		$self->parameters()->{"KEGG reaction list"} = join("_c0;",keys(%{$rxndata}))."_c0";
 	}

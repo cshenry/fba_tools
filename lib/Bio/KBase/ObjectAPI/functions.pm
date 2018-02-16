@@ -1679,7 +1679,6 @@ sub func_predict_auxotrophy {
 	my $genomedata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","genome auxotrophy data filename"))}));
 	my $rxndata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","reaction auxotrophy data filename"))}));
 	my $cpddata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","biomass compound data filename"))}));
-	my $bio_cpd_rxn_hash = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","biomass compound reaction filename"))}));
 	my $media = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_media_workspace")."/Carbon-D-Glucose");
 	my $genomes = $params->{genome_ids};
 	my $transporthash = {};
@@ -1697,7 +1696,7 @@ sub func_predict_auxotrophy {
 		my $datachannel = {};
 		my $genomeid = $genomes->[$i];
 		my $genomeobj = $handler->util_get_object(Bio::KBase::utilities::buildref($genomeid,$params->{genome_workspace}));
-		print "Processing ".$genomeid."\n";
+		print "Prcoessing ".$genomeid."\n";
 		my $current_media = $media->cloneObject();
 		my $tid = $template_trans->{$genomeobj->template_classification()};
 		Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
@@ -1729,7 +1728,6 @@ sub func_predict_auxotrophy {
 			target_reaction => "bio1",
 			fva => 1,
 			minimize_flux => 1,
-			predict_auxotrophy => 1
 		},$datachannel->{fbamodel});
 		Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
 			workspace => "NULL",
@@ -1749,7 +1747,6 @@ sub func_predict_auxotrophy {
 			$rxnhash->{$rxnid} = $rxns->[$i];
 		}
 		my $fba = $handler->util_get_object("NULL/".$genomeid.".fba_min");
-		my $auxotrophy_data = $fba->{auxotrophy_data};
 		my $fbarxns = $fba->FBAReactionVariables();
 		for (my $i=0; $i < @{$fbarxns}; $i++) {
 			my $rxnid = $fbarxns->[$i]->modelreaction()->id();
@@ -1773,68 +1770,34 @@ sub func_predict_auxotrophy {
 				$rxnhash->{$rxnid}->{comclass} = "ne";#TODO: this is technically wrong
 			}
 		}
-		foreach my $biocpd (keys(%{$auxotrophy_data->{cpds}})) {
-			my $rootid = $biocpd;
-			$rootid =~ s/_[a-z]+\d+$//;
-			if (!defined($auxotrophy_hash->{$rootid}->{$genomeid})) {
-				$auxotrophy_hash->{$rootid}->{$genomeid} = {
-					rxn => [],
-					gfrxn => [],
-					periphery_rxn => [],
-					periphery_gfrxn => []
-				};
-				for (my $i=0; $i < 36; $i++) {
-					$auxotrophy_hash->{$rootid}->{$genomeid}->{rxn}->[$i] = 0;
-					$auxotrophy_hash->{$rootid}->{$genomeid}->{gfrxn}->[$i] = 0;
-					$auxotrophy_hash->{$rootid}->{$genomeid}->{periphery_rxn}->[$i] = 0;
-					$auxotrophy_hash->{$rootid}->{$genomeid}->{periphery_gfrxn}->[$i] = 0;
-				}
-			}
-			for (my $i=0; $i < @{$auxotrophy_data->{cpds}->{$biocpd}}; $i++) {
-				my $rxnid = $auxotrophy_data->{cpds}->{$biocpd}->[$i];
-				my $count = keys(%{$auxotrophy_data->{rxns}->{$rxnid}});
-				$rxnid =~ s/_[a-z]+\d+$//;
-				if (defined($rxnhash->{$rxnid})) {
-					if ($rxnhash->{$rxnid}->gprString() eq "Unknown") {
-						#$auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxns}->{$rxnid} = 1;
-						$auxotrophy_hash->{$rootid}->{$genomeid}->{gfrxn}->[0]++;
-						$auxotrophy_hash->{$rootid}->{$genomeid}->{gfrxn}->[$count]++;
-					} else {
-						#$auxotrophy_hash->{$biocpd}->{$genomeid}->{rxns}->{$rxnid} = 1;
-						$auxotrophy_hash->{$rootid}->{$genomeid}->{rxn}->[0]++;
-						$auxotrophy_hash->{$rootid}->{$genomeid}->{rxn}->[$count]++;
+		foreach my $rxn (keys(%{$rxnhash})) {
+			#Reaction is mapped to a biomass component and it's carrying flux in MM
+			if (defined($rxndata->{$rxn}) && defined($rxnhash->{$rxn}->{minclass}) && defined($rxnhash->{$rxn}->{comclass}) && $rxnhash->{$rxn}->{minclass} ne "n" && $rxnhash->{$rxn}->{comclass} ne "e") {
+				foreach my $biocpd (keys(%{$rxndata->{$rxn}->{biomass_cpds}})) {
+					if (!defined($auxotrophy_hash->{$biocpd}->{$genomeid})) {
+						$auxotrophy_hash->{$biocpd}->{$genomeid} = {
+							rxn => 0,
+							gfrxn => 0,
+							gfrxns => {},
+							rxns => {}
+						};
 					}
-					if (defined($bio_cpd_rxn_hash->{$rootid}->{$rxnid})) {
-						if ($rxnhash->{$rxnid}->gprString() eq "Unknown") {
-							#$auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxns}->{$rxnid} = 1;
-							$auxotrophy_hash->{$rootid}->{$genomeid}->{periphery_gfrxn}->[0]++;
-							$auxotrophy_hash->{$rootid}->{$genomeid}->{periphery_gfrxn}->[$count]++;
-						} else {
-							#$auxotrophy_hash->{$biocpd}->{$genomeid}->{rxns}->{$rxnid} = 1;
-							$auxotrophy_hash->{$rootid}->{$genomeid}->{periphery_rxn}->[0]++;
-							$auxotrophy_hash->{$rootid}->{$genomeid}->{periphery_rxn}->[$count]++;
-						}
+					$auxotrophy_hash->{$biocpd}->{$genomeid}->{rxns}->{$rxn} = $rxnhash->{$rxn};
+					$auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn}++;
+					if ($rxnhash->{$rxn}->gprString() eq "Unknown") {
+						$auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxns}->{$rxn} = $rxnhash->{$rxn};
+						$auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn}++;
 					}
-					#if (defined($rxnhash->{$rxnid}->{minclass}) && defined($rxnhash->{$rxnid}->{comclass}) && $rxnhash->{$rxnid}->{minclass} ne "n" && $rxnhash->{$rxnid}->{comclass} ne "e") {
-#					if (defined($bio_cpd_rxn_hash->{$rxnid}->{$biocpd})) {
-#						if ($rxnhash->{$rxnid}->gprString() eq "Unknown") {
-#							$auxotrophy_hash->{$biocpd}->{$genomeid}->{f_gfrxns}->{$rxnid} = 1;
-#							$auxotrophy_hash->{$biocpd}->{$genomeid}->{f_gfrxn}++;
-#						} else {
-#							$auxotrophy_hash->{$biocpd}->{$genomeid}->{f_rxns}->{$rxnid} = 1;
-#							$auxotrophy_hash->{$biocpd}->{$genomeid}->{f_rxn}++;
-#						}
-#					}
 				}
 			}
 		}
 		foreach my $biocpd (keys(%{$auxotrophy_hash})) {
 			$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 0;
 			if (defined($auxotrophy_threshold_hash->{$biocpd})) {
-				if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && ($auxotrophy_hash->{$biocpd}->{$genomeid}->{periphery_gfrxn} >= $auxotrophy_threshold_hash->{$biocpd}->[1] || $auxotrophy_hash->{$biocpd}->{$genomeid}->{periphery_rxn} <= $auxotrophy_threshold_hash->{$biocpd}->[0])) {
+				if (defined($auxotrophy_hash->{$biocpd}->{$genomeid}) && ($auxotrophy_hash->{$biocpd}->{$genomeid}->{gfrxn} >= $auxotrophy_threshold_hash->{$biocpd}->[1] || $auxotrophy_hash->{$biocpd}->{$genomeid}->{rxn} <= $auxotrophy_threshold_hash->{$biocpd}->[0])) {
 					$auxotrophy_hash->{$biocpd}->{$genomeid}->{auxotrophic} = 1;
 					$current_media->add("mediacompounds",{
-						compound_ref => Bio::KBase::utilities::conf("ModelSEED","default_biochemistry")."/compounds/id/".$biocpd,
+						compound_ref => "kbase/default/compounds/id/".$biocpd,
 						id => $biocpd,
 						name => $cpddatahash->{$biocpd}->{name},
 						concentration => 0.001,
@@ -1847,63 +1810,47 @@ sub func_predict_auxotrophy {
 		$current_media->parent($handler->util_store());
 		my $wsmeta = $handler->util_save_object($current_media,$params->{workspace}."/".$genomeid.".auxo_media");
 	}
-	print "Class\tCompound\tType\tAll";
+	print "Class\tCompound\tAve gf";
 	for (my $i=0; $i < @{$genomes}; $i++) {
 		print "\t".$genomes->[$i];
-		for (my $i=1; $i < 36; $i++) {
-			print "\t".$i;
-		}
 	}
 	print "\n";
 	for (my $i=0; $i < @{$cpddata}; $i++) {
-		if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}})) {
-			my $lines = [
-				$cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\tRxn\t",
-				$cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\tGFRxn\t",
-				$cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\tPerRxn\t",
-				$cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\tPerGFRxn\t"
-			];
-			for (my $j=0; $j < @{$genomes}; $j++) {
-				$lines->[0] .= $auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}->[0];
-				$lines->[1] .= $auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}->[0];
-				$lines->[2] .= $auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{periphery_rxn}->[0];
-				$lines->[3] .= $auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{periphery_gfrxn}->[0];
-				my $sums = [0,0,0,0];
-				for (my $k=1; $k < 36; $k++) {
-					$sums->[0] += $auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}->[$k];
-					$sums->[1] += $auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}->[$k];
-					$sums->[2] += $auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{periphery_rxn}->[$k];
-					$sums->[3] += $auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{periphery_gfrxn}->[$k];
-					$lines->[0] .= "\t".$sums->[0];
-					$lines->[1] .= "\t".$sums->[1];
-					$lines->[2] .= "\t".$sums->[2];
-					$lines->[3] .= "\t".$sums->[3];
-				}
+		print $cpddata->[$i]->{class}."\t".$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")\t".$cpddata->[$i]->{avegf};
+		for (my $j=0; $j < @{$genomes}; $j++) {
+			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
+				print "\t".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{auxotrophic};
+			} else {
+				print "\t-";
 			}
-			print $lines->[0]."\n";
-			print $lines->[1]."\n";
-			print $lines->[2]."\n";
-			print $lines->[3]."\n";
 		}
+		print "\n";
 	}
-	my $htmlreport = "";
-#	my $htmlreport = "<div style=\"height: 600px; overflow-y: scroll;\"><table class=\"reporttbl\"><tr><th>Class</th><th>Compound</th><th>Ave gf</th>";
-#	for (my $i=0; $i < @{$genomes}; $i++) {
-#		$htmlreport .= "<th>".$genomes->[$i]."</th>";
-#	}
-#	$htmlreport .= "</tr>";
-#	for (my $i=0; $i < @{$cpddata}; $i++) {
-#		$htmlreport .= "<tr><td>".$cpddata->[$i]->{class}."</td><td>".$cpddata->[$i]->{name}."<br>(".$cpddata->[$i]->{id}.")</td><td>".$cpddata->[$i]->{avegf}."</td>";
-#		for (my $j=0; $j < @{$genomes}; $j++) {
-#			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
-#				$htmlreport .= "<td>".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."</td>";
-#			} else {
-#				$htmlreport .= "<td>-</td>";
-#			}
-#		}
-#		$htmlreport .= "</tr>";
-#	}
-#	$htmlreport .= "</table></div>";
+	
+	my $htmlreport = "<html><head>\n<script type='text/javascript' src='https://www.google.com/jsapi'></script>\n<script type='text/javascript'>\ngoogle.load('visualization', '1', {packages:['controls'], callback: drawDashboard});\ngoogle.setOnLoadCallback(drawDashboard);\n";
+	$htmlreport .= "function drawDashboard() {\nvar data = new google.visualization.DataTable();\n";
+	$htmlreport .= "data.addColumn('string','Class');\n";
+	$htmlreport .= "data.addColumn('string','Essential metabolite');\n";
+	for (my $i=0; $i < @{$genomes}; $i++) {
+		$htmlreport .= "data.addColumn('string','".$genomes->[$i]."');\n";
+	}
+	$htmlreport .= "data.addRows([\n";
+	for (my $i=0; $i < @{$cpddata}; $i++) {
+		my $row = [$cpddata->[$i]->{class},$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")"];
+		for (my $j=0; $j < @{$genomes}; $j++) {
+			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
+				push(@{$row},$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{auxotrophic});
+			} else {
+				push(@{$row},"");
+			}
+		}
+		$htmlreport .= "[\"".join('","',@{$row})."\"],\n";
+	}
+	$htmlreport .= "]);\nvar filterColumns = [];\nvar tab_columns = [];\nfor (var j = 0, dcols = data.getNumberOfColumns(); j < dcols; j++) {\nfilterColumns.push(j);\ntab_columns.push(j);\n}\nfilterColumns.push({\ntype: 'string',calc: function (dt, row) {\nfor (var i = 0, vals = [], cols = dt.getNumberOfColumns(); i < cols; i++) {\nvals.push(dt.getFormattedValue(row, i));\n}\nreturn vals.join('\n');\n}});\n";
+	$htmlreport .= "var table = new google.visualization.ChartWrapper({\nchartType: 'Table',\ncontainerId: 'table_div',\noptions: {\nshowRowNumber: true,\npage: 'enable',\npageSize: 20\n},\nview: {\ncolumns: tab_columns\n}\n});\n";
+	$htmlreport .= "var search_filter = new google.visualization.ControlWrapper({\ncontrolType: 'StringFilter',\ncontainerId: 'search_div',\noptions: {\n//filterColumnLabel: 'yyyy-mm-dd',\nfilterColumnIndex: data.getNumberOfColumns()+1,\nmatchType: 'any',\ncaseSensitive: false,\nui: {\nlabel: 'Search data:'\n}\n},\nview: {\ncolumns: filterColumns\n}\n});\n";
+	$htmlreport .= "var dashboard = new google.visualization.Dashboard(document.querySelector('#dashboard_div'));\ndashboard.bind([search_filter], [table]);\ndashboard.draw(data);\n}\n</script></head>\n";
+	$htmlreport .= "<body><h4>Results from auxotrophy prediction on all genomes</h4><div id='dashboard_div'><table class='columns'><tr><td><div id='search_div'></div></td></tr><tr><td><div id='table_div'></div></td></tr></table></div></body></html>";
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return $auxotrophy_hash;
 }
