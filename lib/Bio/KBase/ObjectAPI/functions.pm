@@ -1694,9 +1694,9 @@ sub func_predict_auxotrophy {
 	my $template_trans = Bio::KBase::constants::template_trans();
 	for (my $i=0; $i < @{$genomes}; $i++) {
 		my $datachannel = {};
-		my $genomeid = $genomes->[$i];
-		my $genomeobj = $handler->util_get_object(Bio::KBase::utilities::buildref($genomeid,$params->{genome_workspace}));
-		print "Prcoessing ".$genomeid."\n";
+		my $genomeobj = $handler->util_get_object(Bio::KBase::utilities::buildref($genomes->[$i],$params->{genome_workspace}));
+		my $genomeid = $genomeobj->_wsobjid();
+		print "Processing ".$genomeid."\n";
 		my $current_media = $media->cloneObject();
 		my $tid = $template_trans->{$genomeobj->template_classification()};
 		Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
