@@ -1848,7 +1848,6 @@ sub predict_auxotrophy
 	delete $params->{genome_text};
 	$results = Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy($params);
 	$self->util_finalize_call({
-		output => $results,
 		workspace => $params->{workspace},
 		report_name => $params->{media_output_id}.".auxotrophy.report",
 	});
