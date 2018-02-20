@@ -1828,30 +1828,40 @@ sub func_predict_auxotrophy {
 		print "\n";
 	}
 	
-	my $htmlreport = "<html><head>\n<script type='text/javascript' src='https://www.google.com/jsapi'></script>\n<script type='text/javascript'>\ngoogle.load('visualization', '1', {packages:['controls'], callback: drawDashboard});\ngoogle.setOnLoadCallback(drawDashboard);\n";
-	$htmlreport .= "function drawDashboard() {\nvar data = new google.visualization.DataTable();\n";
-	$htmlreport .= "data.addColumn('string','Class');\n";
-	$htmlreport .= "data.addColumn('string','Essential metabolite');\n";
+	my $htmlreport = "<html><head><script type='text/javascript' src='https://www.google.com/jsapi'></script><script type='text/javascript'>google.load('visualization', '1', {packages:['controls'], callback: drawDashboard});google.setOnLoadCallback(drawDashboard);";
+	$htmlreport .= "function drawDashboard() {var data = new google.visualization.DataTable();";
+	$htmlreport .= "data.addColumn('string','Class');";
+	$htmlreport .= "data.addColumn('string','Essential metabolite');";
 	for (my $i=0; $i < @{$genomes}; $i++) {
-		$htmlreport .= "data.addColumn('string','".$genomes->[$i]."');\n";
+		$htmlreport .= "data.addColumn('number','".$genomes->[$i]."');";
 	}
-	$htmlreport .= "data.addRows([\n";
+	$htmlreport .= "data.addRows([";
 	for (my $i=0; $i < @{$cpddata}; $i++) {
-		my $row = [$cpddata->[$i]->{class},$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")"];
+		my $row = [];
+		$htmlreport .= '["'.$cpddata->[$i]->{class}.'","'.$cpddata->[$i]->{name}." (".$cpddata->[$i]->{id}.")".'",';
 		for (my $j=0; $j < @{$genomes}; $j++) {
 			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
-				push(@{$row},$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}."/".$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{auxotrophic});
+				if ($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{auxotrophic} == 1) {
+					push(@{$row},'{v:1,f:"Gapfilling: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}.'<br>Reactions: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}.'<br>Auxotrophic"}');	
+				} else {
+					push(@{$row},'{v:0,f:"Gapfilling: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}.'<br>Reactions: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}.'"}');
+				}
 			} else {
-				push(@{$row},"");
+				push(@{$row},'{v:0,f:""}');
 			}
 		}
-		$htmlreport .= "[\"".join('","',@{$row})."\"],\n";
+		$htmlreport .= join(',',@{$row}).'],';
 	}
-	$htmlreport .= "]);\nvar filterColumns = [];\nvar tab_columns = [];\nfor (var j = 0, dcols = data.getNumberOfColumns(); j < dcols; j++) {\nfilterColumns.push(j);\ntab_columns.push(j);\n}\nfilterColumns.push({\ntype: 'string',calc: function (dt, row) {\nfor (var i = 0, vals = [], cols = dt.getNumberOfColumns(); i < cols; i++) {\nvals.push(dt.getFormattedValue(row, i));\n}\nreturn vals.join('\n');\n}});\n";
-	$htmlreport .= "var table = new google.visualization.ChartWrapper({\nchartType: 'Table',\ncontainerId: 'table_div',\noptions: {\nshowRowNumber: true,\npage: 'enable',\npageSize: 20\n},\nview: {\ncolumns: tab_columns\n}\n});\n";
-	$htmlreport .= "var search_filter = new google.visualization.ControlWrapper({\ncontrolType: 'StringFilter',\ncontainerId: 'search_div',\noptions: {\n//filterColumnLabel: 'yyyy-mm-dd',\nfilterColumnIndex: data.getNumberOfColumns()+1,\nmatchType: 'any',\ncaseSensitive: false,\nui: {\nlabel: 'Search data:'\n}\n},\nview: {\ncolumns: filterColumns\n}\n});\n";
-	$htmlreport .= "var dashboard = new google.visualization.Dashboard(document.querySelector('#dashboard_div'));\ndashboard.bind([search_filter], [table]);\ndashboard.draw(data);\n}\n</script></head>\n";
+	$htmlreport .= "]);var filterColumns = [];var tab_columns = [];for (var j = 0, dcols = data.getNumberOfColumns(); j < dcols; j++) {filterColumns.push(j);tab_columns.push(j);}filterColumns.push({type: 'string',calc: function (dt, row) {for (var i = 0, vals = [], cols = dt.getNumberOfColumns(); i < cols; i++) {vals.push(dt.getFormattedValue(row, i));}return vals.join('\\n');}});";
+	$htmlreport .= "var table = new google.visualization.ChartWrapper({chartType: 'Table',containerId: 'table_div',options: {allowHtml: true,showRowNumber: true,page: 'enable',pageSize: 20},view: {columns: tab_columns}});";
+	$htmlreport .= "var search_filter = new google.visualization.ControlWrapper({controlType: 'StringFilter',containerId: 'search_div',options: {filterColumnIndex: data.getNumberOfColumns(),matchType: 'any',caseSensitive: false,ui: {label: 'Search data:'}},view: {columns: filterColumns}});";
+	$htmlreport .= "var dashboard = new google.visualization.Dashboard(document.querySelector('#dashboard_div'));var formatter = new google.visualization.ColorFormat();formatter.addRange(0.5, null, 'red', 'white');";
+	for (my $j=0; $j < @{$genomes}; $j++) {
+		$htmlreport .= "formatter.format(data, ".($j+2).");";
+	}
+	$htmlreport .= "dashboard.bind([search_filter], [table]);dashboard.draw(data);}</script></head>";
 	$htmlreport .= "<body><h4>Results from auxotrophy prediction on all genomes</h4><div id='dashboard_div'><table class='columns'><tr><td><div id='search_div'></div></td></tr><tr><td><div id='table_div'></div></td></tr></table></div></body></html>";
+	print $htmlreport;
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return $auxotrophy_hash;
 }
