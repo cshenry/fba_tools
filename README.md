@@ -10,6 +10,15 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
+### VERSION: 1.7.4 (Released 3/2/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Refinements to auxotrophy method
+- Fix Propagate Model with full genome refs
+- Fix GC content calculation for community models
+- Phenotype simulation will not fail if gapfilling is unsuccessful
+
+------------------------------------------
 ### VERSION: 1.7.3 (Released 1/12/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
