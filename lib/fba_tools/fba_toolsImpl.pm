@@ -1527,6 +1527,7 @@ sub view_flux_network
 		type => 'shock',
 		id => $json->{data}->{id}
 	});
+	my $report_name = $params->{fba_id} =~ s/\//-/gr.".view_flux_network.report";
 	my $meta = $self->util_save_object({
 		direct_html_link_index => 0,
 		html_window_height => undef,
@@ -1542,10 +1543,10 @@ sub view_flux_network
 		text_message => undef,
 		summary_window_height => undef,
 		objects_created => []
-	},Bio::KBase::utilities::buildref($params->{fba_id},$params->{workspace}).".view_flux_network.report",{hash => 1,type => "KBaseReport.Report"});
+	},Bio::KBase::utilities::buildref($report_name,$params->{workspace}),{hash => 1,type => "KBaseReport.Report", hidden => 1});
     $results = {
     	report_ref => $meta->[6]."/".$meta->[0]."/".$meta->[4],
-		report_name => $params->{fba_id}.".view_flux_network.report"
+		report_name => $report_name
     };
     #END view_flux_network
     my @_bad_returns;
