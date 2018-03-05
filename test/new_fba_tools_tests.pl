@@ -55,6 +55,16 @@ lives_ok{
         })
    } "gapfill_metabolic_model";
 
+lives_ok{
+        $impl->gapfill_metabolic_model({
+            fbamodel_id => "7601/194/1",
+	        media_id => "8681/16/3",
+	        fbamodel_output_id =>  "test_model_pyrdine",
+	        workspace => get_ws_name(),
+	        target_reaction => "bio1"
+        })
+   } "gapfill_metabolic_model_fails";
+
 # run_flux_balance_analysis
 lives_ok{
         $impl->run_flux_balance_analysis({
@@ -85,7 +95,7 @@ lives_ok{
             fbamodel_output_id          => "test_propagated_model",
             workspace                   => "jjeffryes:narrative_1502586048308",
             keep_nogene_rxn             => 1,
-            gapfill_model               => 0,
+            gapfill_model               => 1,
             custom_bound_list           => [],
             media_supplement_list       => "",
             minimum_target_flux         => 0.1,
@@ -344,6 +354,17 @@ lives_ok{
             workspace_name => "jjeffryes:narrative_1502586048308",
             genome         => "7601/4/1",
             biomass        => [ "bio1" ]
+        })
+    } 'SBML import: yet annother model from BiGG';
+
+lives_ok{
+        $impl->sbml_file_to_model({
+            model_file     =>
+            { path => "/kb/module/test/data/iMB155.xml" },
+            model_name     => "sbml_test6",
+            workspace_name => "jjeffryes:narrative_1502586048308",
+            genome         => "7601/4/1",
+            biomass        => [ "R_BIOMASS" ]
         })
     } 'SBML import: yet annother model from BiGG';
 

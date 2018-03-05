@@ -399,6 +399,24 @@ class fba_tools(object):
             'fba_tools.check_model_mass_balance',
             [params], self._service_ver, context)
 
+    def predict_auxotrophy(self, params, context=None):
+        """
+        Identifies reactions in the model that are not mass balanced
+        :param params: instance of type "PredictAuxotrophyParams" ->
+           structure: parameter "genome_id" of type "genome_id" (A string
+           representing a Genome id.), parameter "media_output_id" of type
+           "media_id" (A string representing a Media id.), parameter
+           "genome_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "workspace" of type "workspace_name"
+           (A string representing a workspace name.)
+        :returns: instance of type "PredictAuxotrophyResults" -> structure:
+           parameter "new_report_ref" of type "ws_report_id" (The workspace
+           ID for a Report object @id ws KBaseReport.Report)
+        """
+        return self._client.call_method(
+            'fba_tools.predict_auxotrophy',
+            [params], self._service_ver, context)
+
     def compare_models(self, params, context=None):
         """
         Compare models

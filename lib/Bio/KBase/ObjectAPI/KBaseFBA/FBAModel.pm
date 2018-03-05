@@ -7,7 +7,6 @@
 ########################################################################
 use strict;
 use YAML::XS;
-use XML::LibXML;
 use File::Temp;
 use Bio::KBase::ObjectAPI::KBaseFBA::DB::FBAModel;
 package Bio::KBase::ObjectAPI::KBaseFBA::FBAModel;
@@ -607,7 +606,7 @@ sub LoadExternalReactionEquation {
 				my $smiles = "";
 
 				my $compound_rec = $args->{compounds}->{$origid};
-				if (!defined $compound_rec){
+				if (!defined $compound_rec && $origid !~ m/^cpd\d+_[a-z]\d+$/){
 					Bio::KBase::ObjectAPI::utilities::error("Undefined compound used as reactant: $origid");
 				}
 				#if compoud has a parsed name
@@ -1013,23 +1012,31 @@ sub printSBML {
 
 sub printTSV {
 	my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef,fulldb => 0}, @_);
 	my $output = {
-		compounds_table => ["id\tname\tformula\tcharge\tinchikey\tsmiles\tdeltag\tkegg id"],
-		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tenzyme\tdeltag\treference\tequation\tdefinition\tbigg id\tkegg id\tkegg pathways\tmetacyc pathways"]
+		compounds_table => ["id\tname\tformula\tcharge\tinchikey\tsmiles\tdeltag\tkegg id\tms id"],
+		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tenzyme\tdeltag\treference\tequation\tdefinition\tms id\tbigg id\tkegg id\tkegg pathways\tmetacyc pathways"]
 	};
+	if ($args->{fulldb} == 1) {
+		$output->{compounds_table}->[0] .= "\tin model";
+		$output->{reactions_table}->[0] .= "\tin model";
+	}
 	my $kegghash = Bio::KBase::utilities::kegg_hash();
 	my $cpdhash = Bio::KBase::utilities::compound_hash();
 	my $rxnhash = Bio::KBase::utilities::reaction_hash();
 	my $compounds = $self->modelcompounds();
+	my $cpd_id_hash = {};
+	my $rxn_id_hash = {};
 	for (my $i=0; $i < @{$compounds}; $i++) {
 		local $SIG{__WARN__} = sub { };
 		# The follow line works but throws a shit-ton of warnings.
 		my $cpddata;
+		my $msid = "";
+		$cpd_id_hash->{$compounds->[$i]->id()} = 1;
 		if ($compounds->[$i]->id() =~ m/(cpd\d+)/ || $compounds->[$i]->compound_ref() =~ m/(cpd\d+)/) {
-			my $baseid = $1;
-			if ($baseid ne "cpd00000" && defined($cpdhash->{$baseid})) {
-				$cpddata = $cpdhash->{$baseid};
+			$msid = $1;
+			if ($msid ne "" && $msid ne "cpd00000" && defined($cpdhash->{$msid})) {
+				$cpddata = $cpdhash->{$msid};
 			}
 		}
 		my $name = $compounds->[$i]->id();
@@ -1070,7 +1077,11 @@ sub printTSV {
 		if (defined($cpddata) && defined($cpddata->{kegg_aliases}->[0])) {
 			$keggid = $cpddata->{kegg_aliases}->[0];
 		}
-		push(@{$output->{compounds_table}},$compounds->[$i]->id()."\t".$name."\t".$formula."\t".$charge."\t".$inchikey."\t".$smiles."\t".$deltag."\t".$keggid);
+		my $line = $compounds->[$i]->id()."\t".$name."\t".$formula."\t".$charge."\t".$inchikey."\t".$smiles."\t".$deltag."\t".$keggid."\t".$msid;
+		if ($args->{fulldb} == 1) {
+			$line .= "\t1";
+		}
+		push(@{$output->{compounds_table}},$line);
 	}
 	my $reactions = $self->modelreactions();
 	for (my $i=0; $i < @{$reactions}; $i++) {
@@ -1087,10 +1098,12 @@ sub printTSV {
 		my $definition = $reactions->[$i]->definition();
 		$definition =~ s/\)/) /g;
 		my $rxndata;
+		my $msid = "";
+		$rxn_id_hash->{$reactions->[$i]->id()} = 1;
 		if ($reactions->[$i]->id() =~ m/(rxn\d+)/ || $reactions->[$i]->reaction_ref() =~ m/(rxn\d+)/) {
-			my $baseid = $1;
-			if ($baseid ne "rxn00000" && defined($rxnhash->{$baseid})) {
-				$rxndata = $rxnhash->{$baseid};
+			$msid = $1;
+			if ($msid ne "" && $msid ne "rxn00000" && defined($rxnhash->{$msid})) {
+				$rxndata = $rxnhash->{$msid};
 			}
 		}
 		my $deltag = "";
@@ -1132,7 +1145,19 @@ sub printTSV {
 				}
 			}
 		}
-		push(@{$output->{reactions_table}},$reactions->[$i]->id()."\t".$reactions->[$i]->direction()."\t".$reactions->[$i]->modelcompartment()->label()."\t".$reactions->[$i]->gprString()."\t".$reactions->[$i]->name()."\t".$ec."\t".$deltag."\t".$reference."\t".$equation."\t".$definition."\t".$biggid."\t".$keggid."\t".$keggpath."\t".$metapath);
+		my $line = $reactions->[$i]->id()."\t".$reactions->[$i]->direction()."\t".$reactions->[$i]->modelcompartment()->label()."\t".$reactions->[$i]->gprString()."\t".$reactions->[$i]->name()."\t".$ec."\t".$deltag."\t".$reference."\t".$equation."\t".$definition."\t".$msid."\t".$biggid."\t".$keggid."\t".$keggpath."\t".$metapath;
+		if ($args->{fulldb} == 1) {
+			$line .= "\t1";
+		}
+		push(@{$output->{reactions_table}},$line);
+	}
+	if ($args->{fulldb} == 1) {
+		$self->template()->printTSV({
+			file => 0,
+			append_to => $output,
+			compound_filter => $cpd_id_hash,
+			reaction_filter => $rxn_id_hash
+		});
 	}
 	$reactions = $self->biomasses();
 	for (my $i=0; $i < @{$reactions}; $i++) {
@@ -1152,8 +1177,8 @@ sub printTSV {
 
 sub printExcel {
 	my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my $output = $self->printTSV();	
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef,fulldb => 0}, @_);
+	my $output = $self->printTSV({fulldb => $args->{fulldb}});	
 	require "Spreadsheet/WriteExcel.pm";
 	my $wkbk = Spreadsheet::WriteExcel->new($args->{path}."/".$self->id().".xls") or die "can not create workbook: $!";
 	my $sheet = $wkbk->add_worksheet("ModelCompounds");
@@ -1211,7 +1236,13 @@ sub export {
 		return $self->printSBML($args);
 	} elsif (lc($args->{format}) eq "excel") {
 		return $self->printExcel($args);
+	} elsif (lc($args->{format}) eq "fullexcel") {
+		$args->{fulldb} = 1;
+		return $self->printExcel($args);
 	} elsif (lc($args->{format}) eq "tsv") {
+		return $self->printTSV($args);
+	} elsif (lc($args->{format}) eq "fulltsv") {
+		$args->{fulldb} = 1;
 		return $self->printTSV($args);
 	}
 	Bio::KBase::ObjectAPI::utilities::error("Unrecognized type for export: ".$args->{format});
@@ -1339,6 +1370,7 @@ sub add_gapfilling {
 	my $biomass_removals = $args->{object}->biomassRemovals();
 	my $brkeys = [keys(%{$biomass_removals})];
 	if (@{$brkeys} > 0) {
+		Bio::KBase::utilities::error("Gapfilling impossible without modifying biomass reaction!");
 		my $biomass = "bio1";
 		if (!defined($biomass_removals->{bio1})) {
 			$biomass = $brkeys->[0];
@@ -1736,9 +1768,10 @@ sub merge_models {
 		my $biomassCpd = $model->getObject("modelcompounds","cpd11416_c0");
 		#Adding genome, features, and roles to master mapping and annotation
 		my $mdlgenome = $model->genome();
+		my $prior_size = $genomeObj->dna_size();
 		$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
 		$genomeObj->num_contigs($genomeObj->num_contigs()+$mdlgenome->num_contigs());
-		$genomeObj->gc_content($genomeObj->gc_content()+$mdlgenome->dna_size()*$mdlgenome->gc_content());
+		$genomeObj->gc_content(($genomeObj->gc_content()*$prior_size+$mdlgenome->dna_size()*$mdlgenome->gc_content())/$genomeObj->dna_size());
 		push(@{$genomeObj->{contig_lengths}},@{$mdlgenome->{contig_lengths}});
 		push(@{$genomeObj->{contig_ids}},@{$mdlgenome->{contig_ids}});	
 		print "Loading features\n";
@@ -1783,6 +1816,11 @@ sub merge_models {
 					compound_ref => $cpd->compound_ref(),
 					charge => $cpd->charge(),
 					formula => $cpd->formula(),
+					name => $cpd->name(),
+					smiles => $cpd->smiles(),
+					inchikey => $cpd->inchikey(),
+					dblinks => $cpd->dblinks(),
+					aliases => $cpd->aliases(),
 					modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{$cpd->modelcompartment()->compartment()->id()}->id()
 				});
 			}

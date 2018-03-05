@@ -481,5 +481,133 @@ sub getObjectsByAlias {
 	return $objects;
 }
 
+sub printTSV {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef,append_to => {
+		compounds_table => ["id\tname\tformula\tcharge\tinchikey\tsmiles\tdeltag\tkegg id\tms id\tin model"],
+		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tenzyme\tdeltag\treference\tequation\tdefinition\tms id\tbigg id\tkegg id\tkegg pathways\tmetacyc pathways\tin model"]
+	},compound_filter => {},reaction_filter => {}}, @_);
+	my $output = $args->{append_to};
+	my $kegghash = Bio::KBase::utilities::kegg_hash();
+	my $cpdhash = Bio::KBase::utilities::compound_hash();
+	my $rxnhash = Bio::KBase::utilities::reaction_hash();
+	my $compounds = $self->compcompounds();
+	my $cpd_id_hash = {};
+	my $rxn_id_hash = {};
+	for (my $i=0; $i < @{$compounds}; $i++) {
+		my $cpddata;
+		my $msid = "";
+		if (!defined($args->{compound_filter}->{$compounds->[$i]->id()."0"})) {
+			if ($compounds->[$i]->id() =~ m/(cpd\d+)/ || $compounds->[$i]->compound_ref() =~ m/(cpd\d+)/) {
+				$msid = $1;
+				if ($msid ne "" && $msid ne "cpd00000" && defined($cpdhash->{$msid})) {
+					$cpddata = $cpdhash->{$msid};
+				}
+			}
+			my $name = $compounds->[$i]->id();
+			if (defined($cpddata)) {
+				$name = $cpddata->{name};
+			}
+			my $formula = "";
+			if (defined($compounds->[$i]->formula()) && length($compounds->[$i]->formula()) > 0) {
+				$formula = $compounds->[$i]->formula();
+			} elsif (defined($cpddata) && defined($cpddata->{formula})) {
+				$formula = $cpddata->{formula};
+			}
+			my $charge = "";
+			if (defined($compounds->[$i]->charge()) && length($compounds->[$i]->charge()) > 0) {
+				$charge = $compounds->[$i]->charge();
+			} elsif (defined($cpddata)) {
+				$charge = $cpddata->{charge};
+			}
+			my $inchikey = "";
+			if (defined($cpddata) && defined($cpddata->{inchikey})) {
+				$inchikey = $cpddata->{inchikey};
+			}
+			my $smiles = "";
+			if (defined($cpddata) && defined($cpddata->{smiles})) {
+				$smiles = $cpddata->{smiles};
+			}
+			my $deltag = "";
+			if (defined($cpddata) && defined($cpddata->{deltag}) && $cpddata->{deltag} != 10000000) {
+				$deltag = $cpddata->{deltag};
+			}
+			my $keggid = "";
+			if (defined($cpddata) && defined($cpddata->{kegg_aliases}->[0])) {
+				$keggid = $cpddata->{kegg_aliases}->[0];
+			}
+			my $line = $compounds->[$i]->id()."0\t".$name."\t".$formula."\t".$charge."\t".$inchikey."\t".$smiles."\t".$deltag."\t".$keggid."\t".$msid."\t0";
+			push(@{$output->{compounds_table}},$line);
+		}
+	}
+	my $reactions = $self->reactions();
+	for (my $i=0; $i < @{$reactions}; $i++) {
+		if (!defined($args->{reaction_filter}->{$reactions->[$i]->id()."0"})) {
+			my $pathway = "";
+			my $reference = "";
+			my $equation = $reactions->[$i]->equation();
+			$equation =~ s/\)/) /g;
+			my $definition = $reactions->[$i]->definition();
+			$definition =~ s/\)/) /g;
+			my $rxndata;
+			my $msid = "";
+			$rxn_id_hash->{$reactions->[$i]->id()} = 1;
+			if ($reactions->[$i]->id() =~ m/(rxn\d+)/ || $reactions->[$i]->reaction_ref() =~ m/(rxn\d+)/) {
+				$msid = $1;
+				if ($msid ne "" && $msid ne "rxn00000" && defined($rxnhash->{$msid})) {
+					$rxndata = $rxnhash->{$msid};
+				}
+			}
+			my $deltag = "";
+			if (defined($rxndata) && defined($rxndata->{deltag}) && $rxndata->{deltag} != 10000000) {
+				$deltag = $rxndata->{deltag};
+			}
+			my $ec = "";
+			if (defined($rxndata) && defined($rxndata->{ec_numbers}) && defined($rxndata->{ec_numbers}->[0])) {
+				$ec = join("|", @{$rxndata->{ec_numbers}});
+			}
+			my $biggid = "";
+			if (defined($rxndata) && defined($rxndata->{bigg_aliases}) && defined($rxndata->{bigg_aliases}->[0])) {
+				$biggid = $rxndata->{bigg_aliases}->[0];
+			}
+			my $keggid = "";
+			if (defined($rxndata) && defined($rxndata->{kegg_aliases}) && defined($rxndata->{kegg_aliases}->[0])) {
+				$keggid = $rxndata->{kegg_aliases}->[0];
+			}
+	
+			my $metapath = "";
+			if (defined($rxndata) && defined($rxndata->{metacyc_pathways}) && defined($rxndata->{metacyc_pathways}->[0])) {
+				for (my $j=0; $j < @{$rxndata->{metacyc_pathways}}; $j++) {
+					if ($rxndata->{metacyc_pathways}->[$j] !~ /PWY-\d+/) {
+						if (length($metapath) > 0) {
+							$metapath .= "|";
+						}
+						$metapath .= $rxndata->{metacyc_pathways}->[$j];
+					}
+				}
+			}
+			my $keggpath = "";
+			if (defined($rxndata) && defined($rxndata->{kegg_pathways}) && defined($rxndata->{kegg_pathways}->[0])) {
+				for (my $j=0; $j < @{$rxndata->{kegg_pathways}}; $j++) {
+					if (defined($kegghash->{$rxndata->{kegg_pathways}->[$j]})) {
+						if (length($keggpath) > 0) {
+							$keggpath .= "|";
+						}
+						$keggpath .= $kegghash->{$rxndata->{kegg_pathways}->[$j]};
+					}
+				}
+			}
+			my $line = $reactions->[$i]->id()."0\t".$reactions->[$i]->direction()."\t".$reactions->[$i]->templatecompartment()->id()."\t\t".$reactions->[$i]->name()."\t".$ec."\t".$deltag."\t".$reference."\t".$equation."\t".$definition."\t".$msid."\t".$biggid."\t".$keggid."\t".$keggpath."\t".$metapath."\t0";
+			push(@{$output->{reactions_table}},$line);
+		}
+	}
+	if ($args->{file} == 1) {
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id()."-compounds.tsv",$output->{compounds_table});
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id()."-reactions.tsv",$output->{reactions_table});
+		return [$args->{path}."/".$self->id()."-compounds.tsv",$args->{path}."/".$self->id()."-reactions.tsv"];
+	}
+	return $output;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

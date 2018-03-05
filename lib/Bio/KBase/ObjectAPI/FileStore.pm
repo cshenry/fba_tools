@@ -50,6 +50,10 @@ has directory => ( is => 'rw', isa => 'Str',default => "");
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub updated_reference {
+	return;
+}
+
 sub get_objects {
 	my ($self,$refs,$options) = @_;
 	$options = Bio::KBase::utilities::args($options,[],{
@@ -88,7 +92,7 @@ sub process_object {
 	my $array = [split(/\//,$ref)];
 	my $name = pop(@{$array});
 	my $folder = join("/",@{$array});
-	if ($data->{__type__} eq "HASH") {
+	if (!defined($data->{__type__}) || $data->{__type__} eq "HASH" || $options->{raw} == 1) {
 		$self->cache()->{$ref} = $data;
 		$self->cache()->{$ref}->{_reference} = $ref."||";
 	} else {
@@ -192,6 +196,11 @@ sub save_objects {
 	    }
     }
     return $output;
+}
+
+sub get_ref_from_metadata {
+	my ($self,$metadata) = @_;
+	return $metadata->{"ref"};
 }
 
 no Moose;

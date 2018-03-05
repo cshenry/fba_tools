@@ -10,7 +10,41 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
-### VERSION: 1.7.0 (Released 9/20/2017)
+### VERSION: 1.7.4 (Released 3/2/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Refinements to auxotrophy method
+- Fix Propagate Model with full genome refs
+- Fix GC content calculation for community models
+- Phenotype simulation will not fail if gapfilling is unsuccessful
+
+------------------------------------------
+### VERSION: 1.7.3 (Released 1/12/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Fixed PUBLIC-290 check mass balance report name
+- Switched to use of genome apis for compatibility with new object types (SCT-932)
+- Switched to resolved refs (#/#/#) for input objects
+- Ensured all compound information is copied into community models
+- Correct faulty reference for custom media compounds
+- Auxotropy local method
+
+------------------------------------------
+### VERSION: 1.7.2 (Released 1/2/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Hotfix: remove link which was breaking UI for propagate models app
+
+------------------------------------------
+### VERSION: 1.7.1 (Released 12/19/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Fixed PUBLIC-256 build multiple metabolic saving to same name
+- Fixed metabolic model upload for compounds with dashes and spaces
+- Fixed Gapfilling drops compounds from biomass to grow
+
+------------------------------------------
+### VERSION: 1.7.0 (Released 10/20/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:
 - Added View Flux Network app which visualises a FBA solution in an interactive

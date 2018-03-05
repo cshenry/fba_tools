@@ -3,7 +3,7 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.7.0';
+our $VERSION = '1.7.1';
 our $GIT_URL = 'git@github.com:cshenry/fba_tools.git';
 our $GIT_COMMIT_HASH = '287e65f90831e93836d44041b1011ca11af09c5b';
 
@@ -27,6 +27,7 @@ use Bio::KBase::kbaseenv;
 use DataFileUtil::DataFileUtilClient;
 use Bio::KBase::HandleService;
 use Archive::Zip;
+use Data::Dumper;
 
 #Initialization function for call
 sub util_initialize_call {
@@ -594,6 +595,7 @@ sub build_multiple_metabolic_models
 	for (my $i=0; $i < @{$genomes}; $i++) {
 		$params->{genome_workspace} = $orig_genome_workspace;
 		$params->{genome_id} = $genomes->[$i];
+		$params->{fbamodel_output_id} = undef;
 		print "Now building model of ".$params->{genome_id}."\n";
 		eval {
 			my $output = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
@@ -1742,12 +1744,12 @@ sub check_model_mass_balance
     #BEGIN check_model_mass_balance
     $self->util_initialize_call($params,$ctx);
 	$results = {};
-	Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
+	my $model_name = Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
 	$params->{fbamodel_id} =~ s/\//-/g;
     $self->util_finalize_call({
 		output => $results,
 		workspace => $params->{workspace},
-		report_name => $params->{fbamodel_id}.".check_mass_balance.report",
+		report_name => $model_name.".check_mass_balance.report",
 	});
     #END check_model_mass_balance
     my @_bad_returns;
@@ -1756,6 +1758,108 @@ sub check_model_mass_balance
 	my $msg = "Invalid returns passed to check_model_mass_balance:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'check_model_mass_balance');
+    }
+    return($results);
+}
+
+
+
+
+=head2 predict_auxotrophy
+
+  $results = $obj->predict_auxotrophy($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.PredictAuxotrophyParams
+$results is a fba_tools.PredictAuxotrophyResults
+PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	media_output_id has a value which is a fba_tools.media_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+media_id is a string
+workspace_name is a string
+PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.PredictAuxotrophyParams
+$results is a fba_tools.PredictAuxotrophyResults
+PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	media_output_id has a value which is a fba_tools.media_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+media_id is a string
+workspace_name is a string
+PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Identifies reactions in the model that are not mass balanced
+
+=back
+
+=cut
+
+sub predict_auxotrophy
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to predict_auxotrophy:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'predict_auxotrophy');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($results);
+    #BEGIN predict_auxotrophy
+    $self->util_initialize_call($params,$ctx);
+	$params = Bio::KBase::utilities::args($params,[],{genome_workspace => $params->{workspace}});
+	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
+	for (my $i=0; $i < @{$new_genome_list}; $i++) {
+		push(@{$params->{genome_ids}},Bio::KBase::utilities::buildref($new_genome_list->[$i],$params->{genome_workspace}));
+	}
+	delete $params->{genome_text};
+	$results = {};
+	Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy($params);
+	$self->util_finalize_call({
+		output => $results,
+		workspace => $params->{workspace},
+		report_name => $params->{media_output_id}.".auxotrophy.report",
+	});
+    #END predict_auxotrophy
+    my @_bad_returns;
+    (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to predict_auxotrophy:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'predict_auxotrophy');
     }
     return($results);
 }
@@ -2556,11 +2660,15 @@ sub model_to_excel_file
     my($f);
     #BEGIN model_to_excel_file
     $self->util_initialize_call($model,$ctx);
-    $f = Bio::KBase::ObjectAPI::functions::func_export($model,{
+    my $input = {
 		object => "model",
 		format => "excel",
 		file_util => 1
-	});
+	};
+    if (defined($model->{fulldb}) && $model->{fulldb} == 1) {
+    	$input->{format} = "fullexcel";
+    }
+    $f = Bio::KBase::ObjectAPI::functions::func_export($model,$input);
     #END model_to_excel_file
     my @_bad_returns;
     (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
@@ -2738,11 +2846,15 @@ sub model_to_tsv_file
     my($files);
     #BEGIN model_to_tsv_file
     $self->util_initialize_call($model,$ctx);
-    $files = Bio::KBase::ObjectAPI::functions::func_export($model,{
+    my $input = {
 		object => "model",
 		format => "tsv",
 		file_util => 1
-	});
+	};
+    if (defined($model->{fulldb}) && $model->{fulldb} == 1) {
+    	$input->{format} = "fulltsv";
+    }
+    $files = Bio::KBase::ObjectAPI::functions::func_export($model,$input);
     #END model_to_tsv_file
     my @_bad_returns;
     (ref($files) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"files\" (value was \"$files\")");
@@ -2818,10 +2930,14 @@ sub export_model_as_excel_file
     my($output);
     #BEGIN export_model_as_excel_file
     $self->util_initialize_call($params,$ctx);
-    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+    my $input = {
 		object => "model",
 		format => "excel"
-	});
+	};
+    if (defined($params->{fulldb}) && $params->{fulldb} == 1) {
+    	$input->{format} = "fullexcel";
+    }
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,$input);
     #END export_model_as_excel_file
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -2897,10 +3013,14 @@ sub export_model_as_tsv_file
     my($output);
     #BEGIN export_model_as_tsv_file
     $self->util_initialize_call($params,$ctx);
-    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+    my $input = {
 		object => "model",
 		format => "tsv"
-	});
+	};
+    if (defined($params->{fulldb}) && $params->{fulldb} == 1) {
+    	$input->{format} = "fulltsv";
+    }
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,$input);
     #END export_model_as_tsv_file
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -6378,6 +6498,72 @@ workspace has a value which is a fba_tools.workspace_name
 
 
 =head2 CheckModelMassBalanceResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictAuxotrophyParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+media_output_id has a value which is a fba_tools.media_id
+genome_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+media_output_id has a value which is a fba_tools.media_id
+genome_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictAuxotrophyResults
 
 =over 4
 

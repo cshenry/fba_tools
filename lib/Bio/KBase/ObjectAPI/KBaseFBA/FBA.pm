@@ -1446,6 +1446,7 @@ sub createJobDirectory {
 		$optMetabolite = 0;
 	}
 	#Setting parameters
+	my $auxotrophy_data = Bio::KBase::constants::auxotrophy_thresholds();
 	my $parameters = {
 		"fit phenotype data" => 0,
 		"deltagslack" => 10,
@@ -1486,8 +1487,19 @@ sub createJobDirectory {
 		"database root output directory" => $self->jobPath()."/",
 		"database root input directory" => $self->jobDirectory()."/",
 		"Min flux multiplier" => 1,
-		"Max deltaG" => 10000
+		"Max deltaG" => 10000,
+		"Auxotrophy metabolite list" => join("_c0;",keys(%{$auxotrophy_data}))."_c0;-cpd15666_c0;-cpd01997_c0;-cpd03422_c0"
 	};
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00393/cpd00345/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00220/cpd00015/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00305/cpd00056/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00215/cpd00016/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00218/cpd00003/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00644/cpd00010/;
+	if (defined($self->parameters()->{"Perform auxotrophy analysis"}) && $self->parameters()->{"Perform auxotrophy analysis"} == 1) {
+		my $rxndata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","reaction auxotrophy data filename"))}));
+		$self->parameters()->{"KEGG reaction list"} = join("_c0;",keys(%{$rxndata}))."_c0";
+	}
 	if (defined($self->{"fit phenotype data"})) {
 		$parameters->{"fit phenotype data"} = $self->{"fit phenotype data"};
 	}
@@ -2338,7 +2350,46 @@ sub loadMFAToolkitResults {
 	$self->parseOutputFiles();
 	$self->parseReactionMinimization();
 	$self->parseMFALog();
+	$self->parseAuxotrophyResults();
 }
+
+=head3 parseAuxotrophyResults
+Definition:
+	void FBA->parseAuxotrophyResults();
+Description:
+	Parses auxotrophy analysis results file
+
+=cut
+
+sub parseAuxotrophyResults {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MFAOutput/AuxotrophyReactions.txt") {
+		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/MFAOutput/AuxotrophyReactions.txt","\t");
+		$self->{auxotrophy_data} = {};
+		foreach my $row (@{$tbl->{data}}) {
+			if (defined($row->[0])) {
+				$row->[0] =~ s/cpd00345/cpd00393/;
+				$row->[0] =~ s/cpd00015/cpd00220/;
+				$row->[0] =~ s/cpd00056/cpd00305/;
+				$row->[0] =~ s/cpd00016/cpd00215/;
+				$row->[0] =~ s/cpd00003/cpd00218/;
+				$row->[0] =~ s/cpd00010/cpd00644/;
+				$self->{auxotrophy_data}->{cpds}->{$row->[0]} = [split(/;/,$row->[1])];
+				pop(@{$self->{auxotrophy_data}->{cpds}->{$row->[0]}});
+			}
+		}
+		foreach my $cpd (keys(%{$self->{auxotrophy_data}->{cpds}})) {
+			for (my $i=0; $i < @{$self->{auxotrophy_data}->{cpds}->{$cpd}}; $i++) {
+				$self->{auxotrophy_data}->{rxns}->{$self->{auxotrophy_data}->{cpds}->{$cpd}->[$i]}->{$cpd} = 1;
+			}
+		}
+		return 1;
+	}
+	return 0;
+}
+
+
 
 =head3 parseBiomassRemovals
 Definition:
@@ -3342,9 +3393,6 @@ sub parseGapfillingOutput {
 			$rxnhash->{$rxns->[$i]->id()} = $rxns->[$i];
 		}	
 		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/GapfillingOutput.txt","\t");
-		if (!defined($tbl->{data}->[0]->[3])) {
-			Bio::KBase::ObjectAPI::utilities::error("Gapfilling failed to find a solution to permit model growth on specified media condition!");
-		}	
 		my $solution;
 		my $round = 0;
 		my $temparray = [split(/\//,$tbl->{data}->[0]->[3])];
