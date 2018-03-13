@@ -1771,9 +1771,13 @@ sub merge_models {
 		#Adding genome, features, and roles to master mapping and annotation
 		my $mdlgenome = $model->genome();
 		my $prior_size = $genomeObj->dna_size();
-		$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
+		if (defined($mdlgenome->dna_size())) {
+			$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
+			if ($genomeObj->dna_size() > 0) {
+				$genomeObj->gc_content(($genomeObj->gc_content()*$prior_size+$mdlgenome->dna_size()*$mdlgenome->gc_content())/$genomeObj->dna_size());
+			}
+		}
 		$genomeObj->num_contigs($genomeObj->num_contigs()+$mdlgenome->num_contigs());
-		$genomeObj->gc_content(($genomeObj->gc_content()*$prior_size+$mdlgenome->dna_size()*$mdlgenome->gc_content())/$genomeObj->dna_size());
 		push(@{$genomeObj->{contig_lengths}},@{$mdlgenome->{contig_lengths}});
 		push(@{$genomeObj->{contig_ids}},@{$mdlgenome->{contig_ids}});	
 		print "Loading features\n";
