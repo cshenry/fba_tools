@@ -759,7 +759,6 @@ sub createJobDirectory {
 	my $rxnhash = {};
 	my $mdlData = ["REACTIONS","LOAD;DIRECTIONALITY;COMPARTMENT;ASSOCIATED PEG;COMPLEXES"];
 	my $BioRxn = ["id	abbrev	deltaG	deltaGErr	equation	name	reversibility	status	thermoReversibility"];
-	my $mdlrxn = $model->modelreactions();
 	my $compindecies = {};
 	my $comps = $model->modelcompartments();
 	for (my $i=0; $i < @{$comps}; $i++) {
@@ -918,6 +917,56 @@ sub createJobDirectory {
 				$equation =~ s/\(3\)\scpd00067_c0/(6) cpd00067_c0/g;
 			}
 			push(@{$BioRxn},$id."\t".$id."\t".$dg."\t".$dge."\t".$equation."\t".$id."\t".$rxndir."\t".$st."\t".$rxndir);
+		}
+	}
+	#Printing proteins for models
+	if (defined($self->parameters()->{dynamic_protein_simulation}) && $self->parameters()->{dynamic_protein_simulation} == 1) {
+		my $genehash {};
+		my $aa_trans = Bio::KBase::constants::aa_abbrev();
+		for (my $i=0; $i < @{$mdlrxn}; $i++) {
+			my $rxn = $mdlrxn->[$i];
+			my $prots = $rxn->modelReactionProteins();
+			for (my $j=0; $j < @{$prots}; $j++) {
+				my $subunits = $prots->[$j]->modelReactionProteinSubunits();
+				for (my $k=0; $k < @{$subunits}; $k++) {
+					my $ftrs = $subunits->[$k]->features();
+					for (my $m=0; $m < @{$ftrs}; $m++) {
+						if (!defined($genehash->{$ftrs->[$i]->id()})) {
+							my $gpr = $ftrs->[$i]->id();
+							$gpr =~ s/\|/___/g;
+							my $ind = 0;
+							$genehash->{$ftrs->[$i]->id()} = 1;
+							my $id = "prot_".$ftrs->[$i]->id()."_c".$ind;
+							$id = s/[\s^\W]//g;
+							push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
+							my $seq = $ftrs->[$i]->protein_translation();
+							my $en = length($seq);
+							my $aacost = "cpd00017_c".$ind;
+							foreach my $aa (keys(%{$aa_trans})) {
+								my $count = length($seq);
+								$seq =~ s/$aa//g;
+								my $lcaa = lc($aa);
+								$seq =~ s/$lcaa//g;
+								$count = $count - length($seq);
+								if ($aa == "M") {
+									$count--;
+								}
+								if ($count > 0) {
+									$aacost .= " + (".$count.") ".$aa_trans->{$aa};
+								}
+							}
+							my $syn_eq = $aa_cost." (".$en.") cpd00002_c".$ind." + (".$en.") cpd00001_c".$ind." => (".$en.") cpd00008_c".$ind." + (".$en.") cpd00009_c".$ind." + (".$en.") cpd00067_c".$ind." + ".$id;
+							my $deg_eq = "(1) ".$id." => ".$aa_cost;
+							push(@{$BioRxn},"prod".$id."\t"."prod".$id."\t0\t0\t".$id." =>\tprod".$id."\t<=>\tOK\t<=>");
+							push(@{$BioRxn},"syn".$id."\t"."syn".$id."\t0\t0\t".$equation."\tsyn".$id."\t=>\tOK\t=>");
+							push(@{$BioRxn},"deg".$id."\t"."deg".$id."\t0\t0\t".$equation."\tdeg".$id."\t=>\tOK\t=>");
+							push(@{$mdlData},"prod".$id.";<=>;c;".$gpr.";".$gpr);
+							push(@{$mdlData},"syn".$id.";=>;c;".$gpr.";".$gpr);
+							push(@{$mdlData},"deg".$id.";=>;c;".$gpr.";".$gpr);
+						}
+					}
+				}
+			}
 		}
 	}
 	my $final_gauranteed = [];
