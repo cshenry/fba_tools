@@ -7,6 +7,7 @@ use Workspace::WorkspaceClient;
 our $ws_client = undef;
 our $ga_client = undef;
 our $ac_client = undef;
+our $rast_client = undef;
 our $handle_client = undef;
 our $data_file_client = undef;
 our $objects_created = [];
@@ -63,7 +64,7 @@ sub create_report {
 			description => "Debug file"
 		});
 	};
-	return $kr->create_extended_report({
+	my $data = {
 		message => Bio::KBase::utilities::report_message(),
         objects_created => $objects_created,
         warnings => $parameters->{warnings},
@@ -73,7 +74,9 @@ sub create_report {
         file_links => Bio::KBase::utilities::report_files(),
         report_object_name => $parameters->{report_object_name},
         workspace_name => $parameters->{workspace_name}
-	});
+	};
+	exit;
+	return $kr->create_extended_report($data);
 }
 
 sub create_context_from_client_config {
@@ -119,6 +122,18 @@ sub ga_client {
 		$ga_client = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ga_client;
+}
+
+sub rast_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($rast_client)) {
+		require "Bio/KBase/GenomeAnnotation/Client.pm";
+		$rast_client = new Bio::KBase::GenomeAnnotation::Client("http://tutorial.theseed.org/services/genome_annotation");
+	}
+	return $rast_client;
 }
 
 sub ac_client {
