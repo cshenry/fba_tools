@@ -75,7 +75,6 @@ sub create_report {
         report_object_name => $parameters->{report_object_name},
         workspace_name => $parameters->{workspace_name}
 	};
-	exit;
 	return $kr->create_extended_report($data);
 }
 
