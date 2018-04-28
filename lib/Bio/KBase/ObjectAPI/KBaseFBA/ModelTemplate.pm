@@ -199,7 +199,9 @@ sub extend_model_from_features {
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($role);
 				if (defined($self->roleSearchNameHash()->{$searchrole})) {
 					foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
-						push(@{$roleFeatures->{$roleid}->{$abbrev}},$ftr);
+						if ($self->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+							push(@{$roleFeatures->{$roleid}->{$abbrev}},$ftr);
+						}
 					}
 				}
 			}
@@ -242,7 +244,9 @@ sub buildModelFromFunctions {
 			$searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($subroles->[$m]);
 			if (defined($self->roleSearchNameHash()->{$searchrole})) {
 				foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
-					$roleFeatures->{$roleid}->{"c"}->[0] = "Role-based-annotation";
+					if ($self->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+						$roleFeatures->{$roleid}->{"c"}->[0] = "Role-based-annotation";
+					}
 				}
 			}
 		}
