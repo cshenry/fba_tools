@@ -136,6 +136,7 @@ sub buildModel {
 		fulldb => 0,
 	}, @_);
 	my $genome = $args->{genome};
+	print $genome->toJSON()."\n";
 	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		id => $args->{modelid},
 		source => Bio::KBase::utilities::conf("ModelSEED","source"),
@@ -183,7 +184,6 @@ sub extend_model_from_features {
 	my $roleFeatures = {};
 	my $mdl = $args->{model};
 	my $features = $args->{features};
-	print Bio::KBase::ObjectAPI::utilities::TOJSON($features,0)."\n";
 	for (my $i=0; $i < @{$features}; $i++) {
 		my $ftr = $features->[$i];
 		if (lc($ftr->type()) ne "gene") {
