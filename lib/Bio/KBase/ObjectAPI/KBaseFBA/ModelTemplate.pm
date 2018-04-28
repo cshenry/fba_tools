@@ -197,13 +197,12 @@ sub extend_model_from_features {
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($role);
 				#my $roles = [];
 				#if (defined($self->roleSearchNameHash()->{$searchrole})) {
-				my $role = $self->roleSearchNameHash()->{$searchrole};
+				if (defined($self->roleSearchNameHash()->{$searchrole})) {
 				#}
-				#for (my $n=0; $n < @{$roles};$n++) {
-				if (defined($role)) {	
-				push(@{$roleFeatures->{$role->id()}->{$abbrev}},$ftr);
+				#for (my $n=0; $n < @{$roles};$n++) {	
+					push(@{$roleFeatures->{$self->roleSearchNameHash()->{$searchrole}->id()}->{$abbrev}},$ftr);
+				#}
 				}
-				#}
 			}
 		}
 	}
@@ -241,10 +240,9 @@ sub buildModelFromFunctions {
 		my $searchrole = Bio::KBase::ObjectAPI::Utilities::GlobalFunctions::convertRoleToSearchRole($function);
 		my $subroles = [split(/;/,$searchrole)];
 		for (my $m=0; $m < @{$subroles}; $m++) {
-			my $role = $self->roleSearchNameHash()->{$subroles->[$m]};
 			#for (my $n=0; $n < @{$roles};$n++) {
-			if (defined($role)) {
-			$roleFeatures->{$role->_reference()}->{"c"}->[0] = "Role-based-annotation";
+			if (defined($self->roleSearchNameHash()->{$subroles->[$m]})) {
+				$roleFeatures->{$self->roleSearchNameHash()->{$subroles->[$m]}->_reference()}->{"c"}->[0] = "Role-based-annotation";
 			}
 			#}
 		}
