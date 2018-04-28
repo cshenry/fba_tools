@@ -37,7 +37,7 @@ has biomassHash => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'm
 has roleSubsystemHash => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildroleSubsystemHash' );
 has compoundsByAlias => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcompoundsByAlias' );
 has reactionsByAlias => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildreactionsByAlias' );
-
+has roleSearchNameHash => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildroleSearchNameHash' );
 has biochemistry_ref => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildbiochemistry_ref' );
 
 #***********************************************************************************************************
@@ -104,6 +104,21 @@ sub _buildreactionsByAlias {
 		}
 	}
 	return $rxnhash;
+}
+
+sub _buildroleSearchNameHash {
+	my ($self) = @_;
+	my $rolehash = {};
+	my $roles = $self->roles();
+	for (my $i=0; $i < @{$roles}; $i++) {
+		$rolehash->{$roles->[$i]->searchname()} = $roles->[$i];
+		my $aliases = $roles->[$i]->aliases();
+		for (my $j=0; $j < @{$aliases}; $j++) {
+			my $search_alias = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($aliases->[$j]);
+			$rolehash->{$search_alias} = $roles->[$i];
+		}
+	}
+	return $rolehash;
 }
 
 #***********************************************************************************************************
@@ -180,7 +195,10 @@ sub extend_model_from_features {
 					print STDERR "Compartment ".$compartments->[$k]." not found!\n";
 				}
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($role);
-				my $roles = $self->searchForRoles($searchrole);
+				my $roles = [];
+				if (defined($self->roleSearchNameHash()->{$searchrole})) {
+					$roles = $self->roleSearchNameHash()->{$searchrole};
+				}
 				for (my $n=0; $n < @{$roles};$n++) {
 					push(@{$roleFeatures->{$roles->[$n]->id()}->{$abbrev}},$ftr);
 				}
@@ -221,7 +239,10 @@ sub buildModelFromFunctions {
 		my $searchrole = Bio::KBase::ObjectAPI::Utilities::GlobalFunctions::convertRoleToSearchRole($function);
 		my $subroles = [split(/;/,$searchrole)];
 		for (my $m=0; $m < @{$subroles}; $m++) {
-			my $roles = $self->searchForRoles($subroles->[$m]);
+			my $roles = [];
+			if (defined($self->roleSearchNameHash()->{$subroles->[$m]})) {
+				$roles = $self->roleSearchNameHash()->{$subroles->[$m]};
+			}
 			for (my $n=0; $n < @{$roles};$n++) {
 				$roleFeatures->{$roles->[$n]->_reference()}->{"c"}->[0] = "Role-based-annotation";
 			}
