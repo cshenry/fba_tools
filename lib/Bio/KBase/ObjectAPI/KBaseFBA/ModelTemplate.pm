@@ -111,11 +111,13 @@ sub _buildroleSearchNameHash {
 	my $rolehash = {};
 	my $roles = $self->roles();
 	for (my $i=0; $i < @{$roles}; $i++) {
-		$rolehash->{$roles->[$i]->searchname()} = $roles->[$i];
+		$rolehash->{$roles->[$i]->searchname()}->{$roles->[$i]->id()} = $roles->[$i];
 		my $aliases = $roles->[$i]->aliases();
 		for (my $j=0; $j < @{$aliases}; $j++) {
+			$aliases->[$j] =~ s/^kegg://;
+			$aliases->[$j] =~ s/^searchname://;
 			my $search_alias = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($aliases->[$j]);
-			$rolehash->{$search_alias} = $roles->[$i];
+			$rolehash->{$search_alias}->{$roles->[$i]->id()} = $roles->[$i];
 		}
 	}
 	return $rolehash;
@@ -195,13 +197,10 @@ sub extend_model_from_features {
 					print STDERR "Compartment ".$compartments->[$k]." not found!\n";
 				}
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($role);
-				#my $roles = [];
-				#if (defined($self->roleSearchNameHash()->{$searchrole})) {
 				if (defined($self->roleSearchNameHash()->{$searchrole})) {
-				#}
-				#for (my $n=0; $n < @{$roles};$n++) {	
-					push(@{$roleFeatures->{$self->roleSearchNameHash()->{$searchrole}->id()}->{$abbrev}},$ftr);
-				#}
+					foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
+						push(@{$roleFeatures->{$roleid}->{$abbrev}},$ftr);
+					}
 				}
 			}
 		}
@@ -240,11 +239,12 @@ sub buildModelFromFunctions {
 		my $searchrole = Bio::KBase::ObjectAPI::Utilities::GlobalFunctions::convertRoleToSearchRole($function);
 		my $subroles = [split(/;/,$searchrole)];
 		for (my $m=0; $m < @{$subroles}; $m++) {
-			#for (my $n=0; $n < @{$roles};$n++) {
-			if (defined($self->roleSearchNameHash()->{$subroles->[$m]})) {
-				$roleFeatures->{$self->roleSearchNameHash()->{$subroles->[$m]}->_reference()}->{"c"}->[0] = "Role-based-annotation";
+			$searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($subroles->[$m]);
+			if (defined($self->roleSearchNameHash()->{$searchrole})) {
+				foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
+					$roleFeatures->{$roleid}->{"c"}->[0] = "Role-based-annotation";
+				}
 			}
-			#}
 		}
 	}
 	for (my $i=0; $i < @{$rxns}; $i++) {
