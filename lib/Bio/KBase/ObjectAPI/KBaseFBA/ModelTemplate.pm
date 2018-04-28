@@ -183,8 +183,12 @@ sub extend_model_from_features {
 	my $roleFeatures = {};
 	my $mdl = $args->{model};
 	my $features = $args->{features};
+	print Bio::KBase::ObjectAPI::utilities::TOJSON($features,0)."\n";
 	for (my $i=0; $i < @{$features}; $i++) {
 		my $ftr = $features->[$i];
+		if (lc($ftr->type()) ne "gene") {
+			next;
+		}
 		my $roles = $ftr->roles();
 		my $compartments = $ftr->compartments();
 		for (my $j=0; $j < @{$roles}; $j++) {
