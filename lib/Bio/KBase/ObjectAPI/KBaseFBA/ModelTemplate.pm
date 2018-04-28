@@ -184,8 +184,8 @@ sub extend_model_from_features {
 	my $mdl = $args->{model};
 	my $features = $args->{features};
 	for (my $i=0; $i < @{$features}; $i++) {
-		print $ftr->id()."|".$ftr->type()."\n";
 		my $ftr = $features->[$i];
+		print $ftr->id()."|".$ftr->type()."\n";
 		if (lc($ftr->type()) eq "mrna" || lc($ftr->type()) eq "cds") {
 			next;
 		}
