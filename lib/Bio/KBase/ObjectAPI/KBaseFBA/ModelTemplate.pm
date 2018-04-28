@@ -195,13 +195,15 @@ sub extend_model_from_features {
 					print STDERR "Compartment ".$compartments->[$k]." not found!\n";
 				}
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($role);
-				my $roles = [];
-				if (defined($self->roleSearchNameHash()->{$searchrole})) {
-					$roles = $self->roleSearchNameHash()->{$searchrole};
+				#my $roles = [];
+				#if (defined($self->roleSearchNameHash()->{$searchrole})) {
+				my $role = $self->roleSearchNameHash()->{$searchrole};
+				#}
+				#for (my $n=0; $n < @{$roles};$n++) {
+				if (defined($role)) {	
+				push(@{$roleFeatures->{$role->id()}->{$abbrev}},$ftr);
 				}
-				for (my $n=0; $n < @{$roles};$n++) {
-					push(@{$roleFeatures->{$roles->[$n]->id()}->{$abbrev}},$ftr);
-				}
+				#}
 			}
 		}
 	}
@@ -239,13 +241,12 @@ sub buildModelFromFunctions {
 		my $searchrole = Bio::KBase::ObjectAPI::Utilities::GlobalFunctions::convertRoleToSearchRole($function);
 		my $subroles = [split(/;/,$searchrole)];
 		for (my $m=0; $m < @{$subroles}; $m++) {
-			my $roles = [];
-			if (defined($self->roleSearchNameHash()->{$subroles->[$m]})) {
-				$roles = $self->roleSearchNameHash()->{$subroles->[$m]};
+			my $role = $self->roleSearchNameHash()->{$subroles->[$m]};
+			#for (my $n=0; $n < @{$roles};$n++) {
+			if (defined($role)) {
+			$roleFeatures->{$role->_reference()}->{"c"}->[0] = "Role-based-annotation";
 			}
-			for (my $n=0; $n < @{$roles};$n++) {
-				$roleFeatures->{$roles->[$n]->_reference()}->{"c"}->[0] = "Role-based-annotation";
-			}
+			#}
 		}
 	}
 	for (my $i=0; $i < @{$rxns}; $i++) {
