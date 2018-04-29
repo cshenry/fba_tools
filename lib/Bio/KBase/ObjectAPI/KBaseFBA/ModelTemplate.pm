@@ -155,9 +155,24 @@ sub buildModel {
 	$mdl->genome($genome);
 	$mdl->_reference("~");
 	$mdl->parent($self->parent());
+	my $cds = [];
+	my $genes = [];
+	my $ftrs = $genome->features();
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		if (lc($ftrs->[$i]->type()) eq "cds") {
+			push(@{$cds},ftrs->[$i]);
+		} elsif (lc($ftrs->[$i]->type()) ne "mrna") {
+			push(@{$genes},ftrs->[$i]);
+		}
+	}
+	my $numcds = @{$cds};
+	my $numgenes = @{$genes};
+	if ($numcds >= 2*$numgenes) {
+		$genes = $cds;
+	}
 	$self->extend_model_from_features({
 		model => $mdl,
-		features => $genome->features()
+		features => $genes
 	});
 	my $bios = $self->biomasses();
 	for (my $i=0; $i < @{$bios}; $i++) {
@@ -185,10 +200,6 @@ sub extend_model_from_features {
 	my $features = $args->{features};
 	for (my $i=0; $i < @{$features}; $i++) {
 		my $ftr = $features->[$i];
-		print $ftr->id()."|".$ftr->type()."\n";
-		if (lc($ftr->type()) eq "mrna" || lc($ftr->type()) eq "cds") {
-			next;
-		}
 		my $roles = $ftr->roles();
 		my $compartments = $ftr->compartments();
 		for (my $j=0; $j < @{$roles}; $j++) {
