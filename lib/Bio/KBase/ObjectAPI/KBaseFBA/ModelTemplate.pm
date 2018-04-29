@@ -160,9 +160,9 @@ sub buildModel {
 	my $ftrs = $genome->features();
 	for (my $i=0; $i < @{$ftrs}; $i++) {
 		if (lc($ftrs->[$i]->type()) eq "cds") {
-			push(@{$cds},ftrs->[$i]);
+			push(@{$cds},$ftrs->[$i]);
 		} elsif (lc($ftrs->[$i]->type()) ne "mrna") {
-			push(@{$genes},ftrs->[$i]);
+			push(@{$genes},$ftrs->[$i]);
 		}
 	}
 	my $numcds = @{$cds};
