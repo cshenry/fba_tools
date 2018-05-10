@@ -141,6 +141,9 @@ sub process_object {
 
 sub get_object {
     my ($self,$ref,$options) = @_;
+    if ($ref eq "kbase/default") {
+    	$ref = "/Biochemistry/default";
+    }
     return $self->get_objects([$ref],$options)->[0];
 }
 
