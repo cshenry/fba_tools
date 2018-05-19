@@ -63,6 +63,8 @@ sub get_objects {
 	#Checking cache for objects
 	my $newrefs = [];
 	for (my $i=0; $i < @{$refs}; $i++) {
+		my $array = [split(/;/,$refs->[$i])];
+		$refs->[$i] = pop(@{$array});
 		if ($refs->[$i] =~ m/(.+)\|\|$/) {
 			$refs->[$i] = $1;
 		}
