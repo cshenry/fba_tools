@@ -63,6 +63,8 @@ sub get_objects {
 	#Checking cache for objects
 	my $newrefs = [];
 	for (my $i=0; $i < @{$refs}; $i++) {
+		my $array = [split(/;/,$refs->[$i])];
+		$refs->[$i] = pop(@{$array});
 		if ($refs->[$i] =~ m/(.+)\|\|$/) {
 			$refs->[$i] = $1;
 		}
@@ -141,6 +143,9 @@ sub process_object {
 
 sub get_object {
     my ($self,$ref,$options) = @_;
+    if ($ref eq "kbase/default") {
+    	$ref = "/Biochemistry/default";
+    }
     return $self->get_objects([$ref],$options)->[0];
 }
 
