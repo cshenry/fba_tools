@@ -154,6 +154,7 @@ sub handle_client {
 	});
 	if ($parameters->{refresh} == 1 || !defined($handle_client)) {
 		require "Bio/KBase/HandleService.pm";
+		print "Token:".Bio::KBase::utilities::token()."\n";
 		$handle_client = new Bio::KBase::HandleService(Bio::KBase::utilities::conf("fba_tools","handle-service-url"),token => Bio::KBase::utilities::token());
 	}
 	return $handle_client;
