@@ -329,7 +329,7 @@ sub compute_penalties {
 	} elsif ($self->inSubsystem() == 1) {
 		$coefficient += $args->{subsystem_penalty};
 	}
-	if ($self->isTransport()) {
+	if ($self->isTransporter()) {
 		$coefficient += $args->{transporter_penalty};
 		if (@{$self->reaction()->reagents()} <= 2) {
 			$coefficient += $args->{single_compound_transporter_penalty};
@@ -338,10 +338,10 @@ sub compute_penalties {
 			$coefficient += $args->{biomass_transporter_penalty};
 		}
 	}
-	if ($self->reaction()->unknownStructure()) {
+	if ($self->reaction()->unknownStructure() || $self->reaction()->id() =~ m/rxn00000/) {
 		$coefficient += $args->{unknown_structure_penalty};
 	}
-	if ($self->reaction()->status() =~ m/[CM]I/) {
+	if ($self->reaction()->status() =~ m/[CM]I/ || $self->reaction()->id() =~ m/rxn00000/) {
 		$coefficient += $args->{unbalanced_penalty};
 	}
 	if ($self->reaction()->thermoReversibility() eq ">") {
