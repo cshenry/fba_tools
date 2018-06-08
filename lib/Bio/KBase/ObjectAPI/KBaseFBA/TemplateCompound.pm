@@ -18,6 +18,7 @@ has biomass_coproducts  => ( is => 'rw', isa => 'ArrayRef',printOrder => '-1', t
 has class  => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_class' );
 has codeid  => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcodeid' );
 has searchnames  => ( is => 'rw', isa => 'ArrayRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_searchnames' );
+has isBiomassCompound  => ( is => 'rw', isa => 'Bool',printOrder => '3', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildisBiomassCompound' );
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -123,6 +124,12 @@ sub _build_class {
 		return $classhash->{$self->id()};
 	}
 	return "unknown";
+}
+
+sub _buildisBiomassCompound {
+	my ($self) = @_;
+	$self->parent()->labelBiomassCompounds();
+	return $self->isBiomassCompound();
 }
 
 sub _build_biomass_coproducts {
