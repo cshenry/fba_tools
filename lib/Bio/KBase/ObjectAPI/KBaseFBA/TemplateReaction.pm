@@ -311,10 +311,14 @@ sub compute_penalties {
 	}, @_);
 	my $thermopenalty = 0; 
 	my $coefficient = 1;
-	if (!defined($self->reaction()->getAlias("KEGG"))) {
+	my $id = "rxn00000";
+	if ($self->reaction_ref() =~ m/(rxn\d+)/) {
+		$id = $1;
+	}
+	if ($id eq "rxn00000" || !defined($self->reaction()->getAlias("KEGG"))) {
 		$coefficient += $args->{no_KEGG_penalty};
 		$coefficient += $args->{no_KEGG_map_penalty};
-	} elsif (!defined(Bio::KBase::ObjectAPI::utilities::KEGGMapHash()->{$self->reaction()->id()})) {
+	} elsif (!defined(Bio::KBase::ObjectAPI::utilities::KEGGMapHash()->{$id})) {
 		$coefficient += $args->{no_KEGG_map_penalty};
 	}
 	if (!defined($self->deltaG()) || $self->deltaG() == 10000000) {
@@ -338,13 +342,13 @@ sub compute_penalties {
 			$coefficient += $args->{biomass_transporter_penalty};
 		}
 	}
-	if ($self->reaction()->unknownStructure() || $self->reaction()->id() =~ m/rxn00000/) {
+	if ($id eq "rxn00000" || $self->reaction()->unknownStructure() || $self->reaction()->id() =~ m/rxn00000/) {
 		$coefficient += $args->{unknown_structure_penalty};
 	}
-	if ($self->reaction()->status() =~ m/[CM]I/ || $self->reaction()->id() =~ m/rxn00000/) {
+	if ($id eq "rxn00000" || $self->reaction()->status() =~ m/[CM]I/ || $self->reaction()->id() =~ m/rxn00000/) {
 		$coefficient += $args->{unbalanced_penalty};
 	}
-	if ($self->reaction()->thermoReversibility() eq ">") {
+	if ($id eq "rxn00000" || $self->reaction()->thermoReversibility() eq ">") {
 		$self->forward_penalty(0);
 		$self->reverse_penalty($args->{direction_penalty}+$thermopenalty);	
 	} elsif ($self->reaction()->thermoReversibility() eq "<") {
