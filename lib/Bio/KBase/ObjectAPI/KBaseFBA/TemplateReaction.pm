@@ -323,7 +323,7 @@ sub compute_penalties {
 	} else {
 		$thermopenalty += $self->deltaG()/10;
 	}
-	if (@{$self->complexs()} == 0) {
+	if (@{$self->templatecomplexs()} == 0) {
 		$coefficient += $args->{functional_role_penalty};
 		$coefficient += $args->{subsystem_penalty};
 	} elsif ($self->inSubsystem() == 1) {
