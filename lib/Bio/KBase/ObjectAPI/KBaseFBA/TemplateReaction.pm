@@ -335,7 +335,7 @@ sub compute_penalties {
 	}
 	if ($self->isTransporter()) {
 		$coefficient += $args->{transporter_penalty};
-		if (@{$self->reaction()->reagents()} <= 2) {
+		if (@{$self->templateReactionReagents()} <= 2) {
 			$coefficient += $args->{single_compound_transporter_penalty};
 		}
 		if ($self->isBiomassTransporter() == 1) {
