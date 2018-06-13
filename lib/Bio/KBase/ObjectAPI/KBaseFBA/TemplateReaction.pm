@@ -359,9 +359,6 @@ sub compute_penalties {
 		if (@{$self->templateReactionReagents()} <= 2) {
 			$coefficient += $args->{single_compound_transporter_penalty};
 		}
-		if ($self->isBiomassTransporter() == 1) {
-			$coefficient += $args->{biomass_transporter_penalty};
-		}
 	}
 	$self->base_cost($coefficient);
 }
