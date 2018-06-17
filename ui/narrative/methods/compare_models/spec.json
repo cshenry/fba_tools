@@ -35,17 +35,6 @@
             }
         },
         {
-            "id": "protcomp_ref",
-            "optional": true,
-            "advanced": false,
-            "allow_multiple": false,
-            "default_values": [ "" ],
-            "field_type": "text",
-            "text_options": {
-                "valid_ws_types": [ "GenomeComparison.ProteomeComparison" ]
-            }
-        },
-        {
             "id": "pangenome_ref",
             "optional": true,
             "advanced": false,
@@ -74,12 +63,7 @@
                 {
                     "input_parameter": "model_ref",
                     "target_property": "model_refs",
-                    "target_type_transform": "list<ref>"
-                },
-                {
-                    "input_parameter": "protcomp_ref",
-                    "target_property": "protcomp_ref",
-                    "target_type_transform": "ref"
+                    "target_type_transform": "list<resolved-ref>"
                 },
                 {
                     "input_parameter": "pangenome_ref",

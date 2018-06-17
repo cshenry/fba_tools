@@ -17,7 +17,7 @@ KB_RUNTIME ?= /kb/runtime
 
 .PHONY: test
 
-default: compile build-startup-script build-executable-script build-test-script deploy-mfatoolkit
+default: compile build-startup-script build-executable-script build-test-script
 
 compile:
 	kb-sdk compile $(SPEC_FILE) \

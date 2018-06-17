@@ -436,7 +436,7 @@ sub compute_gene_activity_threshold_using_faria_method {
 	my $cutoff_percentile = 0;
 	my $totalexpvals = @{$allexpvals};
 	for (my $i=0; $i < @{$allexpvals}; $i++) {
-		if ($allexpvals->[$i] == $cutoff) {
+		if (defined $cutoff && $allexpvals->[$i] == $cutoff) {
 			$cutoff_percentile = $i/$totalexpvals;
 		}
 	}

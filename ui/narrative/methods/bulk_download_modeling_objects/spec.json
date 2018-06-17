@@ -270,7 +270,8 @@
             },
             {
                "input_parameter" : "refs",
-               "target_property" : "refs"
+               "target_property" : "refs",
+               "target_type_transform": "list<resolved-ref>"
             },
             {
                "target_property" : "model_format",

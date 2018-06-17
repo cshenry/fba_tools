@@ -27,6 +27,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "phenotypesim_output_id",
     "workspace",
     "all_reversible",
+    "gapfill_phenotypes",
+    "fit_phenotype_data",
+    "save_fluxes",
+    "add_all_transporters",
+    "add_positive_transporters",
+    "target_reaction",
     "feature_ko_list",
     "reaction_ko_list",
     "custom_bound_list",
@@ -48,6 +54,18 @@ public class SimulateGrowthOnPhenotypeDataParams {
     private java.lang.String workspace;
     @JsonProperty("all_reversible")
     private Long allReversible;
+    @JsonProperty("gapfill_phenotypes")
+    private Long gapfillPhenotypes;
+    @JsonProperty("fit_phenotype_data")
+    private Long fitPhenotypeData;
+    @JsonProperty("save_fluxes")
+    private Long saveFluxes;
+    @JsonProperty("add_all_transporters")
+    private Long addAllTransporters;
+    @JsonProperty("add_positive_transporters")
+    private Long addPositiveTransporters;
+    @JsonProperty("target_reaction")
+    private java.lang.String targetReaction;
     @JsonProperty("feature_ko_list")
     private List<String> featureKoList;
     @JsonProperty("reaction_ko_list")
@@ -163,6 +181,96 @@ public class SimulateGrowthOnPhenotypeDataParams {
         return this;
     }
 
+    @JsonProperty("gapfill_phenotypes")
+    public Long getGapfillPhenotypes() {
+        return gapfillPhenotypes;
+    }
+
+    @JsonProperty("gapfill_phenotypes")
+    public void setGapfillPhenotypes(Long gapfillPhenotypes) {
+        this.gapfillPhenotypes = gapfillPhenotypes;
+    }
+
+    public SimulateGrowthOnPhenotypeDataParams withGapfillPhenotypes(Long gapfillPhenotypes) {
+        this.gapfillPhenotypes = gapfillPhenotypes;
+        return this;
+    }
+
+    @JsonProperty("fit_phenotype_data")
+    public Long getFitPhenotypeData() {
+        return fitPhenotypeData;
+    }
+
+    @JsonProperty("fit_phenotype_data")
+    public void setFitPhenotypeData(Long fitPhenotypeData) {
+        this.fitPhenotypeData = fitPhenotypeData;
+    }
+
+    public SimulateGrowthOnPhenotypeDataParams withFitPhenotypeData(Long fitPhenotypeData) {
+        this.fitPhenotypeData = fitPhenotypeData;
+        return this;
+    }
+
+    @JsonProperty("save_fluxes")
+    public Long getSaveFluxes() {
+        return saveFluxes;
+    }
+
+    @JsonProperty("save_fluxes")
+    public void setSaveFluxes(Long saveFluxes) {
+        this.saveFluxes = saveFluxes;
+    }
+
+    public SimulateGrowthOnPhenotypeDataParams withSaveFluxes(Long saveFluxes) {
+        this.saveFluxes = saveFluxes;
+        return this;
+    }
+
+    @JsonProperty("add_all_transporters")
+    public Long getAddAllTransporters() {
+        return addAllTransporters;
+    }
+
+    @JsonProperty("add_all_transporters")
+    public void setAddAllTransporters(Long addAllTransporters) {
+        this.addAllTransporters = addAllTransporters;
+    }
+
+    public SimulateGrowthOnPhenotypeDataParams withAddAllTransporters(Long addAllTransporters) {
+        this.addAllTransporters = addAllTransporters;
+        return this;
+    }
+
+    @JsonProperty("add_positive_transporters")
+    public Long getAddPositiveTransporters() {
+        return addPositiveTransporters;
+    }
+
+    @JsonProperty("add_positive_transporters")
+    public void setAddPositiveTransporters(Long addPositiveTransporters) {
+        this.addPositiveTransporters = addPositiveTransporters;
+    }
+
+    public SimulateGrowthOnPhenotypeDataParams withAddPositiveTransporters(Long addPositiveTransporters) {
+        this.addPositiveTransporters = addPositiveTransporters;
+        return this;
+    }
+
+    @JsonProperty("target_reaction")
+    public java.lang.String getTargetReaction() {
+        return targetReaction;
+    }
+
+    @JsonProperty("target_reaction")
+    public void setTargetReaction(java.lang.String targetReaction) {
+        this.targetReaction = targetReaction;
+    }
+
+    public SimulateGrowthOnPhenotypeDataParams withTargetReaction(java.lang.String targetReaction) {
+        this.targetReaction = targetReaction;
+        return this;
+    }
+
     @JsonProperty("feature_ko_list")
     public List<String> getFeatureKoList() {
         return featureKoList;
@@ -235,7 +343,7 @@ public class SimulateGrowthOnPhenotypeDataParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((("SimulateGrowthOnPhenotypeDataParams"+" [fbamodelId=")+ fbamodelId)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", phenotypesetId=")+ phenotypesetId)+", phenotypesetWorkspace=")+ phenotypesetWorkspace)+", phenotypesimOutputId=")+ phenotypesimOutputId)+", workspace=")+ workspace)+", allReversible=")+ allReversible)+", featureKoList=")+ featureKoList)+", reactionKoList=")+ reactionKoList)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((("SimulateGrowthOnPhenotypeDataParams"+" [fbamodelId=")+ fbamodelId)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", phenotypesetId=")+ phenotypesetId)+", phenotypesetWorkspace=")+ phenotypesetWorkspace)+", phenotypesimOutputId=")+ phenotypesimOutputId)+", workspace=")+ workspace)+", allReversible=")+ allReversible)+", gapfillPhenotypes=")+ gapfillPhenotypes)+", fitPhenotypeData=")+ fitPhenotypeData)+", saveFluxes=")+ saveFluxes)+", addAllTransporters=")+ addAllTransporters)+", addPositiveTransporters=")+ addPositiveTransporters)+", targetReaction=")+ targetReaction)+", featureKoList=")+ featureKoList)+", reactionKoList=")+ reactionKoList)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

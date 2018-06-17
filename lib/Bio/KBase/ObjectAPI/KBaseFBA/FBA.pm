@@ -732,6 +732,7 @@ sub createJobDirectory {
 	my $model = $self->fbamodel();
 	my $BioCpd = ["id	abbrev	charge	formula	mass	name	deltaG"];
 	my $mdlcpd = $model->modelcompounds();
+	my $mdlrxn = $model->modelreactions();
 	my $cpdhash = {};
 	for (my $i=0; $i < @{$mdlcpd}; $i++) {
 		my $cpd = $mdlcpd->[$i];
@@ -759,7 +760,6 @@ sub createJobDirectory {
 	my $rxnhash = {};
 	my $mdlData = ["REACTIONS","LOAD;DIRECTIONALITY;COMPARTMENT;ASSOCIATED PEG;COMPLEXES"];
 	my $BioRxn = ["id	abbrev	deltaG	deltaGErr	equation	name	reversibility	status	thermoReversibility"];
-	my $mdlrxn = $model->modelreactions();
 	my $compindecies = {};
 	my $comps = $model->modelcompartments();
 	for (my $i=0; $i < @{$comps}; $i++) {
@@ -918,6 +918,56 @@ sub createJobDirectory {
 				$equation =~ s/\(3\)\scpd00067_c0/(6) cpd00067_c0/g;
 			}
 			push(@{$BioRxn},$id."\t".$id."\t".$dg."\t".$dge."\t".$equation."\t".$id."\t".$rxndir."\t".$st."\t".$rxndir);
+		}
+	}
+	#Printing proteins for models
+	my $genelist = [];
+	if (defined($self->parameters()->{dynamic_protein_simulation}) && $self->parameters()->{dynamic_protein_simulation} == 1) {
+		my $genehash = {};
+		my $aa_trans = Bio::KBase::constants::aa_abbrev();
+		for (my $i=0; $i < @{$mdlrxn}; $i++) {
+			my $rxn = $mdlrxn->[$i];
+			my $prots = $rxn->modelReactionProteins();
+			for (my $j=0; $j < @{$prots}; $j++) {
+				my $subunits = $prots->[$j]->modelReactionProteinSubunits();
+				for (my $k=0; $k < @{$subunits}; $k++) {
+					my $ftrs = $subunits->[$k]->features();
+					for (my $m=0; $m < @{$ftrs}; $m++) {
+						if (!defined($genehash->{$ftrs->[$i]->id()})) {
+							my $gpr = $ftrs->[$i]->id();
+							$gpr =~ s/\|/___/g;
+							my $ind = 0;
+							$genehash->{$ftrs->[$i]->id()} = 1;
+							my $id = "prot_".$ftrs->[$i]->id()."_c".$ind;
+							$id = s/[\s^\W]//g;
+							push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
+							my $seq = $ftrs->[$i]->protein_translation();
+							my $en = length($seq);
+							my $aacost = "cpd00017_c".$ind;
+							foreach my $aa (keys(%{$aa_trans})) {
+								my $count = length($seq);
+								$seq =~ s/$aa//g;
+								my $lcaa = lc($aa);
+								$seq =~ s/$lcaa//g;
+								$count = $count - length($seq);
+								if ($aa == "M") {
+									$count--;
+								}
+								if ($count > 0) {
+									$aacost .= " + (".$count.") ".$aa_trans->{$aa};
+								}
+							}
+							push(@{$genelist},$id);
+							my $syn_eq = $aacost." (".$en.") cpd00002_c".$ind." + (".$en.") cpd00001_c".$ind." => (".$en.") cpd00008_c".$ind." + (".$en.") cpd00009_c".$ind." + (".$en.") cpd00067_c".$ind." + ".$id;
+							my $deg_eq = "(1) ".$id." => ".$aacost;
+							push(@{$BioRxn},"syn".$id."\t"."syn".$id."\t0\t0\t".$syn_eq."\tsyn".$id."\t=>\tOK\t=>");
+							push(@{$BioRxn},"deg".$id."\t"."deg".$id."\t0\t0\t".$deg_eq."\tdeg".$id."\t=>\tOK\t=>");
+							push(@{$mdlData},"syn".$id.";=>;c;".$gpr.";".$gpr);
+							push(@{$mdlData},"deg".$id.";=>;c;".$gpr.";".$gpr);
+						}
+					}
+				}
+			}
 		}
 	}
 	my $final_gauranteed = [];
@@ -1446,6 +1496,7 @@ sub createJobDirectory {
 		$optMetabolite = 0;
 	}
 	#Setting parameters
+	my $auxotrophy_data = Bio::KBase::constants::auxotrophy_thresholds();
 	my $parameters = {
 		"fit phenotype data" => 0,
 		"deltagslack" => 10,
@@ -1486,8 +1537,27 @@ sub createJobDirectory {
 		"database root output directory" => $self->jobPath()."/",
 		"database root input directory" => $self->jobDirectory()."/",
 		"Min flux multiplier" => 1,
-		"Max deltaG" => 10000
+		"Max deltaG" => 10000,
+		"Auxotrophy metabolite list" => join("_c0;",keys(%{$auxotrophy_data}))."_c0;-cpd15666_c0;-cpd01997_c0;-cpd03422_c0"
 	};
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00393/cpd00345/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00220/cpd00015/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00305/cpd00056/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00215/cpd00016/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00218/cpd00003/;
+	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00644/cpd00010/;
+	if (defined($self->parameters()->{"Perform auxotrophy analysis"}) && $self->parameters()->{"Perform auxotrophy analysis"} == 1) {
+		my $corerxn = Bio::KBase::constants::core_reactions();
+		my $rxnlist = "";
+		for (my $i=0; $i < @{$corerxn}; $i++) {
+			if (length($rxnlist) > 0) {
+				$rxnlist .= "_c0;";
+			}
+			$rxnlist .= $corerxn->[$i]->[0];
+		}
+		$rxnlist .= "_c0";
+		$self->parameters()->{"KEGG reaction list"} = $rxnlist;
+	}
 	if (defined($self->{"fit phenotype data"})) {
 		$parameters->{"fit phenotype data"} = $self->{"fit phenotype data"};
 	}
@@ -1576,6 +1646,13 @@ sub createJobDirectory {
 				$exchangehash->{$cpdbnds->[$i]->modelcompound()->id()}->{c} = [$cpdbnds->[$i]->lowerBound(),$cpdbnds->[$i]->upperBound()];
 			}
 		}
+		for (my $i=0; $i < @{$genelist}; $i++) {
+			$userBounds->{$genelist->[$i]}->{c}->{"DRAIN_FLUX"} = {
+				max => 1,
+				min => 1,
+				conc => 0
+			};
+		}	
 		for (my $i=0; $i < @{$modelbounds}; $i++) {
 			$userBounds->{$modelbounds->[$i]->{id}}->{c}->{$modelbounds->[$i]->{vartype}} = {
 				max => $modelbounds->[$i]->{upperbound},
@@ -1747,7 +1824,7 @@ sub createJobDirectory {
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file
 	if (defined(Bio::KBase::utilities::conf("ModelSEED","use_cplex")) && Bio::KBase::utilities::conf("ModelSEED","use_cplex") == 1) {
-		$parameters->{MFASolver} = "CPLEX";#TODO - need to remove
+		$parameters->{MFASolver} = "CPLEX";
 	}
 	my $exchange = "";
 	foreach my $key (keys(%{$exchangehash})) {
@@ -1915,11 +1992,12 @@ Description:
 sub setupFBAExperiments {
 	my ($self,$medialist) = @_;
 	my $fbaExpFile = "none";
+	$self->parameters()->{"save phenotype fluxes"} = 0;
+	my $phenoData = ["Label\tKO\tMedia\tGrowth"];
 	if (defined($self->phenotypeset_ref()) && defined($self->phenotypeset())) {
 		$self->parameters()->{"phenotype analysis"} = 1;
 		my $phenoset = $self->phenotypeset();
 		$fbaExpFile = "FBAExperiment.txt";
-		my $phenoData = ["Label\tKO\tMedia\tGrowth"];
 		my $mediaHash = {};
 		my $tempMediaIndex = 1;
 		my $phenos = $phenoset->phenotypes();
@@ -1933,7 +2011,8 @@ sub setupFBAExperiments {
 					$mediaHash->{$media.":".join("|",sort(@{$addnlCpds}))} = $self->createTemporaryMedia({
 						name => "Temp".$tempMediaIndex,
 						media => $pheno->media(),
-						additionalCpd => $pheno->additionalcompounds()
+						additionalCpd => $pheno->additionalcompounds(),
+						additionalBounds => $pheno->additionalcompound_bounds()
 					});
 					$tempMediaIndex++;
 				}
@@ -1950,6 +2029,26 @@ sub setupFBAExperiments {
 			}
 			$phenoko =~ s/\|/___/g;
 			push(@{$phenoData},$pheno->id()."\t".$phenoko."\t".$media."\t".$pheno->normalizedGrowth());
+		}
+		foreach my $key (keys(%{$mediaHash})) {
+			push(@{$medialist},$mediaHash->{$key});
+		}
+		Bio::KBase::ObjectAPI::utilities::PRINTFILE($self->jobDirectory()."/".$fbaExpFile,$phenoData);
+	} elsif (length($self->mediaset_ref()) > 0 || @{$self->media_list()} > 0) {
+		$self->parameters()->{"phenotype analysis"} = 1;
+		$self->parameters()->{"save phenotype simulation fluxes"} = 1;
+		$fbaExpFile = "FBAExperiment.txt";
+		my $mediaHash = {};
+		if (length($self->mediaset_ref()) > 0) {
+			my $mediaset = $self->mediaset();
+			for (my $i=0; $i < @{$mediaset->{elements}}; $i++) {
+				push(@{$self->media_list_refs()},$mediaset->{elements}->[$i]->{"ref"});
+			}
+		}
+		my $inmedialist = $self->media_list();
+		for (my $i=0; $i < @{$inmedialist}; $i++) {
+			$mediaHash->{$inmedialist->[$i]->name()} = $inmedialist->[$i];
+			push(@{$phenoData},$inmedialist->[$i]->name()."\tnone\t".$inmedialist->[$i]->name()."\t1");
 		}
 		foreach my $key (keys(%{$mediaHash})) {
 			push(@{$medialist},$mediaHash->{$key});
@@ -1974,7 +2073,9 @@ Description:
 
 sub createTemporaryMedia {
 	my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args(["name","media","additionalCpd"],{}, @_);
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["name","media","additionalCpd"],{
+		additionalBounds => []
+	}, @_);
 	my $newMedia = Bio::KBase::ObjectAPI::KBaseBiochem::Media->new({
 		source_id => $args->{name},
 		isDefined => 1,
@@ -1994,13 +2095,23 @@ sub createTemporaryMedia {
 			minFlux => $cpd->minFlux(),
 		};
 	}
-	foreach my $cpd (@{$args->{additionalCpd}}) {
-		$cpdHash->{$cpd->_reference()} = {
-			compound_ref => $cpd->_reference(),
-			concentration => 0.001,
-			maxFlux => 100,
-			minFlux => -100,
-		};
+	for (my $i=0; $i < @{$args->{additionalCpd}}; $i++) {
+		my $cpd = $args->{additionalCpd}->[$i];
+		if (defined($args->{additionalBounds}->[$i])) {
+			$cpdHash->{$cpd->_reference()} = {
+				compound_ref => $cpd->_reference(),
+				concentration => 0.001,
+				maxFlux => $args->{additionalBounds}->[$i]->[1],
+				minFlux => $args->{additionalBounds}->[$i]->[0],
+			};
+		} else {
+			$cpdHash->{$cpd->_reference()} = {
+				compound_ref => $cpd->_reference(),
+				concentration => 0.001,
+				maxFlux => 100,
+				minFlux => -100,
+			};
+		}
 	}
 	foreach my $cpd (keys(%{$cpdHash})) {
 		$newMedia->add("mediacompounds",$cpdHash->{$cpd});	
@@ -2304,7 +2415,46 @@ sub loadMFAToolkitResults {
 	$self->parseOutputFiles();
 	$self->parseReactionMinimization();
 	$self->parseMFALog();
+	$self->parseAuxotrophyResults();
 }
+
+=head3 parseAuxotrophyResults
+Definition:
+	void FBA->parseAuxotrophyResults();
+Description:
+	Parses auxotrophy analysis results file
+
+=cut
+
+sub parseAuxotrophyResults {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MFAOutput/AuxotrophyReactions.txt") {
+		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/MFAOutput/AuxotrophyReactions.txt","\t");
+		$self->{auxotrophy_data} = {};
+		foreach my $row (@{$tbl->{data}}) {
+			if (defined($row->[0])) {
+				$row->[0] =~ s/cpd00345/cpd00393/;
+				$row->[0] =~ s/cpd00015/cpd00220/;
+				$row->[0] =~ s/cpd00056/cpd00305/;
+				$row->[0] =~ s/cpd00016/cpd00215/;
+				$row->[0] =~ s/cpd00003/cpd00218/;
+				$row->[0] =~ s/cpd00010/cpd00644/;
+				$self->{auxotrophy_data}->{cpds}->{$row->[0]} = [split(/;/,$row->[1])];
+				pop(@{$self->{auxotrophy_data}->{cpds}->{$row->[0]}});
+			}
+		}
+		foreach my $cpd (keys(%{$self->{auxotrophy_data}->{cpds}})) {
+			for (my $i=0; $i < @{$self->{auxotrophy_data}->{cpds}->{$cpd}}; $i++) {
+				$self->{auxotrophy_data}->{rxns}->{$self->{auxotrophy_data}->{cpds}->{$cpd}->[$i]}->{$cpd} = 1;
+			}
+		}
+		return 1;
+	}
+	return 0;
+}
+
+
 
 =head3 parseBiomassRemovals
 Definition:
@@ -2608,97 +2758,139 @@ sub parseFBAPhenotypeOutput {
 	my ($self) = @_;
 	my $directory = $self->jobDirectory();
 
-	# Other types of analyses that do not involve phenotype data (e.g. reaction sensitivity) use the same
-	# output file. So we need to check that the data we need exists.
-	if ( !defined($self->phenotypeset_ref()) || !defined($self->phenotypeset())) {
-		return;
-	}
-
 	if (-e $directory."/FBAExperimentOutput.txt") {
 		#Loading file results into a hash
 		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/FBAExperimentOutput.txt","\t");
 		if (!defined($tbl->{data}->[0]->[5])) {
 			return Bio::KBase::ObjectAPI::utilities::ERROR("output file did not contain necessary data");
 		}
-		$self->{_tempphenosim} = Bio::KBase::ObjectAPI::KBasePhenotypes::PhenotypeSimulationSet->new({
-			id => $self->{_phenosimid},
-			fbamodel_ref => $self->fbamodel()->_reference(),
-			phenotypeset_ref => $self->phenotypeset_ref(),
-			phenotypeSimulations => []
-		});
-		$self->{_tempphenosim}->parent($self->parent());
-		$self->phenotypesimulationset_ref("");
-		$self->phenotypesimulationset($self->{_tempphenosim});
-		my $phenoOutputHash;
-		foreach my $row (@{$tbl->{data}}) {
-			if (defined($row->[5])) {
-				my $fraction = 0;
-				if ($row->[5] < 1e-7) {
-					$row->[5] = 0;	
-				}
-				if ($row->[4] < 1e-7) {
-					$row->[4] = 0;	
-				} else {
-					$fraction = $row->[5]/$row->[4];	
-				}
-				$phenoOutputHash->{$row->[0]} = {
-					simulatedGrowth => $row->[5],
-					wildtype => $row->[4],
-					simulatedGrowthFraction => $fraction,
-					noGrowthCompounds => [],
-					dependantReactions => [],
-					dependantGenes => [],
-					fluxes => {},
-					phenoclass => "UN",
-					phenotype_ref => $self->phenotypeset()->_reference()."/phenotypes/id/".$row->[0]
-				};
-				if (defined($self->parameters()->{"Perform gap filling"}) && $self->parameters()->{"Perform gap filling"} == 1) {
-					if ($row->[9] =~ m/_[a-z]+\d+$/) {
-						$phenoOutputHash->{$row->[0]}->{gapfilledReactions} = [split(/;/,$row->[9])];
-						$phenoOutputHash->{$row->[0]}->{numGapfilledReactions} = @{$phenoOutputHash->{$row->[0]}->{gapfilledReactions}};
+		if ( (!defined($self->phenotypeset_ref()) || !defined($self->phenotypeset())) && (length($self->mediaset_ref()) > 0 || @{$self->media_list()} > 0)) {
+			foreach my $row (@{$tbl->{data}}) {
+				if (defined($row->[6])) {
+					#Setting objective to WTGrowth first, then standard growth - should always be the same
+					if ($row->[5] < 1e-7) {
+						push(@{$self->other_objectives()},0);	
+					} else {
+						push(@{$self->other_objectives()},$row->[5]+0);
 					}
-				}	
-				if (defined($row->[6]) && length($row->[6]) > 0) {
-					chomp($row->[6]);
-					$phenoOutputHash->{$row->[0]}->{noGrowthCompounds} = [split(/;/,$row->[6])];
-				}
-				if (defined($row->[7]) && length($row->[7]) > 0) {
-					$phenoOutputHash->{$row->[0]}->{dependantReactions} = [split(/;/,$row->[7])];
-				}
-				if (defined($row->[8]) && length($row->[8]) > 0) {
-					$phenoOutputHash->{$row->[0]}->{dependantReactions} = [split(/;/,$row->[8])];
-				}
-				if (defined($row->[10]) && length($row->[10]) > 0) {
-					my @fluxList = split(/;/,$row->[10]);
-					for (my $j=0; $j < @fluxList; $j++) {
-						my @temp = split(/:/,$fluxList[$j]);
-						$phenoOutputHash->{$row->[0]}->{fluxes}->{$temp[0]} = $temp[1];
+					if (defined($row->[10]) && length($row->[10]) > 0) {
+						my $fluxList = [split(/;/,$row->[10])];
+						my $fluxhash = {};
+						for (my $j=0; $j < @{$fluxList}; $j++) {
+							my $temp = [split(/:/,$fluxList->[$j])];
+							$fluxhash->{$temp->[0]} = $temp->[1];
+						}
+						my $vars = $self->FBAReactionVariables();
+						for (my $m=0; $m < @{$vars}; $m++) {
+							my $id = $vars->[$m]->modelreaction()->id();
+							if (defined($fluxhash->{$id})) {
+								push(@{$vars->[$m]->other_values()},$fluxhash->{$id}+0);
+							} else {
+								push(@{$vars->[$m]->other_values()},0);
+							}
+						}
+						$vars = $self->FBACompoundVariables();
+						for (my $m=0; $m < @{$vars}; $m++) {
+							my $id = $vars->[$m]->modelcompound()->id();
+							if (defined($fluxhash->{$id})) {
+								push(@{$vars->[$m]->other_values()},$fluxhash->{$id}+0);
+							} else {
+								push(@{$vars->[$m]->other_values()},0);
+							}
+						}
+						$vars = $self->FBABiomassVariables();
+						for (my $m=0; $m < @{$vars}; $m++) {
+							my $id = $vars->[$m]->biomass()->id();
+							if (defined($fluxhash->{$id})) {
+								push(@{$vars->[$m]->other_values()},$fluxhash->{$id}+0);
+							} else {
+								push(@{$vars->[$m]->other_values()},0);
+							}
+						}
 					}
 				}
 			}
-		}
-		#Scanning through all phenotype data in FBAFormulation and creating corresponding phenotype result objects
-		my $phenos = $self->phenotypeset()->phenotypes();
-		for (my $i=0; $i < @{$phenos}; $i++) {
-			my $pheno = $phenos->[$i];
-			if (defined($phenoOutputHash->{$pheno->id()})) {
-				$phenoOutputHash->{$pheno->id()}->{id} = $pheno->id().".sim";
-				if (defined($pheno->normalizedGrowth())) {
-					if ($pheno->normalizedGrowth() > 0.0001) {
-						if ($phenoOutputHash->{$pheno->id()}->{simulatedGrowthFraction} > 0) {
-							$phenoOutputHash->{$pheno->id()}->{phenoclass} = "CP";
-						} else {
-							$phenoOutputHash->{$pheno->id()}->{phenoclass} = "FN";
-						}
+		} else {
+			$self->{_tempphenosim} = Bio::KBase::ObjectAPI::KBasePhenotypes::PhenotypeSimulationSet->new({
+				id => $self->{_phenosimid},
+				fbamodel_ref => $self->fbamodel()->_reference(),
+				phenotypeset_ref => $self->phenotypeset_ref(),
+				phenotypeSimulations => []
+			});
+			$self->{_tempphenosim}->parent($self->parent());
+			$self->phenotypesimulationset_ref("");
+			$self->phenotypesimulationset($self->{_tempphenosim});
+			my $phenoOutputHash;
+			foreach my $row (@{$tbl->{data}}) {
+				if (defined($row->[5])) {
+					my $fraction = 0;
+					if ($row->[5] < 1e-7) {
+						$row->[5] = 0;	
+					}
+					if ($row->[4] < 1e-7) {
+						$row->[4] = 0;	
 					} else {
-						if ($phenoOutputHash->{$pheno->id()}->{simulatedGrowthFraction} > 0) {
-							$phenoOutputHash->{$pheno->id()}->{phenoclass} = "FP";
-						} else {
-							$phenoOutputHash->{$pheno->id()}->{phenoclass} = "CN";
+						$fraction = $row->[5]/$row->[4];	
+					}
+					$phenoOutputHash->{$row->[0]} = {
+						simulatedGrowth => $row->[5],
+						wildtype => $row->[4],
+						simulatedGrowthFraction => $fraction,
+						noGrowthCompounds => [],
+						dependantReactions => [],
+						dependantGenes => [],
+						fluxes => {},
+						phenoclass => "UN",
+						phenotype_ref => $self->phenotypeset()->_reference()."/phenotypes/id/".$row->[0]
+					};
+					if (defined($self->parameters()->{"Perform gap filling"}) && $self->parameters()->{"Perform gap filling"} == 1) {
+						if ($row->[9] =~ m/_[a-z]+\d+$/) {
+							$phenoOutputHash->{$row->[0]}->{gapfilledReactions} = [split(/;/,$row->[9])];
+							$phenoOutputHash->{$row->[0]}->{numGapfilledReactions} = @{$phenoOutputHash->{$row->[0]}->{gapfilledReactions}};
+						}
+					}	
+					if (defined($row->[6]) && length($row->[6]) > 0) {
+						chomp($row->[6]);
+						$phenoOutputHash->{$row->[0]}->{noGrowthCompounds} = [split(/;/,$row->[6])];
+					}
+					if (defined($row->[7]) && length($row->[7]) > 0) {
+						$phenoOutputHash->{$row->[0]}->{dependantReactions} = [split(/;/,$row->[7])];
+					}
+					if (defined($row->[8]) && length($row->[8]) > 0) {
+						$phenoOutputHash->{$row->[0]}->{dependantReactions} = [split(/;/,$row->[8])];
+					}
+					if (defined($row->[10]) && length($row->[10]) > 0) {
+						my @fluxList = split(/;/,$row->[10]);
+						for (my $j=0; $j < @fluxList; $j++) {
+							my @temp = split(/:/,$fluxList[$j]);
+							$phenoOutputHash->{$row->[0]}->{fluxes}->{$temp[0]} = $temp[1]+0;
 						}
 					}
 				}
-				$self->{_tempphenosim}->add("phenotypeSimulations",$phenoOutputHash->{$pheno->id()});	
+			}
+			#Scanning through all phenotype data in FBAFormulation and creating corresponding phenotype result objects
+			my $phenos = $self->phenotypeset()->phenotypes();
+			for (my $i=0; $i < @{$phenos}; $i++) {
+				my $pheno = $phenos->[$i];
+				if (defined($phenoOutputHash->{$pheno->id()})) {
+					$phenoOutputHash->{$pheno->id()}->{id} = $pheno->id().".sim";
+					if (defined($pheno->normalizedGrowth())) {
+						if ($pheno->normalizedGrowth() > 0.0001) {
+							if ($phenoOutputHash->{$pheno->id()}->{simulatedGrowthFraction} > 0) {
+								$phenoOutputHash->{$pheno->id()}->{phenoclass} = "CP";
+							} else {
+								$phenoOutputHash->{$pheno->id()}->{phenoclass} = "FN";
+							}
+						} else {
+							if ($phenoOutputHash->{$pheno->id()}->{simulatedGrowthFraction} > 0) {
+								$phenoOutputHash->{$pheno->id()}->{phenoclass} = "FP";
+							} else {
+								$phenoOutputHash->{$pheno->id()}->{phenoclass} = "CN";
+							}
+						}
+					}
+					$self->{_tempphenosim}->add("phenotypeSimulations",$phenoOutputHash->{$pheno->id()});	
+				}
 			}
 		}
 	}
@@ -3266,9 +3458,6 @@ sub parseGapfillingOutput {
 			$rxnhash->{$rxns->[$i]->id()} = $rxns->[$i];
 		}	
 		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/GapfillingOutput.txt","\t");
-		if (!defined($tbl->{data}->[0]->[3])) {
-			Bio::KBase::ObjectAPI::utilities::error("Gapfilling failed to find a solution to permit model growth on specified media condition!");
-		}	
 		my $solution;
 		my $round = 0;
 		my $temparray = [split(/\//,$tbl->{data}->[0]->[3])];

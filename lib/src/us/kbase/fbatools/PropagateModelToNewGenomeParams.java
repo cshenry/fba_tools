@@ -37,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "expseries_id",
     "expseries_workspace",
     "expression_condition",
+    "translation_policy",
     "exp_threshold_percentile",
     "exp_threshold_margin",
     "activation_coefficient",
@@ -81,6 +82,8 @@ public class PropagateModelToNewGenomeParams {
     private java.lang.String expseriesWorkspace;
     @JsonProperty("expression_condition")
     private java.lang.String expressionCondition;
+    @JsonProperty("translation_policy")
+    private java.lang.String translationPolicy;
     @JsonProperty("exp_threshold_percentile")
     private Double expThresholdPercentile;
     @JsonProperty("exp_threshold_margin")
@@ -352,6 +355,21 @@ public class PropagateModelToNewGenomeParams {
         return this;
     }
 
+    @JsonProperty("translation_policy")
+    public java.lang.String getTranslationPolicy() {
+        return translationPolicy;
+    }
+
+    @JsonProperty("translation_policy")
+    public void setTranslationPolicy(java.lang.String translationPolicy) {
+        this.translationPolicy = translationPolicy;
+    }
+
+    public PropagateModelToNewGenomeParams withTranslationPolicy(java.lang.String translationPolicy) {
+        this.translationPolicy = translationPolicy;
+        return this;
+    }
+
     @JsonProperty("exp_threshold_percentile")
     public Double getExpThresholdPercentile() {
         return expThresholdPercentile;
@@ -469,7 +487,7 @@ public class PropagateModelToNewGenomeParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((((((((((((((((((((((((((((("PropagateModelToNewGenomeParams"+" [fbamodelId=")+ fbamodelId)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", proteincomparisonId=")+ proteincomparisonId)+", proteincomparisonWorkspace=")+ proteincomparisonWorkspace)+", fbamodelOutputId=")+ fbamodelOutputId)+", workspace=")+ workspace)+", keepNogeneRxn=")+ keepNogeneRxn)+", gapfillModel=")+ gapfillModel)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", thermodynamicConstraints=")+ thermodynamicConstraints)+", comprehensiveGapfill=")+ comprehensiveGapfill)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expressionCondition=")+ expressionCondition)+", expThresholdPercentile=")+ expThresholdPercentile)+", expThresholdMargin=")+ expThresholdMargin)+", activationCoefficient=")+ activationCoefficient)+", omega=")+ omega)+", objectiveFraction=")+ objectiveFraction)+", minimumTargetFlux=")+ minimumTargetFlux)+", numberOfSolutions=")+ numberOfSolutions)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((((((((((((((((((((("PropagateModelToNewGenomeParams"+" [fbamodelId=")+ fbamodelId)+", fbamodelWorkspace=")+ fbamodelWorkspace)+", proteincomparisonId=")+ proteincomparisonId)+", proteincomparisonWorkspace=")+ proteincomparisonWorkspace)+", fbamodelOutputId=")+ fbamodelOutputId)+", workspace=")+ workspace)+", keepNogeneRxn=")+ keepNogeneRxn)+", gapfillModel=")+ gapfillModel)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", thermodynamicConstraints=")+ thermodynamicConstraints)+", comprehensiveGapfill=")+ comprehensiveGapfill)+", customBoundList=")+ customBoundList)+", mediaSupplementList=")+ mediaSupplementList)+", expseriesId=")+ expseriesId)+", expseriesWorkspace=")+ expseriesWorkspace)+", expressionCondition=")+ expressionCondition)+", translationPolicy=")+ translationPolicy)+", expThresholdPercentile=")+ expThresholdPercentile)+", expThresholdMargin=")+ expThresholdMargin)+", activationCoefficient=")+ activationCoefficient)+", omega=")+ omega)+", objectiveFraction=")+ objectiveFraction)+", minimumTargetFlux=")+ minimumTargetFlux)+", numberOfSolutions=")+ numberOfSolutions)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

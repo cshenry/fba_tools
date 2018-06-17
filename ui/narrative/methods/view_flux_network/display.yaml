@@ -1,0 +1,48 @@
+#
+# Define basic display information
+#
+name     : View Flux Network
+
+tooltip  : |
+    Visualize a network of flux through all reactions in an FBA solution.
+
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    fba_id :
+        ui-name : |
+            FBA ID
+        short-hint : |
+            ID of FBA solution to view
+        long-hint : |
+            ID of FBA solution to view
+
+
+icon: fba-teal.png
+
+description : |
+    
+    <p>Visualize a network of flux through all reactions in an FBA solution using
+    the metabolic network view developed by the Theoretical Biology group at the Mayo Clinic.</p>
+    
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Chris Henry, James Jeffryes. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>

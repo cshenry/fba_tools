@@ -195,11 +195,13 @@
             },
             {
                "input_parameter" : "genome_ids",
-               "target_property" : "genome_ids"
+               "target_property" : "genome_ids",
+               "target_type_transform": "list<resolved-ref>"
             },
             {
                "target_property" : "media_id",
-               "input_parameter" : "media_id"
+               "input_parameter" : "media_id",
+               "target_type_transform": "ref"
             },
             {
                "target_property" : "template_id",

@@ -472,7 +472,7 @@ sub transform_media_from_ws {
 		source_id => $meta->[0],
 		mediacompounds => []
 	};
-	my $array = [split(/\n/,$data)];
+	my $array = [split(/\r\n?|\n/,$data)];
 	my $heading = [split(/\t/,$array->[0])];
 	my $headinghash = {};
 	for (my $i=1; $i < @{$heading}; $i++) {
@@ -686,7 +686,9 @@ sub save_model {
     		});
     	}
     }
-	$self->helper()->update_model_meta($ref,$summary,$object->wsmeta()->[3]);
+    $summary->{status} = "complete";
+    $summary->{status_timestamp} = Bio::KBase::utilities::timestamp();
+	$self->helper()->update_model_meta($ref,$summary);
 	return $output;
 }
 
@@ -870,6 +872,11 @@ sub save_fba {
 		}
 	}
 	return $output;
+}
+
+sub get_ref_from_metadata {
+	my ($self,$metadata) = @_;
+	return $metadata->[2].$metadata->[0];
 }
 
 no Moose;

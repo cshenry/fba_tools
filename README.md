@@ -1,12 +1,102 @@
-[![Build Status](https://travis-ci.org/chenry/fba_tools.svg?branch=master)](https://travis-ci.org/chenry/fba_tools)
+[![Build Status](https://travis-ci.org/cshenry/fba_tools.svg?branch=master)](https://travis-ci.org/cshenry/fba_tools)
 
 # fba_tools
 
 ## OVERVIEW
 -----------------------------------------
-This SDK Module contains methods relating to the reconstruction and analysis of metabolic models in KBase.
+This SDK Module contains methods relating to the reconstruction and analysis of
+metabolic models in KBase. Check out the [Developer Guide](developer_guide.md)
+for an overview on the module structure and help getting started. 
 
 ## Release notes
+------------------------------------------
+### VERSION: 1.7.4 (Released 3/2/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Refinements to auxotrophy method
+- Fix Propagate Model with full genome refs
+- Fix GC content calculation for community models
+- Phenotype simulation will not fail if gapfilling is unsuccessful
+
+------------------------------------------
+### VERSION: 1.7.3 (Released 1/12/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Fixed PUBLIC-290 check mass balance report name
+- Switched to use of genome apis for compatibility with new object types (SCT-932)
+- Switched to resolved refs (#/#/#) for input objects
+- Ensured all compound information is copied into community models
+- Correct faulty reference for custom media compounds
+- Auxotropy local method
+
+------------------------------------------
+### VERSION: 1.7.2 (Released 1/2/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Hotfix: remove link which was breaking UI for propagate models app
+
+------------------------------------------
+### VERSION: 1.7.1 (Released 12/19/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Fixed PUBLIC-256 build multiple metabolic saving to same name
+- Fixed metabolic model upload for compounds with dashes and spaces
+- Fixed Gapfilling drops compounds from biomass to grow
+
+------------------------------------------
+### VERSION: 1.7.0 (Released 10/20/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Added View Flux Network app which visualises a FBA solution in an interactive
+ diagram
+- Removed View FBA Expression Comparison app which is no longer needed due to
+ the report from Compare FLux with Expression App
+- Refactored all apps to accept IDs as permanent numerical references (eg. 133/124/1)
+ and updated tests & UI accordingly
+- Use reference chains to ensure that a model does not become uneditable if
+ its genome is inaccessible.
+- Updated table parseing to accept '\r' line delimination and error if uploaded
+ phenotype set is empty
+- Updated SBML parsing to address compound duplication bug and prefix all
+ ids in SBML export to be compliant with SBML schema.
+- Update Edit Media and Edit Model UI to ensure that users provide all needed
+ parameters when loading a new compound
+ 
+------------------------------------------
+### VERSION: 1.6.7 (Released 9/19/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Added the ability to specify custom bounds on additional compounds and 
+reactions in a phenotype set
+- Model download now includes many additional information types like 
+thermodynamics, pathways and chemical structure
+- Flux information from phenotype sets are retained for inspection
+- Fixed duplicate compartments in propagate model
+- Fixed Genome ID not being updated for propagate model
+
+------------------------------------------
+### VERSION: 1.6.6 (Released 9/6/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Corrected bugs in media editing and SBML model upload
+- Adding internal functional support for batch FBA (no UI yet)
+- Inchikey and SMILES may be uploaded to models
+
+------------------------------------------
+### VERSION: 1.6.5 (Released 8/23/2017)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Makes TSV & Excel importers case insensitive
+- Clarified media parameter on Build and Gapfill Metabolic Model
+- Updated compare metabolic model to accept model references(not names)
+- Updated build multiple metabolic models to accept model references(not names)
+- Allowing different solvers to be passed into FBA object
+- Adding sink to activate Biotin biosynthesis in SBML export
+- Allowing gapfilled compartmentalized reactions to be added to model
+- Fixing issue with genome client in KBase
+- Supporting generic media
+- Update Travis file
+
 ------------------------------------------
 ### VERSION: 1.6.3 (Released 6/12/2017)
 ------------------------------------------

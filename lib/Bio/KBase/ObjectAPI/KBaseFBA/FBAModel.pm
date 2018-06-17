@@ -7,7 +7,6 @@
 ########################################################################
 use strict;
 use YAML::XS;
-use XML::LibXML;
 use File::Temp;
 use Bio::KBase::ObjectAPI::KBaseFBA::DB::FBAModel;
 package Bio::KBase::ObjectAPI::KBaseFBA::FBAModel;
@@ -227,6 +226,8 @@ sub addCompoundToModel {
 			compound_ref => $args->{compound}->_reference(),
 			charge => $args->{charge},
 			formula => $args->{formula},
+			inchikey => $args->{inchikey},
+			smiles => $args->{smiles}
 		});
 	}
 	return $mdlcpd;
@@ -248,6 +249,7 @@ Description:
 =cut
 #REFACTOR NEEDED HERE
 sub adjustBiomassReaction {
+	print("Adjust biomass\n");
     my $self = shift;
     my $args = Bio::KBase::ObjectAPI::utilities::args([],{
     	compound => undef,
@@ -301,6 +303,7 @@ sub adjustBiomassReaction {
 					potential => 0,
 	    		});
 	    	}
+			print("biomass add modelcompounds");
 	    	$mdlcpd = $self->add("modelcompounds",{
 	    		id => $cpdobj->id()."_".$args->{compartment}.$args->{compartmentIndex},
 				compound_ref => $cpdobj->_reference(),
@@ -472,10 +475,8 @@ sub addModelReaction {
 	my $reference = $self->template()->_reference()."/reactions/id/rxn00000_c";
 	my $coefhash = {};
 	if ($rootid =~ m/^rxn\d+$/) {
-		my $rxnobj = $self->template()->searchForReaction($rootid);
-		if (!defined($rxnobj) && !defined($eq)) {
-			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
-		} else {
+		my $rxnobj = $self->template()->searchForReaction($rootid,$cmp->id());
+		if (defined($rxnobj)){
 			$reference = $rxnobj->_reference();
 			my $rgts = $rxnobj->templateReactionReagents();
 			my $cmpchange = 0;
@@ -502,6 +503,8 @@ sub addModelReaction {
 				});
 				$coefhash->{"~/modelcompounds/id/".$mdlcpd->id()} = $coefficient;
 			}
+		} elsif(!defined($eq)) {
+			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 		}
 	}
 	#Adding reaction
@@ -577,37 +580,52 @@ sub LoadExternalReactionEquation {
 	    			$coef = $1;
 	    			$cpd = $2;
 	    		}
-	    		if ($cpd =~ m/^(.+)\[([a-z]\d*)\]$/) {
-	    			$cpd = $1;
-	    			$compartment = $2;	
-	    		}
-	    		if ($cpd =~m/(.+)_([a-z]\d+)$/) {
+				if ($cpd =~ m/^(.+)\[([a-z]\d*)\]$/) {
 	    			$cpd = $1;
 	    			$compartment = $2;
 	    		}
-	    		if (defined($args->{compounds}->{$cpd}->[5])) {
+				if ($cpd =~m/(.+)_([a-z]\d*)$/) {
+	    			$cpd = $1;
+	    			$compartment = $2;
+	    		}
+				if (defined($args->{compounds}->{$cpd}->[5])) {
 	    			$compartment = $args->{compounds}->{$cpd}->[5];
 	    		}
-	    		if ($compartment =~ m/([a-z])(\d+)/) {
+				if ($compartment =~ m/([a-z])(\d+)/) {
 	    			$index = $2;
-	    			$compartment = $1;	
+	    			$compartment = $1;
 	    		}
 	    		if ($i == 0) {
 	    			$coef = -1*$coef;
 	    		}
-	    		my $origid = $cpd;
+	    		my $origid = $cpd."_".$compartment.$index;
 	    		$cpd =~ s/\+/PLUS/g;
 	    		$cpd =~ s/[\W_]//g;
 	    		my $cpdobj;
-	    		if (defined($args->{compounds}->{$origid})) {
-	    			my $name = $args->{compounds}->{$origid}->[3];
+				my $inchikey = "";
+				my $smiles = "";
+
+				my $compound_rec = $args->{compounds}->{$origid};
+				if (!defined $compound_rec && $origid !~ m/^cpd\d+_[a-z]\d+$/){
+					Bio::KBase::ObjectAPI::utilities::error("Undefined compound used as reactant: $origid");
+				}
+				#if compoud has a parsed name
+	    		if (defined($compound_rec->[3])) {
+					# at the moment smiles and inchi always come from source, never templates
+					if (defined($compound_rec->[-1])) {
+						$inchikey = $compound_rec->[-1];
+					}
+					if (defined($compound_rec->[-2])) {
+						$smiles = $compound_rec->[-2];
+					}
+	    			my $name = $compound_rec->[3];
 	    			if ($name =~ m/^(.+)\[([a-z])\]$/) {
 	    				$compartment = $2;
 	    				$name = $1;
 	    			}
 	    			$cpdobj = $self->template()->searchForCompound($name,1);
-	    			if (!defined($cpdobj) && defined($args->{compounds}->{$origid}->[4])) {
-	    				my $aliases = [split(/\|/,$args->{compounds}->{$origid}->[4])];
+	    			if (!defined($cpdobj) && defined($compound_rec->[4])) {
+	    				my $aliases = [split(/\|/,$compound_rec->[4])];
 	    				foreach my $alias (@{$aliases}) {
 	    					if ($alias =~ m/^(.+):(.+)/) {
 	    						$alias = $2;
@@ -626,6 +644,7 @@ sub LoadExternalReactionEquation {
 	    		}
 	    		my $mdlcmp = $self->getObject("modelcompartments",$compartment.$index);
 	    		if (!defined($mdlcmp)) {
+					print("New compartment: $compartment$index\n");
 	    			$mdlcmp = $self->add("modelcompartments",{
 	    				id => $compartment.$index,
 						compartment_ref => "~/template/compartments/id/".$compartment,
@@ -641,14 +660,14 @@ sub LoadExternalReactionEquation {
 	    			my $newcpd = 1;
 	    			my $newcpdid = $cpdobj->id();
 	    			my $formula = $cpdobj->formula();
-	    			if (defined($args->{compounds}->{$origid}->[2])) {
-	    				$formula = $args->{compounds}->{$origid}->[2];
+	    			if (defined($compound_rec->[2])) {
+	    				$formula = $compound_rec->[2];
 	    			} else {
 	    				$formula = $cpdobj->formula();
 	    			}
 	    			my $charge;
-	    			if (defined($args->{compounds}->{$origid}->[1])) {
-	    				$charge = $args->{compounds}->{$origid}->[1];
+	    			if (defined($compound_rec->[1])) {
+	    				$charge = $compound_rec->[1];
 	    			} else {
 	    				$charge = $cpdobj->defaultCharge();
 	    			}
@@ -656,17 +675,6 @@ sub LoadExternalReactionEquation {
 	    			my $reference = $cpdobj->_reference();
 	    			if (defined($mdlcpd)) {
 	    				$newcpd = 0;
-	    				my $aliases = $mdlcpd->aliases();
-	    				foreach my $alias (@{$aliases}) {
-	    					if ($alias =~ m/^mdlid:(.+)/) {
-	    						if ($1 ne $cpd) {
-	    							$newcpd = 1;
-	    							$newcpdid = $cpd;
-	    							$name = $newcpdid;
-	    							$reference = $self->template()->_reference()."/compounds/id/cpd00000";
-	    						}
-	    					}
-	    				}
 	    			}
 	    			if ($newcpd == 1) {
 	    				$mdlcpd = $self->add("modelcompounds",{
@@ -675,15 +683,16 @@ sub LoadExternalReactionEquation {
 							name => $name."_".$compartment.$index,
 							charge => $charge,
 							formula => $formula,
+							inchikey => $inchikey,
+							smiles => $smiles,
 							modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
 							aliases => ["mdlid:".$cpd]
 	    				});
 	    			}
 	    		} else {
-	    			#print $cpd." not found!\n";
 	    			$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
 	    			if (!defined($mdlcpd)) {
-	    				if (!defined($args->{compounds}->{$origid})) {
+	    				if (!defined($compound_rec)) {
 	    					Bio::KBase::utilities::log("Ill defined compound:".$cpd."!");
 	    					$cpd =~ s/[^\w]/_/g;
 	    					$mdlcpd = $self->searchForCompound($cpd."_".$compartment.$index);
@@ -702,20 +711,23 @@ sub LoadExternalReactionEquation {
 		    				}
 		    			}
 		    			my $formula = "";
-		    			if (defined($args->{compounds}->{$origid}->[2])) {
-		    				$formula = $args->{compounds}->{$origid}->[2];
+		    			if (defined($compound_rec->[2])) {
+		    				$formula = $compound_rec->[2];
 		    			}
 		    			my $charge = 0;
-		    			if (defined($args->{compounds}->{$origid}->[1])) {
-		    				$charge = $args->{compounds}->{$origid}->[1];
+		    			if (defined($compound_rec->[1])) {
+		    				$charge = $compound_rec->[1];
 		    			}
 		    			if ($newcpd == 1) {
+							print("new custom compound: $origid\n");
 	    					$mdlcpd = $self->add("modelcompounds",{
 		    					id => $cpd."_".$compartment.$index,
 								compound_ref => $self->template()->_reference()."/compounds/id/cpd00000",
 								name => $cpd."_".$compartment.$index,
 								charge => $charge,
 								formula => $formula,
+								inchikey => $inchikey,
+								smiles => $smiles,
 								modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
 		    					aliases => ["mdlid:".$cpd]
 		    				});
@@ -815,15 +827,15 @@ sub printSBML {
 	push(@{$output},'<listOfSpecies>');
 	for (my $i=0; $i < @{$self->modelcompounds()}; $i++) {
 		my $cpd = $self->modelcompounds()->[$i];
-		push(@{$output},'<species '.$self->CleanNames("id",$cpd->id()).' '.$self->CleanNames("name",$cpd->name()).' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="false"/>');
-		if ($cpd->msid() eq "cpd11416" || $cpd->msid() eq "cpd15302" || $cpd->msid() eq "cpd08636") {
-			push(@{$output},'<species '.$self->CleanNames("id",$cpd->msid()."_b").' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
+		push(@{$output},'<species '.$self->CleanNames("id","M_".$cpd->id()).' '.$self->CleanNames("name",$cpd->name()).' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="false"/>');
+		if ($cpd->msid() eq "cpd11416" || $cpd->msid() eq "cpd15302" || $cpd->msid() eq "cpd08636" || $cpd->msid() eq "cpd02701") {
+			push(@{$output},'<species '.$self->CleanNames("id","M_".$cpd->id(), 1).' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
 		}
 	}
 	for (my $i=0; $i < @{$self->modelcompounds()}; $i++) {
 		my $cpd = $self->modelcompounds()->[$i];
 		if ($cpd->modelCompartmentLabel() =~ m/^e/) {
-			push(@{$output},'<species '.$self->CleanNames("id",$cpd->msid()."_b").' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
+			push(@{$output},'<species '.$self->CleanNames("id","M_".$cpd->id(), 1).' '.$self->CleanNames("name",$cpd->name()."_b").' compartment="'.$cpd->modelCompartmentLabel().'" charge="'.$cpd->charge().'" boundaryCondition="true"/>');
 		}
 	}
 	push(@{$output},'</listOfSpecies>');
@@ -837,7 +849,7 @@ sub printSBML {
 			$lb = 0;
 			$reversibility = "false";
 		}
-		push(@{$output},'<reaction '.$self->CleanNames("id",$rxn->id()).' '.$self->CleanNames("name",$rxn->name()).' '.$self->CleanNames("reversible",$reversibility).'>');
+		push(@{$output},'<reaction '.$self->CleanNames("id","R_".$rxn->id()).' '.$self->CleanNames("name",$rxn->name()).' '.$self->CleanNames("reversible",$reversibility).'>');
 		push(@{$output},"<notes>");
 		my $ec = $rxn->enzyme();
 		my $keggID = $rxn->kegg();
@@ -869,13 +881,13 @@ sub printSBML {
 					$firstreact = 0;
 					push(@{$output},"<listOfReactants>");
 				}
-				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.-1*$sign*$rgt->coefficient().'"/>');	
+				push(@{$output},'<speciesReference '.$self->CleanNames("species","M_".$rgtid).' stoichiometry="'.-1*$sign*$rgt->coefficient().'"/>');
 			} else {
 				if ($firstprod == 1) {
 					$firstprod = 0;
 					push(@{$prodoutput},"<listOfProducts>");
 				}
-				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.$sign*$rgt->coefficient().'"/>');
+				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species","M_".$rgtid).' stoichiometry="'.$sign*$rgt->coefficient().'"/>');
 			}
 		}
 		if ($firstreact != 1) {
@@ -926,13 +938,13 @@ sub printSBML {
 					$firstreact = 0;
 					push(@{$output},"<listOfReactants>");
 				}
-				push(@{$output},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.-1*$rgt->coefficient().'"/>');	
+				push(@{$output},'<speciesReference '.$self->CleanNames("species","M_".$rgtid).' stoichiometry="'.-1*$rgt->coefficient().'"/>');
 			} else {
 				if ($firstprod == 1) {
 					$firstprod = 0;
 					push(@{$prodoutput},"<listOfProducts>");
 				}
-				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species",$rgtid).' stoichiometry="'.$rgt->coefficient().'"/>');
+				push(@{$prodoutput},'<speciesReference '.$self->CleanNames("species","M_".$rgtid).' stoichiometry="'.$rgt->coefficient().'"/>');
 			}
 		}
 		if ($firstreact != 1) {
@@ -960,7 +972,7 @@ sub printSBML {
 		my $cpd = $cpds->[$i];
 		my $lb = -1000;
 		my $ub = 1000;
-		if ($cpd->modelCompartmentLabel() =~ m/^e/ || $cpd->msid() eq "cpd08636" || $cpd->msid() eq "cpd11416" || $cpd->msid() eq "cpd15302") {
+		if ($cpd->modelCompartmentLabel() =~ m/^e/ || $cpd->msid() eq "cpd08636" || $cpd->msid() eq "cpd11416" || $cpd->msid() eq "cpd15302" || $cpd->msid() eq "cpd02701") {		
 			push(@{$output},'<reaction '.$self->CleanNames("id",'EX_'.$cpd->id()).' '.$self->CleanNames("name",'EX_'.$cpd->name()).' reversible="true">');
 			push(@{$output},"\t".'<notes>');
 			push(@{$output},"\t\t".'<html:p>GENE_ASSOCIATION: </html:p>');
@@ -968,10 +980,10 @@ sub printSBML {
 			push(@{$output},"\t\t".'<html:p>PROTEIN_CLASS: </html:p>');
 			push(@{$output},"\t".'</notes>');
 			push(@{$output},"\t".'<listOfReactants>');
-			push(@{$output},"\t\t".'<speciesReference '.$self->CleanNames("species",$cpd->id()).' stoichiometry="1.000000"/>');
+			push(@{$output},"\t\t".'<speciesReference '.$self->CleanNames("species","M_".$cpd->id()).' stoichiometry="1.000000"/>');
 			push(@{$output},"\t".'</listOfReactants>');
 			push(@{$output},"\t".'<listOfProducts>');
-			push(@{$output},"\t\t".'<speciesReference '.$self->CleanNames("species",$cpd->msid()."_b").' stoichiometry="1.000000"/>');
+			push(@{$output},"\t\t".'<speciesReference '.$self->CleanNames("species","M_".$cpd->id(), 1).' stoichiometry="1.000000"/>');
 			push(@{$output},"\t".'</listOfProducts>');
 			push(@{$output},"\t".'<kineticLaw>');
 			push(@{$output},"\t\t".'<math xmlns="http://www.w3.org/1998/Math/MathML">');
@@ -1000,14 +1012,76 @@ sub printSBML {
 
 sub printTSV {
 	my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef,fulldb => 0}, @_);
 	my $output = {
-		compounds_table => ["id\tname\tformula\tcharge\taliases"],
-		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tenzyme\tpathway\treference\tequation\tdefinition"]
+		compounds_table => ["id\tname\tformula\tcharge\tinchikey\tsmiles\tdeltag\tkegg id\tms id"],
+		reactions_table => ["id\tdirection\tcompartment\tgpr\tname\tenzyme\tdeltag\treference\tequation\tdefinition\tms id\tbigg id\tkegg id\tkegg pathways\tmetacyc pathways"]
 	};
+	if ($args->{fulldb} == 1) {
+		$output->{compounds_table}->[0] .= "\tin model";
+		$output->{reactions_table}->[0] .= "\tin model";
+	}
+	my $kegghash = Bio::KBase::utilities::kegg_hash();
+	my $cpdhash = Bio::KBase::utilities::compound_hash();
+	my $rxnhash = Bio::KBase::utilities::reaction_hash();
 	my $compounds = $self->modelcompounds();
+	my $cpd_id_hash = {};
+	my $rxn_id_hash = {};
 	for (my $i=0; $i < @{$compounds}; $i++) {
-		push(@{$output->{compounds_table}},$compounds->[$i]->id()."\t".$compounds->[$i]->name()."\t".$compounds->[$i]->formula()."\t".$compounds->[$i]->charge()."\t");
+		local $SIG{__WARN__} = sub { };
+		# The follow line works but throws a shit-ton of warnings.
+		my $cpddata;
+		my $msid = "";
+		$cpd_id_hash->{$compounds->[$i]->id()} = 1;
+		if ($compounds->[$i]->id() =~ m/(cpd\d+)/ || $compounds->[$i]->compound_ref() =~ m/(cpd\d+)/) {
+			$msid = $1;
+			if ($msid ne "" && $msid ne "cpd00000" && defined($cpdhash->{$msid})) {
+				$cpddata = $cpdhash->{$msid};
+			}
+		}
+		my $name = $compounds->[$i]->id();
+		if (defined($compounds->[$i]->name()) && length($compounds->[$i]->name()) > 0) {
+			$name = $compounds->[$i]->name();
+		} elsif (defined($cpddata)) {
+			$name = $cpddata->{name};
+		}
+		my $formula = "";
+		if (defined($compounds->[$i]->formula()) && length($compounds->[$i]->formula()) > 0) {
+			$formula = $compounds->[$i]->formula();
+		} elsif (defined($cpddata)) {
+			$formula = $cpddata->{formula};
+		}
+		my $charge = "";
+		if (defined($compounds->[$i]->charge()) && length($compounds->[$i]->charge()) > 0) {
+			$charge = $compounds->[$i]->charge();
+		} elsif (defined($cpddata)) {
+			$charge = $cpddata->{charge};
+		}
+		my $inchikey = "";
+		if (defined($compounds->[$i]->inchikey()) && length($compounds->[$i]->inchikey()) > 0) {
+			$inchikey = $compounds->[$i]->inchikey();
+		} elsif (defined($cpddata) && defined($cpddata->{inchikey})) {
+			$inchikey = $cpddata->{inchikey};
+		}
+		my $smiles = "";
+		if (defined($compounds->[$i]->smiles()) && length($compounds->[$i]->smiles()) > 0) {
+			$smiles = $compounds->[$i]->smiles();
+		} elsif (defined($cpddata) && defined($cpddata->{smiles})) {
+			$smiles = $cpddata->{smiles};
+		}
+		my $deltag = "";
+		if (defined($cpddata) && defined($cpddata->{deltag}) && $cpddata->{deltag} != 10000000) {
+			$deltag = $cpddata->{deltag};
+		}
+		my $keggid = "";
+		if (defined($cpddata) && defined($cpddata->{kegg_aliases}->[0])) {
+			$keggid = $cpddata->{kegg_aliases}->[0];
+		}
+		my $line = $compounds->[$i]->id()."\t".$name."\t".$formula."\t".$charge."\t".$inchikey."\t".$smiles."\t".$deltag."\t".$keggid."\t".$msid;
+		if ($args->{fulldb} == 1) {
+			$line .= "\t1";
+		}
+		push(@{$output->{compounds_table}},$line);
 	}
 	my $reactions = $self->modelreactions();
 	for (my $i=0; $i < @{$reactions}; $i++) {
@@ -1023,7 +1097,67 @@ sub printTSV {
 		$equation =~ s/\)/) /g;
 		my $definition = $reactions->[$i]->definition();
 		$definition =~ s/\)/) /g;
-		push(@{$output->{reactions_table}},$reactions->[$i]->id()."\t".$reactions->[$i]->direction()."\t".$reactions->[$i]->modelcompartment()->label()."\t".$reactions->[$i]->gprString()."\t".$reactions->[$i]->name()."\t".""."\t".$pathway."\t".$reference."\t".$equation."\t".$definition);
+		my $rxndata;
+		my $msid = "";
+		$rxn_id_hash->{$reactions->[$i]->id()} = 1;
+		if ($reactions->[$i]->id() =~ m/(rxn\d+)/ || $reactions->[$i]->reaction_ref() =~ m/(rxn\d+)/) {
+			$msid = $1;
+			if ($msid ne "" && $msid ne "rxn00000" && defined($rxnhash->{$msid})) {
+				$rxndata = $rxnhash->{$msid};
+			}
+		}
+		my $deltag = "";
+		if (defined($rxndata) && defined($rxndata->{deltag}) && $rxndata->{deltag} != 10000000) {
+			$deltag = $rxndata->{deltag};
+		}
+		my $ec = "";
+		if (defined($rxndata) && defined($rxndata->{ec_numbers}) && defined($rxndata->{ec_numbers}->[0])) {
+			$ec = join("|", @{$rxndata->{ec_numbers}});
+		}
+		my $biggid = "";
+		if (defined($rxndata) && defined($rxndata->{bigg_aliases}) && defined($rxndata->{bigg_aliases}->[0])) {
+			$biggid = $rxndata->{bigg_aliases}->[0];
+		}
+		my $keggid = "";
+		if (defined($rxndata) && defined($rxndata->{kegg_aliases}) && defined($rxndata->{kegg_aliases}->[0])) {
+			$keggid = $rxndata->{kegg_aliases}->[0];
+		}
+
+		my $metapath = "";
+		if (defined($rxndata) && defined($rxndata->{metacyc_pathways}) && defined($rxndata->{metacyc_pathways}->[0])) {
+			for (my $j=0; $j < @{$rxndata->{metacyc_pathways}}; $j++) {
+				if ($rxndata->{metacyc_pathways}->[$j] !~ /PWY-\d+/) {
+					if (length($metapath) > 0) {
+						$metapath .= "|";
+					}
+					$metapath .= $rxndata->{metacyc_pathways}->[$j];
+				}
+			}
+		}
+		my $keggpath = "";
+		if (defined($rxndata) && defined($rxndata->{kegg_pathways}) && defined($rxndata->{kegg_pathways}->[0])) {
+			for (my $j=0; $j < @{$rxndata->{kegg_pathways}}; $j++) {
+				if (defined($kegghash->{$rxndata->{kegg_pathways}->[$j]})) {
+					if (length($keggpath) > 0) {
+						$keggpath .= "|";
+					}
+					$keggpath .= $kegghash->{$rxndata->{kegg_pathways}->[$j]};
+				}
+			}
+		}
+		my $line = $reactions->[$i]->id()."\t".$reactions->[$i]->direction()."\t".$reactions->[$i]->modelcompartment()->label()."\t".$reactions->[$i]->gprString()."\t".$reactions->[$i]->name()."\t".$ec."\t".$deltag."\t".$reference."\t".$equation."\t".$definition."\t".$msid."\t".$biggid."\t".$keggid."\t".$keggpath."\t".$metapath;
+		if ($args->{fulldb} == 1) {
+			$line .= "\t1";
+		}
+		push(@{$output->{reactions_table}},$line);
+	}
+	if ($args->{fulldb} == 1) {
+		$self->template()->printTSV({
+			file => 0,
+			append_to => $output,
+			compound_filter => $cpd_id_hash,
+			reaction_filter => $rxn_id_hash
+		});
 	}
 	$reactions = $self->biomasses();
 	for (my $i=0; $i < @{$reactions}; $i++) {
@@ -1043,8 +1177,8 @@ sub printTSV {
 
 sub printExcel {
 	my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my $output = $self->printTSV();	
+	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef,fulldb => 0}, @_);
+	my $output = $self->printTSV({fulldb => $args->{fulldb}});	
 	require "Spreadsheet/WriteExcel.pm";
 	my $wkbk = Spreadsheet::WriteExcel->new($args->{path}."/".$self->id().".xls") or die "can not create workbook: $!";
 	my $sheet = $wkbk->add_worksheet("ModelCompounds");
@@ -1075,11 +1209,15 @@ sub printExcel {
 }
 
 sub CleanNames {
-		my ($self,$name,$value) = @_;
-		$value =~ s/\+/_plus_/g;
-		$value =~ s/[\s:,-]/_/g;
-		$value =~ s/\W//g;
-		return $name.'="'.$value.'"';
+	my ($self,$name,$value,$boundary) = @_;
+	$value =~ s/\+/_plus_/g;
+	$value =~ s/[\s:,-]/_/g;
+	$value =~ s/\W//g;
+	if ($boundary){
+		$value =~ s/_[a-z]\d*$//;
+		$value .= "_b"
+	}
+	return $name.'="'.$value.'"';
 }
 
 =head3 export
@@ -1098,7 +1236,13 @@ sub export {
 		return $self->printSBML($args);
 	} elsif (lc($args->{format}) eq "excel") {
 		return $self->printExcel($args);
+	} elsif (lc($args->{format}) eq "fullexcel") {
+		$args->{fulldb} = 1;
+		return $self->printExcel($args);
 	} elsif (lc($args->{format}) eq "tsv") {
+		return $self->printTSV($args);
+	} elsif (lc($args->{format}) eq "fulltsv") {
+		$args->{fulldb} = 1;
 		return $self->printTSV($args);
 	}
 	Bio::KBase::ObjectAPI::utilities::error("Unrecognized type for export: ".$args->{format});
@@ -1226,6 +1370,9 @@ sub add_gapfilling {
 	my $biomass_removals = $args->{object}->biomassRemovals();
 	my $brkeys = [keys(%{$biomass_removals})];
 	if (@{$brkeys} > 0) {
+		my $tbl = "<h3>Gapfilling was unable to find a solution using the chosen media.</h3>";
+		return Bio::KBase::utilities::gapfilling_html_table({message => $tbl,append => 0});
+		# Rest is of code block is skipped
 		my $biomass = "bio1";
 		if (!defined($biomass_removals->{bio1})) {
 			$biomass = $brkeys->[0];
@@ -1623,9 +1770,14 @@ sub merge_models {
 		my $biomassCpd = $model->getObject("modelcompounds","cpd11416_c0");
 		#Adding genome, features, and roles to master mapping and annotation
 		my $mdlgenome = $model->genome();
-		$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
+		my $prior_size = $genomeObj->dna_size();
+		if (defined($mdlgenome->dna_size())) {
+			$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
+			if ($genomeObj->dna_size() > 0) {
+				$genomeObj->gc_content(($genomeObj->gc_content()*$prior_size+$mdlgenome->dna_size()*$mdlgenome->gc_content())/$genomeObj->dna_size());
+			}
+		}
 		$genomeObj->num_contigs($genomeObj->num_contigs()+$mdlgenome->num_contigs());
-		$genomeObj->gc_content($genomeObj->gc_content()+$mdlgenome->dna_size()*$mdlgenome->gc_content());
 		push(@{$genomeObj->{contig_lengths}},@{$mdlgenome->{contig_lengths}});
 		push(@{$genomeObj->{contig_ids}},@{$mdlgenome->{contig_ids}});	
 		print "Loading features\n";
@@ -1670,6 +1822,11 @@ sub merge_models {
 					compound_ref => $cpd->compound_ref(),
 					charge => $cpd->charge(),
 					formula => $cpd->formula(),
+					name => $cpd->name(),
+					smiles => $cpd->smiles(),
+					inchikey => $cpd->inchikey(),
+					dblinks => $cpd->dblinks(),
+					aliases => $cpd->aliases(),
 					modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{$cpd->modelcompartment()->compartment()->id()}->id()
 				});
 			}
@@ -1823,6 +1980,9 @@ sub edit_metabolic_model {
 				}
 			}
 		}
+		if (!defined $params->{compounds_to_add}->[$i]->{add_compartment_id}){
+			Bio::KBase::utilities::error("Must specify a compartment id for new compounds");
+		}
 		my $mdlcpd = $self->add("modelcompounds",{
 			id => $params->{compounds_to_add}->[$i]->{add_compound_id}."_".$params->{compounds_to_add}->[$i]->{add_compartment_id},
 			modelcompartment_ref => "~/modelcompartments/id/".$params->{compounds_to_add}->[$i]->{add_compartment_id},
@@ -1960,6 +2120,9 @@ sub edit_metabolic_model {
 			$rxnobj = $self->template()->biochemistry()->getObject("reactions",$rxnadd->{add_reaction_id});
 		}
 		my $rxnref = "~/template/reactions/id/rxn00000_c";
+		if (!defined $rxnadd->{reaction_compartment_id}){
+			Bio::KBase::utilities::error("Must specify a compartment id for new reactions");
+		}
 		if (defined($rxnobj)) {
 			if (!defined($rxnadd->{add_reaction_name}) || $rxnadd->{add_reaction_name} eq "") {
 				$rxnadd->{add_reaction_name} = $rxnobj->name();
@@ -2099,7 +2262,7 @@ sub edit_metabolic_model {
 						if ($params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient} == 0) {
 							$mdlrxn->remove("modelReactionReagents",$reactants->[$j]);
 						} else {
-							$reactants->[$j]->coefficient() = $params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient};
+							$reactants->[$j]->coefficient($params->{edit_compound_stoichiometry}->[$i]->{stoich_coefficient});
 						}
 						last;
 					}
@@ -2148,7 +2311,6 @@ sub translate_model {
 	}, @_);
 	my $protcomp = $args->{proteome_comparison};
 	my $genome = $self->genome();
-	print $genome->id();
 	my $ftrs = $genome->features();
 	my $numftrs = @{$ftrs};
 	my $ftrhash;
@@ -2248,7 +2410,7 @@ sub translate_model {
 			}
 		}
 	}
-	$self->genome_ref($ref);
+	$self->genome_ref($protcomp->{'_reference'}.";".$ref);
 	$self->name($newgenome->scientific_name());
 	$self->genome($newgenome);
 	if ($args->{translation_policy} ne "translate_only") {
@@ -2269,10 +2431,17 @@ sub translate_model {
 
 sub translate_to_localrefs {
 	my $self = shift;
+	my %seen = ();
 	my $compartments = $self->modelcompartments();
     for (my $i=0; $i < @{$compartments}; $i++) {
 		if ($compartments->[$i]->compartment_ref() =~ m/\/([^\/]+)$/) {
-    		$compartments->[$i]->compartment_ref("~/template/compartments/id/".$1);
+			my $ind = $compartments->[$i]->compartmentIndex();
+			if (! $seen{ $1.$ind }++) {
+				$compartments->[$i]->compartment_ref("~/template/compartments/id/" . $1);
+			} else {
+				print "Removeing duplicated compartment: ".$compartments->[$i]->label()."\n";
+				$self->remove("modelcompartments",$compartments->[$i]);
+			}
 		}
     }
 	my $compounds = $self->modelcompounds();
@@ -2286,7 +2455,7 @@ sub translate_to_localrefs {
 		my $array = [split(/_/,$reactions->[$i]->id())];
 	 	my $comp = pop(@{$array});
 	 	$comp =~ s/\d+//;
-		if ($reactions->[$i]->reaction_ref() =~ m/\/([^\/]+)$/) {
+		if ($reactions->[$i]->reaction_ref() =~ m/\/([^\/]+?)(_[^\/])?$/) {
 			$reactions->[$i]->reaction_ref("~/template/reactions/id/".$1."_".$comp);
 		}
 		my $prots = $reactions->[$i]->modelReactionProteins();

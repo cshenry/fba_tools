@@ -24,7 +24,12 @@ has formula => (is => 'rw', isa => 'Str', printOrder => '4', default => '', type
 has charge => (is => 'rw', isa => 'Num', printOrder => '3', type => 'attribute', metaclass => 'Typed');
 has aliases => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has id => (is => 'rw', isa => 'Str', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
-
+has displayID => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has inchikey => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has smiles => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has dblinks => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has string_attributes => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has numerical_attributes => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 
 # LINKS:
 has compound => (is => 'rw', type => 'link(Biochemistry,compounds,compound_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_compound', clearer => 'clear_compound', isa => 'Bio::KBase::ObjectAPI::KBaseBiochem::Compound', weak_ref => 1);
@@ -115,10 +120,55 @@ my $attributes = [
             'name' => 'id',
             'type' => 'Str',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'displayID',
+            'type' => 'Str',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'inchikey',
+            'type' => 'Str',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'smiles',
+            'type' => 'Str',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'dblinks',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'string_attributes',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'numerical_attributes',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
           }
-        ];
+        ];     
 
-my $attribute_map = {compound_ref => 0, name => 1, maxuptake => 2, modelcompartment_ref => 3, formula => 4, charge => 5, aliases => 6, id => 7};
+my $attribute_map = {compound_ref => 0, name => 1, maxuptake => 2, modelcompartment_ref => 3, formula => 4, charge => 5, aliases => 6, id => 7,displayID => 8,inchikey => 9,smiles => 10,dblinks => 11,string_attributes => 12,numerical_attributes => 13};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

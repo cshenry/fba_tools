@@ -5,6 +5,9 @@ use Carp qw(cluck);
 use Config::Simple;
 use DateTime;
 
+our $reaction_hash;
+our $compound_hash;
+our $kegg_hash;
 our $config = undef;
 our $ctx = undef;
 our $timestamp = undef;
@@ -18,6 +21,38 @@ our $loghandler;
 our $starttime = undef;
 our $arguments = undef;
 our $gapfilltable = undef;
+
+sub kegg_hash {
+	if (!defined($reaction_hash)) {
+		my $pathways = Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","kegg_pathways"));
+		for (my $i=1; $i < @{$pathways}; $i++) {
+			my $array = [split(/\t/,$pathways->[$i])];
+			$array->[1] =~ s/map/rn/;
+			$kegg_hash->{$array->[1]} = $array->[2];
+		}
+	}
+	return $kegg_hash;
+};
+
+sub reaction_hash {
+	if (!defined($reaction_hash)) {
+		my $rxndata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","reactions_json"))}));
+		for (my $i=0; $i < @{$rxndata}; $i++) {
+			$reaction_hash->{$rxndata->[$i]->{id}} = $rxndata->[$i];
+		}
+	}
+	return $reaction_hash;
+};
+
+sub compound_hash {
+	if (!defined($reaction_hash)) {
+		my $cpddata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","compounds_json"))}));
+		for (my $i=0; $i < @{$cpddata}; $i++) {
+			$compound_hash->{$cpddata->[$i]->{id}} = $cpddata->[$i];
+		}
+	}
+	return $compound_hash;
+};
 
 sub style {
 	return "	<style>
@@ -211,6 +246,21 @@ sub read_config {
 	});
 	#print "Loading config file:".$args->{filename}.":\n".Data::Dumper->Dump([$config])."\n";
 	return $config;
+}
+
+sub buildref {
+	my $id = shift;
+	my $ws = shift;
+	#Check if the ID is a KBase workspace ID with a version
+	if ($id =~ m/^([^\/]+)\/([^\/]+)\/\d+$/) {
+		return $id;
+	#Check if the ID contains a "/" which indicates that it is a full ref
+	} elsif ($id =~ m/\//) {
+		return $id;
+	}
+	#Removing any "/" that may appear at the end of the ws
+	$ws =~ s/\/$//;
+	return $ws."/".$id;
 }
 
 sub parse_input_table {
