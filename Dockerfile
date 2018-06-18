@@ -1,4 +1,4 @@
-FROM kbase/kbase:sdkbase.latest
+FROM kbase/kbase:sdkbase2.latest
 MAINTAINER KBase Developer
 # -----------------------------------------
 
@@ -10,11 +10,6 @@ RUN cpanm -i Config::IniFiles \
     && cpanm -n Devel::Cover
 
 # -----------------------------------------
-
-RUN apt-get update && apt-get install -y unzip gcc bzip2 ncurses-dev \
-    && pip install mpipe \
-    && pip install --upgrade requests==2.7.0 \
-    && pip freeze | grep requests
 
 COPY ./MFAToolkit /kb/module/MFAToolkit
 COPY ./Makefile /kb/module/
