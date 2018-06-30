@@ -759,7 +759,7 @@ sub createJobDirectory {
 	my $additionalrxn = ["id\tdirection\ttag"];
 	my $rxnhash = {};
 	my $mdlData = ["REACTIONS","LOAD;DIRECTIONALITY;COMPARTMENT;ASSOCIATED PEG;COMPLEXES"];
-	my $BioRxn = ["id	abbrev	deltaG	deltaGErr	equation	name	reversibility	status	thermoReversibility"];
+	my $BioRxn = ["id	abbrev	deltaG	deltaGErr	equation	name	reversibility	status	thermoReversibility	KPRIME	KMCPD	CONCENTRATION	TURNOVER"];
 	my $compindecies = {};
 	my $comps = $model->modelcompartments();
 	for (my $i=0; $i < @{$comps}; $i++) {
@@ -818,7 +818,7 @@ sub createJobDirectory {
 						$reactants = "(0.0001) ".$reactants."_c".$index;
 						$equation = $reactants." ".$equation;
 					}
-					push(@{$BioRxn},$biomasses->[$i]->id()."_".$id."\t".$biomasses->[$i]->id()."\t0\t".$biocpds->[$j]->coefficient()."\t".$equation."\t".$biomasses->[$i]->id()."\t=>\tOK\t=>");
+					push(@{$BioRxn},$biomasses->[$i]->id()."_".$id."\t".$biomasses->[$i]->id()."\t0\t".$biocpds->[$j]->coefficient()."\t".$equation."\t".$biomasses->[$i]->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
 					if ($id !~ m/cpd11416_c\d+/) {
 						push(@{$additionalrxn},$biomasses->[$i]->id()."_".$id."\t>\tbiomasssupply");
 					}
@@ -833,26 +833,26 @@ sub createJobDirectory {
 		my $direction = $rxn->direction();
 		my $rxndir = "<=>";
 		if ($rxn->maxforflux() != 1000000 || $rxn->maxrevflux() != 1000000) {
-			my $newbound = {
-				id => $rxn->id(),
-				vartype => "FLUX",
-				upperbound => $rxn->maxforflux(),
-				lowerbound => -1*$rxn->maxrevflux(),
-				conc => 0.001
-			};
-			if ($rxn->maxforflux() == 1000000) {
-				$newbound->{upperbound} = $self->defaultMaxFlux();
-				if ($direction eq "<") {
-					$newbound->{upperbound} = 0;
-				}
-			}
-			if ($rxn->maxrevflux() == 1000000) {
-				if ($direction eq ">") {
-					$newbound->{lowerbound} = 0;
-				}
-				$newbound->{lowerbound} = -1*$self->defaultMaxFlux();
-			}
-			push(@{$modelbounds},$newbound);
+#			my $newbound = {
+#				id => $rxn->id(),
+#				vartype => "FLUX",
+#				upperbound => $rxn->maxforflux(),
+#				lowerbound => -1*$rxn->maxrevflux(),
+#				conc => 0.001
+#			};
+#			if ($rxn->maxforflux() == 1000000) {
+#				$newbound->{upperbound} = $self->defaultMaxFlux();
+#				if ($direction eq "<") {
+#					$newbound->{upperbound} = 0;
+#				}
+#			}
+#			if ($rxn->maxrevflux() == 1000000) {
+#				if ($direction eq ">") {
+#					$newbound->{lowerbound} = 0;
+#				}
+#				$newbound->{lowerbound} = -1*$self->defaultMaxFlux();
+#			}
+#			push(@{$modelbounds},$newbound);
 		}
 		if (defined($self->parameters()->{activate_all_model_reactions}) && $self->parameters()->{activate_all_model_reactions} == 1) {
 			$actcoef->{$rxn->id()} = 1;
@@ -917,54 +917,186 @@ sub createJobDirectory {
 				$equation =~ s/\(4\)\scpd00067_e0/(7) cpd00067_e0/g;
 				$equation =~ s/\(3\)\scpd00067_c0/(6) cpd00067_c0/g;
 			}
-			push(@{$BioRxn},$id."\t".$id."\t".$dg."\t".$dge."\t".$equation."\t".$id."\t".$rxndir."\t".$st."\t".$rxndir);
+			push(@{$BioRxn},$id."\t".$id."\t".$dg."\t".$dge."\t".$equation."\t".$id."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1");
 		}
 	}
 	#Printing proteins for models
+	my $genehash = {};
 	my $genelist = [];
-	if (defined($self->parameters()->{dynamic_protein_simulation}) && $self->parameters()->{dynamic_protein_simulation} == 1) {
-		my $genehash = {};
+	my $cpddbhash = Bio::KBase::utilities::compound_hash();
+	my $proteinvar;
+	if (defined($self->parameters()->{"run dynamic FBA"}) && $self->parameters()->{"run dynamic FBA"} == 1) {
+		$proteinvar = {};
 		my $aa_trans = Bio::KBase::constants::aa_abbrev();
 		for (my $i=0; $i < @{$mdlrxn}; $i++) {
 			my $rxn = $mdlrxn->[$i];
+			my $rgts = $rxn->modelReactionReagents();
+			my $transported_cpd = {};
+			for (my $j=0; $j < @{$rgts}; $j++) {
+				if ($rgts->[$j]->modelcompound_ref() =~ m/(cpd\d+)(_e\d+)/) {
+					my $cpdid = $1;
+					my $fullid = $1.$2;
+					if ($cpdid ne "cpd00067" && $cpdid ne "cpd00001") {
+						$transported_cpd->{$fullid} = 1;
+					}
+				}
+			}
 			my $prots = $rxn->modelReactionProteins();
 			for (my $j=0; $j < @{$prots}; $j++) {
 				my $subunits = $prots->[$j]->modelReactionProteinSubunits();
 				for (my $k=0; $k < @{$subunits}; $k++) {
 					my $ftrs = $subunits->[$k]->features();
 					for (my $m=0; $m < @{$ftrs}; $m++) {
-						if (!defined($genehash->{$ftrs->[$i]->id()})) {
-							my $gpr = $ftrs->[$i]->id();
+						if (!defined($genehash->{$ftrs->[$m]->id()})) {
+							my $gpr = $ftrs->[$m]->id();
 							$gpr =~ s/\|/___/g;
-							my $ind = 0;
-							$genehash->{$ftrs->[$i]->id()} = 1;
-							my $id = "prot_".$ftrs->[$i]->id()."_c".$ind;
-							$id = s/[\s^\W]//g;
-							push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
-							my $seq = $ftrs->[$i]->protein_translation();
-							my $en = length($seq);
-							my $aacost = "cpd00017_c".$ind;
-							foreach my $aa (keys(%{$aa_trans})) {
-								my $count = length($seq);
-								$seq =~ s/$aa//g;
-								my $lcaa = lc($aa);
-								$seq =~ s/$lcaa//g;
-								$count = $count - length($seq);
-								if ($aa == "M") {
-									$count--;
+							if (!defined($genehash->{$gpr})) {
+								my $ind = 0;
+								my $geneobj = {
+									id => $gpr,
+									concentration => $self->parameters()->{default_concentration},
+									turnover => $self->parameters()->{default_turnover},
+									kprime => $self->parameters()->{default_kprime},
+									kmcpd => "none"
+								};
+								$genehash->{$gpr} = $geneobj;
+								my $id = "PROT_".$gpr;
+								push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
+								my $seq = $ftrs->[$m]->protein_translation();
+								if (length($seq) == 0) {
+									$seq = $self->parameters()->{default_protein_sequence};
 								}
-								if ($count > 0) {
-									$aacost .= " + (".$count.") ".$aa_trans->{$aa};
+								my $en = length($seq);
+								my $mw = 18;
+								my $aahash = {};
+								foreach my $aa (keys(%{$aa_trans})) {
+									my $count = length($seq);
+									$seq =~ s/$aa//g;
+									my $lcaa = lc($aa);
+									$seq =~ s/$lcaa//g;
+									$count = $count - length($seq);
+									if ($aa eq "M") {
+										$count--;
+									}
+									$mw += $count*$cpddbhash->{$aa_trans->{$aa}}->{mass};
+									$mw += -18;
+									$aahash->{$aa_trans->{$aa}} = $count;
 								}
+								my $aacost = "(".(1000/$mw).") cpd00017_c0";
+								foreach my $aa (keys(%{$aahash})) {
+									my $coef = $aahash->{$aa}/$mw;
+									if ($aahash->{$aa} > 0) {
+										$aacost .= " + (".$coef.") ".$aa."_c0";
+									}
+								}
+								$geneobj->{kmcpd} = "";
+								foreach my $transcpd (keys(%{$transported_cpd})) {
+									if (length($geneobj->{kmcpd}) > 0) {
+										$geneobj->{kmcpd} .= "|";
+									}
+									my $km = 0.001;
+									if (defined($self->parameters()->{kmvalues}->{$transcpd})) {
+										$km = $self->parameters()->{kmvalues}->{$transcpd};
+									}
+									$geneobj->{kmcpd} .= $transcpd.";".$km;
+								}
+								if (length($geneobj->{kmcpd}) == 0) {
+									$geneobj->{kmcpd} = "none";
+								}
+								if (defined($self->parameters()->{kprimes}->{$geneobj->{id}})) {
+									$geneobj->{turnover} = $self->parameters()->{turnovers}->{$geneobj->{id}};
+								}
+								if (defined($self->parameters()->{kprimes}->{$geneobj->{id}})) {
+									$geneobj->{kprime} = $self->parameters()->{kprimes}->{$geneobj->{id}};
+								}
+								if (defined($self->parameters()->{concentrations}->{$geneobj->{id}})) {
+									$geneobj->{concentration} = $self->parameters()->{concentrations}->{$geneobj->{id}};
+								}
+								$proteinvar->{$id} = {
+									compartment => "c",
+									min => -100,
+									max => 100,
+									concentration => $geneobj->{concentration}
+								};
+								push(@{$genelist},$geneobj);
+								my $syn_eq = $aacost." (".$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$en/$mw.") cpd00008_c0 + (".$en/$mw.") cpd00009_c0 + (".$en/$mw.") cpd00067_c0 + ".$id;
+								my $deg_eq = $id." => ".$aacost;
+								push(@{$BioRxn},"PSYN_".$gpr."\t"."PSYN_".$gpr."\t0\t0\t".$syn_eq."\tPSYN_".$gpr."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
+								push(@{$BioRxn},"PDEG_".$gpr."\t"."PDEG_".$gpr."\t0\t0\t".$deg_eq."\tPDEG_".$gpr."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
+								push(@{$mdlData},"PSYN_".$gpr.";=>;c;".$gpr.";".$gpr);
+								push(@{$mdlData},"PDEG_".$gpr.";=>;c;".$gpr.";".$gpr);
 							}
-							push(@{$genelist},$id);
-							my $syn_eq = $aacost." (".$en.") cpd00002_c".$ind." + (".$en.") cpd00001_c".$ind." => (".$en.") cpd00008_c".$ind." + (".$en.") cpd00009_c".$ind." + (".$en.") cpd00067_c".$ind." + ".$id;
-							my $deg_eq = "(1) ".$id." => ".$aacost;
-							push(@{$BioRxn},"syn".$id."\t"."syn".$id."\t0\t0\t".$syn_eq."\tsyn".$id."\t=>\tOK\t=>");
-							push(@{$BioRxn},"deg".$id."\t"."deg".$id."\t0\t0\t".$deg_eq."\tdeg".$id."\t=>\tOK\t=>");
-							push(@{$mdlData},"syn".$id.";=>;c;".$gpr.";".$gpr);
-							push(@{$mdlData},"deg".$id.";=>;c;".$gpr.";".$gpr);
 						}
+					}
+				}
+			}
+			if (@{$prots} == 0) {
+				my $conc = $self->parameters()->{default_concentration};
+				my $kprime = $self->parameters()->{default_kprime};
+				my $kmcpd = "none";
+				my $turnover = $self->parameters()->{default_turnover};
+				my $id = "PROT_".$rxn->id();
+				push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
+				my $seq = $self->parameters()->{default_protein_sequence};
+				my $en = length($seq);
+				my $mw = 18;
+				my $aahash = {};
+				foreach my $aa (keys(%{$aa_trans})) {
+					my $count = length($seq);
+					$seq =~ s/$aa//g;
+					my $lcaa = lc($aa);
+					$seq =~ s/$lcaa//g;
+					$count = $count - length($seq);
+					if ($aa eq "M") {
+						$count--;
+					}
+					$mw += $count*$cpddbhash->{$aa_trans->{$aa}}->{mass};
+					$mw += -18;
+					$aahash->{$aa_trans->{$aa}} = $count;
+				}
+				my $aacost = "(".(1000/$mw).") cpd00017_c0";
+				foreach my $aa (keys(%{$aahash})) {
+					my $coef = $aahash->{$aa}/$mw;
+					if ($aahash->{$aa} > 0) {
+						$aacost .= " + (".$coef.") ".$aa."_c0";
+					}
+				}
+				if (keys(%{$transported_cpd}) > 0) { 
+					$kmcpd = "";
+					foreach my $transcpd (keys(%{$transported_cpd})) {
+						if (length($kmcpd) > 0) {
+							$kmcpd .= "|";
+						}
+						my $km = $self->parameters()->{default_km};
+						if (defined($self->parameters()->{kmvalues}->{$transcpd})) {
+							$km = $self->parameters()->{kmvalues}->{$transcpd};
+						}
+						$kmcpd .= $transcpd.";".$km;
+					}
+				}
+				if (defined($self->parameters()->{kprimes}->{$rxn->id()})) {
+					$kprime = $self->parameters()->{kprimes}->{$rxn->id()};
+				}
+				if (defined($self->parameters()->{concentrations}->{$rxn->id()})) {
+					$conc = $self->parameters()->{concentrations}->{$rxn->id()};
+				}
+				$proteinvar->{$id} = {
+					compartment => "c",
+					min => -100,
+					max => 100,
+					concentration => $conc
+				};
+				my $syn_eq = $aacost." (".$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$en/$mw.") cpd00008_c0 + (".$en/$mw.") cpd00009_c0 + (".$en/$mw.") cpd00067_c0 + ".$id;
+				my $deg_eq = $id." => ".$aacost;
+				push(@{$BioRxn},"PSYN_".$rxn->id()."\t"."PSYN_".$rxn->id()."\t0\t0\t".$syn_eq."\tPSYN_".$rxn->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
+				push(@{$BioRxn},"PDEG_".$rxn->id()."\t"."PDEG_".$rxn->id()."\t0\t0\t".$deg_eq."\tPDEG_".$rxn->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
+				push(@{$mdlData},"PSYN_".$rxn->id().";=>;c;Unknown;Unknown");
+				push(@{$mdlData},"PDEG_".$rxn->id().";=>;c;Unknown;Unknown");
+				my $search = $rxn->id()."\t";
+				for (my $j=0; $j < @{$BioRxn}; $j++) {
+					if (index($BioRxn->[$j],$search) == 0) {
+						$BioRxn->[$j] =~ s/\t1\tnone\t0.1\t1$//;
+						$BioRxn->[$j] .= "\t".$kprime."\t".$kmcpd."\t".$conc."\t".$turnover;
 					}
 				}
 			}
@@ -982,10 +1114,10 @@ sub createJobDirectory {
 		push(@{$additionalrxn},"ATPMaintenance\t=\tATPMAINT");
 		push(@{$additionalrxn},"EnergyBiomass\t=\tBiomassComp");
 		$gfcoef->{"EnergyBiomass"} = {"reverse" => 10,forward => 10,tag => "BiomassComp"};
-		push(@{$BioRxn},"SixATPSynth\tSixATPSynth\t0\t0\t(6) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + (5) cpd00067_c0[c] + cpd00001_c0[c]\tSixATPSynth\t<=>\tOK\t<=>");
-		push(@{$BioRxn},"OneATPSynth\tOneATPSynth\t0\t0\t(1) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + cpd00001_c0[c]\tOneATPSynth\t<=>\tOK\t<=>");
-		push(@{$BioRxn},"ATPMaintenance\tATPMaintenance\t0\t0\tcpd00002_c0[c] + cpd00001_c0[c] <=> cpd00067_c0[c] + cpd00008_c0[c] + cpd00009_c0[c]\tATPMaintenance\t=>\tOK\t=>");
-		push(@{$BioRxn},"EnergyBiomass\tEnergyBiomass\t0\t0\tcpd00002_c0[b] + cpd00001_c0[b] <=> cpd00008_c0[b] + cpd00009_c0[b] + cpd00067_c0[b]\tEnergyBiomass\t<=>\tOK\t<=>");
+		push(@{$BioRxn},"SixATPSynth\tSixATPSynth\t0\t0\t(6) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + (5) cpd00067_c0[c] + cpd00001_c0[c]\tSixATPSynth\t<=>\tOK\t<=>\t1\tnone\t0.1\t1");
+		push(@{$BioRxn},"OneATPSynth\tOneATPSynth\t0\t0\t(1) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + cpd00001_c0[c]\tOneATPSynth\t<=>\tOK\t<=>\t1\tnone\t0.1\t1");
+		push(@{$BioRxn},"ATPMaintenance\tATPMaintenance\t0\t0\tcpd00002_c0[c] + cpd00001_c0[c] <=> cpd00067_c0[c] + cpd00008_c0[c] + cpd00009_c0[c]\tATPMaintenance\t=>\tOK\t=>\t1\tnone\t0.1\t1");
+		push(@{$BioRxn},"EnergyBiomass\tEnergyBiomass\t0\t0\tcpd00002_c0[b] + cpd00001_c0[b] <=> cpd00008_c0[b] + cpd00009_c0[b] + cpd00067_c0[b]\tEnergyBiomass\t<=>\tOK\t<=>\t1\tnone\t0.1\t1");
 		my $comprxn = {};
 		foreach my $cpd (@{$biocpds}) {
 			if ($cpd->coefficient() > 0) {
@@ -1058,7 +1190,7 @@ sub createJobDirectory {
 			}
 			push(@{$additionalrxn},$component."Biomass\t=\tBiomassComp");
 			$gfcoef->{$component."Biomass"} = {"reverse" => 10,forward => 10,tag => "BiomassComp"};
-			push(@{$BioRxn},$component."Biomass\t".$component."Biomass\t0\t0\t".$reactant." <=> ".$product."\t".$component."Biomass\t<=>\tOK\t<=>");
+			push(@{$BioRxn},$component."Biomass\t".$component."Biomass\t0\t0\t".$reactant." <=> ".$product."\t".$component."Biomass\t<=>\tOK\t<=>\t1\tnone\t0.1\t1");
 		}
 		$self->parameters()->{"Biomass component coefficients"} = $biomasscomps;
 		$self->parameters()->{"quantitative optimization"} = 1;
@@ -1154,7 +1286,7 @@ sub createJobDirectory {
 					if (defined($tmprxn->status())) {
 						$st = $tmprxn->status();
 					}		
-					push(@{$BioRxn},$tmpid."\t".$tmpid."\t".$dg."\t".$dge."\t".$equation."\t".$tmpid."\t".$rxndir."\t".$st."\t".$rxndir);
+					push(@{$BioRxn},$tmpid."\t".$tmpid."\t".$dg."\t".$dge."\t".$equation."\t".$tmpid."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1");
 				}
 			}
 		}
@@ -1284,7 +1416,7 @@ sub createJobDirectory {
 							if (defined($rxn->reaction()->status())) {
 								$st = $rxn->reaction()->status();
 							}
-							push(@{$BioRxn},$trueid."\t".$trueid."\t".$dg."\t".$dge."\t".$equation."\t".$trueid."\t".$rxndir."\t".$st."\t".$rxndir);
+							push(@{$BioRxn},$trueid."\t".$trueid."\t".$dg."\t".$dge."\t".$equation."\t".$trueid."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1");
 						}
 					}
 				}
@@ -1355,7 +1487,7 @@ sub createJobDirectory {
 			}
 		}
 		my $equation = $reactants." => ".$products;
-		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$equation."\tBiomass\t=>\tOK\t=>";
+		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$equation."\tBiomass\t=>\tOK\t=>\t1\tnone\t0.1\t1";
 		push(@{$BioRxn},$rxnline);
 	}
 	my $gfcoefficients = ["Reaction\tDirection\tCoefficient\tTag"];
@@ -1371,7 +1503,6 @@ sub createJobDirectory {
 	foreach my $key (keys(%{$actcoef})) {
 		push(@{$actcoeffile},$key."\t".$actcoef->{$key});
 	}
-	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."Compounds.tbl",$BioCpd);
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."Reactions.tbl",$BioRxn);
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."Model.tbl",$mdlData);
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."ActivationCoefficients.txt",$actcoeffile);
@@ -1498,6 +1629,7 @@ sub createJobDirectory {
 	#Setting parameters
 	my $auxotrophy_data = Bio::KBase::constants::auxotrophy_thresholds();
 	my $parameters = {
+		"biomass variable" => "bio1",
 		"fit phenotype data" => 0,
 		"deltagslack" => 10,
 		"maximize active reactions" => 0,
@@ -1608,8 +1740,13 @@ sub createJobDirectory {
 	}
 	#Printing specialized bounds
 	my $mediaData = ["ID\tNAMES\tVARIABLES\tTYPES\tMAX\tMIN\tCOMPARTMENTS\tCONCENTRATIONS"];
+	$BioCpd->[0] .= "	CONCENTRATION	MINFLUX	MAXFLUX";
+	for (my $j=1; $j < @{$BioCpd}; $j++) {
+		$BioCpd->[$j] .= "\t0\t-100\t0";
+	}
 	my $cpdbnds = $self->FBACompoundBounds();
 	my $rxnbnds = $self->FBAReactionBounds();
+	my $first = 1;
 	foreach my $media (@{$medialist}) {
 		$media->parent($self->parent());
 		my $userBounds = {};
@@ -1628,6 +1765,16 @@ sub createJobDirectory {
 				min => $mediaCpds->[$i]->minFlux(),
 				conc => $mediaCpds->[$i]->concentration()
 			};
+			if ($first == 1) {
+				my $search = $cid."\t";
+				for (my $j=0; $j < @{$BioCpd}; $j++) {
+					if (index($BioCpd->[$j],$search) == 0) {
+						$BioCpd->[$j] =~ s/\t0\t-100\t0$//;
+						$BioCpd->[$j] .= "\t".$mediaCpds->[$i]->concentration()."\t".$mediaCpds->[$i]->minFlux()."\t".$mediaCpds->[$i]->maxFlux();
+						last;
+					}
+				}
+			}
 			if ($cmp ne "e") {
 				$exchangehash->{$cid}->{c} = [$mediaCpds->[$i]->minFlux(),$mediaCpds->[$i]->maxFlux()];
 			}
@@ -1646,13 +1793,16 @@ sub createJobDirectory {
 				$exchangehash->{$cpdbnds->[$i]->modelcompound()->id()}->{c} = [$cpdbnds->[$i]->lowerBound(),$cpdbnds->[$i]->upperBound()];
 			}
 		}
-		for (my $i=0; $i < @{$genelist}; $i++) {
-			$userBounds->{$genelist->[$i]}->{c}->{"DRAIN_FLUX"} = {
-				max => 1,
-				min => 1,
-				conc => 0
-			};
-		}	
+		if (defined($proteinvar)) {
+			foreach my $prot (keys(%{$proteinvar})) {
+				$userBounds->{$prot}->{"c"}->{"DRAIN_FLUX"} = {
+					max => $proteinvar->{$prot}->{max},
+					min => $proteinvar->{$prot}->{min},
+					conc => $proteinvar->{$prot}->{concentration}
+				};
+				$exchangehash->{$prot}->{c} = [$proteinvar->{$prot}->{min},$proteinvar->{$prot}->{max}];
+			}
+		}
 		for (my $i=0; $i < @{$modelbounds}; $i++) {
 			$userBounds->{$modelbounds->[$i]->{id}}->{c}->{$modelbounds->[$i]->{vartype}} = {
 				max => $modelbounds->[$i]->{upperbound},
@@ -1693,9 +1843,10 @@ sub createJobDirectory {
 			$newLine .= "\t\t\t\t\t";
 		}
 		push(@{$mediaData},$newLine);
+		$first = 0;
 	}
+	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."Compounds.tbl",$BioCpd);
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."media.tbl",$mediaData);
-	my $genereg = {};
 	if (defined($self->regulome_ref())) {
 		my $rmodel = $self->regulome();
 		my $regulons = $rmodel->regulons();
@@ -1714,6 +1865,16 @@ sub createJobDirectory {
 				for (my $m=0; $m < @{$tfs}; $m++) {
 					if ($tfs->[$m]->locus_tag() ne "RNA") {
 						$found = 1;
+						if (!defined($genehash->{$tfs->[$m]->locus_tag()})) {
+							$genehash->{$tfs->[$m]->locus_tag()} = {
+								id => $tfs->[$m]->locus_tag(),
+								concentration => 0.2,
+								turnover => 0.1,
+								kprime => 10,
+								kmcpd => ""
+							};
+							push(@{$genelist},$genehash->{$tfs->[$m]->locus_tag()});
+						}
 						for (my $n=0; $n < @{$effectors}; $n++) {
 							if ($effectors->[$n]->effector_class() =~ m/(.+)b$/) {
 								my $sign = $1;
@@ -1727,23 +1888,33 @@ sub createJobDirectory {
 								my $comp = $self->template()->searchForCompound($compname);
 								if (!defined($comp)) {
 									print STDERR "Could not find compound stimuli ".$compname."!\n";
-									$genereg->{$tfs->[$m]->locus_tag()}->{stimuli}->{$compname} = $sign;
+									$genehash->{$tfs->[$m]->locus_tag()}->{stimuli}->{$compname} = $sign;
 								} else {
-									$genereg->{$tfs->[$m]->locus_tag()}->{compounds}->{$comp->id()} = [$sign,$type];
+									$genehash->{$tfs->[$m]->locus_tag()}->{compounds}->{$comp->id()} = [$sign,$type];
 								}
 							} elsif ($effectors->[$n]->effector_class() =~ m/(.+)[a-z]$/) {
 								my $sign = $1;
-								$genereg->{$tfs->[$m]->locus_tag()}->{stimuli}->{$effectors->[$n]->effector_name()} = $sign;
+								$genehash->{$tfs->[$m]->locus_tag()}->{stimuli}->{$effectors->[$n]->effector_name()} = $sign;
 							}
 						}
 					}
 				}
 				for (my $k=0; $k < @{$genes}; $k++) {
+					if (!defined($genehash->{$genes->[$k]->locus_tag()})) {
+						$genehash->{$genes->[$k]->locus_tag()} = {
+							id => $genes->[$k]->locus_tag(),
+							concentration => 0.2,
+							turnover => 0.1,
+							kprime => 10,
+							kmcpd => ""
+						};
+						push(@{$genelist},$genehash->{$genes->[$k]->locus_tag()});
+					}
 					for (my $m=0; $m < @{$tfs}; $m++) {
 						if ($tfs->[$m]->locus_tag() eq "RNA") {
-							$genereg->{$genes->[$k]->locus_tag()}->{stimuli}->{$tfs->[$m]->locus_tag()} = $sign;
+							$genehash->{$genes->[$k]->locus_tag()}->{stimuli}->{$tfs->[$m]->locus_tag()} = $sign;
 						} else {
-							$genereg->{$genes->[$k]->locus_tag()}->{tfs}->{$tfs->[$m]->locus_tag()} = $sign;
+							$genehash->{$genes->[$k]->locus_tag()}->{tfs}->{$tfs->[$m]->locus_tag()} = $sign;
 						}
 					}
 					if ($found == 0) {
@@ -1760,13 +1931,13 @@ sub createJobDirectory {
 								my $comp = $self->template()->searchForCompound($compname);
 								if (!defined($comp)) {
 									print STDERR "Could not find compound stimuli ".$compname."!\n";
-									$genereg->{$genes->[$k]->locus_tag()}->{stimuli}->{$compname} = $esign*$sign;
+									$genehash->{$genes->[$k]->locus_tag()}->{stimuli}->{$compname} = $esign*$sign;
 								} else {
-									$genereg->{$genes->[$k]->locus_tag()}->{compounds}->{$comp->id()} = [$esign*$sign,$type];
+									$genehash->{$genes->[$k]->locus_tag()}->{compounds}->{$comp->id()} = [$esign*$sign,$type];
 								}
 							} elsif ($effectors->[$n]->effector_class() =~ m/(.+)[a-z]$/) {
 								my $esign = $1;
-								$genereg->{$genes->[$k]->locus_tag()}->{stimuli}->{$effectors->[$n]->effector_name()} = $esign*$sign;
+								$genehash->{$genes->[$k]->locus_tag()}->{stimuli}->{$effectors->[$n]->effector_name()} = $esign*$sign;
 							}
 						}
 					}	
@@ -1774,52 +1945,78 @@ sub createJobDirectory {
 			}
 		}
 	}
-	my $genedata = ["ID\tTFS\tSTIMULI\tCOMPOUNDS"];
-	if (keys(%{$genereg}) > 0) {
-		$parameters->{"gene list"} = join(";",keys(%{$genereg}));
-		foreach my $gene (keys(%{$genereg})) {
-			my $line = $gene."\t";
-			if (defined($genereg->{$gene}->{tfs})) {
-				my $item = "";
-				foreach my $stim (keys(%{$genereg->{$gene}->{tfs}})) {
-					if (length($item)) {
-						$item .= "|";
-					}
-					$item .= $stim.":".$genereg->{$gene}->{tfs}->{$stim}.":1";
-				}
-				$line .= $item;
-			}
-			$line .= "\t";
-			if (defined($genereg->{$gene}->{stimuli})) {
-				my $item = "";
-				foreach my $stim (keys(%{$genereg->{$gene}->{stimuli}})) {
-					if (length($item)) {
-						$item .= "|";
-					}
-					$item .= $stim.":".$genereg->{$gene}->{stimuli}->{$stim}.":1";
-				}
-				$line .= $item;
-			}
-			$line .= "\t";
-			if (defined($genereg->{$gene}->{compounds})) {
-				my $item = "";
-				foreach my $stim (keys(%{$genereg->{$gene}->{compounds}})) {
-					if (length($item)) {
-						$item .= "|";
-					}
-					$item .= $stim.":".$genereg->{$gene}->{compounds}->{$stim}->[0];
-					if ($genereg->{$gene}->{compounds}->{$stim}->[1] eq "standard") {
-						$item .= ":1:1:1";
-					} elsif ($genereg->{$gene}->{compounds}->{$stim}->[1] eq "stress") {
-						$item .= ":0.5:0:1";
-					} elsif ($genereg->{$gene}->{compounds}->{$stim}->[1] eq "extracellular") {
-						$item .= ":1:0:0";
-					}
-				}
-				$line .= $item;
-			}
-			push(@{$genedata},$line);
+	my $genedata = ["ID\tTFS\tSTIMULI\tCOMPOUNDS\tCONCENTRATION\tKPRIME\tTURNOVER\tKMCPD"];
+	$parameters->{"gene list"} = "";
+	for (my $i=0; $i < @{$genelist}; $i++) {
+		if (length($parameters->{"gene list"}) > 0) {
+			$parameters->{"gene list"} .= ";";
 		}
+		$parameters->{"gene list"} .= $genelist->[$i]->{id};
+		my $line = $genelist->[$i]->{id}."\t";
+		if (defined($genelist->[$i]->{tfs})) {
+			my $item = "";
+			foreach my $stim (keys(%{$genelist->[$i]->{tfs}})) {
+				if (length($item)) {
+					$item .= "|";
+				}
+				$item .= $stim.":".$genelist->[$i]->{tfs}->{$stim}.":1";
+			}
+			$line .= $item;
+		}
+		$line .= "\t";
+		if (defined($genelist->[$i]->{stimuli})) {
+			my $item = "";
+			foreach my $stim (keys(%{$genelist->[$i]->{stimuli}})) {
+				if (length($item)) {
+					$item .= "|";
+				}
+				$item .= $stim.":".$genelist->[$i]->{stimuli}->{$stim}.":1";
+			}
+			$line .= $item;
+		}
+		$line .= "\t";
+		if (defined($genelist->[$i]->{compounds})) {
+			my $item = "";
+			foreach my $stim (keys(%{$genelist->[$i]->{compounds}})) {
+				if (length($item)) {
+					$item .= "|";
+				}
+				$item .= $stim.":".$genelist->[$i]->{compounds}->{$stim}->[0];
+				if ($genelist->[$i]->{compounds}->{$stim}->[1] eq "standard") {
+					$item .= ":1:1:1";
+				} elsif ($genelist->[$i]->{compounds}->{$stim}->[1] eq "stress") {
+					$item .= ":0.5:0:1";
+				} elsif ($genelist->[$i]->{compounds}->{$stim}->[1] eq "extracellular") {
+					$item .= ":1:0:0";
+				}
+			}
+			$line .= $item;
+		}
+		$line .= "\t";
+		if (defined($genelist->[$i]->{concentration})) {
+			$line .= $genelist->[$i]->{concentration};
+		} else {
+			$line .= "1";
+		}
+		$line .= "\t";
+		if (defined($genelist->[$i]->{kprime})) {
+			$line .= $genelist->[$i]->{kprime};
+		} else {
+			$line .= "1";
+		}
+		$line .= "\t";
+		if (defined($genelist->[$i]->{turnover})) {
+			$line .= $genelist->[$i]->{turnover};
+		} else {
+			$line .= "1";
+		}
+		$line .= "\t";
+		if (defined($genelist->[$i]->{kmcpd})) {
+			$line .= $genelist->[$i]->{kmcpd};
+		} else {
+			$line .= "none";
+		}
+		push(@{$genedata},$line);
 	}
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file

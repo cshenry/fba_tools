@@ -247,6 +247,16 @@ sub util_build_fba {
 		}
 		$fbaobj->PrepareForGapfilling($input);
 	}
+	if (defined($params->{dynamic_fba}) && $params->{dynamic_fba} == 1) {
+		$fbaobj->parameters()->{"run dynamic FBA"} = 1;
+		$fbaobj->parameters()->{"Protein limit"} = $params->{protein_limit};
+		$fbaobj->parameters()->{"Protein prod limit"} = $params->{protein_prod_limit};
+		$fbaobj->parameters()->{"Time step"} = $params->{time_step};
+		$fbaobj->parameters()->{"Stop time"} = $params->{stop_time};
+		$fbaobj->parameters()->{"Initial biomass"} = $params->{initial_biomass};
+		$fbaobj->parameters()->{"Volume"} = $params->{volume};
+		$fbaobj->parameters()->{"protein formulation"} = $params->{protein_formulation};
+	}
 	if (defined($params->{save_fluxes})) {
 		$fbaobj->parameters()->{"save phenotype simulation fluxes"} = 1;
 	}
@@ -642,6 +652,79 @@ sub func_run_flux_balance_analysis {
 		new_fba_ref => util_get_ref($wsmeta),
 		objective => $objective
 	};
+}
+
+sub func_simulate_metabolite_production_consumption {
+#	my ($params,$model) = @_;
+#	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","fba_output_id"],{
+#		fbamodel_workspace => $params->{workspace},
+#		media_id => undef,
+#		media_workspace => $params->{workspace},
+#		target_reaction => "bio1",
+#		thermodynamic_constraints => 0,
+#		fva => 0,
+#		minimize_flux => 0,
+#		simulate_ko => 0,
+#		find_min_media => 0,
+#		all_reversible => 0,
+#		feature_ko_list => [],
+#		reaction_ko_list => [],
+#		custom_bound_list => [],
+#		media_supplement_list => [],
+#		max_c_uptake => undef,
+#		max_n_uptake => undef,
+#		max_p_uptake => undef,
+#		max_s_uptake => undef,
+#		max_o_uptake => undef,
+#		target_metabolite_list => [],
+#	});
+#	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
+#		if (length($params->{reaction_ko_list}) > 0) {
+#			$params->{reaction_ko_list} = [split(/,/,$params->{reaction_ko_list})];
+#		} else {
+#			 $params->{reaction_ko_list} = [];
+#		}
+#	}
+#	if (!defined($model)) {
+#		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+#		Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
+#	}
+#	if (!defined($params->{media_id})) {
+#		if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
+#			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_plant_media");
+#		} else {
+#			$params->{default_max_uptake} = 100;
+#			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_microbial_media");
+#		}
+#		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
+#	}
+#	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
+#	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
+#	#Simulating metabolite consumption
+#	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+#	$fba->parameters()->{"Target metabolite list"} = join(";",@{$params->{target_metabolite_list}});
+#	$fba->parameters()->{"Target metabolite list"} = join(";",@{$params->{target_metabolite_list}});
+#	local $SIG{ALRM} = sub { die "FBA timed out! Model likely contains numerical instability!" };
+#	alarm 86400;
+#	$objective = $fba->runFBA();
+#	$fba->toJSON({pp => 1});
+#	alarm 0;
+#	#Simulating metabolite production
+#	
+#	
+#	
+#	
+#	
+#	
+#	if (!defined($objective)) {
+#		Bio::KBase::utilities::error("FBA failed with no solution returned!");
+#	}
+#	$fba->id($params->{fba_output_id});
+#	my $wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{fba_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
+#	return {
+#		new_fba_ref => util_get_ref($wsmeta),
+#		objective => $objective
+#	};
 }
 
 sub func_compare_fba_solutions {
