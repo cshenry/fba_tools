@@ -403,12 +403,11 @@ class fba_tools(object):
         """
         Identifies reactions in the model that are not mass balanced
         :param params: instance of type "PredictAuxotrophyParams" ->
-           structure: parameter "genome_id" of type "genome_id" (A string
-           representing a Genome id.), parameter "media_output_id" of type
-           "media_id" (A string representing a Media id.), parameter
-           "genome_workspace" of type "workspace_name" (A string representing
-           a workspace name.), parameter "workspace" of type "workspace_name"
-           (A string representing a workspace name.)
+           structure: parameter "genome_ids" of list of type "genome_id" (A
+           string representing a Genome id.), parameter "genome_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "workspace" of type "workspace_name" (A string
+           representing a workspace name.)
         :returns: instance of type "PredictAuxotrophyResults" -> structure:
            parameter "new_report_ref" of type "ws_report_id" (The workspace
            ID for a Report object @id ws KBaseReport.Report)
@@ -565,7 +564,8 @@ class fba_tools(object):
         :param model: instance of type "ModelObjectSelectionParams" ->
            structure: parameter "workspace_name" of String, parameter
            "model_name" of String, parameter "save_to_shock" of type
-           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1)),
+           parameter "fulldb" of type "bool" (A binary boolean)
         :returns: instance of type "File" -> structure: parameter "path" of
            String, parameter "shock_id" of String
         """
@@ -578,7 +578,8 @@ class fba_tools(object):
         :param model: instance of type "ModelObjectSelectionParams" ->
            structure: parameter "workspace_name" of String, parameter
            "model_name" of String, parameter "save_to_shock" of type
-           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1)),
+           parameter "fulldb" of type "bool" (A binary boolean)
         :returns: instance of type "File" -> structure: parameter "path" of
            String, parameter "shock_id" of String
         """
@@ -591,7 +592,8 @@ class fba_tools(object):
         :param model: instance of type "ModelObjectSelectionParams" ->
            structure: parameter "workspace_name" of String, parameter
            "model_name" of String, parameter "save_to_shock" of type
-           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1)),
+           parameter "fulldb" of type "bool" (A binary boolean)
         :returns: instance of type "ModelTsvFiles" -> structure: parameter
            "compounds_file" of type "File" -> structure: parameter "path" of
            String, parameter "shock_id" of String, parameter "reactions_file"

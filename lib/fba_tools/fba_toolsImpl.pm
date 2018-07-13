@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.7.1';
-our $GIT_URL = 'git@github.com:cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = '287e65f90831e93836d44041b1011ca11af09c5b';
+our $VERSION = '1.7.5';
+our $GIT_URL = 'git@github.com:kbaseapps/fba_tools.git';
+our $GIT_COMMIT_HASH = '68247fe4d7a77cc59995e6d0a7cb74c449ff6b01';
 
 =head1 NAME
 
@@ -1780,12 +1780,10 @@ sub check_model_mass_balance
 $params is a fba_tools.PredictAuxotrophyParams
 $results is a fba_tools.PredictAuxotrophyResults
 PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
-	genome_id has a value which is a fba_tools.genome_id
-	media_output_id has a value which is a fba_tools.media_id
+	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 	genome_workspace has a value which is a fba_tools.workspace_name
 	workspace has a value which is a fba_tools.workspace_name
 genome_id is a string
-media_id is a string
 workspace_name is a string
 PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
 	new_report_ref has a value which is a fba_tools.ws_report_id
@@ -1800,12 +1798,10 @@ ws_report_id is a string
 $params is a fba_tools.PredictAuxotrophyParams
 $results is a fba_tools.PredictAuxotrophyResults
 PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
-	genome_id has a value which is a fba_tools.genome_id
-	media_output_id has a value which is a fba_tools.media_id
+	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 	genome_workspace has a value which is a fba_tools.workspace_name
 	workspace has a value which is a fba_tools.workspace_name
 genome_id is a string
-media_id is a string
 workspace_name is a string
 PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
 	new_report_ref has a value which is a fba_tools.ws_report_id
@@ -2609,7 +2605,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2626,7 +2624,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2701,7 +2701,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2718,7 +2720,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2789,7 +2793,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 ModelTsvFiles is a reference to a hash where the following keys are defined:
 	compounds_file has a value which is a fba_tools.File
 	reactions_file has a value which is a fba_tools.File
@@ -2809,7 +2815,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 ModelTsvFiles is a reference to a hash where the following keys are defined:
 	compounds_file has a value which is a fba_tools.File
 	reactions_file has a value which is a fba_tools.File
@@ -6540,8 +6548,7 @@ new_report_ref has a value which is a fba_tools.ws_report_id
 
 <pre>
 a reference to a hash where the following keys are defined:
-genome_id has a value which is a fba_tools.genome_id
-media_output_id has a value which is a fba_tools.media_id
+genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 genome_workspace has a value which is a fba_tools.workspace_name
 workspace has a value which is a fba_tools.workspace_name
 
@@ -6552,8 +6559,7 @@ workspace has a value which is a fba_tools.workspace_name
 =begin text
 
 a reference to a hash where the following keys are defined:
-genome_id has a value which is a fba_tools.genome_id
-media_output_id has a value which is a fba_tools.media_id
+genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 genome_workspace has a value which is a fba_tools.workspace_name
 workspace has a value which is a fba_tools.workspace_name
 
@@ -7092,6 +7098,7 @@ a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 model_name has a value which is a string
 save_to_shock has a value which is a fba_tools.boolean
+fulldb has a value which is a fba_tools.bool
 
 </pre>
 
@@ -7103,6 +7110,7 @@ a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 model_name has a value which is a string
 save_to_shock has a value which is a fba_tools.boolean
+fulldb has a value which is a fba_tools.bool
 
 
 =end text
