@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.7.5';
-our $GIT_URL = 'git@github.com:kbaseapps/fba_tools.git';
-our $GIT_COMMIT_HASH = '68247fe4d7a77cc59995e6d0a7cb74c449ff6b01';
+our $VERSION = '1.7.1';
+our $GIT_URL = 'git@github.com:cshenry/fba_tools.git';
+our $GIT_COMMIT_HASH = '287e65f90831e93836d44041b1011ca11af09c5b';
 
 =head1 NAME
 
