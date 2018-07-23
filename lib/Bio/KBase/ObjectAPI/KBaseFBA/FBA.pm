@@ -3545,16 +3545,16 @@ sub parseGapfillingOutput {
 			next if (@$row < 8);
 			my $array = [split(/;/,$row->[7])];
 			for (my $i=0; $i < @{$array}; $i++) {
-				if ($array->[$i] =~ m/([+\-])(.+)_([a-z])(\d+)/) {
-					my $ind = $4;
+				if ($array->[$i] =~ m/([+\-])(.+)_([a-z])(\d+)?/) {
+					my $ind = defined($4) ? $4 : 0;
 					my $dir = $1;
 					if ($dir eq "+") {
 						$dir = ">";
 					} else {
 						$dir = "<";
 					}
-					my $rxnref = "~/fbamodel/modelreactions/id/".$2."_".$3.$4;
-					my $rxn = $self->fbamodel()->searchForReaction($2."_".$3.$4);
+					my $rxnref = "~/fbamodel/modelreactions/id/".$2."_".$3.$ind;
+					my $rxn = $self->fbamodel()->searchForReaction($2."_".$3.$ind);
 					my $cmp = $self->fbamodel()->template()->searchForCompartment($3);
 					if (!defined($rxn)) {
 						$rxnref = "~/fbamodel/template/reactions/id/".$2."_".$3;
