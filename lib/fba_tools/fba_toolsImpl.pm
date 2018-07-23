@@ -1527,6 +1527,7 @@ sub view_flux_network
 		type => 'shock',
 		id => $json->{data}->{id}
 	});
+	my $report_name = $params->{fba_id} =~ s/\//-/gr.".view_flux_network.report";
 	my $meta = $self->util_save_object({
 		direct_html_link_index => 0,
 		html_window_height => undef,
@@ -1542,10 +1543,10 @@ sub view_flux_network
 		text_message => undef,
 		summary_window_height => undef,
 		objects_created => []
-	},Bio::KBase::utilities::buildref($params->{fba_id},$params->{workspace}).".view_flux_network.report",{hash => 1,type => "KBaseReport.Report"});
+	},Bio::KBase::utilities::buildref($report_name,$params->{workspace}),{hash => 1,type => "KBaseReport.Report", hidden => 1});
     $results = {
     	report_ref => $meta->[6]."/".$meta->[0]."/".$meta->[4],
-		report_name => $params->{fba_id}.".view_flux_network.report"
+		report_name => $report_name
     };
     #END view_flux_network
     my @_bad_returns;
@@ -1779,12 +1780,10 @@ sub check_model_mass_balance
 $params is a fba_tools.PredictAuxotrophyParams
 $results is a fba_tools.PredictAuxotrophyResults
 PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
-	genome_id has a value which is a fba_tools.genome_id
-	media_output_id has a value which is a fba_tools.media_id
+	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 	genome_workspace has a value which is a fba_tools.workspace_name
 	workspace has a value which is a fba_tools.workspace_name
 genome_id is a string
-media_id is a string
 workspace_name is a string
 PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
 	new_report_ref has a value which is a fba_tools.ws_report_id
@@ -1799,12 +1798,10 @@ ws_report_id is a string
 $params is a fba_tools.PredictAuxotrophyParams
 $results is a fba_tools.PredictAuxotrophyResults
 PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
-	genome_id has a value which is a fba_tools.genome_id
-	media_output_id has a value which is a fba_tools.media_id
+	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 	genome_workspace has a value which is a fba_tools.workspace_name
 	workspace has a value which is a fba_tools.workspace_name
 genome_id is a string
-media_id is a string
 workspace_name is a string
 PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
 	new_report_ref has a value which is a fba_tools.ws_report_id
@@ -2608,7 +2605,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2625,7 +2624,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2700,7 +2701,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2717,7 +2720,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2788,7 +2793,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 ModelTsvFiles is a reference to a hash where the following keys are defined:
 	compounds_file has a value which is a fba_tools.File
 	reactions_file has a value which is a fba_tools.File
@@ -2808,7 +2815,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 ModelTsvFiles is a reference to a hash where the following keys are defined:
 	compounds_file has a value which is a fba_tools.File
 	reactions_file has a value which is a fba_tools.File
@@ -6539,8 +6548,7 @@ new_report_ref has a value which is a fba_tools.ws_report_id
 
 <pre>
 a reference to a hash where the following keys are defined:
-genome_id has a value which is a fba_tools.genome_id
-media_output_id has a value which is a fba_tools.media_id
+genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 genome_workspace has a value which is a fba_tools.workspace_name
 workspace has a value which is a fba_tools.workspace_name
 
@@ -6551,8 +6559,7 @@ workspace has a value which is a fba_tools.workspace_name
 =begin text
 
 a reference to a hash where the following keys are defined:
-genome_id has a value which is a fba_tools.genome_id
-media_output_id has a value which is a fba_tools.media_id
+genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 genome_workspace has a value which is a fba_tools.workspace_name
 workspace has a value which is a fba_tools.workspace_name
 
@@ -7091,6 +7098,7 @@ a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 model_name has a value which is a string
 save_to_shock has a value which is a fba_tools.boolean
+fulldb has a value which is a fba_tools.bool
 
 </pre>
 
@@ -7102,6 +7110,7 @@ a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 model_name has a value which is a string
 save_to_shock has a value which is a fba_tools.boolean
+fulldb has a value which is a fba_tools.bool
 
 
 =end text

@@ -565,7 +565,9 @@ sub func_run_flux_balance_analysis {
 		notes => undef,
 		massbalance => undef,
 		sensitivity_analysis => 0,
-		predict_auxotrophy => 0
+		predict_auxotrophy => 0,
+		beachhead_metabolite_list => [],
+		target_metabolite_list => [],
 	});
 	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
 		if (length($params->{reaction_ko_list}) > 0) {
@@ -603,6 +605,8 @@ sub func_run_flux_balance_analysis {
 	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
 	$handler->util_log("Preparing flux balance analysis problem.");
 	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+	$fba->parameters()->{"Beachhead metabolite list"} = join(";",@{$params->{beachhead_metabolite_list}});
+	$fba->parameters()->{"Auxotrophy metabolite list"} = join(";",@{$params->{target_metabolite_list}});
 	if (defined($params->{mediaset_id})) {
 		$fba->mediaset_ref($params->{mediaset_workspace}."/".$params->{mediaset_id});
 	}

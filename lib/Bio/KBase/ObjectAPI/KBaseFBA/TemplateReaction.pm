@@ -311,48 +311,54 @@ sub compute_penalties {
 	}, @_);
 	my $thermopenalty = 0; 
 	my $coefficient = 1;
-	if (!defined($self->reaction()->getAlias("KEGG"))) {
-		$coefficient += $args->{no_KEGG_penalty};
-		$coefficient += $args->{no_KEGG_map_penalty};
-	} elsif (!defined(Bio::KBase::ObjectAPI::utilities::KEGGMapHash()->{$self->reaction()->id()})) {
-		$coefficient += $args->{no_KEGG_map_penalty};
+	my $rxnhash = Bio::KBase::utilities::reaction_hash();
+	my $id = "rxn00000";
+	if ($self->reaction_ref() =~ m/(rxn\d+)/) {
+		$id = $1;
 	}
-	if (!defined($self->deltaG()) || $self->deltaG() == 10000000) {
-		$coefficient += $args->{no_delta_G_penalty};
-		$thermopenalty += 1.5;
+	if (!defined($rxnhash->{$id})) {
+		$coefficient += $args->{no_KEGG_penalty} +
+			$args->{no_KEGG_map_penalty} +
+			$args->{no_delta_G_penalty} +
+			$args->{functional_role_penalty} +
+			$args->{subsystem_penalty} +
+			$args->{unknown_structure_penalty};
 	} else {
-		$thermopenalty += $self->deltaG()/10;
+		my $rxnobj = $rxnhash->{$id};
+		if (!defined($rxnobj->{deltag}) || $rxnobj->{deltag} == 10000000) {
+			$coefficient += $args->{no_delta_G_penalty}+$args->{unknown_structure_penalty};
+		}
+		if (!defined($rxnobj->{kegg_aliases})) {
+			$coefficient += $args->{no_KEGG_penalty};
+		}
+		if (!defined($rxnobj->{kegg_pathways})) {
+			$coefficient += $args->{no_KEGG_map_penalty};
+		}
+		if (!defined($rxnobj->{roles})) {
+			$coefficient += $args->{functional_role_penalty};
+		}
+		if (!defined($rxnobj->{subsystems})) {
+			$coefficient += $args->{subsystem_penalty};
+		}
+		if ($rxnobj->{status} ne "OK") {
+			$coefficient += $args->{unbalanced_penalty};
+		}
+		if ($rxnobj->{reversibility} eq ">") {
+			$self->forward_penalty(0);
+			$self->reverse_penalty($args->{direction_penalty}+$thermopenalty);
+		} elsif ($rxnobj->{reversibility} eq "<") {
+			$self->reverse_penalty(0);
+			$self->forward_penalty($args->{direction_penalty}+$thermopenalty);
+		} else {
+			$self->forward_penalty(0);
+			$self->reverse_penalty(0);
+		}
 	}
-	if (@{$self->complexs()} == 0) {
-		$coefficient += $args->{functional_role_penalty};
-		$coefficient += $args->{subsystem_penalty};
-	} elsif ($self->inSubsystem() == 1) {
-		$coefficient += $args->{subsystem_penalty};
-	}
-	if ($self->isTransport()) {
+	if ($self->isTransporter()) {
 		$coefficient += $args->{transporter_penalty};
-		if (@{$self->reaction()->reagents()} <= 2) {
+		if (@{$self->templateReactionReagents()} <= 2) {
 			$coefficient += $args->{single_compound_transporter_penalty};
 		}
-		if ($self->isBiomassTransporter() == 1) {
-			$coefficient += $args->{biomass_transporter_penalty};
-		}
-	}
-	if ($self->reaction()->unknownStructure()) {
-		$coefficient += $args->{unknown_structure_penalty};
-	}
-	if ($self->reaction()->status() =~ m/[CM]I/) {
-		$coefficient += $args->{unbalanced_penalty};
-	}
-	if ($self->reaction()->thermoReversibility() eq ">") {
-		$self->forward_penalty(0);
-		$self->reverse_penalty($args->{direction_penalty}+$thermopenalty);	
-	} elsif ($self->reaction()->thermoReversibility() eq "<") {
-		$self->reverse_penalty(0);
-		$self->forward_penalty($args->{direction_penalty}+$thermopenalty);
-	} else {
-		$self->forward_penalty(0);
-		$self->reverse_penalty(0);
 	}
 	$self->base_cost($coefficient);
 }

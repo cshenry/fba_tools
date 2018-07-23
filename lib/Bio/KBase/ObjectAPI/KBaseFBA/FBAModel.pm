@@ -1370,7 +1370,9 @@ sub add_gapfilling {
 	my $biomass_removals = $args->{object}->biomassRemovals();
 	my $brkeys = [keys(%{$biomass_removals})];
 	if (@{$brkeys} > 0) {
-		Bio::KBase::utilities::error("Gapfilling impossible without modifying biomass reaction!");
+		my $tbl = "<h3>Gapfilling was unable to find a solution using the chosen media.</h3>";
+		return Bio::KBase::utilities::gapfilling_html_table({message => $tbl,append => 0});
+		# Rest is of code block is skipped
 		my $biomass = "bio1";
 		if (!defined($biomass_removals->{bio1})) {
 			$biomass = $brkeys->[0];
@@ -1769,9 +1771,13 @@ sub merge_models {
 		#Adding genome, features, and roles to master mapping and annotation
 		my $mdlgenome = $model->genome();
 		my $prior_size = $genomeObj->dna_size();
-		$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
+		if (defined($mdlgenome->dna_size())) {
+			$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
+			if ($genomeObj->dna_size() > 0) {
+				$genomeObj->gc_content(($genomeObj->gc_content()*$prior_size+$mdlgenome->dna_size()*$mdlgenome->gc_content())/$genomeObj->dna_size());
+			}
+		}
 		$genomeObj->num_contigs($genomeObj->num_contigs()+$mdlgenome->num_contigs());
-		$genomeObj->gc_content(($genomeObj->gc_content()*$prior_size+$mdlgenome->dna_size()*$mdlgenome->gc_content())/$genomeObj->dna_size());
 		push(@{$genomeObj->{contig_lengths}},@{$mdlgenome->{contig_lengths}});
 		push(@{$genomeObj->{contig_ids}},@{$mdlgenome->{contig_ids}});	
 		print "Loading features\n";

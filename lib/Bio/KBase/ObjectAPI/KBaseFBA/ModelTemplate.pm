@@ -37,7 +37,7 @@ has biomassHash => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'm
 has roleSubsystemHash => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildroleSubsystemHash' );
 has compoundsByAlias => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcompoundsByAlias' );
 has reactionsByAlias => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildreactionsByAlias' );
-
+has roleSearchNameHash => ( is => 'rw', isa => 'HashRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildroleSearchNameHash' );
 has biochemistry_ref => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildbiochemistry_ref' );
 
 #***********************************************************************************************************
@@ -106,6 +106,23 @@ sub _buildreactionsByAlias {
 	return $rxnhash;
 }
 
+sub _buildroleSearchNameHash {
+	my ($self) = @_;
+	my $rolehash = {};
+	my $roles = $self->roles();
+	for (my $i=0; $i < @{$roles}; $i++) {
+		$rolehash->{$roles->[$i]->searchname()}->{$roles->[$i]->id()} = $roles->[$i];
+		my $aliases = $roles->[$i]->aliases();
+		for (my $j=0; $j < @{$aliases}; $j++) {
+			$aliases->[$j] =~ s/^kegg://;
+			$aliases->[$j] =~ s/^searchname://;
+			my $search_alias = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($aliases->[$j]);
+			$rolehash->{$search_alias}->{$roles->[$i]->id()} = $roles->[$i];
+		}
+	}
+	return $rolehash;
+}
+
 #***********************************************************************************************************
 # CONSTANTS:
 #***********************************************************************************************************
@@ -138,9 +155,24 @@ sub buildModel {
 	$mdl->genome($genome);
 	$mdl->_reference("~");
 	$mdl->parent($self->parent());
+	my $cds = [];
+	my $genes = [];
+	my $ftrs = $genome->features();
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		if (lc($ftrs->[$i]->type()) eq "cds") {
+			push(@{$cds},$ftrs->[$i]);
+		} elsif (lc($ftrs->[$i]->type()) ne "mrna") {
+			push(@{$genes},$ftrs->[$i]);
+		}
+	}
+	my $numcds = @{$cds};
+	my $numgenes = @{$genes};
+	if ($numcds >= 2*$numgenes) {
+		$genes = $cds;
+	}
 	$self->extend_model_from_features({
 		model => $mdl,
-		features => $genome->features()
+		features => $genes
 	});
 	my $bios = $self->biomasses();
 	for (my $i=0; $i < @{$bios}; $i++) {
@@ -180,9 +212,12 @@ sub extend_model_from_features {
 					print STDERR "Compartment ".$compartments->[$k]." not found!\n";
 				}
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($role);
-				my $roles = $self->searchForRoles($searchrole);
-				for (my $n=0; $n < @{$roles};$n++) {
-					push(@{$roleFeatures->{$roles->[$n]->id()}->{$abbrev}},$ftr);
+				if (defined($self->roleSearchNameHash()->{$searchrole})) {
+					foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
+						if ($self->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+							push(@{$roleFeatures->{$roleid}->{$abbrev}},$ftr);
+						}
+					}
 				}
 			}
 		}
@@ -221,9 +256,13 @@ sub buildModelFromFunctions {
 		my $searchrole = Bio::KBase::ObjectAPI::Utilities::GlobalFunctions::convertRoleToSearchRole($function);
 		my $subroles = [split(/;/,$searchrole)];
 		for (my $m=0; $m < @{$subroles}; $m++) {
-			my $roles = $self->searchForRoles($subroles->[$m]);
-			for (my $n=0; $n < @{$roles};$n++) {
-				$roleFeatures->{$roles->[$n]->_reference()}->{"c"}->[0] = "Role-based-annotation";
+			$searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($subroles->[$m]);
+			if (defined($self->roleSearchNameHash()->{$searchrole})) {
+				foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
+					if ($self->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+						$roleFeatures->{$roleid}->{"c"}->[0] = "Role-based-annotation";
+					}
+				}
 			}
 		}
 	}

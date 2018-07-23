@@ -732,6 +732,7 @@ sub createJobDirectory {
 	my $model = $self->fbamodel();
 	my $BioCpd = ["id	abbrev	charge	formula	mass	name	deltaG"];
 	my $mdlcpd = $model->modelcompounds();
+	my $mdlrxn = $model->modelreactions();
 	my $cpdhash = {};
 	for (my $i=0; $i < @{$mdlcpd}; $i++) {
 		my $cpd = $mdlcpd->[$i];
@@ -759,7 +760,6 @@ sub createJobDirectory {
 	my $rxnhash = {};
 	my $mdlData = ["REACTIONS","LOAD;DIRECTIONALITY;COMPARTMENT;ASSOCIATED PEG;COMPLEXES"];
 	my $BioRxn = ["id	abbrev	deltaG	deltaGErr	equation	name	reversibility	status	thermoReversibility"];
-	my $mdlrxn = $model->modelreactions();
 	my $compindecies = {};
 	my $comps = $model->modelcompartments();
 	for (my $i=0; $i < @{$comps}; $i++) {
@@ -918,6 +918,56 @@ sub createJobDirectory {
 				$equation =~ s/\(3\)\scpd00067_c0/(6) cpd00067_c0/g;
 			}
 			push(@{$BioRxn},$id."\t".$id."\t".$dg."\t".$dge."\t".$equation."\t".$id."\t".$rxndir."\t".$st."\t".$rxndir);
+		}
+	}
+	#Printing proteins for models
+	my $genelist = [];
+	if (defined($self->parameters()->{dynamic_protein_simulation}) && $self->parameters()->{dynamic_protein_simulation} == 1) {
+		my $genehash = {};
+		my $aa_trans = Bio::KBase::constants::aa_abbrev();
+		for (my $i=0; $i < @{$mdlrxn}; $i++) {
+			my $rxn = $mdlrxn->[$i];
+			my $prots = $rxn->modelReactionProteins();
+			for (my $j=0; $j < @{$prots}; $j++) {
+				my $subunits = $prots->[$j]->modelReactionProteinSubunits();
+				for (my $k=0; $k < @{$subunits}; $k++) {
+					my $ftrs = $subunits->[$k]->features();
+					for (my $m=0; $m < @{$ftrs}; $m++) {
+						if (!defined($genehash->{$ftrs->[$i]->id()})) {
+							my $gpr = $ftrs->[$i]->id();
+							$gpr =~ s/\|/___/g;
+							my $ind = 0;
+							$genehash->{$ftrs->[$i]->id()} = 1;
+							my $id = "prot_".$ftrs->[$i]->id()."_c".$ind;
+							$id = s/[\s^\W]//g;
+							push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
+							my $seq = $ftrs->[$i]->protein_translation();
+							my $en = length($seq);
+							my $aacost = "cpd00017_c".$ind;
+							foreach my $aa (keys(%{$aa_trans})) {
+								my $count = length($seq);
+								$seq =~ s/$aa//g;
+								my $lcaa = lc($aa);
+								$seq =~ s/$lcaa//g;
+								$count = $count - length($seq);
+								if ($aa == "M") {
+									$count--;
+								}
+								if ($count > 0) {
+									$aacost .= " + (".$count.") ".$aa_trans->{$aa};
+								}
+							}
+							push(@{$genelist},$id);
+							my $syn_eq = $aacost." (".$en.") cpd00002_c".$ind." + (".$en.") cpd00001_c".$ind." => (".$en.") cpd00008_c".$ind." + (".$en.") cpd00009_c".$ind." + (".$en.") cpd00067_c".$ind." + ".$id;
+							my $deg_eq = "(1) ".$id." => ".$aacost;
+							push(@{$BioRxn},"syn".$id."\t"."syn".$id."\t0\t0\t".$syn_eq."\tsyn".$id."\t=>\tOK\t=>");
+							push(@{$BioRxn},"deg".$id."\t"."deg".$id."\t0\t0\t".$deg_eq."\tdeg".$id."\t=>\tOK\t=>");
+							push(@{$mdlData},"syn".$id.";=>;c;".$gpr.";".$gpr);
+							push(@{$mdlData},"deg".$id.";=>;c;".$gpr.";".$gpr);
+						}
+					}
+				}
+			}
 		}
 	}
 	my $final_gauranteed = [];
@@ -1497,8 +1547,16 @@ sub createJobDirectory {
 	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00218/cpd00003/;
 	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00644/cpd00010/;
 	if (defined($self->parameters()->{"Perform auxotrophy analysis"}) && $self->parameters()->{"Perform auxotrophy analysis"} == 1) {
-		my $rxndata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","reaction auxotrophy data filename"))}));
-		$self->parameters()->{"KEGG reaction list"} = join("_c0;",keys(%{$rxndata}))."_c0";
+		my $corerxn = Bio::KBase::constants::core_reactions();
+		my $rxnlist = "";
+		for (my $i=0; $i < @{$corerxn}; $i++) {
+			if (length($rxnlist) > 0) {
+				$rxnlist .= "_c0;";
+			}
+			$rxnlist .= $corerxn->[$i]->[0];
+		}
+		$rxnlist .= "_c0";
+		$self->parameters()->{"KEGG reaction list"} = $rxnlist;
 	}
 	if (defined($self->{"fit phenotype data"})) {
 		$parameters->{"fit phenotype data"} = $self->{"fit phenotype data"};
@@ -1588,6 +1646,13 @@ sub createJobDirectory {
 				$exchangehash->{$cpdbnds->[$i]->modelcompound()->id()}->{c} = [$cpdbnds->[$i]->lowerBound(),$cpdbnds->[$i]->upperBound()];
 			}
 		}
+		for (my $i=0; $i < @{$genelist}; $i++) {
+			$userBounds->{$genelist->[$i]}->{c}->{"DRAIN_FLUX"} = {
+				max => 1,
+				min => 1,
+				conc => 0
+			};
+		}	
 		for (my $i=0; $i < @{$modelbounds}; $i++) {
 			$userBounds->{$modelbounds->[$i]->{id}}->{c}->{$modelbounds->[$i]->{vartype}} = {
 				max => $modelbounds->[$i]->{upperbound},
