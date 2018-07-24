@@ -2460,7 +2460,7 @@ sub translate_to_localrefs {
 		}
 		my $prots = $reactions->[$i]->modelReactionProteins();
     	for (my $j=0; $j < @{$prots}; $j++) {
-    		if ($prots->[$j]->complex_ref() =~ m/\/([^\/]+)$/) {
+    		if (defined($prots->[$j]->complex_ref()) && $prots->[$j]->complex_ref() =~ m/\/([^\/]+)$/) {
     			$prots->[$j]->complex_ref("~/template/complexes/name/".$1);
     		}
     		my $subunits = $prots->[$j]->modelReactionProteinSubunits();
