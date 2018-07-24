@@ -512,7 +512,10 @@ sub func_gapfill_metabolic_model {
 		$params->{gapfill_output_id} = $params->{fbamodel_output_id}.".".$gfid;
 	}
 	$fba->id($params->{gapfill_output_id});
-	my $wsmeta2 = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{gapfill_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
+	my $wsmeta2 = $handler->util_save_object($fba,
+						 Bio::KBase::utilities::buildref($params->{gapfill_output_id},
+										 $params->{workspace}),
+						 {type => "KBaseFBA.FBA", hidden => 1});
 	$htmlreport .= "</p>";
 	if ($printreport == 1) {
 		$htmlreport .= Bio::KBase::utilities::gapfilling_html_table()."</div>";
