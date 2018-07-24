@@ -811,7 +811,7 @@ sub printSBML {
 	push(@{$output},"\t\t<listOfUnits>");
 	push(@{$output},"\t\t\t<unit kind=\"mole\" scale=\"-3\"/>");
 	push(@{$output},"\t\t\t<unit kind=\"gram\" exponent=\"-1\"/>");
-	push(@{$output},"\t\t\t<unit kind=\"second\" multiplier=\".00027777\" exponent=\"-1\"/>");
+	push(@{$output},"\t\t\t<unit kind=\"second\" multiplier=\"3600\" scale=\"0\" exponent=\"-1\"/>");
 	push(@{$output},"\t\t</listOfUnits>");
 	push(@{$output},"\t</unitDefinition>");
 	push(@{$output},"</listOfUnitDefinitions>");
