@@ -17,6 +17,10 @@ has parent => (is => 'rw', isa => 'Ref', weak_ref => 1, type => 'parent', metacl
 has uuid => (is => 'rw', lazy => 1, isa => 'Str', type => 'msdata', metaclass => 'Typed',builder => '_build_uuid');
 has _reference => (is => 'rw', lazy => 1, isa => 'Str', type => 'msdata', metaclass => 'Typed',builder => '_build_reference');
 has compound_ref => (is => 'rw', isa => 'Str', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
+has id => (is => 'rw', isa => 'Str', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
+has name => (is => 'rw', isa => 'Str', printOrder => '0', default => '', type => 'attribute', metaclass => 'Typed');
+has smiles => (is => 'rw', isa => 'Str', printOrder => '0', default => '', type => 'attribute', metaclass => 'Typed');
+has inchikey => (is => 'rw', isa => 'Str', printOrder => '0', default => '', type => 'attribute', metaclass => 'Typed');
 has concentration => (is => 'rw', isa => 'Num', printOrder => '0', default => '0.001', type => 'attribute', metaclass => 'Typed');
 has maxFlux => (is => 'rw', isa => 'Num', printOrder => '0', default => '100', type => 'attribute', metaclass => 'Typed');
 has minFlux => (is => 'rw', isa => 'Num', printOrder => '0', default => '-100', type => 'attribute', metaclass => 'Typed');
@@ -50,6 +54,24 @@ my $attributes = [
             'perm' => 'rw'
           },
           {
+            'req' => 1,
+            'printOrder' => 0,
+            'name' => 'id',
+            'default' => undef,
+            'type' => 'Str',
+            'description' => undef,
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => 0,
+            'name' => 'name',
+            'default' => '',
+            'type' => 'Str',
+            'description' => undef,
+            'perm' => 'rw'
+          },
+          {
             'req' => 0,
             'printOrder' => 0,
             'name' => 'concentration',
@@ -75,10 +97,28 @@ my $attributes = [
             'type' => 'Num',
             'description' => undef,
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => 0,
+            'name' => 'smiles',
+            'default' => '',
+            'type' => 'Str',
+            'description' => undef,
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => 0,
+            'name' => 'inchikey',
+            'default' => '',,
+            'type' => 'Str',
+            'description' => undef,
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {compound_ref => 0, concentration => 1, maxFlux => 2, minFlux => 3};
+my $attribute_map = {compound_ref => 0, id => 1, name => 2, concentration => 3, maxFlux => 4, minFlux => 5, smiles => 6, inchikey => 7};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {
