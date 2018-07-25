@@ -238,10 +238,11 @@ sub buildModelFromFunctions {
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["functions","modelid"],{}, @_);
 	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		id => $args->{modelid},
-		source => Bio::KBase::ObjectAPI::utilities::source(),
+		source => "ModelSEED",
 		source_id => $args->{modelid},
 		type => $self->type(),
 		name => $args->{modelid},
+		genome_ref => "PlantSEED/Empty",
 		template_ref => $self->_reference(),
 		template_refs => [$self->_reference()],
 		gapfillings => [],
@@ -251,17 +252,19 @@ sub buildModelFromFunctions {
 		modelcompounds => [],
 		modelreactions => []
 	});
+	$mdl->_reference("~");
+	$mdl->parent($self->parent());
 	my $rxns = $self->reactions();
 	my $roleFeatures = {};
 	foreach my $function (keys(%{$args->{functions}})) {
-		my $searchrole = Bio::KBase::ObjectAPI::Utilities::GlobalFunctions::convertRoleToSearchRole($function);
+		my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function);
 		my $subroles = [split(/;/,$searchrole)];
 		for (my $m=0; $m < @{$subroles}; $m++) {
 			$searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($subroles->[$m]);
 			if (defined($self->roleSearchNameHash()->{$searchrole})) {
 				foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
 					if ($self->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
-						$roleFeatures->{$roleid}->{"c"}->[0] = "Role-based-annotation";
+						$roleFeatures->{$roleid}->{"c"}->[0] = "Role-based-annotation:".$args->{functions}->{$function};
 					}
 				}
 			}

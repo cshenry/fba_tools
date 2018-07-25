@@ -759,7 +759,7 @@ sub createJobDirectory {
 	my $additionalrxn = ["id\tdirection\ttag"];
 	my $rxnhash = {};
 	my $mdlData = ["REACTIONS","LOAD;DIRECTIONALITY;COMPARTMENT;ASSOCIATED PEG;COMPLEXES"];
-	my $BioRxn = ["id	abbrev	deltaG	deltaGErr	equation	name	reversibility	status	thermoReversibility	KPRIME	KMCPD	CONCENTRATION	TURNOVER"];
+	my $BioRxn = ["id\tabbrev\tdeltaG\tdeltaGErr\tequation\tname\treversibility\tstatus\tthermoReversibility\tKPRIME\tKMCPD\tCONCENTRATION\tTURNOVER\tPROBABILITY"];
 	my $compindecies = {};
 	my $comps = $model->modelcompartments();
 	for (my $i=0; $i < @{$comps}; $i++) {
@@ -818,7 +818,7 @@ sub createJobDirectory {
 						$reactants = "(0.0001) ".$reactants."_c".$index;
 						$equation = $reactants." ".$equation;
 					}
-					push(@{$BioRxn},$biomasses->[$i]->id()."_".$id."\t".$biomasses->[$i]->id()."\t0\t".$biocpds->[$j]->coefficient()."\t".$equation."\t".$biomasses->[$i]->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
+					push(@{$BioRxn},$biomasses->[$i]->id()."_".$id."\t".$biomasses->[$i]->id()."\t0\t".$biocpds->[$j]->coefficient()."\t".$equation."\t".$biomasses->[$i]->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1\t1");
 					if ($id !~ m/cpd11416_c\d+/) {
 						push(@{$additionalrxn},$biomasses->[$i]->id()."_".$id."\t>\tbiomasssupply");
 					}
@@ -833,26 +833,26 @@ sub createJobDirectory {
 		my $direction = $rxn->direction();
 		my $rxndir = "<=>";
 		if ($rxn->maxforflux() != 1000000 || $rxn->maxrevflux() != 1000000) {
-#			my $newbound = {
-#				id => $rxn->id(),
-#				vartype => "FLUX",
-#				upperbound => $rxn->maxforflux(),
-#				lowerbound => -1*$rxn->maxrevflux(),
-#				conc => 0.001
-#			};
-#			if ($rxn->maxforflux() == 1000000) {
-#				$newbound->{upperbound} = $self->defaultMaxFlux();
-#				if ($direction eq "<") {
-#					$newbound->{upperbound} = 0;
-#				}
-#			}
-#			if ($rxn->maxrevflux() == 1000000) {
-#				if ($direction eq ">") {
-#					$newbound->{lowerbound} = 0;
-#				}
-#				$newbound->{lowerbound} = -1*$self->defaultMaxFlux();
-#			}
-#			push(@{$modelbounds},$newbound);
+			my $newbound = {
+				id => $rxn->id(),
+				vartype => "FLUX",
+				upperbound => $rxn->maxforflux(),
+				lowerbound => -1*$rxn->maxrevflux(),
+				conc => 0.001
+			};
+			if ($rxn->maxforflux() == 1000000) {
+				$newbound->{upperbound} = $self->defaultMaxFlux();
+				if ($direction eq "<") {
+					$newbound->{upperbound} = 0;
+				}
+			}
+			if ($rxn->maxrevflux() == 1000000) {
+				if ($direction eq ">") {
+					$newbound->{lowerbound} = 0;
+				}
+				$newbound->{lowerbound} = -1*$self->defaultMaxFlux();
+			}
+			push(@{$modelbounds},$newbound);
 		}
 		if (defined($self->parameters()->{activate_all_model_reactions}) && $self->parameters()->{activate_all_model_reactions} == 1) {
 			$actcoef->{$rxn->id()} = 1;
@@ -917,7 +917,7 @@ sub createJobDirectory {
 				$equation =~ s/\(4\)\scpd00067_e0/(7) cpd00067_e0/g;
 				$equation =~ s/\(3\)\scpd00067_c0/(6) cpd00067_c0/g;
 			}
-			push(@{$BioRxn},$id."\t".$id."\t".$dg."\t".$dge."\t".$equation."\t".$id."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1");
+			push(@{$BioRxn},$id."\t".$id."\t".$dg."\t".$dge."\t".$equation."\t".$id."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1\t".$rxn->probability());
 		}
 	}
 	#Printing proteins for models
@@ -1021,8 +1021,8 @@ sub createJobDirectory {
 								push(@{$genelist},$geneobj);
 								my $syn_eq = $aacost." (".$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$en/$mw.") cpd00008_c0 + (".$en/$mw.") cpd00009_c0 + (".$en/$mw.") cpd00067_c0 + ".$id;
 								my $deg_eq = $id." => ".$aacost;
-								push(@{$BioRxn},"PSYN_".$gpr."\t"."PSYN_".$gpr."\t0\t0\t".$syn_eq."\tPSYN_".$gpr."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
-								push(@{$BioRxn},"PDEG_".$gpr."\t"."PDEG_".$gpr."\t0\t0\t".$deg_eq."\tPDEG_".$gpr."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
+								push(@{$BioRxn},"PSYN_".$gpr."\t"."PSYN_".$gpr."\t0\t0\t".$syn_eq."\tPSYN_".$gpr."\t=>\tOK\t=>\t1\tnone\t0.1\t1\t1");
+								push(@{$BioRxn},"PDEG_".$gpr."\t"."PDEG_".$gpr."\t0\t0\t".$deg_eq."\tPDEG_".$gpr."\t=>\tOK\t=>\t1\tnone\t0.1\t1\t1");
 								push(@{$mdlData},"PSYN_".$gpr.";=>;c;".$gpr.";".$gpr);
 								push(@{$mdlData},"PDEG_".$gpr.";=>;c;".$gpr.";".$gpr);
 							}
@@ -1088,15 +1088,15 @@ sub createJobDirectory {
 				};
 				my $syn_eq = $aacost." (".$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$en/$mw.") cpd00008_c0 + (".$en/$mw.") cpd00009_c0 + (".$en/$mw.") cpd00067_c0 + ".$id;
 				my $deg_eq = $id." => ".$aacost;
-				push(@{$BioRxn},"PSYN_".$rxn->id()."\t"."PSYN_".$rxn->id()."\t0\t0\t".$syn_eq."\tPSYN_".$rxn->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
-				push(@{$BioRxn},"PDEG_".$rxn->id()."\t"."PDEG_".$rxn->id()."\t0\t0\t".$deg_eq."\tPDEG_".$rxn->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1");
+				push(@{$BioRxn},"PSYN_".$rxn->id()."\t"."PSYN_".$rxn->id()."\t0\t0\t".$syn_eq."\tPSYN_".$rxn->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1\t1");
+				push(@{$BioRxn},"PDEG_".$rxn->id()."\t"."PDEG_".$rxn->id()."\t0\t0\t".$deg_eq."\tPDEG_".$rxn->id()."\t=>\tOK\t=>\t1\tnone\t0.1\t1\t1");
 				push(@{$mdlData},"PSYN_".$rxn->id().";=>;c;Unknown;Unknown");
 				push(@{$mdlData},"PDEG_".$rxn->id().";=>;c;Unknown;Unknown");
 				my $search = $rxn->id()."\t";
 				for (my $j=0; $j < @{$BioRxn}; $j++) {
 					if (index($BioRxn->[$j],$search) == 0) {
-						$BioRxn->[$j] =~ s/\t1\tnone\t0.1\t1$//;
-						$BioRxn->[$j] .= "\t".$kprime."\t".$kmcpd."\t".$conc."\t".$turnover;
+						$BioRxn->[$j] =~ s/\t1\tnone\t0.1\t1\t1$//;
+						$BioRxn->[$j] .= "\t".$kprime."\t".$kmcpd."\t".$conc."\t".$turnover."\t1";
 					}
 				}
 			}
@@ -1114,10 +1114,10 @@ sub createJobDirectory {
 		push(@{$additionalrxn},"ATPMaintenance\t=\tATPMAINT");
 		push(@{$additionalrxn},"EnergyBiomass\t=\tBiomassComp");
 		$gfcoef->{"EnergyBiomass"} = {"reverse" => 10,forward => 10,tag => "BiomassComp"};
-		push(@{$BioRxn},"SixATPSynth\tSixATPSynth\t0\t0\t(6) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + (5) cpd00067_c0[c] + cpd00001_c0[c]\tSixATPSynth\t<=>\tOK\t<=>\t1\tnone\t0.1\t1");
-		push(@{$BioRxn},"OneATPSynth\tOneATPSynth\t0\t0\t(1) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + cpd00001_c0[c]\tOneATPSynth\t<=>\tOK\t<=>\t1\tnone\t0.1\t1");
-		push(@{$BioRxn},"ATPMaintenance\tATPMaintenance\t0\t0\tcpd00002_c0[c] + cpd00001_c0[c] <=> cpd00067_c0[c] + cpd00008_c0[c] + cpd00009_c0[c]\tATPMaintenance\t=>\tOK\t=>\t1\tnone\t0.1\t1");
-		push(@{$BioRxn},"EnergyBiomass\tEnergyBiomass\t0\t0\tcpd00002_c0[b] + cpd00001_c0[b] <=> cpd00008_c0[b] + cpd00009_c0[b] + cpd00067_c0[b]\tEnergyBiomass\t<=>\tOK\t<=>\t1\tnone\t0.1\t1");
+		push(@{$BioRxn},"SixATPSynth\tSixATPSynth\t0\t0\t(6) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + (5) cpd00067_c0[c] + cpd00001_c0[c]\tSixATPSynth\t<=>\tOK\t<=>\t1\tnone\t0.1\t1\t1");
+		push(@{$BioRxn},"OneATPSynth\tOneATPSynth\t0\t0\t(1) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + cpd00001_c0[c]\tOneATPSynth\t<=>\tOK\t<=>\t1\tnone\t0.1\t1\t1");
+		push(@{$BioRxn},"ATPMaintenance\tATPMaintenance\t0\t0\tcpd00002_c0[c] + cpd00001_c0[c] <=> cpd00067_c0[c] + cpd00008_c0[c] + cpd00009_c0[c]\tATPMaintenance\t=>\tOK\t=>\t1\tnone\t0.1\t1\t1");
+		push(@{$BioRxn},"EnergyBiomass\tEnergyBiomass\t0\t0\tcpd00002_c0[b] + cpd00001_c0[b] <=> cpd00008_c0[b] + cpd00009_c0[b] + cpd00067_c0[b]\tEnergyBiomass\t<=>\tOK\t<=>\t1\tnone\t0.1\t1\t1");
 		my $comprxn = {};
 		foreach my $cpd (@{$biocpds}) {
 			if ($cpd->coefficient() > 0) {
@@ -1190,7 +1190,7 @@ sub createJobDirectory {
 			}
 			push(@{$additionalrxn},$component."Biomass\t=\tBiomassComp");
 			$gfcoef->{$component."Biomass"} = {"reverse" => 10,forward => 10,tag => "BiomassComp"};
-			push(@{$BioRxn},$component."Biomass\t".$component."Biomass\t0\t0\t".$reactant." <=> ".$product."\t".$component."Biomass\t<=>\tOK\t<=>\t1\tnone\t0.1\t1");
+			push(@{$BioRxn},$component."Biomass\t".$component."Biomass\t0\t0\t".$reactant." <=> ".$product."\t".$component."Biomass\t<=>\tOK\t<=>\t1\tnone\t0.1\t1\t1");
 		}
 		$self->parameters()->{"Biomass component coefficients"} = $biomasscomps;
 		$self->parameters()->{"quantitative optimization"} = 1;
@@ -1286,7 +1286,7 @@ sub createJobDirectory {
 					if (defined($tmprxn->status())) {
 						$st = $tmprxn->status();
 					}		
-					push(@{$BioRxn},$tmpid."\t".$tmpid."\t".$dg."\t".$dge."\t".$equation."\t".$tmpid."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1");
+					push(@{$BioRxn},$tmpid."\t".$tmpid."\t".$dg."\t".$dge."\t".$equation."\t".$tmpid."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1\t0");
 				}
 			}
 		}
@@ -1416,7 +1416,7 @@ sub createJobDirectory {
 							if (defined($rxn->reaction()->status())) {
 								$st = $rxn->reaction()->status();
 							}
-							push(@{$BioRxn},$trueid."\t".$trueid."\t".$dg."\t".$dge."\t".$equation."\t".$trueid."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1");
+							push(@{$BioRxn},$trueid."\t".$trueid."\t".$dg."\t".$dge."\t".$equation."\t".$trueid."\t".$rxndir."\t".$st."\t".$rxndir."\t1\tnone\t0.1\t1\t0");
 						}
 					}
 				}
@@ -1487,7 +1487,7 @@ sub createJobDirectory {
 			}
 		}
 		my $equation = $reactants." => ".$products;
-		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$equation."\tBiomass\t=>\tOK\t=>\t1\tnone\t0.1\t1";
+		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$equation."\tBiomass\t=>\tOK\t=>\t1\tnone\t0.1\t1\t1";
 		push(@{$BioRxn},$rxnline);
 	}
 	my $gfcoefficients = ["Reaction\tDirection\tCoefficient\tTag"];
@@ -2613,6 +2613,7 @@ sub loadMFAToolkitResults {
 	$self->parseReactionMinimization();
 	$self->parseMFALog();
 	$self->parseAuxotrophyResults();
+	$self->parseMetaboliteInteraction();
 }
 
 =head3 parseAuxotrophyResults
@@ -3274,6 +3275,22 @@ sub parseCombinatorialDeletionResults {
 		return 1;
 	}
 	return 0;
+}
+
+=head3 parseMetaboliteInteraction
+Definition:
+	void ModelSEED::MS::Model->parseMetaboliteInteraction();
+Description:
+	Parse metabolite production results
+
+=cut
+
+sub parseMetaboliteInteraction {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MFAOutput/MetaboliteProductionResults.txt") {
+		$self->outputfiles()->{MetaboliteProductionResults} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/MetaboliteProductionResults.txt");
+	}
 }
 
 =head3 parseFVAResults

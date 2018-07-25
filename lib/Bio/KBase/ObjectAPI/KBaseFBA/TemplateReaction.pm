@@ -391,9 +391,19 @@ sub addRxnToModel {
 					$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
 					if (!defined($roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0])) {
 						$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
+						$subunits->{$cpxrole->templaterole()->name()}->{probability} = 0;
 					} else {
 						foreach my $feature (@{$roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}}) {
-							$subunits->{$cpxrole->templaterole()->name()}->{genes}->{"~/genome/features/id/".$feature->id()} = $feature;	
+							if ($feature eq "Role-based-annotation") {
+								$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
+								$subunits->{$cpxrole->templaterole()->name()}->{probability} = 1;
+							} elsif ($feature =~ m/Role-based-annotation:(.+)/) {
+								$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
+								$subunits->{$cpxrole->templaterole()->name()}->{probability} = $1;
+							} else {
+								$subunits->{$cpxrole->templaterole()->name()}->{probability} = 1;
+								$subunits->{$cpxrole->templaterole()->name()}->{genes}->{"~/genome/features/id/".$feature->id()} = $feature;	
+							}
 						}
 					}
 				}
@@ -406,52 +416,68 @@ sub addRxnToModel {
 					$subunits->{$cpxrole->templaterole()->name()}->{triggering} = $cpxrole->triggering();
 					$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
 					$subunits->{$cpxrole->templaterole()->name()}->{note} = "Complex-based-gapfilling";
+					$subunits->{$cpxrole->templaterole()->name()}->{probability} = 0;
 				}
 			}
-			push(@{$proteins},{subunits => $subunits,cpx => $cpx});
+			my $proteinprobability = 0;
+			my $numsubunits = keys(%{$subunits});
+			foreach my $key (keys(%{$subunits})) {
+				$proteinprobability += $subunits->{$key}->{probability};
+			}
+			$proteinprobability = $proteinprobability/$numsubunits;
+			push(@{$proteins},{probability => $proteinprobability,subunits => $subunits,cpx => $cpx});
 		}
 	}
 	#Adding reaction
 	if (@{$proteins} == 0 && $self->type() ne "universal" && $self->type() ne "spontaneous" && $args->{fulldb} == 0) {
 		return;
 	}
+	my $rxnprobability = 1;
+	if (@{$proteins} > 0) {
+		$rxnprobability = 0;
+		my $numprots = @{$proteins};
+		for (my $i=0; $i < @{$proteins}; $i++) {
+			$rxnprobability += $proteins->[$i]->{probability};
+		}
+		$rxnprobability = $rxnprobability/$numprots;
+	}
     my $mdlcmp = $mdl->addCompartmentToModel({compartment => $self->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
     my $mdlrxn = $mdl->getObject("modelreactions", $self->msid()."_".$mdlcmp->id());
     if(!$mdlrxn){
-	$mdlrxn = $mdl->add("modelreactions",{
-		id => $self->msid()."_".$mdlcmp->id(),
-		probability => 0,
-		reaction_ref => "~/template/reactions/id/".$self->id(),
-		direction => $self->direction(),
-		modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
-		modelReactionReagents => [],
-		modelReactionProteins => []
-	});
-	my $rgts = $self->templateReactionReagents();
-	for (my $i=0; $i < @{$rgts}; $i++) {
-		my $rgt = $rgts->[$i];
-		my $rgtcmp = $mdl->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
-		my $coefficient = $rgt->coefficient();
-		my $mdlcpd = $mdl->addCompoundToModel({
-			compound => $rgt->templatecompcompound()->templatecompound(),
-			modelCompartment => $rgtcmp,
+		$mdlrxn = $mdl->add("modelreactions",{
+			id => $self->msid()."_".$mdlcmp->id(),
+			probability => $rxnprobability,
+			reaction_ref => "~/template/reactions/id/".$self->id(),
+			direction => $self->direction(),
+			modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
+			modelReactionReagents => [],
+			modelReactionProteins => []
 		});
-		$mdlrxn->addReagentToReaction({
-			coefficient => $coefficient,
-			modelcompound_ref => "~/modelcompounds/id/".$mdlcpd->id()
-		});
-	}
+		my $rgts = $self->templateReactionReagents();
+		for (my $i=0; $i < @{$rgts}; $i++) {
+			my $rgt = $rgts->[$i];
+			my $rgtcmp = $mdl->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
+			my $coefficient = $rgt->coefficient();
+			my $mdlcpd = $mdl->addCompoundToModel({
+				compound => $rgt->templatecompcompound()->templatecompound(),
+				modelCompartment => $rgtcmp,
+			});
+			$mdlrxn->addReagentToReaction({
+				coefficient => $coefficient,
+				modelcompound_ref => "~/modelcompounds/id/".$mdlcpd->id()
+			});
+		}
     }
     if (@{$proteins} > 0 && scalar(@{$mdlrxn->modelReactionProteins()})==0) {
 		foreach my $protein (@{$proteins}) {
-	    	$mdlrxn->addModelReactionProtein({
+	    		$mdlrxn->addModelReactionProtein({
 				proteinDataTree => $protein,
 				complex_ref => "~/template/complexes/id/".$protein->{cpx}->id()
 			});
 		}
     } elsif (scalar(@{$mdlrxn->modelReactionProteins()})==0) {
 		$mdlrxn->addModelReactionProtein({
-	    	proteinDataTree => {note => $self->type()},
+	    		proteinDataTree => {note => $self->type()},
 		});
     }
     return $mdlrxn;
