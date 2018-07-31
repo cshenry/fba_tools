@@ -17,7 +17,7 @@ has parent => (is => 'rw', isa => 'Ref', weak_ref => 1, type => 'parent', metacl
 has uuid => (is => 'rw', lazy => 1, isa => 'Str', type => 'msdata', metaclass => 'Typed',builder => '_build_uuid');
 has _reference => (is => 'rw', lazy => 1, isa => 'Str', type => 'msdata', metaclass => 'Typed',builder => '_build_reference');
 has compound_ref => (is => 'rw', isa => 'Str', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
-has id => (is => 'rw', isa => 'Str', printOrder => '0', 'default' => 'cpd00000', type => 'attribute', metaclass => 'Typed');
+has id => (is => 'rw', isa => 'Str', printOrder => '0', builder => '_build_id', type => 'attribute', metaclass => 'Typed');
 has name => (is => 'rw', isa => 'Str', printOrder => '0', default => '', type => 'attribute', metaclass => 'Typed');
 has smiles => (is => 'rw', isa => 'Str', printOrder => '0', default => '', type => 'attribute', metaclass => 'Typed');
 has inchikey => (is => 'rw', isa => 'Str', printOrder => '0', default => '', type => 'attribute', metaclass => 'Typed');
@@ -31,6 +31,13 @@ has compound => (is => 'rw', type => 'link(Biochemistry,compounds,compound_ref)'
 
 
 # BUILDERS:
+sub _build_id {
+	 my ($self) = @_;
+	 my $ref = $self->compound_ref();
+	 $ref =~ s/.+\///g;
+	 return $ref;
+}
+
 sub _build_compound {
 	 my ($self) = @_;
 	 return $self->getLinkedObject($self->compound_ref());
