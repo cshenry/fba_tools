@@ -399,7 +399,7 @@ sub save_objects {
 			my $objdata = {
 				provenance => Bio::KBase::utilities::provenance()
 			};
-			if (defined(x->{hash}) && $obj->{hash} == 1) {
+			if (defined($obj->{hash}) && $obj->{hash} == 1) {
 				$objdata->{type} = $obj->{type};
 				$objdata->{data} = $obj->{object};
 			} else {
