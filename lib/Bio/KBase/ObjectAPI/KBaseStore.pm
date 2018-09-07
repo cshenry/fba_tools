@@ -189,12 +189,13 @@ sub process_object {
 			require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
 			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
 			my $gaoutput = $ga->get_genome_v1({
-				genomes => [{
+				genomes       => [ {
 					"ref" => $origref
-				}],
+				} ],
 				ignore_errors => 1,
-				no_data => 0,
-				no_metadata => 1
+				no_data       => 0,
+				no_metadata   => 1,
+				no_merge      => 1,
 			});
 			$data = $gaoutput->{genomes}->[0]->{data};
 			$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
