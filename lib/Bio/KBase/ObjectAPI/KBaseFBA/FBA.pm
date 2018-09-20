@@ -730,7 +730,7 @@ sub createJobDirectory {
 	my $exchangehash;
 	#Print model to Model.tbl
 	my $model = $self->fbamodel();
-	my $BioCpd = ["id	abbrev	charge	formula	mass	name	deltaG"];
+	my $BioCpd = ["id\tabbrev\tcharge\tformula\tmass\tname\tdeltaG"];
 	my $mdlcpd = $model->modelcompounds();
 	my $mdlrxn = $model->modelreactions();
 	my $cpdhash = {};
@@ -758,8 +758,8 @@ sub createJobDirectory {
 	my $gfcoef = {};
 	my $additionalrxn = ["id\tdirection\ttag"];
 	my $rxnhash = {};
-	my $mdlData = ["REACTIONS","LOAD;DIRECTIONALITY;COMPARTMENT;ASSOCIATED PEG;COMPLEXES"];
-	my $BioRxn = ["id	abbrev	deltaG	deltaGErr	equation	name	reversibility	status	thermoReversibility"];
+	my $mdlData = ["REACTIONS","LOAD;DIRECTIONALITY;COMPARTMENT;ASSOCIATED PEG;COMPLEXES;PROBABILITY"];
+	my $BioRxn = ["id\tabbrev\tdeltaG\tdeltaGErr\tequation\tname\treversibility\tstatus\tthermoReversibility"];
 	my $compindecies = {};
 	my $comps = $model->modelcompartments();
 	for (my $i=0; $i < @{$comps}; $i++) {
@@ -876,7 +876,13 @@ sub createJobDirectory {
 		}
 		my $id = $rxn->id();
 		my $name = $rxn->name();
-		my $line = $id.";".$rxndir.";c;".$rxn->gprString().";".$rxn->complexString();
+		#Making sure probability is zero for gapfilled reactions
+		if ($rxn->gprString() eq "Unknown" && $rxn->probability() == 1) {
+			$rxn->probability(0);
+		} elsif ($rxn->gprString() ne "Unknown" && $rxn->probability() == 0) {
+			$rxn->probability(1);
+		}
+		my $line = $id.";".$rxndir.";c;".$rxn->gprString().";".$rxn->complexString().";".$rxn->probability();
 		$line =~ s/\|/___/g;
 		push(@{$mdlData},$line);
 		if (!defined($rxnhash->{$id})) {
@@ -962,8 +968,8 @@ sub createJobDirectory {
 							my $deg_eq = "(1) ".$id." => ".$aacost;
 							push(@{$BioRxn},"syn".$id."\t"."syn".$id."\t0\t0\t".$syn_eq."\tsyn".$id."\t=>\tOK\t=>");
 							push(@{$BioRxn},"deg".$id."\t"."deg".$id."\t0\t0\t".$deg_eq."\tdeg".$id."\t=>\tOK\t=>");
-							push(@{$mdlData},"syn".$id.";=>;c;".$gpr.";".$gpr);
-							push(@{$mdlData},"deg".$id.";=>;c;".$gpr.";".$gpr);
+							push(@{$mdlData},"syn".$id.";=>;c;".$gpr.";".$gpr.";1");
+							push(@{$mdlData},"deg".$id.";=>;c;".$gpr.";".$gpr.";1");
 						}
 					}
 				}
@@ -1324,7 +1330,7 @@ sub createJobDirectory {
 	}
 	for (my $i=0; $i < @{$biomasses}; $i++) {
 		my $bio = $biomasses->[$i];
-		push(@{$mdlData},$bio->id().";=>;c;UNIVERSAL");
+		push(@{$mdlData},$bio->id().";=>;c;UNIVERSAL;;1");
 		my $reactants = "";
 		my $products = "";
 		my $rgts = $bio->biomasscompounds();
@@ -1496,7 +1502,12 @@ sub createJobDirectory {
 		$optMetabolite = 0;
 	}
 	#Setting parameters
-	my $auxotrophy_data = Bio::KBase::constants::auxotrophy_thresholds();
+	if (defined($self->parameters()->{"Metabolite production analysis"}) && $self->parameters()->{"Metabolite production analysis"} eq "1") {
+		$self->decomposeReversibleFlux(1);
+	}
+	if (defined($self->parameters()->{"Metabolite consumption analysis"}) && $self->parameters()->{"Metabolite consumption analysis"} eq "1") {
+		$self->decomposeReversibleFlux(1);
+	}
 	my $parameters = {
 		"fit phenotype data" => 0,
 		"deltagslack" => 10,
@@ -1538,26 +1549,7 @@ sub createJobDirectory {
 		"database root input directory" => $self->jobDirectory()."/",
 		"Min flux multiplier" => 1,
 		"Max deltaG" => 10000,
-		"Auxotrophy metabolite list" => join("_c0;",keys(%{$auxotrophy_data}))."_c0;-cpd15666_c0;-cpd01997_c0;-cpd03422_c0"
 	};
-	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00393/cpd00345/;
-	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00220/cpd00015/;
-	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00305/cpd00056/;
-	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00215/cpd00016/;
-	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00218/cpd00003/;
-	$parameters->{"Auxotrophy metabolite list"} =~ s/cpd00644/cpd00010/;
-	if (defined($self->parameters()->{"Perform auxotrophy analysis"}) && $self->parameters()->{"Perform auxotrophy analysis"} == 1) {
-		my $corerxn = Bio::KBase::constants::core_reactions();
-		my $rxnlist = "";
-		for (my $i=0; $i < @{$corerxn}; $i++) {
-			if (length($rxnlist) > 0) {
-				$rxnlist .= "_c0;";
-			}
-			$rxnlist .= $corerxn->[$i]->[0];
-		}
-		$rxnlist .= "_c0";
-		$self->parameters()->{"KEGG reaction list"} = $rxnlist;
-	}
 	if (defined($self->{"fit phenotype data"})) {
 		$parameters->{"fit phenotype data"} = $self->{"fit phenotype data"};
 	}
@@ -2415,46 +2407,8 @@ sub loadMFAToolkitResults {
 	$self->parseOutputFiles();
 	$self->parseReactionMinimization();
 	$self->parseMFALog();
-	$self->parseAuxotrophyResults();
+	$self->parseMetaboliteInteraction();
 }
-
-=head3 parseAuxotrophyResults
-Definition:
-	void FBA->parseAuxotrophyResults();
-Description:
-	Parses auxotrophy analysis results file
-
-=cut
-
-sub parseAuxotrophyResults {
-	my ($self) = @_;
-	my $directory = $self->jobDirectory();
-	if (-e $directory."/MFAOutput/AuxotrophyReactions.txt") {
-		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/MFAOutput/AuxotrophyReactions.txt","\t");
-		$self->{auxotrophy_data} = {};
-		foreach my $row (@{$tbl->{data}}) {
-			if (defined($row->[0])) {
-				$row->[0] =~ s/cpd00345/cpd00393/;
-				$row->[0] =~ s/cpd00015/cpd00220/;
-				$row->[0] =~ s/cpd00056/cpd00305/;
-				$row->[0] =~ s/cpd00016/cpd00215/;
-				$row->[0] =~ s/cpd00003/cpd00218/;
-				$row->[0] =~ s/cpd00010/cpd00644/;
-				$self->{auxotrophy_data}->{cpds}->{$row->[0]} = [split(/;/,$row->[1])];
-				pop(@{$self->{auxotrophy_data}->{cpds}->{$row->[0]}});
-			}
-		}
-		foreach my $cpd (keys(%{$self->{auxotrophy_data}->{cpds}})) {
-			for (my $i=0; $i < @{$self->{auxotrophy_data}->{cpds}->{$cpd}}; $i++) {
-				$self->{auxotrophy_data}->{rxns}->{$self->{auxotrophy_data}->{cpds}->{$cpd}->[$i]}->{$cpd} = 1;
-			}
-		}
-		return 1;
-	}
-	return 0;
-}
-
-
 
 =head3 parseBiomassRemovals
 Definition:
@@ -2923,6 +2877,22 @@ sub parseMetaboliteProduction {
 		return 1;
 	}
 	return 0;
+}
+
+=head3 parseMetaboliteInteraction
+Definition:
+	void ModelSEED::MS::Model->parseMetaboliteInteraction();
+Description:
+	Parse metabolite production results
+
+=cut
+
+sub parseMetaboliteInteraction {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MFAOutput/MetaboliteProductionResults.txt") {
+		$self->outputfiles()->{MetaboliteProductionResults} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/MetaboliteProductionResults.txt");
+	}
 }
 
 =head3 parseProblemReport

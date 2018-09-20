@@ -532,7 +532,7 @@ sub func_gapfill_metabolic_model {
 }
 
 sub func_run_flux_balance_analysis {
-	my ($params,$model) = @_;
+	my ($params,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","fba_output_id"],{
 		fbamodel_workspace => $params->{workspace},
 		mediaset_id => undef,
@@ -568,8 +568,9 @@ sub func_run_flux_balance_analysis {
 		notes => undef,
 		massbalance => undef,
 		sensitivity_analysis => 0,
-		predict_auxotrophy => 0,
-		beachhead_metabolite_list => [],
+		metabolite_production_analysis => 0,
+		metabolite_consumption_analysis => 0,
+		source_metabolite_list => [],
 		target_metabolite_list => [],
 	});
 	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
@@ -579,7 +580,10 @@ sub func_run_flux_balance_analysis {
 			 $params->{reaction_ko_list} = [];
 		}
 	}
-	if (!defined($model)) {
+	my $model;
+	if (defined($datachannel->{fbamodel})) {
+		$model = $datachannel->{fbamodel};
+	} else {
 		$handler->util_log("Retrieving model.");
 		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 		Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
@@ -608,8 +612,10 @@ sub func_run_flux_balance_analysis {
 	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
 	$handler->util_log("Preparing flux balance analysis problem.");
 	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
-	$fba->parameters()->{"Beachhead metabolite list"} = join(";",@{$params->{beachhead_metabolite_list}});
-	$fba->parameters()->{"Auxotrophy metabolite list"} = join(";",@{$params->{target_metabolite_list}});
+	$fba->parameters()->{"Source metabolite list"} = join(";",@{$params->{source_metabolite_list}});
+	$fba->parameters()->{"Target metabolite list"} = join(";",@{$params->{target_metabolite_list}});
+	$fba->parameters()->{"Metabolite production analysis"} = $params->{metabolite_production_analysis};
+	$fba->parameters()->{"Metabolite consumption analysis"} = $params->{metabolite_consumption_analysis};
 	if (defined($params->{mediaset_id})) {
 		$fba->mediaset_ref($params->{mediaset_workspace}."/".$params->{mediaset_id});
 	}
@@ -641,6 +647,7 @@ sub func_run_flux_balance_analysis {
 	$handler->util_log("Saving FBA results.");
 	$fba->id($params->{fba_output_id});
 	my $wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{fba_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
+	$datachannel->{fba} = $fba;
 	return {
 		new_fba_ref => util_get_ref($wsmeta),
 		objective => $objective

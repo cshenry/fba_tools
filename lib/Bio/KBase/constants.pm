@@ -250,11 +250,11 @@ sub auxotrophy_thresholds {
 		cpd00156 => [4,3,29,"L-Valine"],
 		cpd00322 => [9,3,28,"L-Isoleucine"],
 		cpd00107 => [9,3,27,"L-Leucine"],
-		cpd00035 => [7,3,26,"L-Alanine"],
-		cpd00041 => [7,3,25,"L-Aspartate"],
+#		cpd00035 => [7,3,26,"L-Alanine"],
+#		cpd00041 => [7,3,25,"L-Aspartate"],
 		cpd00132 => [9,3,24,"L-Asparagine"],
-		cpd00023 => [8,3,23,"L-Glutamate"],
-		cpd00053 => [9,3,22,"L-Glutamine"],
+#		cpd00023 => [8,3,23,"L-Glutamate"],
+#		cpd00053 => [9,3,22,"L-Glutamine"],
 		cpd00054 => [9,3,21,"L-Serine"],
 		cpd00161 => [7,3,20,"L-Threonine"],
 		cpd00033 => [6,3,19,"Glycine"],
@@ -269,12 +269,15 @@ sub auxotrophy_thresholds {
 		cpd00264 => [10,3,11,"Spermidine"],
 		cpd00028 => [8,5,10,"Heme"],
 		cpd00557 => [7,8,-1,"Siroheme"],
-		cpd00635 => [7,6,-1,"Cbl"],
-		cpd00218 => [6,3,8,"Niacin"],
+#		cpd00635 => [7,6,-1,"Cbl"],
+		cpd00166 => [7,6,-1,"Calomide"],
+#		cpd00218 => [6,3,8,"Niacin"],
+		cpd00003 => [6,3,8,"Niacin"],
 		cpd00220 => [5,3,7,"Riboflavin"],
 		cpd00644 => [10,3,6,"PAN"],
 		cpd00393 => [5,3,5,"Folate"],
-		cpd00305 => [2,2,4,"Thiamin"],
+#		cpd00305 => [2,2,4,"Thiamin"],
+		cpd00056 => [2,2,4,"Thiamin"],
 		cpd00104 => [1,3,-1,"Biotin"],
 		cpd00215 => [2,3,2,"Pyridoxal"],
 		cpd00042 => [7,3,1,"GSH"]
@@ -474,6 +477,65 @@ sub core_reactions {
 		["rxn14427",">"],
 		["rxn14428",">"]
 	];
+}
+
+sub cofactors {
+	return [qw(
+		cpd00047
+		cpd15560
+		cpd12370
+		cpd00001
+		cpd00009
+		cpd00010
+		cpd00011
+		cpd00012
+		cpd00013
+		cpd00015
+		cpd11609
+		cpd11610
+		cpd00067
+		cpd00099
+		cpd12713
+		cpd00242
+		cpd00007
+		cpd00025
+		cpd00062
+		cpd00014
+		cpd00091
+		cpd00052
+		cpd00096
+		cpd00046
+		cpd00038
+		cpd00031
+		cpd00126
+		cpd00002
+		cpd00008
+		cpd00018
+		cpd00097
+		cpd00986
+		cpd00109
+		cpd00110
+		cpd11620
+		cpd11621
+		cpd00228
+		cpd00823
+		cpd11665
+		cpd11669
+		cpd00733
+		cpd00734
+		cpd11807
+		cpd11808
+		cpd00364
+		cpd00415
+		cpd12505
+		cpd12576
+		cpd12669
+		cpd12694
+		cpd00003
+		cpd00004
+		cpd00005
+		cpd00006	
+	)];
 }
 
 sub gene_annotation_pipeline {
