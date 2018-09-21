@@ -106,12 +106,12 @@ lives_ok{
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
-            fbamodel_id            => "7601/194/1",
-            phenotypeset_id        => "7601/50",
+            fbamodel_id            => "7601/173/66",
+            phenotypeset_id        => "12540/9/1",
             phenotypesim_output_id => "custom_phenotype_sim",
-            workspace              => "jjeffryes:narrative_1502586048308",
-            gapfill_phenotypes     => 1,
-            fit_phenotype_data     => 0,
+            workspace              => "jjeffryes:narrative_1517244002282",
+            gapfill_phenotypes     => 0,
+            fit_phenotype_data     => 1,
             target_reaction        => "bio1"
         })
     } "simulate_growth_on_phenotype_data_w_bounds";
@@ -172,10 +172,10 @@ lives_ok{
 lives_ok{
         $impl->view_flux_network({
             fba_id => "7601/135/11",
-			workspace => get_ws_name(),
+			workspace => "jjeffryes:narrative_1502586048308",
         })
     } "view_flux_network";
-
+die;
 # compare_flux_with_expression
 lives_ok{
         $impl->compare_flux_with_expression({

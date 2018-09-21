@@ -155,9 +155,10 @@ sub _check_job {
             return $result->result->[0];
         }
     } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _check_job",
-                        status_line => $self->{client}->status_line,
-                        method_name => '_check_job');
+        return {
+            finished  => 0,
+            failed  => 1,
+        };
     }
 }
 
@@ -260,9 +261,8 @@ sub _get_taxon_submit {
             return $result->result->[0];  # job_id
         }
     } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _get_taxon_submit",
-                        status_line => $self->{client}->status_line,
-                        method_name => '_get_taxon_submit');
+        my $job_state_ref = {};
+        return {}
     }
 }
 
