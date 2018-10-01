@@ -155,9 +155,10 @@ sub _check_job {
             return $result->result->[0];
         }
     } else {
-        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _check_job",
-                        status_line => $self->{client}->status_line,
-                        method_name => '_check_job');
+        return {
+            finished  => 0,
+            failed  => 1,
+        };
     }
 }
 
