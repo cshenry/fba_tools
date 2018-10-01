@@ -41,8 +41,14 @@ parameters :
 icon: fba-teal.png
 
 description : |
-    
+
     <p>This method checks the elemental balance of all reactions in the model. Only compounds with specified molecular formulas are considered.</p>
-    
+
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Chris Henry, Matt DeJongh. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
+publications :
+    -
+        display-text: |
+            Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
+        link: https://www.nature.com/articles/nbt.4163

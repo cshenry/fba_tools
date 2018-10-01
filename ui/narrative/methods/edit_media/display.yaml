@@ -137,7 +137,7 @@ parameters :
         long-hint  : |
             Type of media
 parameter-groups:
-  compounds_to_change: 
+  compounds_to_change:
     ui-name: |
       Compounds to change in media
     short-hint: |
@@ -146,6 +146,12 @@ parameter-groups:
     ui-name: |
       Compounds to add to media
     short-hint: |
-      Compounds to add to media  
+      Compounds to add to media
 description : |
     <p>Edit a media formulation by adding or removing compounds, changing concentrations, or adjusting flux bounds.</p>
+
+publications :
+    -
+        display-text: |
+            Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
+        link: https://www.nature.com/articles/nbt.4163

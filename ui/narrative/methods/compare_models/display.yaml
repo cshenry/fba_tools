@@ -44,3 +44,9 @@ parameters :
             A Pangenome to use in comparing reaction-associated proteins among two or more models
 description : |
     <p>This app compares FBA Models based on reactions, compounds, biomass and proteins.</p>
+
+publications :
+    -
+        display-text: |
+            Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
+        link: https://www.nature.com/articles/nbt.4163

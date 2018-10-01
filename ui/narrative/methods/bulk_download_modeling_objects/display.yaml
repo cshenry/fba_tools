@@ -55,7 +55,7 @@ parameters :
             Format for media exports
         short-hint : |
             Format for media exports
-            
+
     phenotype_format :
         ui-name : |
             Format for phenotype exports
@@ -91,7 +91,7 @@ parameters :
             Export all phenotypes
         short-hint : |
             Export all phenotypes
-    
+
     all_phenosims :
         ui-name : |
             Export all phenotype simulations
@@ -106,3 +106,9 @@ description : |
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Christopher Henry. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
+publications :
+    -
+        display-text: |
+            Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
+        link: https://www.nature.com/articles/nbt.4163
