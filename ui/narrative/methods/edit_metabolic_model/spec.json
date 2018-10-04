@@ -135,16 +135,22 @@
 			}
 		},
 		{
-			"default_values" : [""],
-			"advanced" : false,
-			"id" : "add_compound_id",
-			"field_type" : "text",
-			"allow_multiple" : false,
-			"optional" : false,
-			"text_options" : {
-				"valid_ws_types" : []
-			}
-		},
+            "id" : "add_compound_id",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [],
+            "field_type" : "dynamic_dropdown",
+            "dynamic_dropdown_options" : {
+              "data_source": "custom",
+              "service_function": "BiochemistryAPI.search_compounds",
+              "service_version": "beta",
+              "service_params": [{"query":"{{dynamic_dropdown_input}}"}],
+              "selection_id" : "id",
+              "description_template" : "<strong>{{id}}</strong>: {{name}}",
+              "multiselection": false
+            }
+        },
 		{
 			"allow_multiple" : false,
 			"optional" : false,
@@ -566,16 +572,22 @@
 			}
 		},
 		{
-			"default_values" : [""],
-			"advanced" : false,
-			"id" : "add_reaction_id",
-			"field_type" : "text",
-			"allow_multiple" : false,
-			"optional" : false,
-			"text_options" : {
-				"valid_ws_types" : []
-			}
-		},
+            "id" : "add_reaction_id",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [],
+            "field_type" : "dynamic_dropdown",
+            "dynamic_dropdown_options" : {
+              "data_source": "custom",
+              "service_function": "BiochemistryAPI.search_reactions",
+              "service_params": [{"query":"{{dynamic_dropdown_input}}"}],
+              "selection_id" : "id",
+              "service_version": "beta",
+              "description_template" : "<strong>{{id}}</strong>: {{name}}",
+              "multiselection": false
+            }
+        },
 		{
          "optional" : false,
          "allow_multiple" : false,
