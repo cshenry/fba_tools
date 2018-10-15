@@ -4710,9 +4710,18 @@ sub bulk_export_objects
 		name => $output->{name},
 		description => $output->{description},
 	});
+    my $report_workspace = $params->{workspace};
+
+    #It's possible, using the API, to export objects from a workspace
+    #that the user doesn't own, and as such, cannot write the report to.
+
+    if(defined($params->{report_workspace})){
+	$report_workspace = $params->{report_workspace};
+    }
+
 	$self->util_finalize_call({
 		output => $output,
-		workspace => $params->{workspace},
+		workspace => $report_workspace,
 		report_name => Data::UUID->new()->create_str(),
 	});
     #END bulk_export_objects

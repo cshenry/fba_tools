@@ -93,7 +93,7 @@ lives_ok{
             proteincomparison_id        => "8248/14/1",
             media_id                    => "8248/10/1",
             fbamodel_output_id          => "test_propagated_model",
-            workspace                   => "jjeffryes:narrative_1502586048308",
+            workspace                   => get_ws_name(),
             keep_nogene_rxn             => 1,
             gapfill_model               => 1,
             custom_bound_list           => [],
@@ -107,9 +107,9 @@ lives_ok{
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
             fbamodel_id            => "7601/173/66",
-            phenotypeset_id        => "12540/9/1",
+            phenotypeset_id        => "7601/13/1",
             phenotypesim_output_id => "custom_phenotype_sim",
-            workspace              => "jjeffryes:narrative_1517244002282",
+            workspace              => get_ws_name(),
             gapfill_phenotypes     => 0,
             fit_phenotype_data     => 1,
             target_reaction        => "bio1"
@@ -154,7 +154,7 @@ lives_ok{
         $impl->compare_fba_solutions({
             fba_id_list => ["8248/168/1", "8248/166/1"],
 			fbacomparison_output_id => "fba_comparison",
-			workspace => "chenry:narrative_1504151898593",
+			workspace => get_ws_name()
         })
     } "compare_fba_solutions";
 
@@ -172,10 +172,10 @@ lives_ok{
 lives_ok{
         $impl->view_flux_network({
             fba_id => "7601/135/11",
-			workspace => "jjeffryes:narrative_1502586048308",
+			workspace => get_ws_name(),
         })
     } "view_flux_network";
-die;
+
 # compare_flux_with_expression
 lives_ok{
         $impl->compare_flux_with_expression({
@@ -193,7 +193,7 @@ lives_ok{
 # edit_metabolic_model
 lives_ok{
         $impl->edit_metabolic_model({
-            workspace => "jjeffryes:narrative_1502586048308",
+            workspace => get_ws_name(),
 			fbamodel_id => "7601/194/1",
 	    	compounds_to_add => [{
 	    		add_compound_id => "testcompound_c0",
@@ -270,12 +270,12 @@ lives_ok{
 	    	}],
 	    	fbamodel_output_id => "edited_model"
         })
-    }, "Edit Model";
+    } "Edit Model";
 
 # edit_media
 lives_ok{
         $impl->edit_media({
-            workspace => "chenry:narrative_1504151898593",
+            workspace => get_ws_name(),
 			media_output_id => "edited_media",
 			media_id => "8248/23/1",
 	    	compounds_to_remove => "cpd00204",
@@ -307,7 +307,7 @@ lives_ok{
             model_file     =>
             { path => "/kb/module/test/data/e_coli_core.xml" },
             model_name     => "sbml_test",
-            workspace_name => "jjeffryes:narrative_1502586048308",
+            workspace_name => get_ws_name(),
             genome         => "7601/4/1",
             biomass        => [ "R_BIOMASS_Ecoli_core_w_GAM" ]
         })
@@ -318,18 +318,18 @@ lives_ok{
             model_file     =>
             { path => "/kb/module/test/data/PUBLIC_150.xml" },
             model_name     => "sbml_test2",
-            workspace_name => "jjeffryes:narrative_1502586048308",
-            genome         => "Escherichia_coli_K-12_MG1655",
+            workspace_name => get_ws_name(),
+            genome         => "7601/4/1",
             biomass        => [ "bio00006" ]
         })
-    } 'SBML import: test "_refference" error';
+    } 'SBML import: test "_reference" error';
 
 lives_ok{
         $impl->sbml_file_to_model({
             model_file       =>
             { path => "/kb/module/test/data/Community_model.sbml" },
             model_name       => "sbml_test3",
-            workspace_name => "jjeffryes:narrative_1502586048308",
+            workspace_name => get_ws_name(),
             genome         => "7601/4/1",
             biomass          => [ "bio1", "bio2", 'bio3' ]
         })
@@ -340,7 +340,7 @@ lives_ok{
             model_file     =>
             { path => "/kb/module/test/data/iYL1228.xml" },
             model_name     => "sbml_test4",
-            workspace_name => "jjeffryes:narrative_1502586048308",
+            workspace_name => get_ws_name(),
             genome         => "7601/4/1",
             biomass        => [ "R_BIOMASS_" ]
         })
@@ -351,7 +351,7 @@ lives_ok{
             model_file     =>
             { path => "/kb/module/test/data/Ec_iJR904.xml" },
             model_name     => "sbml_test5",
-            workspace_name => "jjeffryes:narrative_1502586048308",
+            workspace_name => get_ws_name(),
             genome         => "7601/4/1",
             biomass        => [ "bio1" ]
         })
@@ -362,22 +362,22 @@ lives_ok{
             model_file     =>
             { path => "/kb/module/test/data/iMB155.xml" },
             model_name     => "sbml_test6",
-            workspace_name => "jjeffryes:narrative_1502586048308",
+            workspace_name => get_ws_name(),
             genome         => "7601/4/1",
             biomass        => [ "R_BIOMASS" ]
         })
     } 'SBML import: yet annother model from BiGG';
 
-dies_ok {
+dies_ok{
         $impl->sbml_file_to_model({
             model_file     =>
             { path => "/kb/module/test/data/PUBLIC_150.xml" },
             model_name     => "better_fail",
-            workspace_name => "jjeffryes:narrative_1502586048308",
-            genome         => "Escherichia_coli_K-12_MG1655",
+            workspace_name => get_ws_name(),
+            genome         => "7601/4/1",
             biomass        => [ "foo" ]
         })
-    }, 'SBML import: biomass not found';
+    } 'SBML import: biomass not found';
 
 # tsv_file_to_model
 dies_ok{
@@ -396,7 +396,7 @@ lives_ok{
         $impl->tsv_file_to_model({
             model_file     => { path => "/kb/module/test/data/test_model-reactions.tsv" },
             model_name     => "tsv_import",
-            workspace_name => "jjeffryes:narrative_1502586048308",
+            workspace_name => get_ws_name(),
             genome         => "8248/9/1",
             biomass        => ["bio1"],
             compounds_file => { path => "/kb/module/test/data/test_model-compounds.tsv" }
@@ -511,7 +511,7 @@ lives_ok{
                 workspace_name => get_ws_name(),
                 genome => "7601/4/1"
         })
-    }, 'TSV to Phenotype Set: custom columns';
+    } 'TSV to Phenotype Set: custom columns';
 
 dies_ok{
         $impl->tsv_file_to_phenotype_set({
@@ -548,12 +548,12 @@ lives_ok{
         $impl->bulk_export_objects({
             refs => [ "7601/20/9", "7601/18/9" ],
 	        workspace => "jjeffryes:narrative_1502586048308",
+	        report_workspace => get_ws_name(),
 	        all_media => 1,
 	        media_format => "excel"
         })
     } 'bulk export of modeling objects';
 
-=cut
 # export_model_as_excel_file
 lives_ok{
         $impl->export_model_as_excel_file({
@@ -623,7 +623,6 @@ lives_ok{
             input_ref => "jjeffryes:narrative_1502586048308/phenotype_simulation"
         })
     } 'export phenotype sim set as tsv';
-=cut
 
 done_testing();
 
