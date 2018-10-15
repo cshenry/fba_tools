@@ -59,3 +59,9 @@ description : |
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Christopher Henry, Pamela Weisenhorn, Janaka Edirisinghe, Jose Faria. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
+publications :
+    -
+        display-text: |
+            Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
+        link: https://www.nature.com/articles/nbt.4163

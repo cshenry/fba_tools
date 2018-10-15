@@ -40,9 +40,15 @@ parameters :
 icon: fba-teal.png
 
 description : |
-    
+
     <p>Visualize a network of flux through all reactions in an FBA solution using
     the metabolic network view developed by the Theoretical Biology group at the Mayo Clinic.</p>
-    
+
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Chris Henry, James Jeffryes. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
+publications :
+    -
+        display-text: |
+            Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
+        link: https://www.nature.com/articles/nbt.4163
