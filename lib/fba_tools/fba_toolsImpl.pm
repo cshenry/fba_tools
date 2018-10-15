@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.7.1';
-our $GIT_URL = 'git@github.com:cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = '287e65f90831e93836d44041b1011ca11af09c5b';
+our $VERSION = '1.7.6';
+our $GIT_URL = 'https://github.com/samseaver/fba_tools';
+our $GIT_COMMIT_HASH = '7877b3fdc3aab8b87fb27f76a63e614d2e23a8c4';
 
 =head1 NAME
 
@@ -4639,6 +4639,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
 	workspace has a value which is a string
+	report_workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -4667,6 +4668,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
 	workspace has a value which is a string
+	report_workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -7437,6 +7439,7 @@ media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
 workspace has a value which is a string
+report_workspace has a value which is a string
 
 </pre>
 
@@ -7457,6 +7460,7 @@ media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
 workspace has a value which is a string
+report_workspace has a value which is a string
 
 
 =end text

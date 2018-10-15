@@ -31,7 +31,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "media_format",
     "phenotype_format",
     "phenosim_format",
-    "workspace"
+    "workspace",
+    "report_workspace"
 })
 public class BulkExportObjectsParams {
 
@@ -59,6 +60,8 @@ public class BulkExportObjectsParams {
     private java.lang.String phenosimFormat;
     @JsonProperty("workspace")
     private java.lang.String workspace;
+    @JsonProperty("report_workspace")
+    private java.lang.String reportWorkspace;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("refs")
@@ -241,6 +244,21 @@ public class BulkExportObjectsParams {
         return this;
     }
 
+    @JsonProperty("report_workspace")
+    public java.lang.String getReportWorkspace() {
+        return reportWorkspace;
+    }
+
+    @JsonProperty("report_workspace")
+    public void setReportWorkspace(java.lang.String reportWorkspace) {
+        this.reportWorkspace = reportWorkspace;
+    }
+
+    public BulkExportObjectsParams withReportWorkspace(java.lang.String reportWorkspace) {
+        this.reportWorkspace = reportWorkspace;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -253,7 +271,7 @@ public class BulkExportObjectsParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((((("BulkExportObjectsParams"+" [refs=")+ refs)+", allModels=")+ allModels)+", allFba=")+ allFba)+", allMedia=")+ allMedia)+", allPhenotypes=")+ allPhenotypes)+", allPhenosims=")+ allPhenosims)+", modelFormat=")+ modelFormat)+", fbaFormat=")+ fbaFormat)+", mediaFormat=")+ mediaFormat)+", phenotypeFormat=")+ phenotypeFormat)+", phenosimFormat=")+ phenosimFormat)+", workspace=")+ workspace)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((("BulkExportObjectsParams"+" [refs=")+ refs)+", allModels=")+ allModels)+", allFba=")+ allFba)+", allMedia=")+ allMedia)+", allPhenotypes=")+ allPhenotypes)+", allPhenosims=")+ allPhenosims)+", modelFormat=")+ modelFormat)+", fbaFormat=")+ fbaFormat)+", mediaFormat=")+ mediaFormat)+", phenotypeFormat=")+ phenotypeFormat)+", phenosimFormat=")+ phenosimFormat)+", workspace=")+ workspace)+", reportWorkspace=")+ reportWorkspace)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
