@@ -22,7 +22,8 @@
 
 Gene::Gene(string InFilename, Data* InData) {
 	MainData = InData;
-
+	ProteinProd = NULL;
+	ProteinDeg = NULL;
 	if (InFilename.length() > 0) {
 		AddData("DATABASE",InFilename.data(),STRING);
 		AddData("FILENAME",InFilename.data(),STRING);
@@ -47,6 +48,7 @@ Gene::Gene(string InFilename, Data* InData) {
 	GeneUseVariable = NULL;
 	Next = NULL;
 	Previous = NULL;
+
 }
 
 Gene::~Gene() {
@@ -230,6 +232,56 @@ int Gene::Interpreter(string DataName, string& DataItem, bool Input) {
 				AddData(DataName.data(),DataItem.data(),DOUBLE);
 			} else {
 				DataItem = GetAllDataString(DataName.data(),DOUBLE);
+			}
+			break;
+		} case GENE_CONCENTRATION: {
+			if (Input) {
+				concentration = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(concentration));
+			}
+			break;
+		} case GENE_KPRIME: {
+			if (Input) {
+				kprime = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(kprime));
+			}
+			break;
+		} case GENE_TURNOVER: {
+			if (Input) {
+				turnover = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(turnover));
+			}
+			break;
+		} case GENE_KMCPD: {
+			if (Input) {
+				if (DataItem.compare("none") == 0) {
+					break;
+				}
+				vector<string>* Strings = StringToStrings(DataItem,"|");
+				for (int i=0; i < int(Strings->size()); i++) {
+					vector<string>* InnerStrings = StringToStrings((*Strings)[i],";");
+					if (InnerStrings->size() >= 2) {
+						Species* cpd = MainData->FindSpecies("DATABASE;NAME;ENTRY",(*InnerStrings)[0].data());
+						if (cpd != NULL) {
+							kmcpd.push_back(cpd);
+							kmlist.push_back(atof((*InnerStrings)[1].data()));
+						}
+					}
+				}
+				delete Strings;
+			} else {
+				DataItem.assign("");
+				for (int i=0; i < int(kmcpd.size()); i++) {
+					if (DataItem.length() > 0) {
+						DataItem.append("|");
+					}
+					DataItem.append(kmcpd[i]->GetData("DATABASE",STRING));
+					DataItem.append(";");
+					DataItem.append(dtoa(kmlist[i]));
+				}
 			}
 			break;
 		} case GENE_STRING: {

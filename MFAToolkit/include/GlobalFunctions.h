@@ -146,7 +146,7 @@ MapData* ParseMapString(string InMap);
 
 string ReverseMapString(string InMap);
 
-string GetMFAVariableName(MFAVariable* InVariable);
+string GetMFAVariableName(MFAVariable* InVariable,bool fullname = false);
 
 MFAVariable* GetVariableByName(string name);
 
@@ -329,6 +329,8 @@ struct OptimizationParameter {
 	bool AlternativeSolutionAlgorithm;
 	bool DetermineCoEssRxns;
 	bool AbundanceConstraint;
+	bool DynamicFBA;
+	bool MinDevCurrSol;
 	double DeadEndCoefficient;
 
 	bool AddLumpedReactions;
@@ -345,7 +347,17 @@ struct OptimizationParameter {
 	bool DeletionOptimization;
 	//Indicates that a gene minimization study should be performed
 	bool GeneOptimization;
+	bool ReduceObjective;
+	bool ReactionAdditionStudy;
 
+	double ProteinLimit;
+	double ProteinProdLimit;
+	double TimeStep;
+	double StopTime;
+	double InitialBiomass;
+	double Volume;
+	double FlowIn;
+	double FlowOut;
 	double MinimumTargetFlux;
 	double DeltaGSlack;
 	double Temperature;
@@ -355,6 +367,9 @@ struct OptimizationParameter {
 	double MaxDrainFlux;
 	double MinDrainFlux;
 	double MaxError;
+	double MaxObjective;
+	double MinObjective;
+	double ObjectiveLimit;
 	double OptimalObjectiveFraction;
 	int SolutionSizeInterval;
 	int RecursiveMILPSolutionLimit;

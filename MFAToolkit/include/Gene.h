@@ -39,6 +39,10 @@ struct Stimuli;
 #define GENE_TFS 10
 #define GENE_STIMULI 11
 #define GENE_COMPOUNDS 12
+#define GENE_CONCENTRATION 13
+#define GENE_KPRIME 14
+#define GENE_TURNOVER 15
+#define GENE_KMCPD 16
 
 class Gene : public Identity{
 private:
@@ -59,6 +63,15 @@ public:
 	Gene(string InFilename, Data* InData);
 	~Gene();
 	
+	//Pubvar
+	MFAVariable* ProteinProd;
+	MFAVariable* ProteinDeg;
+	double concentration;
+	double kprime;
+	double turnover;
+	vector<Species*> kmcpd;
+	vector<double> kmlist;
+
 	//Input
 	void AddReaction(Reaction* InReaction);
 	void AddInterval(GeneInterval* InInterval);

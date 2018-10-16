@@ -50,6 +50,10 @@ struct GeneLogicNode;
 #define RXN_COMPARTMENT 14
 #define RXN_QUERY 100
 #define RXN_COMPLEXES 15
+#define RXN_KPRIME 16
+#define RXN_CONCENTRATION 17
+#define RXN_KMCPD 18
+#define RXN_TURNOVER 19
 
 class Reaction : public Identity{
 private:
@@ -59,6 +63,7 @@ private:
 	vector<Species*> Reactants;
 	vector<double> ReactCoef;
 	vector<int> ReactCompartments;
+	vector<bool> ReactantCofactors;
 
 	int Type; //0 for reversible, 1 for forward, 2 for backward
 	int Compartment;
@@ -113,6 +118,18 @@ public:
 	void SetComplexes(string InComplexes);
 
 	//Output functions
+	double kprime;
+	double turnover;
+	vector<Species*> kmcpd;
+	vector<double> kmlist;
+	double concentration;
+	MFAVariable* ProteinProd;
+	MFAVariable* ProteinDeg;
+	vector<LinEquation*> ComplexFluxConstraints;
+	vector<vector<LinEquation*>* > ForFluxConstraints;
+	vector<vector<LinEquation*>* > RevFluxConstraints;
+	LinEquation* PrimaryForFluxConstraint;
+	LinEquation* PrimaryRevFluxConstraint;
 	int FType();
 	Data* FMainData();
 	bool IsReactantCofactor(int InIndex);
@@ -198,6 +215,8 @@ public:
 	void CreateReactionDrainFluxes();
 	void DecomposeToPiecewiseFluxBounds(double threshold,int minimum,MFAProblem* InProblem);
 	void CreateMFAVariables(OptimizationParameter* InParameters);
+	void CreateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem);
+	void UpdateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem);
 	void BuildReactionConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem);
 	void UpdateBounds(int VarType, double Min, double Max, bool ApplyToMinMax = false);
 	void AddUseVariables(OptimizationParameter* InParameters);
