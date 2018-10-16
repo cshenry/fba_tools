@@ -40,6 +40,13 @@ parameters :
         long-hint : |
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
 
+    classic_mode :
+        ui-name : |
+            Classic mode?
+        short-hint : |
+            Run the classic model reconstruction pipeline rather than the new pipeline that prevents the overproduction of ATP
+        long-hint : |
+            Run the classic model reconstruction pipeline rather than the new pipeline that prevents the overproduction of ATP
 
     media_id :
         ui-name : |

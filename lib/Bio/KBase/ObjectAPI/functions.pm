@@ -348,7 +348,8 @@ sub func_build_metabolic_model {
 		minimum_target_flux => 0.1,
 		number_of_solutions => 1,
 		max_objective_limit => 1.2,
-		predict_auxotrophy => 0
+		predict_auxotrophy => 0,
+		mode => "new"
 	});
 	#Getting genome
 	$handler->util_log("Retrieving genome.");

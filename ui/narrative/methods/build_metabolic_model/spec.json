@@ -126,6 +126,23 @@
          }
       },
       {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "classic_mode",
+         "advanced" : true,
+         "default_values" : [
+            "new"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : "new",
+            "checked_value" : "classic"
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
          "text_options" : {
             "valid_ws_types" : []
          },
@@ -216,6 +233,10 @@
             {
                "input_parameter" : "gapfill_model",
                "target_property" : "gapfill_model"
+            },
+            {
+               "input_parameter" : "classic_mode",
+               "target_property" : "new"
             },
             {
                "target_property" : "custom_bound_list",
