@@ -8,6 +8,6 @@ service-language:
     perl
 
 module-version:
-    1.7.6
+    1.7.7
 owners:
     [chenry, jjeffryes]
