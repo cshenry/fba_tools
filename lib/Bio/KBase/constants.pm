@@ -177,15 +177,62 @@ sub compartment_trans {
 my $template_trans = {
 	auto => "auto",
 	plant => "PlantModelTemplate",
-	"Gram negative" => "GramNegModelTemplate",
-	"Gram positive" => "GramPosModelTemplate",
-	core => "CoreModelTemplate",
-	grampos => "GramPosModelTemplate",
-	gramneg => "GramNegModelTemplate"
+	"Gram negative" => "GramNegModelTemplateV2",
+	"Gram positive" => "GramPosModelTemplateV2",
+	core => "CoreModelTemplateV2",
+	grampos => "GramPosModelTemplateV2",
+	gramneg => "GramNegModelTemplateV2"
 };
 
 sub template_trans {
 	return $template_trans;
+}
+
+sub atp_hydrolysis_hash {
+	return {
+		cpd00001_c0 => -1,
+		cpd00002_c0 => -1,	
+		cpd00008_c0 => 1,
+		cpd00009_c0 => 1,	
+		cpd00067_c0 => 1,
+	};
+}
+
+sub atp_hydrolysis_biomass {
+	return {
+		id => "bio2",
+		name => "ATP production",
+		other => 0,
+		dna => 0,
+		rna => 0,
+		protein => 0,
+		cellwall => 0,
+		lipid => 0,
+		cofactor => 0,
+		energy => 1,
+		biomasscompounds => [{
+				modelcompound_ref => "~/modelcompounds/id/cpd00001_c0",
+				coefficient => -1,
+				gapfill_data => {}
+			},{
+				modelcompound_ref => "~/modelcompounds/id/cpd00002_c0",
+				coefficient => -1,
+				gapfill_data => {}
+			},{
+				modelcompound_ref => "~/modelcompounds/id/cpd00008_c0",
+				coefficient => 1,
+				gapfill_data => {}
+			},{
+				modelcompound_ref => "~/modelcompounds/id/cpd00009_c0",
+				coefficient => 1,
+				gapfill_data => {}
+			},{
+				modelcompound_ref => "~/modelcompounds/id/cpd00067_c0",
+				coefficient => 1,
+				gapfill_data => {}
+		}],
+		removedcompounds => []
+	};
 }
 
 sub contig_annotation_pipeline {
@@ -241,7 +288,7 @@ sub aa_abbrev {
 		"N" => "cpd00132"
 	};
 };		
-
+		
 sub auxotrophy_thresholds {
 	return {
 		cpd00065 => [9,3,32,"L-Tryptophan"],
@@ -250,11 +297,11 @@ sub auxotrophy_thresholds {
 		cpd00156 => [4,3,29,"L-Valine"],
 		cpd00322 => [9,3,28,"L-Isoleucine"],
 		cpd00107 => [9,3,27,"L-Leucine"],
-#		cpd00035 => [7,3,26,"L-Alanine"],
-#		cpd00041 => [7,3,25,"L-Aspartate"],
+		cpd00035 => [7,3,26,"L-Alanine"],
+		cpd00041 => [7,3,25,"L-Aspartate"],
 		cpd00132 => [9,3,24,"L-Asparagine"],
-#		cpd00023 => [8,3,23,"L-Glutamate"],
-#		cpd00053 => [9,3,22,"L-Glutamine"],
+		cpd00023 => [8,3,23,"L-Glutamate"],
+		cpd00053 => [9,3,22,"L-Glutamine"],
 		cpd00054 => [9,3,21,"L-Serine"],
 		cpd00161 => [7,3,20,"L-Threonine"],
 		cpd00033 => [6,3,19,"Glycine"],
@@ -269,15 +316,15 @@ sub auxotrophy_thresholds {
 		cpd00264 => [10,3,11,"Spermidine"],
 		cpd00028 => [8,5,10,"Heme"],
 		cpd00557 => [7,8,-1,"Siroheme"],
-#		cpd00635 => [7,6,-1,"Cbl"],
-		cpd00166 => [7,6,-1,"Calomide"],
-#		cpd00218 => [6,3,8,"Niacin"],
-		cpd00003 => [6,3,8,"Niacin"],
+		cpd00635 => [7,6,-1,"Cbl"],
+#		cpd00166 => [7,6,-1,"Calomide"],
+		cpd00218 => [6,3,8,"Niacin"],
+#		cpd00003 => [6,3,8,"Niacin"],
 		cpd00220 => [5,3,7,"Riboflavin"],
 		cpd00644 => [10,3,6,"PAN"],
 		cpd00393 => [5,3,5,"Folate"],
-#		cpd00305 => [2,2,4,"Thiamin"],
-		cpd00056 => [2,2,4,"Thiamin"],
+		cpd00305 => [2,2,4,"Thiamin"],
+#		cpd00056 => [2,2,4,"Thiamin"],
 		cpd00104 => [1,3,-1,"Biotin"],
 		cpd00215 => [2,3,2,"Pyridoxal"],
 		cpd00042 => [7,3,1,"GSH"]
@@ -536,6 +583,14 @@ sub cofactors {
 		cpd00005
 		cpd00006	
 	)];
+}
+
+sub coupled_biomass_compounds {
+	return {
+		cpd11493 => ["cpd12370"],
+		cpd00166	 => ["cpd01997","cpd03422"],
+		cpd15665	 => ["cpd15666"]
+	};
 }
 
 sub gene_annotation_pipeline {

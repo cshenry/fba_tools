@@ -332,7 +332,6 @@ sub func_build_metabolic_model {
 		genome_workspace => $params->{workspace},
 		template_workspace => undef,
 		media_workspace => $params->{workspace},
-		coremodel => 0,
 		gapfill_model => 1,
 		thermodynamic_constraints => 0,
 		comprehensive_gapfill => 0,
@@ -347,7 +346,9 @@ sub func_build_metabolic_model {
 		omega => 0,
 		objective_fraction => 0.1,
 		minimum_target_flux => 0.1,
-		number_of_solutions => 1
+		number_of_solutions => 1,
+		max_objective_limit => 1.2,
+		predict_auxotrophy => 0
 	});
 	#Getting genome
 	$handler->util_log("Retrieving genome.");
@@ -373,17 +374,122 @@ sub func_build_metabolic_model {
 	}
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
-	#Building the model
-	my $model = $template->buildModel({
+	#Building model with classic template
+	my $fullmodel = $template->buildModel({
 		genome => $genome,
 		modelid => $params->{fbamodel_output_id},
 		fulldb => 0
 	});
-	#Gapfilling model if requested
-	my $output;
+	#If this is a "new" mode model, we build a core model first and run FBA to see ATP production
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
+	if ($params->{mode} eq "new" && $params->{template_id} ne $template_trans->{plant} && $params->{template_id} ne $template_trans->{core}) {
+		my $template = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core});
+		my $coremodel = $template->buildModel({
+			genome => $genome,
+			modelid => "tempcore",
+			fulldb => 0
+		});
+		$datachannel = {fbamodel => $coremodel};
+		my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+			workspace => "NULL",
+			fbamodel_id => "tempcore",
+			fbamodel_output_id => "tempcore.gf",
+			target_reaction => "bio2",
+			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+			media_id => "RefGlucoseMinimal"
+		},$coremodel);
+		my $corehash = {};
+		my $rxns = $coremodel->modelreactions();
+		for (my $i=0; $i < @{$rxns}; $i++) {
+			$corehash->{$rxns->[$i]->id()} = 1;
+			my $rxn = $fullmodel->queryObject("modelreactions",{id => $rxns->[$i]->id()});
+			if (defined($rxn)) {
+				$fullmodel->remove("modelreactions",$rxn);
+			}
+			$fullmodel->add("modelreactions",$rxns->[$i]);
+			my $rgts = $rxns->[$i]->modelReactionReagents();
+			for (my $j=0; $j < @{$rgts}; $j++) {
+				if ($rgts->[$j]->modelcompound_ref() =~ m/(cpd\d+.+)/) {
+					my $cpdid = $1;
+					my $cpdobj = $fullmodel->queryObject("modelcompounds",{id => $cpdid});
+					if (!defined($cpdobj)) {
+						$fullmodel->add("modelcompounds",$rgts->[$j]->modelcompound());
+					}
+				}
+			}
+		}
+		my $rxnlist = [];
+		$rxns = $fullmodel->modelreactions();
+		for (my $i=0; $i < @{$rxns}; $i++) {
+			if (!defined($corehash->{$rxns->[$i]->id()})) {
+				push(@{$rxnlist},$rxns->[$i]->id());
+			}
+		}
+		$fullmodel->add("biomasses",Bio::KBase::constants::atp_hydrolysis_biomass());
+		$datachannel->{fbamodel} = $fullmodel;
+		Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+			workspace => "NULL",
+			fbamodel_id => $params->{fbamodel_output_id},
+			fba_output_id => $params->{fbamodel_output_id}.".atp.fba",
+			media_id => "RefGlucoseMinimal",
+			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+			target_reaction => "bio2",
+			reaction_addition_study => 1,
+			max_objective_limit => $params->{max_objective_limit},
+			reaction_list => $rxnlist
+		},$datachannel);
+		my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
+		my $first = 1;
+		for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
+			my $row = [split(/\t/,$rxn_addition_data->[$i])];
+			if ($row->[2] == 0) {
+				if ($row->[1] =~ m/(.)(rxn.+)/) {
+					 my $sign = $1;
+					 my $id = $2;
+					 if ($first == 1) {
+					 	$htmlreport .= " Rejected the following reactions due to ATP overproduction: ";
+					 } else {
+					 	$htmlreport .= ", ";
+					 }
+					 $first = 0;
+					 $htmlreport .= $sign.$id;
+					 my $rxnobj = $fullmodel->queryObject("modelreactions",{id => $id});
+					 if ($sign eq "+") {
+					 	if ($rxnobj->direction() eq "=") {
+					 		$rxnobj->direction("<");
+					 	} else {
+					 		$fullmodel->remove("modelreactions",$rxnobj);
+					 	}
+					 } else {
+					 	if ($rxnobj->direction() eq "=") {
+					 		$rxnobj->direction(">");
+					 	} else {
+					 		$fullmodel->remove("modelreactions",$rxnobj);
+					 	}
+					 }
+				}
+			}
+		}
+		if ($first == 0) {
+			$htmlreport .= ".";	
+		}
+		#Predicting auxotrophy
+		if ($params->{predict_auxotrophy} == 1) {
+			$datachannel->{fbamodel} = $fullmodel->cloneObject();
+			Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy_from_model({
+				workspace => "NULL",
+				fbamodel_id => $params->{fbamodel_output_id}
+			},$datachannel);
+			my $wsmeta = $handler->util_save_object($datachannel->{media},$params->{workspace}."/".$params->{fbamodel_output_id}.".auxo_media");
+			$params->{media_id} = $params->{fbamodel_output_id}.".auxo_media";
+			$params->{media_workspace} = $params->{workspace}
+		}
+	}
+	#Gapfilling model if requested
+	my $output = {};
 	if ($params->{gapfill_model} == 1) {
 		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+			target_reaction => "bio1",
 			thermodynamic_constraints => $params->{thermodynamic_constraints},
 			comprehensive_gapfill => $params->{comprehensive_gapfill},
 			custom_bound_list => $params->{custom_bound_list},
@@ -403,18 +509,17 @@ sub func_build_metabolic_model {
 			fbamodel_output_id => $params->{fbamodel_output_id},
 			media_workspace => $params->{media_workspace},
 			media_id => $params->{media_id}
-		},$model);
-		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
+		},$fullmodel);
+		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$fullmodel->modelreactions()}." reactions, ".@{$fullmodel->modelcompounds()}." compounds, and ".$fullmodel->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
 	} else {
 		#If not gapfilling, then we just save the model directly
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
 		$output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
-		my $wsmeta = $handler->util_save_object($model,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
-		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$model->modelreactions()}." reactions, ".@{$model->modelcompounds()}." compounds, and ".$model->gene_count()." genes.</p></div>"
+		my $wsmeta = $handler->util_save_object($fullmodel,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
+		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$fullmodel->modelreactions()}." reactions, ".@{$fullmodel->modelcompounds()}." compounds, and ".$fullmodel->gene_count()." genes.</p></div>"
 	}
-	$datachannel->{fbamodel} = $model;
-	#$output->{new_fbamodel} = $model;
+	$datachannel->{fbamodel} = $fullmodel;
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return $output;
 }
@@ -572,6 +677,12 @@ sub func_run_flux_balance_analysis {
 		metabolite_consumption_analysis => 0,
 		source_metabolite_list => [],
 		target_metabolite_list => [],
+		reduce_objective => 0,
+		max_objective => 0,
+		min_objective => 0,
+		reaction_addition_study => 0,
+		max_objective_limit => 1.2,
+		reaction_list => []
 	});
 	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
 		if (length($params->{reaction_ko_list}) > 0) {
@@ -612,6 +723,12 @@ sub func_run_flux_balance_analysis {
 	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
 	$handler->util_log("Preparing flux balance analysis problem.");
 	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+	$fba->parameters()->{"reduce objective"} = $params->{reduce_objective};
+	$fba->parameters()->{"max objective"} = $params->{max_objective};
+	$fba->parameters()->{"min objective"} = $params->{min_objective};
+	$fba->parameters()->{"reaction addition study"} = $params->{reaction_addition_study};
+	$fba->parameters()->{"max objective limit"} = $params->{max_objective_limit};
+	$fba->parameters()->{"adding reaction list"} = join(";",@{$params->{reaction_list}});
 	$fba->parameters()->{"Source metabolite list"} = join(";",@{$params->{source_metabolite_list}});
 	$fba->parameters()->{"Target metabolite list"} = join(";",@{$params->{target_metabolite_list}});
 	$fba->parameters()->{"Metabolite production analysis"} = $params->{metabolite_production_analysis};
@@ -1683,6 +1800,205 @@ sub func_check_model_mass_balance {
 	}
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return $model->id()
+}
+
+sub func_predict_auxotrophy_from_model {
+	my ($params,$datachannel) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
+		fbamodel_workspace => $params->{workspace}
+	});
+	if (!defined($datachannel->{fbamodel})) {
+		$handler->util_log("Retrieving model.");
+		$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+	}
+	my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_id},
+		fbamodel_output_id => $params->{fbamodel_id}.".gf",
+		target_reaction => "bio1",
+		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+		media_id => "Carbon-D-Glucose"
+	},$datachannel->{fbamodel});
+	my $media = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_media_workspace")."/Carbon-D-Glucose");
+	my $transporthash = Bio::KBase::constants::auxotrophy_transports();
+	my $cpddatahash = Bio::KBase::utilities::compound_hash();
+	my $auxotrophy_threshold_hash = Bio::KBase::constants::auxotrophy_thresholds();
+	my $cofarray = Bio::KBase::constants::cofactors();
+	my $cofactors = {};
+	foreach my $id (@{$cofarray}) {
+		$cofactors->{$id."_c0"} = 1;
+	}
+	my $current_media = $media->cloneObject();
+	#Adding transport reactions
+	foreach my $rxn (keys(%{$transporthash})) {
+		if (!defined($datachannel->{fbamodel}->queryObject("modelreactions",{id => $rxn."_c0"}))) {
+			$datachannel->{fbamodel}->addModelReaction({
+				reaction => $rxn,
+				direction => "=",
+				addReaction => 1
+			});
+		}
+	}
+	#Populating reaction and compound hashes
+	my $rxns = $datachannel->{fbamodel}->modelreactions();
+	my $rxnhash;
+	for (my $j=0; $j < @{$rxns}; $j++) {
+		$rxnhash->{$rxns->[$j]->id()} = $rxns->[$j];
+	}
+	my $cpds = $datachannel->{fbamodel}->modelcompounds();
+	my $cpdhash;
+	for (my $j=0; $j < @{$cpds}; $j++) {
+		$cpdhash->{$cpds->[$j]->id()} = $cpds->[$j];
+	}
+	#Running auxotrophy prediction flux balance analysis
+	my $filelist = [];
+	Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_id}.".gf",
+		fba_output_id => $params->{fbamodel_id}.".fba_auxo1",
+		media_id => "Carbon-D-Glucose",
+		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+		target_reaction => "bio1",
+		metabolite_production_analysis => 1,
+		source_metabolite_list => ["cpd00103_c0","cpd00171_c0","cpd00146_c0","cpd00020_c0","cpd00024_c0","cpd00169_c0","cpd00102_c0","cpd00072_c0","cpd00032_c0",
+			"cpd00079_c0","cpd00022_c0","cpd00236_c0","cpd00101_c0","cpd00061_c0","cpd00041_c0","cpd00002_c0","cpd00038_c0","cpd00023_c0","cpd00053_c0"],
+		target_metabolite_list => ["cpd00017_c0","cpd00033_c0","cpd00054_c0","cpd00161_c0","cpd00084_c0","cpd00119_c0","cpd00060_c0","cpd00051_c0","cpd00129_c0",
+			"cpd00118_c0","cpd00132_c0","cpd00016_c0","cpd00056_c0","cpd00220_c0","cpd00028_c0","cpd00166_c0","cpd00557_c0","cpd00039_c0","cpd00069_c0",
+			"cpd00066_c0","cpd00065_c0","cpd00393_c0","cpd00156_c0","cpd00107_c0"],
+	},$datachannel);
+	$filelist->[0] = $datachannel->{fba}->outputfiles()->{MetaboliteProductionResults};
+	Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_id}.".gf",
+		fba_output_id => $params->{fbamodel_id}.".fba_auxo1",
+		media_id => "Carbon-D-Glucose",
+		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+		target_reaction => "bio1",
+		metabolite_production_analysis => 1,
+		source_metabolite_list => ["cpd00103_c0","cpd00171_c0","cpd00146_c0","cpd00020_c0","cpd00024_c0","cpd00169_c0","cpd00102_c0","cpd00072_c0","cpd00032_c0",
+			"cpd00079_c0","cpd00022_c0","cpd00236_c0","cpd00101_c0","cpd00061_c0","cpd00041_c0","cpd00002_c0","cpd00038_c0","cpd00023_c0","cpd00053_c0","cpd00054_c0"],
+		target_metabolite_list => ["cpd00065"],
+	},$datachannel);
+	$filelist->[1] = $datachannel->{fba}->outputfiles()->{MetaboliteProductionResults};
+	Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_id}.".gf",
+		fba_output_id => $params->{fbamodel_id}.".fba_auxo2",
+		media_id => "Carbon-D-Glucose",
+		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+		target_reaction => "bio1",
+		metabolite_production_analysis => 1,
+		source_metabolite_list => ["cpd00800_c0","cpd00103_c0","cpd00171_c0","cpd00146_c0","cpd00020_c0","cpd00024_c0","cpd00169_c0","cpd00102_c0","cpd00072_c0","cpd00032_c0",
+		"cpd00079_c0","cpd00022_c0","cpd00236_c0","cpd00101_c0","cpd00061_c0","cpd00041_c0","cpd00002_c0","cpd00038_c0","cpd00023_c0","cpd00053_c0",
+		"cpd00017_c0","cpd00051_c0","cpd00084_c0","cpd00065_c0","cpd00161_c0","cpd00156_c0","cpd00800_c0","cpd00054_c0"],
+		target_metabolite_list => ["cpd00065","cpd00644_c0","cpd00264_c0","cpd00042_c0","cpd00003_c0","cpd00104_c0","cpd00322_c0"],
+	},$datachannel);
+	$filelist->[2] = $datachannel->{fba}->outputfiles()->{MetaboliteProductionResults};
+	my $auxotrophy_results = {};
+	my $translation = {
+		cpd00016 => "cpd00215"
+	};
+	for (my $j=0; $j < @{$filelist}; $j++) {
+		for (my $k=1; $k < @{$filelist->[$j]}; $k++) {
+			my $array = [split(/\t/,$filelist->[$j]->[$k])];
+			my $cpd = $array->[1];
+			$cpd =~ s/_c0//;
+			if (defined($translation->{$cpd})) {
+				$cpd = $translation->{$cpd};
+			}
+			if ($array->[2] ne "none") {
+				$auxotrophy_results->{$cpd} = {
+					totalrxn => 0,
+					gfrxn => 0,
+					rxns => {},
+					auxotrophic => 0,
+					cofactor_reactants => [],
+					main_reactants => [],
+					cofactor_products => [],
+					main_products => [],
+					name => $cpddatahash->{$cpd}->{name}
+				};
+				my $rxns = [split(/;/,$array->[2])];
+				my $rxncpdhash = {};
+				for (my $m=0; $m < @{$rxns}; $m++) {
+					if ($rxns->[$m] =~ m/(.)(.+)(_[a-zA-Z]\d):(.+)/) {
+						my $rxnid = $2;
+						my $comp = $3;
+						$auxotrophy_results->{$cpd}->{rxns}->{$rxnid} = {
+							flux => $4,
+							multiplier => 1,
+							cofactor_reactants => [],
+							main_reactants => [],
+							cofactor_products => [],
+							main_products => [],
+							gfrxn => 0
+						};
+						if ($auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{flux} < 0) {
+							$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{multiplier} = -1;
+						}
+						$auxotrophy_results->{$cpd}->{totalrxn}++;
+						if ($rxnhash->{$rxnid.$comp}->gprString() eq "Unknown") {
+							$auxotrophy_results->{$cpd}->{gfrxn}++;
+							$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{gfrxn} = 1;
+						}
+						my $rgts = $rxnhash->{$rxnid.$comp}->modelReactionReagents();
+						#Populating data for reaction stoichiometry
+						for (my $n=0; $n < @{$rgts}; $n++) {
+							if (!defined($rxncpdhash->{$rgts->[$n]->modelcompound()->id()})) {
+								$rxncpdhash->{$rgts->[$n]->modelcompound()->id()} = 0;
+							}
+							$rxncpdhash->{$rgts->[$n]->modelcompound()->id()} += $rgts->[$n]->coefficient()*$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{flux};
+							if (defined($cofactors->{$cpd})) {
+								if ($rgts->[$n]->coefficient()*$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{multiplier} < 0) {
+									push(@{$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{cofactor_reactants}},[$rgts->[$n]->coefficient()*$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{multiplier},$cpd,$cpddatahash->{$cpd}->{name}]);
+								} else {
+									push(@{$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{cofactor_products}},[$rgts->[$n]->coefficient()*$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{multiplier},$cpd,$cpddatahash->{$cpd}->{name}]);
+								}
+							} else {
+								if ($rgts->[$n]->coefficient()*$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{multiplier} < 0) {
+									push(@{$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{main_reactants}},[$rgts->[$n]->coefficient()*$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{multiplier},$cpd,$cpddatahash->{$cpd}->{name}]);
+								} else {
+									push(@{$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{main_products}},[$rgts->[$n]->coefficient()*$auxotrophy_results->{$cpd}->{rxns}->{$rxnid}->{multiplier},$cpd,$cpddatahash->{$cpd}->{name}]);
+								}
+							}
+						}
+					}
+				}
+				#Populating data for overall reaction for metabolite
+				foreach my $cpd (keys(%{$rxncpdhash})) {
+					if (defined($cofactors->{$cpd})) {
+						if ($rxncpdhash->{$cpd} < 0) {
+							push(@{$auxotrophy_results->{$cpd}->{cofactor_reactants}},[$rxncpdhash->{$cpd},$cpd,$cpddatahash->{$cpd}->{name}]);
+						} else {
+							push(@{$auxotrophy_results->{$cpd}->{cofactor_products}},[$rxncpdhash->{$cpd},$cpd,$cpddatahash->{$cpd}->{name}]);
+						}
+					} else {
+						if ($rxncpdhash->{$cpd} < 0) {
+							push(@{$auxotrophy_results->{$cpd}->{main_reactants}},[$rxncpdhash->{$cpd},$cpd,$cpddatahash->{$cpd}->{name}]);
+						} else {
+							push(@{$auxotrophy_results->{$cpd}->{main_products}},[$rxncpdhash->{$cpd},$cpd,$cpddatahash->{$cpd}->{name}]);
+						}
+					}
+				}
+				if ($auxotrophy_results->{$cpd}->{gfrxn} >= $auxotrophy_threshold_hash->{$cpd}->[1]) {
+					$auxotrophy_results->{$cpd}->{auxotrophic} = 1;
+					$current_media->add("mediacompounds",{
+						compound_ref => "kbase/default/compounds/id/".$cpd,
+						id => $cpd,
+						name => $cpddatahash->{$cpd}->{name},
+						concentration => 0.001,
+						maxFlux => 100,
+						minFlux => -100
+					});
+				}
+			}
+			
+		}
+	}
+	$datachannel->{media} = $current_media;
+	$current_media->parent($handler->util_store());
+	my $wsmeta = $handler->util_save_object($current_media,$params->{workspace}."/".$params->{fbamodel_id}.".auxo_media");
+	return {auxotrophy_data =>  $auxotrophy_results};
 }
 
 sub func_predict_auxotrophy {

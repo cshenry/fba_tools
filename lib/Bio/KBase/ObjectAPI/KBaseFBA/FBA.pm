@@ -699,6 +699,168 @@ sub RunQuantitativeOptimization {
 	}
 }
 
+=head3 createComponentObjectiveReactions
+
+Definition:
+	void Bio::KBase::ObjectAPI::KBaseFBA::FBA->createComponentObjectiveReactions();
+Description:
+	Adds component objective reactions to input reaction list
+
+=cut
+
+sub createComponentObjectiveReactions {
+	my ($self,$args) = @_;
+	$args = Bio::KBase::ObjectAPI::utilities::args(["biorxn","additionalrxn"],{
+		add_extracellular_compounds => 0
+	}, $args);
+	my $additionalrxn = $args->{additionalrxn};
+	my $BioRxn = $args->{biorxn};
+	my $model = $self->fbamodel();
+	#All component reaction are entered into a hash
+	my $comprxn = {};
+	#Adding biomass component reactions
+	my $biocpdhash = {};
+	if (@{$self->fbamodel()->biomasses()} >= 1) {
+		my $bio = $self->fbamodel()->biomasses()->[0];
+		my $biocpds = $bio->biomasscompounds();
+		for (my $i=0; $i < @{$biocpds}; $i++) {
+			my $cpd = $biocpds->[$i];
+			$biocpdhash->{$cpd->modelcompound()->id()} = 1;
+			if ($cpd->coefficient() > 0) {
+				if ($cpd->modelcompound()->compound()->id() eq "cpd00008") {
+					$comprxn->{ENERGY} = {
+						id => "EnergyComponent",
+						min => 0,
+						max => 1000,
+						rxn => "cpd00002_c0 + cpd00001_c0 => cpd00008_c0 + cpd00009_c0 + cpd00067_c0",
+						coef => $cpd->coefficient()
+					};
+				}
+			} else {
+				my $abbrev = "BiomassOtherComponent";
+				my $product = "";
+				my $coupled_biomass_compounds = Bio::KBase::constants::coupled_biomass_compounds();
+				my $coef = 1000/$cpd->modelcompound()->compound()->mass();
+				$comprxn->{$cpd->modelcompound()->compound()->id()} = {
+					id => $cpd->modelcompound()->compound()->id()."_Component",
+					min => 0.1*$cpd->coefficient(),
+					max => 1,
+					coef => $cpd->coefficient()
+				};
+				if ($cpd->modelcompound()->compound()->class() eq "amino_acid") {
+					$abbrev = "BiomassProteinComponent";
+					$product = " (".$coef.") cpd00001_c0";
+				} elsif ($cpd->modelcompound()->compound()->class() eq "deoxynucleotide") {
+					$abbrev = "BiomassDNAComponent";
+					$product = " (".$coef.") cpd00012_c0";
+				} elsif ($cpd->modelcompound()->compound()->class() eq "nucleotide") {
+					$abbrev = "BiomassRNAComponent";
+					$product = " (".$coef.") ccpd00012_c0";
+				} elsif (defined($coupled_biomass_compounds->{$cpd->modelcompound()->compound()->id()})) {
+					$comprxn->{$cpd->modelcompound()->compound()->id()}->{min} = 0;
+					$product = join("_c0 + (".$coef.") ",@{$coupled_biomass_compounds->{$cpd->modelcompound()->compound()->id()}})."_c0";
+				} elsif ($cpd->modelcompound()->compound()->class() eq "cellwall") {
+					$comprxn->{$cpd->modelcompound()->compound()->id()}->{min} = 0;
+					$abbrev = "BiomassCellWallComponent";
+				} elsif ($cpd->modelcompound()->compound()->class() eq "lipid") {
+					$comprxn->{$cpd->modelcompound()->compound()->id()}->{min} = 0;
+					$abbrev = "BiomassLipidComponent";
+				} else {
+					$comprxn->{$cpd->modelcompound()->compound()->id()}->{min} = 0;
+				}
+				$comprxn->{$cpd->modelcompound()->compound()->id()}->{rxn} = "(".$coef.") ".$cpd->modelcompound()->id()." =>".$product;
+			}
+		}
+	}
+	#Identifying deadends based on stoichiometry only
+	my $cpdhash = {};
+	my $mdlrxns = $model->modelreactions();
+	my $mdlcpds = $model->modelcompounds();
+	for (my $i=0; $i < @{$mdlrxns}; $i++) {
+		my $rgts = $mdlrxns->[$i]->modelReactionReagents();
+		for (my $j=0; $j < @{$rgts}; $j++) {
+			if (!defined($cpdhash->{$rgts->[$j]->modelcompound()->id()})) {
+				$cpdhash->{$rgts->[$j]->modelcompound()->id()}->{object} = $rgts->[$j]->modelcompound();
+			}
+			if ($rgts->[$j]->coefficient() < 0) {
+				if ($mdlrxns->[$i]->direction() eq ">" || $mdlrxns->[$i]->direction() eq "=") {
+					push(@{$cpdhash->{$rgts->[$j]->modelcompound()->id()}->{consuming}},$mdlrxns->[$i]->id());
+				}
+				if ($mdlrxns->[$i]->direction() eq "<" || $mdlrxns->[$i]->direction() eq "=") {
+					push(@{$cpdhash->{$rgts->[$j]->modelcompound()->id()}->{producing}},$mdlrxns->[$i]->id());
+				}
+			} else {
+				if ($mdlrxns->[$i]->direction() eq ">" || $mdlrxns->[$i]->direction() eq "=") {
+					push(@{$cpdhash->{$rgts->[$j]->modelcompound()->id()}->{producing}},$mdlrxns->[$i]->id());
+				}
+				if ($mdlrxns->[$i]->direction() eq "<" || $mdlrxns->[$i]->direction() eq "=") {
+					push(@{$cpdhash->{$rgts->[$j]->modelcompound()->id()}->{consuming}},$mdlrxns->[$i]->id());
+				}
+			}
+		}
+	}
+	my $deadstarts = [];
+	my $deadends = [];
+	foreach my $cpdid (keys(%{$cpdhash})) {
+		if (defined($biocpdhash->{$cpdid})) {
+			next;
+		}
+		if (!defined($cpdhash->{$cpdid}->{consuming})) {
+			if (!defined($cpdhash->{$cpdid}->{producing})) {
+				next;
+			}
+			push(@{$deadends},$cpdid);
+		}
+		if (!defined($cpdhash->{$cpdid}->{producing})) {
+			push(@{$deadstarts},$cpdid);
+		}
+		if (@{$cpdhash->{$cpdid}->{producing}} == 1 && @{$cpdhash->{$cpdid}->{consuming}} && $cpdhash->{$cpdid}->{consuming}->[0] eq $cpdhash->{$cpdid}->{producing}->[0]) {
+			push(@{$deadends},$cpdid);
+			push(@{$deadstarts},$cpdid);
+		}
+	}
+	#Adding all extracellular compound
+	if ($args->{add_extracellular_compounds} == 1) {
+		for (my $i=0; $i < @{$mdlcpds}; $i++) {
+			if ($mdlcpds->[$i]->id() =~ m/(.+)_e(\d+)/) {
+				my $id = $1;
+				my $comp = "c".$2;
+				my $coef = 1000/$mdlcpds->[$i]->compound()->mass();
+				$comprxn->{$id} = {
+					id => $id."_Component",
+					min => 0,
+					max => 1000,
+					rxn => "(".$coef.") ".$id."_".$comp." =>",
+					coef => 1
+				};
+			}
+		}
+	}
+	#Adding deadend pathway targets
+	for (my $i=0; $i < @{$deadends}; $i++) {
+		if ($deadends->[$i] =~ m/(.+)_c(\d+)/) {
+			my $id = $1;
+			my $comp = "c".$2;
+			if (!defined($comprxn->{$id})) {
+				my $coef = 1000/$cpdhash->{$deadends->[$i]}->{object}->compound()->mass();
+				$comprxn->{$id} = {
+					id => $id."_Component",
+					min => 0,
+					max => 1000,
+					rxn => "(".$coef.") ".$id."_".$comp." =>",
+					coef => 1
+				};
+			}
+		}
+	}
+	#Adding reactions to reaction file list
+	foreach my $cpdid (keys(%{$comprxn})) {
+		push(@{$additionalrxn},$comprxn->{$cpdid}->{id}."\t>\t".$comprxn->{$cpdid}->{id});
+		push(@{$BioRxn},$comprxn->{$cpdid}->{id}."\t".$comprxn->{$cpdid}->{id}."\t0\t0\t".$comprxn->{$cpdid}->{rxn}."\t".$comprxn->{$cpdid}->{id}."\t=>\tOK\t=>");
+	}
+}
+
+
 =head3 createJobDirectory
 
 Definition:
@@ -978,97 +1140,6 @@ sub createJobDirectory {
 	}
 	my $final_gauranteed = [];
 	my $final_ko = [];
-	#Adding biomass component reactions to database for quantitative optimization
-	if ($self->quantitativeOptimization() == 1) {
-		my $bio = $self->fbamodel()->biomasses()->[0];
-		my $biocpds = $bio->biomasscompounds();
-		my $energycoef;
-		push(@{$additionalrxn},"SixATPSynth\t=\tATPSYNTH");
-		push(@{$additionalrxn},"OneATPSynth\t=\tATPSYNTH");
-		push(@{$additionalrxn},"ATPMaintenance\t=\tATPMAINT");
-		push(@{$additionalrxn},"EnergyBiomass\t=\tBiomassComp");
-		$gfcoef->{"EnergyBiomass"} = {"reverse" => 10,forward => 10,tag => "BiomassComp"};
-		push(@{$BioRxn},"SixATPSynth\tSixATPSynth\t0\t0\t(6) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + (5) cpd00067_c0[c] + cpd00001_c0[c]\tSixATPSynth\t<=>\tOK\t<=>");
-		push(@{$BioRxn},"OneATPSynth\tOneATPSynth\t0\t0\t(1) cpd00067_e0[e] + cpd00008_c0[c] + cpd00009_c0[c] <=> cpd00002_c0[c] + cpd00001_c0[c]\tOneATPSynth\t<=>\tOK\t<=>");
-		push(@{$BioRxn},"ATPMaintenance\tATPMaintenance\t0\t0\tcpd00002_c0[c] + cpd00001_c0[c] <=> cpd00067_c0[c] + cpd00008_c0[c] + cpd00009_c0[c]\tATPMaintenance\t=>\tOK\t=>");
-		push(@{$BioRxn},"EnergyBiomass\tEnergyBiomass\t0\t0\tcpd00002_c0[b] + cpd00001_c0[b] <=> cpd00008_c0[b] + cpd00009_c0[b] + cpd00067_c0[b]\tEnergyBiomass\t<=>\tOK\t<=>");
-		my $comprxn = {};
-		foreach my $cpd (@{$biocpds}) {
-			if ($cpd->coefficient() > 0) {
-				if ($cpd->modelcompound()->compound()->id() eq "cpd00008") {
-					$energycoef = $cpd->coefficient();
-				}
-			} else {
-				my $component = "other";
-				if ($cpd->modelcompound()->compound()->class() eq "amino_acid") {
-					$component = "protein";
-				} elsif ($cpd->modelcompound()->compound()->class() eq "deoxynucleotide") {
-					$component = "dna";
-				} elsif ($cpd->modelcompound()->compound()->class() eq "nucleotide") {
-					$component = "rna";
-				} elsif ($cpd->modelcompound()->compound()->class() eq "cellwall") {
-					$component = "cellwall";
-				} elsif ($cpd->modelcompound()->compound()->class() eq "lipid") {
-					$component = "lipid";
-				}
-				if ($component eq "other") {
-					$comprxn->{$cpd->modelcompound()->compound()->id()}->{compounds}->{$cpd->modelcompound()->compound()->id()} = 1;
-					$comprxn->{$cpd->modelcompound()->compound()->id()}->{totalmass} = 0.001*$cpd->modelcompound()->compound()->mass();
-					my $coprods = $cpd->modelcompound()->compound()->biomass_coproducts();
-					foreach my $cocpd (@{$coprods}) {
-						my $cpdobj = $self->template()->searchForCompound($cocpd->[0]);
-						$comprxn->{$cpd->modelcompound()->compound()->id()}->{compounds}->{$cpdobj->id()} = $cocpd->[1];
-						$comprxn->{$cpd->modelcompound()->compound()->id()}->{totalmass} += 0.001*$cpdobj->mass()*$cocpd->[1];
-					}
-				} elsif ($component ne "dependent") {
-					my $massadaptor = 0;
-					$comprxn->{$component}->{compounds}->{$cpd->modelcompound()->compound()->id()} = $cpd->coefficient();
-					if (!defined($comprxn->{$component}->{totalmass})) {
-						$comprxn->{$component}->{totalmass} = 0;
-					}
-					$comprxn->{$component}->{totalmass} += $cpd->coefficient()*0.001*$cpd->modelcompound()->compound()->mass();
-					my $coprods = $cpd->modelcompound()->compound()->biomass_coproducts();
-					foreach my $cocpd (@{$coprods}) {
-						my $cpdobj = $self->template()->searchForCompound($cocpd->[0]);
-						$comprxn->{$component}->{compounds}->{$cpdobj->id()} = $cpd->coefficient()*$cocpd->[1];
-						$comprxn->{$component}->{totalmass} += 0.001*$cpd->coefficient()*$cpdobj->mass()*$cocpd->[1];
-					}
-				}
-			}
-		}
-		my $biomasscomps = "EnergyBiomass:".$energycoef;
-		foreach my $component (keys(%{$comprxn})) {
-			if ($comprxn->{$component}->{totalmass} == 0) {
-				$comprxn->{$component}->{totalmass} = 1;
-				print "Zero mass ".$component."\n";
-			}
-			$biomasscomps .= ";".$component."Biomass:".$comprxn->{$component}->{totalmass};
-			my $reactant = "";
-			my $product = "";
-			foreach my $cpd (keys(%{$comprxn->{$component}->{compounds}})) {
-				#Rescaling the coefficient for a one gram basis
-				$comprxn->{$component}->{compounds}->{$cpd} = $comprxn->{$component}->{compounds}->{$cpd}/$comprxn->{$component}->{totalmass};
-				if ($comprxn->{$component}->{compounds}->{$cpd} < 0) {
-					if (length($reactant) > 0) {
-						$reactant .= " + ";
-					}
-					my $coef = -1*$comprxn->{$component}->{compounds}->{$cpd};
-					$reactant .= "(".$coef.") ".$cpd."_c0[b]";
-				} else {
-					if (length($product) > 0) {
-						$product .= " + ";
-					}
-					my $coef = $comprxn->{$component}->{compounds}->{$cpd};
-					$product .= "(".$coef.") ".$cpd."_c0[b]";
-				}
-			}
-			push(@{$additionalrxn},$component."Biomass\t=\tBiomassComp");
-			$gfcoef->{$component."Biomass"} = {"reverse" => 10,forward => 10,tag => "BiomassComp"};
-			push(@{$BioRxn},$component."Biomass\t".$component."Biomass\t0\t0\t".$reactant." <=> ".$product."\t".$component."Biomass\t<=>\tOK\t<=>");
-		}
-		$self->parameters()->{"Biomass component coefficients"} = $biomasscomps;
-		$self->parameters()->{"quantitative optimization"} = 1;
-	}
 	#Adding gapfilling candidates from template
 	if (defined($self->parameters()->{add_external_rxns}) && $self->parameters()->{add_external_rxns} == 1 && defined($self->parameters()->{"Perform gap filling"}) && $self->parameters()->{"Perform gap filling"} == 1) {	
 		my $gauranteed = {};
@@ -1328,6 +1399,9 @@ sub createJobDirectory {
 			$actcoef->{$key} = $coef->{highexp}->{$key};
 		}
 	}
+	my $atp_bio;
+	my $atp_rxn = 1;
+	my $atp_match_hash = Bio::KBase::constants::atp_hydrolysis_hash();
 	for (my $i=0; $i < @{$biomasses}; $i++) {
 		my $bio = $biomasses->[$i];
 		push(@{$mdlData},$bio->id().";=>;c;UNIVERSAL;;1");
@@ -1336,33 +1410,37 @@ sub createJobDirectory {
 		my $rgts = $bio->biomasscompounds();
 		for (my $j=0;$j < @{$rgts}; $j++) {
 			my $rgt = $rgts->[$j];
+			if (!defined($atp_match_hash->{$rgt->modelcompound()->id()}) || $atp_match_hash->{$rgt->modelcompound()->id()} != $rgt->coefficient()) {
+				$atp_rxn = 0;
+			}
+			my $suffix = "";
+			if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
+				$suffix = "[e]";
+			}
 			if ($rgt->coefficient() < 0) {
-				my $suffix = "";
-				if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
-					$suffix = "[e]";
-				}
 				if (length($reactants) > 0) {
 					$reactants .= " + ";
 				}
 				$reactants .= "(".(-1*$rgt->coefficient()).") ".$rgt->modelcompound()->id().$suffix;
-			}
-		}
-		for (my $j=0;$j < @{$rgts}; $j++) {
-			my $rgt = $rgts->[$j];
-			if ($rgt->coefficient() > 0) {
-				my $suffix = "";
-				if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
-					$suffix = "[e]";
-				}
+			} elsif ($rgt->coefficient() > 0) {
 				if (length($products) > 0) {
 					$products .= " + ";
 				}
 				$products .= "(".$rgt->coefficient().") ".$rgt->modelcompound()->id().$suffix;
 			}
 		}
-		my $equation = $reactants." => ".$products;
-		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$equation."\tBiomass\t=>\tOK\t=>";
+		if ($atp_rxn == 1) {
+			$atp_bio = $bio->id();
+		}
+		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$reactants." => ".$products."\tBiomass\t=>\tOK\t=>";
 		push(@{$BioRxn},$rxnline);
+	}
+	if (!defined($atp_bio)) {
+		$atp_bio = @{$biomasses};
+		$atp_bio += 1;
+		$atp_bio = "bio".$atp_bio;
+		push(@{$BioRxn},$atp_bio."\t".$atp_bio."\t0\t0\t(1) cpd00001_c0 + (1) cpd00002_c0 => (1) cpd00008_c0 + (1) cpd00009_c0 + (1) cpd00067_c0\tATP Biomass\t=>\tOK\t=>");
+		push(@{$mdlData},$atp_bio.";=>;c;UNIVERSAL;;1");
 	}
 	my $gfcoefficients = ["Reaction\tDirection\tCoefficient\tTag"];
 	foreach my $key (keys(%{$gfcoef})) {
@@ -1537,6 +1615,7 @@ sub createJobDirectory {
 		"Make all reactions reversible in MFA" => $self->allReversible(),
 		"Constrain objective to this fraction of the optimal value" => $self->objectiveConstraintFraction(),
 		"objective" => $objective,
+		"atp objective" => "MAX;FLUX;".$atp_bio.";c;1",
 		"find tight bounds" => $self->fva(),
 		"flux minimization" => $self->fluxMinimization(), 
 		"uptake limits" => $uptakeLimits,
@@ -1549,6 +1628,7 @@ sub createJobDirectory {
 		"database root input directory" => $self->jobDirectory()."/",
 		"Min flux multiplier" => 1,
 		"Max deltaG" => 10000,
+		"max objective limit" => 1.2
 	};
 	if (defined($self->{"fit phenotype data"})) {
 		$parameters->{"fit phenotype data"} = $self->{"fit phenotype data"};
@@ -2408,6 +2488,7 @@ sub loadMFAToolkitResults {
 	$self->parseReactionMinimization();
 	$self->parseMFALog();
 	$self->parseMetaboliteInteraction();
+	$self->parseReactionAdditionAnalysis();
 }
 
 =head3 parseBiomassRemovals
@@ -2877,6 +2958,22 @@ sub parseMetaboliteProduction {
 		return 1;
 	}
 	return 0;
+}
+
+=head3 parseReactionAdditionAnalysis
+Definition:
+	void ModelSEED::MS::Model->parseReactionAdditionAnalysis();
+Description:
+	Parses metabolite production file
+
+=cut
+
+sub parseReactionAdditionAnalysis {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MFAOutput/ReactionAdditionAnalysis.txt") {
+		$self->outputfiles()->{ReactionAdditionAnalysis} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/ReactionAdditionAnalysis.txt");
+	}
 }
 
 =head3 parseMetaboliteInteraction
