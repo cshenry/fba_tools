@@ -137,7 +137,7 @@ sub util_parse_input_table {
 	my $headingline = <$fh>;
 	my @split_text;
 	if (eof $fh){
-		print('Useing alternate parseing');
+		print("Using alternate parsing\n");
 		@split_text = split(/\r/, $headingline);
 		$headingline = shift(@split_text)
 	}

@@ -378,6 +378,7 @@ dies_ok{
             biomass        => [ "foo" ]
         })
     } 'SBML import: biomass not found';
+print $@."\n";
 
 # tsv_file_to_model
 dies_ok{
@@ -390,7 +391,8 @@ dies_ok{
             compounds_file =>
             { path => "/kb/module/test/data/FBAModelCompounds.tsv" }
         })
-    } 'tsv_to_model_with_structure';
+    } 'TSV to Model: invalid compound identifier';
+print $@."\n";
 
 lives_ok{
         $impl->tsv_file_to_model({
@@ -521,6 +523,7 @@ dies_ok{
             genome => "7601/4/1"
         })
     } 'import empty phenotype set fails';
+print $@."\n";
 
 # phenotype_set_to_tsv_file
 lives_ok{
