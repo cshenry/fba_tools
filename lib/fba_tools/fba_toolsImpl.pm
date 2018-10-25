@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.7.1';
-our $GIT_URL = 'git@github.com:cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = '287e65f90831e93836d44041b1011ca11af09c5b';
+our $VERSION = '1.7.6';
+our $GIT_URL = 'https://github.com/samseaver/fba_tools';
+our $GIT_COMMIT_HASH = '7877b3fdc3aab8b87fb27f76a63e614d2e23a8c4';
 
 =head1 NAME
 
@@ -137,7 +137,7 @@ sub util_parse_input_table {
 	my $headingline = <$fh>;
 	my @split_text;
 	if (eof $fh){
-		print('Useing alternate parseing');
+		print("Using alternate parsing\n");
 		@split_text = split(/\r/, $headingline);
 		$headingline = shift(@split_text)
 	}
@@ -4639,6 +4639,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
 	workspace has a value which is a string
+	report_workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -4667,6 +4668,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
 	workspace has a value which is a string
+	report_workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -4710,9 +4712,18 @@ sub bulk_export_objects
 		name => $output->{name},
 		description => $output->{description},
 	});
+    my $report_workspace = $params->{workspace};
+
+    #It's possible, using the API, to export objects from a workspace
+    #that the user doesn't own, and as such, cannot write the report to.
+
+    if(defined($params->{report_workspace})){
+	$report_workspace = $params->{report_workspace};
+    }
+
 	$self->util_finalize_call({
 		output => $output,
-		workspace => $params->{workspace},
+		workspace => $report_workspace,
 		report_name => Data::UUID->new()->create_str(),
 	});
     #END bulk_export_objects
@@ -7428,6 +7439,7 @@ media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
 workspace has a value which is a string
+report_workspace has a value which is a string
 
 </pre>
 
@@ -7448,6 +7460,7 @@ media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
 workspace has a value which is a string
+report_workspace has a value which is a string
 
 
 =end text
