@@ -582,6 +582,42 @@ sub build_plant_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_plant_metabolic_model
+    $self->util_initialize_call($params,$ctx);
+
+    #Getting genome
+    $self->util_log("Getting genome: ".$params->{genome_workspace}."/".$params->{genome_id}."\n");
+    my $genome = $self->util_get_object(Bio::KBase::utilities::buildref($params->{genome_id},$params->{genome_workspace}));
+
+    #Retrieving plant template
+    if(!defined($params->{template_id})){
+	$params->{template_id}="PlantModelTemplate";
+    }
+    if(!defined($params->{template_workspace})){
+	$params->{template_workspace}="NewKBaseModelTemplates";
+    }
+    my $template = $self->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
+
+    #Building model with plant template
+    if (!defined($params->{fbamodel_output_id})) {
+	$params->{fbamodel_output_id} = $genome->id().".fbamodel";
+    }
+    $self->util_log("Building model:".$params->{fbamodel_output_id}."\n");
+    my $fullmodel = $template->buildModel({
+	genome => $genome,
+	modelid => $params->{fbamodel_output_id},
+	fulldb => 0});
+
+    my $return = {};
+    $return->{number_gapfilled_reactions} = 0;
+    $return->{number_removed_biomass_compounds} = 0;
+    $return->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
+    my $wsmeta = $self->util_save_object($fullmodel,$return->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
+
+    $self->util_finalize_call({
+	output => $return,
+	workspace => $params->{workspace},
+	report_name => $params->{fbamodel_output_id}.".report"});
+
     #END build_plant_metabolic_model
     my @_bad_returns;
     (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
