@@ -152,36 +152,14 @@ module fba_tools {
     typedef structure {
 		genome_id genome_id;
 		workspace_name genome_workspace;
-		media_id media_id;
-		workspace_name media_workspace;
 		fbamodel_id fbamodel_output_id;
 		workspace_name workspace;
 		template_id template_id;
 		workspace_name template_workspace;
-		bool gapfill_model;
-		bool thermodynamic_constraints;
-		bool comprehensive_gapfill;
-		
-		list<string> custom_bound_list;
-		list<compound_id> media_supplement_list;
-		
-		expseries_id expseries_id;
-		workspace_name expseries_workspace;
-		string expression_condition;
-		float exp_threshold_percentile;
-		float exp_threshold_margin;
-		float activation_coefficient;
-		float omega;
-		float objective_fraction;
-		float minimum_target_flux;
-		int number_of_solutions;
     } BuildPlantMetabolicModelParams;
     
     typedef structure {
         ws_fbamodel_id new_fbamodel_ref;
-        ws_fba_id new_fba_ref;
-        int number_gapfilled_reactions;
-        int number_removed_biomass_compounds;
     } BuildPlantMetabolicModelResults;
     /*
         Build a genome-scale metabolic model based on annotations in an input genome typed object

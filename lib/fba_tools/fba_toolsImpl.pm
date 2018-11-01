@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '1.7.8';
 our $GIT_URL = 'https://github.com/samseaver/fba_tools';
-our $GIT_COMMIT_HASH = 'b066efae5706f1ff26ffc3b7612048ac684ac413';
+our $GIT_COMMIT_HASH = '50f684e203a12fdc46b5aa3a7d0525f70c4705b5';
 
 =head1 NAME
 
@@ -468,42 +468,17 @@ $return is a fba_tools.BuildPlantMetabolicModelResults
 BuildPlantMetabolicModelParams is a reference to a hash where the following keys are defined:
 	genome_id has a value which is a fba_tools.genome_id
 	genome_workspace has a value which is a fba_tools.workspace_name
-	media_id has a value which is a fba_tools.media_id
-	media_workspace has a value which is a fba_tools.workspace_name
 	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 	workspace has a value which is a fba_tools.workspace_name
 	template_id has a value which is a fba_tools.template_id
 	template_workspace has a value which is a fba_tools.workspace_name
-	gapfill_model has a value which is a fba_tools.bool
-	thermodynamic_constraints has a value which is a fba_tools.bool
-	comprehensive_gapfill has a value which is a fba_tools.bool
-	custom_bound_list has a value which is a reference to a list where each element is a string
-	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
-	expseries_id has a value which is a fba_tools.expseries_id
-	expseries_workspace has a value which is a fba_tools.workspace_name
-	expression_condition has a value which is a string
-	exp_threshold_percentile has a value which is a float
-	exp_threshold_margin has a value which is a float
-	activation_coefficient has a value which is a float
-	omega has a value which is a float
-	objective_fraction has a value which is a float
-	minimum_target_flux has a value which is a float
-	number_of_solutions has a value which is an int
 genome_id is a string
 workspace_name is a string
-media_id is a string
 fbamodel_id is a string
 template_id is a string
-bool is an int
-compound_id is a string
-expseries_id is a string
 BuildPlantMetabolicModelResults is a reference to a hash where the following keys are defined:
 	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
-	new_fba_ref has a value which is a fba_tools.ws_fba_id
-	number_gapfilled_reactions has a value which is an int
-	number_removed_biomass_compounds has a value which is an int
 ws_fbamodel_id is a string
-ws_fba_id is a string
 
 </pre>
 
@@ -516,42 +491,17 @@ $return is a fba_tools.BuildPlantMetabolicModelResults
 BuildPlantMetabolicModelParams is a reference to a hash where the following keys are defined:
 	genome_id has a value which is a fba_tools.genome_id
 	genome_workspace has a value which is a fba_tools.workspace_name
-	media_id has a value which is a fba_tools.media_id
-	media_workspace has a value which is a fba_tools.workspace_name
 	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 	workspace has a value which is a fba_tools.workspace_name
 	template_id has a value which is a fba_tools.template_id
 	template_workspace has a value which is a fba_tools.workspace_name
-	gapfill_model has a value which is a fba_tools.bool
-	thermodynamic_constraints has a value which is a fba_tools.bool
-	comprehensive_gapfill has a value which is a fba_tools.bool
-	custom_bound_list has a value which is a reference to a list where each element is a string
-	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
-	expseries_id has a value which is a fba_tools.expseries_id
-	expseries_workspace has a value which is a fba_tools.workspace_name
-	expression_condition has a value which is a string
-	exp_threshold_percentile has a value which is a float
-	exp_threshold_margin has a value which is a float
-	activation_coefficient has a value which is a float
-	omega has a value which is a float
-	objective_fraction has a value which is a float
-	minimum_target_flux has a value which is a float
-	number_of_solutions has a value which is an int
 genome_id is a string
 workspace_name is a string
-media_id is a string
 fbamodel_id is a string
 template_id is a string
-bool is an int
-compound_id is a string
-expseries_id is a string
 BuildPlantMetabolicModelResults is a reference to a hash where the following keys are defined:
 	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
-	new_fba_ref has a value which is a fba_tools.ws_fba_id
-	number_gapfilled_reactions has a value which is an int
-	number_removed_biomass_compounds has a value which is an int
 ws_fbamodel_id is a string
-ws_fba_id is a string
 
 
 =end text
@@ -607,10 +557,7 @@ sub build_plant_metabolic_model
 	modelid => $params->{fbamodel_output_id},
 	fulldb => 0});
 
-    my $return = {};
-    $return->{number_gapfilled_reactions} = 0;
-    $return->{number_removed_biomass_compounds} = 0;
-    $return->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
+    my $return = {new_fbamodel_ref => Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace})};
     my $wsmeta = $self->util_save_object($fullmodel,$return->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
 
     $self->util_finalize_call({
@@ -5841,27 +5788,10 @@ number_removed_biomass_compounds has a value which is an int
 a reference to a hash where the following keys are defined:
 genome_id has a value which is a fba_tools.genome_id
 genome_workspace has a value which is a fba_tools.workspace_name
-media_id has a value which is a fba_tools.media_id
-media_workspace has a value which is a fba_tools.workspace_name
 fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 template_id has a value which is a fba_tools.template_id
 template_workspace has a value which is a fba_tools.workspace_name
-gapfill_model has a value which is a fba_tools.bool
-thermodynamic_constraints has a value which is a fba_tools.bool
-comprehensive_gapfill has a value which is a fba_tools.bool
-custom_bound_list has a value which is a reference to a list where each element is a string
-media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
-expseries_id has a value which is a fba_tools.expseries_id
-expseries_workspace has a value which is a fba_tools.workspace_name
-expression_condition has a value which is a string
-exp_threshold_percentile has a value which is a float
-exp_threshold_margin has a value which is a float
-activation_coefficient has a value which is a float
-omega has a value which is a float
-objective_fraction has a value which is a float
-minimum_target_flux has a value which is a float
-number_of_solutions has a value which is an int
 
 </pre>
 
@@ -5872,27 +5802,10 @@ number_of_solutions has a value which is an int
 a reference to a hash where the following keys are defined:
 genome_id has a value which is a fba_tools.genome_id
 genome_workspace has a value which is a fba_tools.workspace_name
-media_id has a value which is a fba_tools.media_id
-media_workspace has a value which is a fba_tools.workspace_name
 fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 template_id has a value which is a fba_tools.template_id
 template_workspace has a value which is a fba_tools.workspace_name
-gapfill_model has a value which is a fba_tools.bool
-thermodynamic_constraints has a value which is a fba_tools.bool
-comprehensive_gapfill has a value which is a fba_tools.bool
-custom_bound_list has a value which is a reference to a list where each element is a string
-media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
-expseries_id has a value which is a fba_tools.expseries_id
-expseries_workspace has a value which is a fba_tools.workspace_name
-expression_condition has a value which is a string
-exp_threshold_percentile has a value which is a float
-exp_threshold_margin has a value which is a float
-activation_coefficient has a value which is a float
-omega has a value which is a float
-objective_fraction has a value which is a float
-minimum_target_flux has a value which is a float
-number_of_solutions has a value which is an int
 
 
 =end text
@@ -5914,9 +5827,6 @@ number_of_solutions has a value which is an int
 <pre>
 a reference to a hash where the following keys are defined:
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
-new_fba_ref has a value which is a fba_tools.ws_fba_id
-number_gapfilled_reactions has a value which is an int
-number_removed_biomass_compounds has a value which is an int
 
 </pre>
 
@@ -5926,9 +5836,6 @@ number_removed_biomass_compounds has a value which is an int
 
 a reference to a hash where the following keys are defined:
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
-new_fba_ref has a value which is a fba_tools.ws_fba_id
-number_gapfilled_reactions has a value which is an int
-number_removed_biomass_compounds has a value which is an int
 
 
 =end text

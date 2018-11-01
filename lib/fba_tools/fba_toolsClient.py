@@ -84,37 +84,17 @@ class fba_tools(object):
            structure: parameter "genome_id" of type "genome_id" (A string
            representing a Genome id.), parameter "genome_workspace" of type
            "workspace_name" (A string representing a workspace name.),
-           parameter "media_id" of type "media_id" (A string representing a
-           Media id.), parameter "media_workspace" of type "workspace_name"
-           (A string representing a workspace name.), parameter
-           "fbamodel_output_id" of type "fbamodel_id" (A string representing
-           a FBAModel id.), parameter "workspace" of type "workspace_name" (A
-           string representing a workspace name.), parameter "template_id" of
-           type "template_id" (A string representing a NewModelTemplate id.),
-           parameter "template_workspace" of type "workspace_name" (A string
-           representing a workspace name.), parameter "gapfill_model" of type
-           "bool" (A binary boolean), parameter "thermodynamic_constraints"
-           of type "bool" (A binary boolean), parameter
-           "comprehensive_gapfill" of type "bool" (A binary boolean),
-           parameter "custom_bound_list" of list of String, parameter
-           "media_supplement_list" of list of type "compound_id" (A string
-           representing a compound id.), parameter "expseries_id" of type
-           "expseries_id" (A string representing an expression matrix id.),
-           parameter "expseries_workspace" of type "workspace_name" (A string
-           representing a workspace name.), parameter "expression_condition"
-           of String, parameter "exp_threshold_percentile" of Double,
-           parameter "exp_threshold_margin" of Double, parameter
-           "activation_coefficient" of Double, parameter "omega" of Double,
-           parameter "objective_fraction" of Double, parameter
-           "minimum_target_flux" of Double, parameter "number_of_solutions"
-           of Long
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "template_id" of type "template_id" (A string
+           representing a NewModelTemplate id.), parameter
+           "template_workspace" of type "workspace_name" (A string
+           representing a workspace name.)
         :returns: instance of type "BuildPlantMetabolicModelResults" ->
            structure: parameter "new_fbamodel_ref" of type "ws_fbamodel_id"
            (The workspace ID for a FBAModel data object. @id ws
-           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
-           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA),
-           parameter "number_gapfilled_reactions" of Long, parameter
-           "number_removed_biomass_compounds" of Long
+           KBaseFBA.FBAModel)
         """
         return self._client.call_method(
             'fba_tools.build_plant_metabolic_model',
