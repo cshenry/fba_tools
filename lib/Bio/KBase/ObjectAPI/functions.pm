@@ -441,33 +441,35 @@ sub func_build_metabolic_model {
 		},$datachannel);
 		my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
 		my $first = 1;
-		for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
-			my $row = [split(/\t/,$rxn_addition_data->[$i])];
-			if ($row->[2] == 0) {
-				if ($row->[1] =~ m/(.)(rxn.+)/) {
-					 my $sign = $1;
-					 my $id = $2;
-					 if ($first == 1) {
-					 	$htmlreport .= " Rejected the following reactions due to ATP overproduction: ";
-					 } else {
-					 	$htmlreport .= ", ";
-					 }
-					 $first = 0;
-					 $htmlreport .= $sign.$id;
-					 my $rxnobj = $fullmodel->queryObject("modelreactions",{id => $id});
-					 if ($sign eq "+") {
-					 	if ($rxnobj->direction() eq "=") {
-					 		$rxnobj->direction("<");
-					 	} else {
-					 		$fullmodel->remove("modelreactions",$rxnobj);
-					 	}
-					 } else {
-					 	if ($rxnobj->direction() eq "=") {
-					 		$rxnobj->direction(">");
-					 	} else {
-					 		$fullmodel->remove("modelreactions",$rxnobj);
-					 	}
-					 }
+		if (defined($rxn_addition_data)) {
+			for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
+				my $row = [split(/\t/,$rxn_addition_data->[$i])];
+				if ($row->[2] == 0) {
+					if ($row->[1] =~ m/(.)(rxn.+)/) {
+						 my $sign = $1;
+						 my $id = $2;
+						 if ($first == 1) {
+						 	$htmlreport .= " Rejected the following reactions due to ATP overproduction: ";
+						 } else {
+						 	$htmlreport .= ", ";
+						 }
+						 $first = 0;
+						 $htmlreport .= $sign.$id;
+						 my $rxnobj = $fullmodel->queryObject("modelreactions",{id => $id});
+						 if ($sign eq "+") {
+						 	if ($rxnobj->direction() eq "=") {
+						 		$rxnobj->direction("<");
+						 	} else {
+						 		$fullmodel->remove("modelreactions",$rxnobj);
+						 	}
+						 } else {
+						 	if ($rxnobj->direction() eq "=") {
+						 		$rxnobj->direction(">");
+						 	} else {
+						 		$fullmodel->remove("modelreactions",$rxnobj);
+						 	}
+						 }
+					}
 				}
 			}
 		}
