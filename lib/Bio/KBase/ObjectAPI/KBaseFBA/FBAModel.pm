@@ -97,10 +97,9 @@ sub gapfilled_reaction_count {
 	my $count = 0;
 	for (my $i=0; $i < @{$reactions}; $i++) {
 		my $gfhash = $reactions->[$i]->gapfill_data();
-		foreach my $key (keys(%{$gfhash})) {
-			if ($gfhash->{$key} =~ m/added/) {
-				$count++;
-			}
+		my $numkeys = keys(%{$gfhash});
+		if ($numkeys > 0) {
+			$count++;
 		}
 	}
 	return $count;
