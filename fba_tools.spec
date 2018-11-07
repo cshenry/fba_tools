@@ -686,6 +686,7 @@ module fba_tools {
         string phenotype_format;
         string phenosim_format;
         string workspace;
+        string report_workspace;
     } BulkExportObjectsParams;
     
     typedef structure {

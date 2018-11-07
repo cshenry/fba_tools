@@ -879,7 +879,8 @@ class fba_tools(object):
            "bool" (A binary boolean), parameter "model_format" of String,
            parameter "fba_format" of String, parameter "media_format" of
            String, parameter "phenotype_format" of String, parameter
-           "phenosim_format" of String, parameter "workspace" of String
+           "phenosim_format" of String, parameter "workspace" of String,
+           parameter "report_workspace" of String
         :returns: instance of type "BulkExportObjectsResult" -> structure:
            parameter "report_name" of String, parameter "report_ref" of type
            "ws_report_id" (The workspace ID for a Report object @id ws

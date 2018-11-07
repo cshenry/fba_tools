@@ -4637,6 +4637,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
 	workspace has a value which is a string
+	report_workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -4665,6 +4666,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
 	workspace has a value which is a string
+	report_workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -7474,6 +7476,7 @@ media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
 workspace has a value which is a string
+report_workspace has a value which is a string
 
 </pre>
 
@@ -7494,6 +7497,7 @@ media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
 workspace has a value which is a string
+report_workspace has a value which is a string
 
 
 =end text

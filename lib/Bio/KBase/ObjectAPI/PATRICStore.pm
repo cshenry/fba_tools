@@ -475,7 +475,7 @@ sub transform_media_from_ws {
 	my $array = [split(/\r\n?|\n/,$data)];
 	my $heading = [split(/\t/,$array->[0])];
 	my $headinghash = {};
-	for (my $i=1; $i < @{$heading}; $i++) {
+	for (my $i=0; $i < @{$heading}; $i++) {
 		$headinghash->{$heading->[$i]} = $i;
 	}
 	my $biochem;
@@ -688,7 +688,8 @@ sub save_model {
     }
     $summary->{status} = "complete";
     $summary->{status_timestamp} = Bio::KBase::utilities::timestamp();
-	$self->helper()->update_model_meta($ref,$summary);
+	#$self->helper()->update_model_meta($ref,$summary);
+	Bio::ModelSEED::patricenv::call_ws("update_metadata",{objects => [[$ref,$summary]]});
 	return $output;
 }
 

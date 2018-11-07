@@ -376,17 +376,20 @@ sub addRxnToModel {
 	for (my $i=0; $i < @{$cpxs}; $i++) {
 		my $cpx = $cpxs->[$i];
 		my $complexroles = $cpx->complexroles();
-		my $present = 0;
+		my $complex_present = 0;
 		my $subunits;
 		for (my $j=0; $j < @{$complexroles}; $j++) {
 			my $cpxrole = $complexroles->[$j];
 			if (defined($roleFeatures->{$cpxrole->templaterole()->id()})) {
 				foreach my $compartment (keys(%{$roleFeatures->{$cpxrole->templaterole()->id()}})) {
+				    my $role_cpt_present=0;
 					if ($compartment eq "u" || $compartment eq $self->templatecompartment()->id()) {
 						if ($cpxrole->triggering() == 1) {
-							$present = 1;	
+							$complex_present = 1;
+							$role_cpt_present = 1;
 						}
 					}
+				    if($role_cpt_present == 1){
 					$subunits->{$cpxrole->templaterole()->name()}->{triggering} = $cpxrole->triggering();
 					$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
 					if (!defined($roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0])) {
@@ -396,10 +399,11 @@ sub addRxnToModel {
 							$subunits->{$cpxrole->templaterole()->name()}->{genes}->{"~/genome/features/id/".$feature->id()} = $feature;	
 						}
 					}
+				    }
 				}
 			}
 		}
-		if ($present == 1) {
+		if ($complex_present == 1) {
 			for (my $j=0; $j < @{$complexroles}; $j++) {
 				my $cpxrole = $complexroles->[$j];
 				if ($cpxrole->optional_role() == 0 && !defined($subunits->{$cpxrole->templaterole()->name()})) {
