@@ -30,7 +30,6 @@ sub get_ws_name {
     }
     return $ws_name;
 }
-#=head
 
 # build_metabolic_model
 lives_ok{
@@ -43,6 +42,16 @@ lives_ok{
             workspace => get_ws_name()
         })
    } "build_metabolic_model";
+
+# build_plant_metabolic_model
+lives_ok{
+    $impl->build_plant_metabolic_model({
+	genome_id => "Alyrata_v1.0",
+	genome_workspace => "PlantSEED_v2",
+	fbamodel_output_id =>  "test_model",
+	workspace => get_ws_name()
+				       })
+} "build_plant_metabolic_model";
 
 # gapfill_metabolic_model
 lives_ok{

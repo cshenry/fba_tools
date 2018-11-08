@@ -148,7 +148,24 @@ module fba_tools {
         Build a genome-scale metabolic model based on annotations in an input genome typed object
     */
     funcdef build_metabolic_model(BuildMetabolicModelParams params) returns (BuildMetabolicModelResults) authentication required;
+
+    typedef structure {
+		genome_id genome_id;
+		workspace_name genome_workspace;
+		fbamodel_id fbamodel_output_id;
+		workspace_name workspace;
+		template_id template_id;
+		workspace_name template_workspace;
+    } BuildPlantMetabolicModelParams;
     
+    typedef structure {
+        ws_fbamodel_id new_fbamodel_ref;
+    } BuildPlantMetabolicModelResults;
+    /*
+        Build a genome-scale metabolic model based on annotations in an input genome typed object
+    */
+    funcdef build_plant_metabolic_model(BuildPlantMetabolicModelParams params) returns (BuildPlantMetabolicModelResults) authentication required;
+        
     typedef structure {
 		list<genome_id> genome_ids;
 		string genome_text;

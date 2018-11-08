@@ -182,6 +182,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: build_plant_metabolic_model</p>
+     * <pre>
+     * Build a genome-scale metabolic model based on annotations in an input genome typed object
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.BuildPlantMetabolicModelParams BuildPlantMetabolicModelParams}
+     * @return   instance of type {@link us.kbase.fbatools.BuildPlantMetabolicModelResults BuildPlantMetabolicModelResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public BuildPlantMetabolicModelResults buildPlantMetabolicModel(BuildPlantMetabolicModelParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<BuildPlantMetabolicModelResults>> retType = new TypeReference<List<BuildPlantMetabolicModelResults>>() {};
+        List<BuildPlantMetabolicModelResults> res = caller.jsonrpcCall("fba_tools.build_plant_metabolic_model", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: build_multiple_metabolic_models</p>
      * <pre>
      * Build multiple genome-scale metabolic models based on annotations in an input genome typed object

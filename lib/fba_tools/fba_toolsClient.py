@@ -77,6 +77,29 @@ class fba_tools(object):
             'fba_tools.build_metabolic_model',
             [params], self._service_ver, context)
 
+    def build_plant_metabolic_model(self, params, context=None):
+        """
+        Build a genome-scale metabolic model based on annotations in an input genome typed object
+        :param params: instance of type "BuildPlantMetabolicModelParams" ->
+           structure: parameter "genome_id" of type "genome_id" (A string
+           representing a Genome id.), parameter "genome_workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "template_id" of type "template_id" (A string
+           representing a NewModelTemplate id.), parameter
+           "template_workspace" of type "workspace_name" (A string
+           representing a workspace name.)
+        :returns: instance of type "BuildPlantMetabolicModelResults" ->
+           structure: parameter "new_fbamodel_ref" of type "ws_fbamodel_id"
+           (The workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel)
+        """
+        return self._client.call_method(
+            'fba_tools.build_plant_metabolic_model',
+            [params], self._service_ver, context)
+
     def build_multiple_metabolic_models(self, params, context=None):
         """
         Build multiple genome-scale metabolic models based on annotations in an input genome typed object

@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.7.6';
+our $VERSION = '1.7.8';
 our $GIT_URL = 'https://github.com/samseaver/fba_tools';
-our $GIT_COMMIT_HASH = '7877b3fdc3aab8b87fb27f76a63e614d2e23a8c4';
+our $GIT_COMMIT_HASH = '50f684e203a12fdc46b5aa3a7d0525f70c4705b5';
 
 =head1 NAME
 
@@ -445,6 +445,133 @@ sub build_metabolic_model
 	my $msg = "Invalid returns passed to build_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'build_metabolic_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 build_plant_metabolic_model
+
+  $return = $obj->build_plant_metabolic_model($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.BuildPlantMetabolicModelParams
+$return is a fba_tools.BuildPlantMetabolicModelResults
+BuildPlantMetabolicModelParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+workspace_name is a string
+fbamodel_id is a string
+template_id is a string
+BuildPlantMetabolicModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+ws_fbamodel_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.BuildPlantMetabolicModelParams
+$return is a fba_tools.BuildPlantMetabolicModelResults
+BuildPlantMetabolicModelParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+workspace_name is a string
+fbamodel_id is a string
+template_id is a string
+BuildPlantMetabolicModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+ws_fbamodel_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Build a genome-scale metabolic model based on annotations in an input genome typed object
+
+=back
+
+=cut
+
+sub build_plant_metabolic_model
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to build_plant_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'build_plant_metabolic_model');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN build_plant_metabolic_model
+    $self->util_initialize_call($params,$ctx);
+
+    #Getting genome
+    $self->util_log("Getting genome: ".$params->{genome_workspace}."/".$params->{genome_id}."\n");
+    my $genome = $self->util_get_object(Bio::KBase::utilities::buildref($params->{genome_id},$params->{genome_workspace}));
+
+    #Retrieving plant template
+    if(!defined($params->{template_id})){
+	$params->{template_id}="PlantModelTemplate";
+    }
+    if(!defined($params->{template_workspace})){
+	$params->{template_workspace}="NewKBaseModelTemplates";
+    }
+    my $template = $self->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
+
+    #Building model with plant template
+    if (!defined($params->{fbamodel_output_id})) {
+	$params->{fbamodel_output_id} = $genome->id().".fbamodel";
+    }
+    $self->util_log("Building model:".$params->{fbamodel_output_id}."\n");
+    my $fullmodel = $template->buildModel({
+	genome => $genome,
+	modelid => $params->{fbamodel_output_id},
+	fulldb => 0});
+
+    my $return = {new_fbamodel_ref => Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace})};
+    my $wsmeta = $self->util_save_object($fullmodel,$return->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
+
+    $self->util_finalize_call({
+	output => $return,
+	workspace => $params->{workspace},
+	report_name => $params->{fbamodel_output_id}.".report"});
+
+    #END build_plant_metabolic_model
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to build_plant_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'build_plant_metabolic_model');
     }
     return($return);
 }
@@ -5639,6 +5766,76 @@ new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 new_fba_ref has a value which is a fba_tools.ws_fba_id
 number_gapfilled_reactions has a value which is an int
 number_removed_biomass_compounds has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 BuildPlantMetabolicModelParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+genome_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+genome_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 BuildPlantMetabolicModelResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 
 
 =end text
