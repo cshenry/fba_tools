@@ -3724,6 +3724,17 @@ sub parseGapfillingOutput {
 			$self->fbamodel()->add_gapfilling($input);
 		}
 	}
+	
+	if (-e $directory."/log.txt") {
+		my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/log.txt");
+		for (my $i=0; $i < @{$data}; $i++) {	
+			if ($data->[$i] =~ m/biomass\sflux\swith\sexpression\sconstraints:\s(.+)/) {
+				$self->parameters()->{growth} = $1;
+			} elsif ($data->[$i] =~ m/Retained\s([^\s]+)\s/) {
+				$self->parameters()->{atpproduction} = $1;
+			}
+		}
+	}
 }
 
 =head3 parseMFALog

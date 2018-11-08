@@ -397,7 +397,8 @@ sub func_build_metabolic_model {
 			fbamodel_output_id => "tempcore.gf",
 			target_reaction => "bio2",
 			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
-			media_id => "RefGlucoseMinimal"
+			media_id => "RefGlucoseMinimal",
+			atp_production_check => 0
 		},$coremodel);
 		my $corehash = {};
 		my $rxns = $coremodel->modelreactions();
@@ -634,7 +635,7 @@ sub func_gapfill_metabolic_model {
 		$htmlreport .= Bio::KBase::utilities::gapfilling_html_table()."</div>";
 		Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	}
-	return {
+	my $output = {
 		new_fbamodel => $model,
 		html_report => $htmlreport,
 		new_fba_ref => util_get_ref($wsmeta2),
@@ -642,6 +643,13 @@ sub func_gapfill_metabolic_model {
 		number_gapfilled_reactions => 0,
 		number_removed_biomass_compounds => 0
 	};
+	if (defined($fba->parameters()->{growth})) {
+		$output->{growth} = $fba->parameters()->{growth};
+	}
+	if (defined($fba->parameters()->{atpproduction})) {
+		$output->{atpproduction} = $fba->parameters()->{atpproduction};
+	}
+	return $output;
 }
 
 sub func_run_flux_balance_analysis {
