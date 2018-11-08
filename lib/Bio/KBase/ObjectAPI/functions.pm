@@ -511,7 +511,8 @@ sub func_build_metabolic_model {
 			fbamodel_id => $params->{fbamodel_output_id},
 			fbamodel_output_id => $params->{fbamodel_output_id},
 			media_workspace => $params->{media_workspace},
-			media_id => $params->{media_id}
+			media_id => $params->{media_id},
+			atp_production_check => 1
 		},$fullmodel);
 		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$fullmodel->modelreactions()}." reactions, ".@{$fullmodel->modelcompounds()}." compounds, and ".$fullmodel->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
 	} else {
@@ -555,7 +556,8 @@ sub func_gapfill_metabolic_model {
 		objective_fraction => 0,
 		minimum_target_flux => 0.1,
 		number_of_solutions => 1,
-		gapfill_output_id => undef
+		gapfill_output_id => undef,
+		atp_production_check => 1
 	});
 	my $printreport = 1;
 	my $htmlreport = "";
@@ -602,6 +604,9 @@ sub func_gapfill_metabolic_model {
 	}
 	my $gfid = "gf.".$currentid;
 	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fbamodel_output_id}.".".$gfid,1,1,$source_model,1);
+	if ($params->{atp_production_check} == 1) {
+		$fba->parameters()->{"ATP check gapfilling solutions"} = 1;
+	}
 	$handler->util_log("Running flux balance analysis problem.");
 	$fba->runFBA();
 	#Error checking the FBA and gapfilling solution
