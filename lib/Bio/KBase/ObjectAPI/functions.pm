@@ -390,7 +390,7 @@ sub func_build_metabolic_model {
 			modelid => "tempcore",
 			fulldb => 0
 		});
-		$datachannel = {fbamodel => $coremodel};
+		$datachannel->{fbamodel} = $coremodel;
 		my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			workspace => "NULL",
 			fbamodel_id => "tempcore",
