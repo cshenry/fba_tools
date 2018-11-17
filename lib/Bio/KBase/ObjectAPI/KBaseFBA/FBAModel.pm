@@ -413,19 +413,19 @@ Description:
 sub addModelReaction {
     my $self = shift;
     my $args = Bio::KBase::ObjectAPI::utilities::args(["reaction"],{
-    	equation => undef,
-    	direction => undef,
-    	compartment => "c",
-    	compartmentIndex => 0,
-    	gpr => undef,
-    	removeReaction => 0,
-    	addReaction => 0,
-    	compounds => {},
-    	enzyme => undef,
-    	pathway => undef,
-    	name => undef,
-    	reference => undef,
-    	genetranslation => undef
+	    	equation => undef,
+	    	direction => undef,
+	    	compartment => "c",
+	    	compartmentIndex => 0,
+	    	gpr => undef,
+	    	removeReaction => 0,
+	    	addReaction => 0,
+	    	compounds => {},
+	    	enzyme => undef,
+	    	pathway => undef,
+	    	name => undef,
+	    	reference => undef,
+	    	genetranslation => undef
     }, @_);
     my $rootid = $args->{reaction};
 	if ($rootid =~ m/(.+)_([a-zA-Z])(\d+)$/) {
@@ -473,38 +473,36 @@ sub addModelReaction {
 	#Finding reaction reference
 	my $reference = $self->template()->_reference()."/reactions/id/rxn00000_c";
 	my $coefhash = {};
-	if ($rootid =~ m/^rxn\d+$/) {
-		my $rxnobj = $self->template()->searchForReaction($rootid,$cmp->id());
-		if (defined($rxnobj)){
-			$reference = $rxnobj->_reference();
-			my $rgts = $rxnobj->templateReactionReagents();
-			my $cmpchange = 0;
-			for (my $i=0; $i < @{$rgts}; $i++) {
-				if ($rgts->[$i]->templatecompcompound()->templatecompartment()->id() ne "c") {
-					$cmpchange = 1;
-					last;
-				}
+	my $rxnobj = $self->template()->searchForReaction($rootid,$cmp->id());
+	if (defined($rxnobj)){
+		$reference = $rxnobj->_reference();
+		my $rgts = $rxnobj->templateReactionReagents();
+		my $cmpchange = 0;
+		for (my $i=0; $i < @{$rgts}; $i++) {
+			if ($rgts->[$i]->templatecompcompound()->templatecompartment()->id() ne "c") {
+				$cmpchange = 1;
+				last;
 			}
-			for (my $i=0; $i < @{$rgts}; $i++) {
-				my $rgt = $rgts->[$i];
-				my $rgtcmp = $mdlcmp;
-				if ($cmpchange == 1) {
-					if ($rgt->templatecompcompound()->templatecompartment()->id() eq "e") {
-						$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
-					} else {
-						$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => $args->{compartmentIndex}});
-					}
-				}
-				my $coefficient = $rgt->coefficient();
-				my $mdlcpd = $self->addCompoundToModel({
-					compound => $rgt->templatecompcompound()->templatecompound(),
-					modelCompartment => $rgtcmp,
-				});
-				$coefhash->{"~/modelcompounds/id/".$mdlcpd->id()} = $coefficient;
-			}
-		} elsif(!defined($eq)) {
-			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 		}
+		for (my $i=0; $i < @{$rgts}; $i++) {
+			my $rgt = $rgts->[$i];
+			my $rgtcmp = $mdlcmp;
+			if ($cmpchange == 1) {
+				if ($rgt->templatecompcompound()->templatecompartment()->id() eq "e") {
+					$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
+				} else {
+					$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => $args->{compartmentIndex}});
+				}
+			}
+			my $coefficient = $rgt->coefficient();
+			my $mdlcpd = $self->addCompoundToModel({
+				compound => $rgt->templatecompcompound()->templatecompound(),
+				modelCompartment => $rgtcmp,
+			});
+			$coefhash->{"~/modelcompounds/id/".$mdlcpd->id()} = $coefficient;
+		}
+	} elsif(!defined($eq)) {
+		Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 	}
 	#Adding reaction
 	my $mdlrxn = $self->add("modelreactions",{
@@ -534,11 +532,11 @@ sub addModelReaction {
 	#Adjusting model reaction
 	$self->adjustModelReaction({
 		reaction => $mdlrxn->id(),
-    	gpr => $args->{gpr},
-    	enzyme => $args->{enzyme},
-    	pathway => $args->{pathway},
-    	reference => $args->{reference},
-    	genetranslation => $args->{genetranslation}
+	    	gpr => $args->{gpr},
+	    	enzyme => $args->{enzyme},
+	    	pathway => $args->{pathway},
+	    	reference => $args->{reference},
+	    	genetranslation => $args->{genetranslation}
 	});
 	return $mdlrxn;
 }
