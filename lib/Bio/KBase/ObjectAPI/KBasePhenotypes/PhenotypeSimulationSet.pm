@@ -73,7 +73,7 @@ sub export {
 sub printTSV {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my  $output = ["Growth condition\tGenekKO\tmediaws\tAddtional Compounds\taddtlCpdBounds\tcustomReactionBounds\tObserved Normal growth\tSimulated growth\tsimulated growth fraction\tgapfilled reaction count\tgapfilled reactions\tPrediction class"];
+	my  $output = ["Growth condition\tGene KO\tMedia WS\tAddtional compounds\tAddtl compound bounds\tCustom reaction bounds\tObserved normal growth\tSimulated growth\tSimulated growth fraction\tGapfilled reaction count\tGapfilled reactions\tPrediction class"];
 	my $phenotypes = $self->phenotypeSimulations();
 	for (my $i=0; $i < @{$phenotypes}; $i++) {
 		push(@{$output},$phenotypes->[$i]->phenotype()->media()->_wsname()."\t".$phenotypes->[$i]->phenotype()->geneKOString()."\t".$phenotypes->[$i]->phenotype()->media()->_wsworkspace()."\t".$phenotypes->[$i]->phenotype()->additionalCpdString()."\t".$phenotypes->[$i]->phenotype()->compoundBoundsString()."\t".$phenotypes->[$i]->phenotype()->reactionBoundsString()."\t".$phenotypes->[$i]->phenotype()->normalizedGrowth()."\t".$phenotypes->[$i]->simulatedGrowth()."\t".$phenotypes->[$i]->simulatedGrowthFraction()."\t".$phenotypes->[$i]->numGapfilledReactions()."\t".join(";",@{$phenotypes->[$i]->gapfilledReactions()})."\t".$phenotypes->[$i]->phenotype()->phenoclass()
