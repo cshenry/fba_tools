@@ -234,6 +234,9 @@ sub util_build_fba {
 			make_model_rxns_reversible => $make_model_reactions_reversible,
 			activate_all_model_reactions => $params->{comprehensive_gapfill},
 		};
+		if (defined($params->{blacklist})) {
+			$input->{blacklistedrxns} = $params->{blacklist};
+		}
 		#print "activate_all_model_reactions:".$params->{comprehensive_gapfill}."\n";
 		if (defined($exp_matrix)) {
 			$input->{expsample} = $exphash;
@@ -349,7 +352,8 @@ sub func_build_metabolic_model {
 		number_of_solutions => 1,
 		max_objective_limit => 1.2,
 		predict_auxotrophy => 0,
-		mode => "new"
+		mode => "new",
+		anaerobe => 0
 	});
 	#Getting genome
 	$handler->util_log("Retrieving genome.");
@@ -390,6 +394,18 @@ sub func_build_metabolic_model {
 			modelid => "tempcore",
 			fulldb => 0
 		});
+		my $blacklist = [];
+		if ($params->{anaerobe} == 1) {
+			my $mdlrxn = $coremodel->getObject("modelreactions","rxn14419_c0");
+			if (defined($mdlrxn)) {
+				$coremodel->remove("modelreactions",$mdlrxn);
+			}
+			$mdlrxn = $coremodel->getObject("modelreactions","rxn14422_c0");
+			if (defined($mdlrxn)) {
+				$coremodel->remove("modelreactions",$mdlrxn);
+			}
+			$blacklist = ["rxn14426","rxn14419","rxn14422"];
+		}
 		$datachannel->{fbamodel} = $coremodel;
 		my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			workspace => "NULL",
@@ -398,7 +414,8 @@ sub func_build_metabolic_model {
 			target_reaction => "bio2",
 			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
 			media_id => "RefGlucoseMinimal",
-			atp_production_check => 0
+			atp_production_check => 0,
+			blacklist => $blacklist
 		},$coremodel);
 		my $corehash = {};
 		my $rxns = $coremodel->modelreactions();
@@ -545,6 +562,7 @@ sub func_gapfill_metabolic_model {
 		source_fbamodel_workspace => $params->{workspace},
 		feature_ko_list => [],
 		reaction_ko_list => [],
+		blacklist => [],
 		custom_bound_list => [],
 		media_supplement_list => [],
 		expseries_id => undef,
@@ -698,7 +716,8 @@ sub func_run_flux_balance_analysis {
 		min_objective => 0,
 		reaction_addition_study => 0,
 		max_objective_limit => 1.2,
-		reaction_list => []
+		reaction_list => [],
+		community_fba => 0
 	});
 	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
 		if (length($params->{reaction_ko_list}) > 0) {
@@ -739,6 +758,9 @@ sub func_run_flux_balance_analysis {
 	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
 	$handler->util_log("Preparing flux balance analysis problem.");
 	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+	if ($params->{community_fba} == 1) {
+		$fba->parameters()->{"steady state community modeling"} = 1;
+	}
 	$fba->parameters()->{"reduce objective"} = $params->{reduce_objective};
 	$fba->parameters()->{"max objective"} = $params->{max_objective};
 	$fba->parameters()->{"min objective"} = $params->{min_objective};
