@@ -10,4 +10,4 @@ service-language:
 module-version:
     1.7.8
 owners:
-    [chenry, jjeffryes]
+    [chenry, jjeffryes, seaver]
