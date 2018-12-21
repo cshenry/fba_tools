@@ -2108,7 +2108,7 @@ sub predict_metabolite_biosynthesis_pathway
     my($results);
     #BEGIN predict_metabolite_biosynthesis_pathway
     $self->util_initialize_call($params,$ctx);
-	$results = Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy($params);
+	$results = Bio::KBase::ObjectAPI::functions::func_predict_metabolite_biosynthesis_pathway($params);
 	$self->util_finalize_call({
 		output => $results,
 		workspace => $params->{workspace},

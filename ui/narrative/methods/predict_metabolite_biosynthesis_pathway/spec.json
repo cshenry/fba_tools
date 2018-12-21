@@ -64,7 +64,7 @@
          "default_values" : [
             ""
          ],
-         "advanced" : true,
+         "advanced" : false,
          "id" : "target_metabolite_list",
          "allow_multiple" : false,
          "optional" : true,
@@ -97,7 +97,7 @@
          "default_values" : [
             ""
          ],
-         "advanced" : true,
+         "advanced" : false,
          "id" : "source_metabolite_list",
          "allow_multiple" : false,
          "optional" : true,
