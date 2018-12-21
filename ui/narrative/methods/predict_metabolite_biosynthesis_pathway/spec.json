@@ -38,38 +38,70 @@
          }
       },
       {
-        "id" : "target_metabolite_list",
-        "optional" : false,
-        "advanced" : false,
-        "allow_multiple" : true,
-        "default_values" : [],
-        "field_type" : "dynamic_dropdown",
-        "dynamic_dropdown_options" : {
-          "data_source": "custom",
-          "service_function": "BiochemistryAPI.search_compounds",
-          "service_version": "beta",
-          "service_params": [{"query":"{{dynamic_dropdown_input}}"}],
-          "selection_id" : "id",
-          "description_template" : "<strong>{{id}}</strong>: {{name}}",
-          "multiselection": false
-        }
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : false,
+            "multiselection" : true,
+            "subdata_selection" : {
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ],
+               "subdata_included" : [
+                  "modelcompounds/[*]/id",
+                  "modelcompounds/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "description_template" : "- {{name}}"
+            }
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "id" : "target_metabolite_list",
+         "allow_multiple" : false,
+         "optional" : true,
+         "field_type" : "textsubdata"
       },
       {
-        "id" : "source_metabolite_list",
-        "optional" : false,
-        "advanced" : false,
-        "allow_multiple" : true,
-        "default_values" : [],
-        "field_type" : "dynamic_dropdown",
-        "dynamic_dropdown_options" : {
-          "data_source": "custom",
-          "service_function": "BiochemistryAPI.search_compounds",
-          "service_version": "beta",
-          "service_params": [{"query":"{{dynamic_dropdown_input}}"}],
-          "selection_id" : "id",
-          "description_template" : "<strong>{{id}}</strong>: {{name}}",
-          "multiselection": false
-        }
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : false,
+            "multiselection" : true,
+            "subdata_selection" : {
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ],
+               "subdata_included" : [
+                  "modelcompounds/[*]/id",
+                  "modelcompounds/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "description_template" : "- {{name}}"
+            }
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "id" : "source_metabolite_list",
+         "allow_multiple" : false,
+         "optional" : true,
+         "field_type" : "textsubdata"
       },
       {
          "default_values" : [
