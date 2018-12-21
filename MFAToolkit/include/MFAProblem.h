@@ -146,6 +146,7 @@ public:
 	int MinimizeFluxDeviation(vector<Reaction*> reactions, vector<double> fluxes,OptSolutionData*& CurrentSolution);
 	int ReactionAdditionTesting(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution,LinEquation* NewObjective,vector<MFAVariable*> TestVariables,bool PrintResults);
 	int ReduceObjective(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
+	int SteadyStateCommunityModeling(Data* InData, OptimizationParameter* InParameters);
 	OptSolutionData* ComputeMinimalDeviationFluxSolution(OptSolutionData* CurrentSolution);
 	int RunDeletionExperiments(Data* InData, OptimizationParameter* InParameters,bool GapfillPhenosim = false,OptSolutionData* CurrentSolution = NULL);
 	int RunMediaExperiments(Data* InData, OptimizationParameter* InParameters, double WildTypeObjective, bool DoOptimizeSingleObjective, bool DoFindTightBounds, bool MinimizeForeignReactions, bool OptimizeMetaboliteProduction);

@@ -1278,6 +1278,7 @@ OptimizationParameter* ReadParameters() {
 	NewParameters->DynamicFBA = (GetParameter("run dynamic FBA").compare("1") == 0);
 	NewParameters->ReduceObjective = (GetParameter("reduce objective").compare("1") == 0);
 	NewParameters->ReactionAdditionStudy = (GetParameter("reaction addition study").compare("1") == 0);
+	NewParameters->SteadyStateCommunityModeling = (GetParameter("steady state community modeling").compare("1") == 0);
 
 	//Variable use parameters
 	NewParameters->ReactionsUse = (GetParameter("Reactions use variables").compare("1") == 0);
@@ -1667,7 +1668,7 @@ void RectifyOptimizationParameters(OptimizationParameter* InParameters){
 		// Use the value specified by user.
 		//SetParameter("Minimum flux for use variable positive constraint",GetParameter("Solver tolerance").data());
 	}
-	if (InParameters->ReactionAdditionStudy || InParameters->PROM || InParameters->DoMinimizeFlux || InParameters->ReactionsUse || InParameters->GapFilling || InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || GetParameter("Perform auxotrophy analysis").compare("1") == 0) {
+	if (InParameters->SteadyStateCommunityModeling || InParameters->ReactionAdditionStudy || InParameters->PROM || InParameters->DoMinimizeFlux || InParameters->ReactionsUse || InParameters->GapFilling || InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || GetParameter("Perform auxotrophy analysis").compare("1") == 0) {
 		InParameters->DecomposeReversible = true;
 	}
 }

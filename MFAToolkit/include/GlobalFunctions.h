@@ -331,6 +331,7 @@ struct OptimizationParameter {
 	bool AbundanceConstraint;
 	bool DynamicFBA;
 	bool MinDevCurrSol;
+	bool SteadyStateCommunityModeling;
 	double DeadEndCoefficient;
 
 	bool AddLumpedReactions;

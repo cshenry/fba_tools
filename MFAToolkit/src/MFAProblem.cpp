@@ -4190,7 +4190,7 @@ int MFAProblem::AnalyzeMetaboliteInteractions(Data* InData, OptimizationParamete
 }
 
 int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution,LinEquation* NewObjective,vector<MFAVariable*> TestVariables,bool PrintResults) {
-	cout << "Reaction addition tessting: " << TestVariables.size() << endl;
+	cout << "Reaction addition testing: " << TestVariables.size() << endl;
 	int rejected_count = 0;
 	if (this->Solver != CPLEX) {
 		this->Solver = GLPK;
@@ -4200,6 +4200,27 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 	if (NewObjective != NULL) {
 		ObjFunct = NewObjective;
 	}
+	//Turning off any forced excretion or uptake in the media
+	vector<double> original_media_bound;
+	vector<bool> upper_media_bound;
+	vector<int> media_bound_index;
+	for (int i=0; i < this->Variables.size(); i++) {
+		if (this->Variables[i]->Type == DRAIN_FLUX) {
+			if (this->Variables[i]->UpperBound < 0) {
+				original_media_bound.push_back(this->Variables[i]->UpperBound);
+				upper_media_bound.push_back(true);
+				media_bound_index.push_back(i);
+				this->Variables[i]->UpperBound = 0;
+			}
+		} else if (this->Variables[i]->Type == DRAIN_FLUX || this->Variables[i]->Type == FORWARD_DRAIN_FLUX || this->Variables[i]->Type == REVERSE_DRAIN_FLUX) {
+			if (this->Variables[i]->LowerBound > 0) {
+				original_media_bound.push_back(this->Variables[i]->LowerBound);
+				upper_media_bound.push_back(false);
+				media_bound_index.push_back(i);
+				this->Variables[i]->LowerBound = 0;
+			}
+		}
+	}
 	//Turning off reactions from input list
 	vector<double> original_upper_bound;
 	vector<double> original_lower_bound;
@@ -4208,7 +4229,6 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 		original_upper_bound.push_back(TestVariables[i]->UpperBound);
 		TestVariables[i]->UpperBound = 0;
 		TestVariables[i]->LowerBound = 0;
-		this->LoadVariable(TestVariables[i]->Index);
 	}
 	//Optimizing with reactions completely knocked out
 	this->LoadSolver();
@@ -4253,11 +4273,109 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 		CurrentSolution = RunSolver(true,true,false);
 		PrintSolutions(FNumSolutions()-1,FNumSolutions());
 	}
+	//Restoring media constraints
+	for (int i=0; i < original_media_bound.size(); i++) {
+		if (upper_media_bound[i]) {
+			this->Variables[media_bound_index[i]]->UpperBound = original_media_bound[i];
+			this->LoadVariable(media_bound_index[i]);
+		} else {
+			this->Variables[media_bound_index[i]]->LowerBound = original_media_bound[i];
+			this->LoadVariable(media_bound_index[i]);
+		}
+	}
 	if (PrintResults) {
 		Output.close();
 	}
 	ObjFunct = OldObjective;
 	return rejected_count;
+}
+
+int MFAProblem::SteadyStateCommunityModeling(Data* InData, OptimizationParameter* InParameters) {
+	int StartState = this->SaveState();
+	LinEquation* OldObjective = ObjFunct;
+	ClearSolutions();
+	ObjFunct = InitializeLinEquation("Max total biomass objective",0);
+	SetMax();
+	//Remove restrictions on objective function
+	if (ObjectiveConstraint != NULL) {
+		ObjectiveConstraint->RightHandSide = 0;
+	}
+	//Constraining bio1 to 0
+	Reaction* community_biomass = InData->FindReaction("DATABASE","bio1");
+	if (community_biomass != NULL) {
+		community_biomass->ResetFluxBounds(0,0,this);
+	}
+	//Adding drain fluxes for all biomass compounds and creating object function as sum of these drains
+	vector<MFAVariable*> biomass_variables;
+	vector<int> compartment_indecies;
+	vector<LinEquation*> flux_constraints;
+	double flux_coefficient = 2000;
+	for (int i=1; i < 1000; i++) {
+		string bio_id("cpd11416_c");
+		bio_id += itoa(i);
+		Species* biospecies = InData->FindSpecies("DATABASE",bio_id.data());
+		if (biospecies == NULL) {
+			break;
+		} else {
+			MFAVariable* drain_var = CreateOrGetDrainVariable(biospecies,GetDefaultCompartment()->Index);
+			ObjFunct->Variables.push_back(drain_var);
+			ObjFunct->Coefficient.push_back(-1);
+			compartment_indecies.push_back(i);
+			biomass_variables.push_back(drain_var);
+			LinEquation* NewConstraint = InitializeLinEquation("Compartment total flux constraint",0,LESS);
+			NewConstraint->Variables.push_back(drain_var);
+			NewConstraint->Coefficient.push_back(flux_coefficient);
+			flux_constraints.push_back(NewConstraint);
+			this->AddConstraint(NewConstraint);
+		}
+	}
+	//Adding all fluxes from all reactions in each compartment to the flux constraints
+	for (int i=0; i < int(this->Variables.size()); i++) {
+		if (this->Variables[i]->Type == FLUX || this->Variables[i]->Type == FORWARD_FLUX || this->Variables[i]->Type == REVERSE_FLUX) {
+			string id = this->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING);
+			vector<string>* strings = StringToStrings(id,"_");
+			string comp = strings->back();
+			comp = comp.substr(1);
+			int index = atoi(comp.data());
+			for (int j=0; j < compartment_indecies.size(); j++) {
+				if (compartment_indecies[j] == index) {
+					flux_constraints[j]->Variables.push_back(this->Variables[i]);
+					flux_constraints[j]->Coefficient.push_back(1);
+				}
+			}
+		}
+	}
+	//Running solver iteratively, while increasing flux constraints
+	ofstream Output;
+	OpenOutput(Output,FOutputFilepath()+"MFAOutput/SSCommunityFluxAnalysis.txt");
+	Output << "Flux coefficient\tObjective";
+	for (int i=0; i < compartment_indecies.size(); i++) {
+		Output << "\tbio" << compartment_indecies[i];
+	}
+	Output << endl;
+	for (int j=0; j < 20; j++) {
+		this->LoadSolver();
+		OptSolutionData* NewSolution = RunSolver(false,true,false);
+		if (NewSolution->Status == SUCCESS) {
+			Output << flux_coefficient << "\t" << NewSolution->Objective;
+			for (int i=0; i < biomass_variables.size(); i++) {
+				Output << "\t" << -1*NewSolution->SolutionData[biomass_variables[i]->Index];
+			}
+			Output << endl;
+		} else {
+			Output << flux_coefficient << "\tInfeasible" << endl;
+		}
+		flux_coefficient += 100;
+		for (int i=0; i < flux_constraints.size(); i++) {
+			flux_constraints[i]->Coefficient[0] = flux_coefficient;
+		}
+	}
+	Output.close();
+	PrintSolutions(-1,-1);
+	ClearSolutions();
+	this->LoadState(StartState,true,true,true,true,true);
+	ResetSolver();
+	return SUCCESS;
 }
 
 int MFAProblem::ReduceObjective(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution) {
@@ -5561,6 +5679,10 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 
 	if (GetParameter("Compute optimal deadends").compare("1") == 0) {
 		ComputeOptimalDeadends(InData);
+	}
+
+	if (InParameters->SteadyStateCommunityModeling) {
+		return SteadyStateCommunityModeling(InData,InParameters);
 	}
 
 	//In this optional analysis, we maximize the number of reactions carrying flux at the same time
@@ -9477,6 +9599,9 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& Curre
 				}
 			}
 			//Now adding a step in case binary variables are not being used, which intoduces binary variables for key terms and reminimizes
+			vector<int> original_bound_indecies;
+			vector<double> original_upper_bound;
+			vector<double> original_lower_bound;
 			if (InParameters->ReactionsUse == false && slacks_in_objective == false) {
 				LinEquation* NewObjFunct = InitializeLinEquation("objective",0,EQUAL);
 				for (int i=0; i < this->ObjFunct->Variables.size(); i++) {
@@ -9549,6 +9674,9 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& Curre
 								NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
 							}
 						} else {
+							original_bound_indecies.push_back(i);
+							original_upper_bound.push_back(ObjFunct->Variables[i]->UpperBound);
+							original_lower_bound.push_back(ObjFunct->Variables[i]->LowerBound);
 							ObjFunct->Variables[i]->UpperBound = 0;
 							ObjFunct->Variables[i]->LowerBound = 0;
 						}
@@ -9575,9 +9703,21 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& Curre
 			}
 			this->ObjectiveConstraint->RightHandSide = 0;
 			this->LoadConstToSolver(this->ObjectiveConstraint->Index);
-			int reject_count = this->ReactionAdditionTesting(this->SourceDatabase,InParameters,CurrentSolution,ATPObjective,solutionvariables,false);
+			int reject_count = 0;
+			if (GetParameter("ATP check gapfilling solutions").compare("1") == 0) {
+				reject_count = this->ReactionAdditionTesting(this->SourceDatabase,InParameters,CurrentSolution,ATPObjective,solutionvariables,false);
+			}
+			cout << "Reject count:" << reject_count << endl;
+			if (this->Solver != CPLEX) {
+				this->Solver = SOLVER_SCIP;
+			}
+			for (int j=0; j < int(original_bound_indecies.size()); j++) {
+				ObjFunct->Variables[original_bound_indecies[j]]->UpperBound = original_upper_bound[j];
+				ObjFunct->Variables[original_bound_indecies[j]]->LowerBound = original_lower_bound[j];
+			}
 			this->ObjectiveConstraint->RightHandSide = InParameters->MinimumTargetFlux;
-			this->LoadConstToSolver(this->ObjectiveConstraint->Index);
+			this->ResetSolver();
+			this->LoadSolver(false);
 			if (reject_count == 0) {
 				break;
 			}
