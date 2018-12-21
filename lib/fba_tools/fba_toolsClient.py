@@ -439,6 +439,44 @@ class fba_tools(object):
             'fba_tools.predict_auxotrophy',
             [params], self._service_ver, context)
 
+    def predict_metabolite_biosynthesis_pathway(self, params, context=None):
+        """
+        Identifies reactions in the model that are not mass balanced
+        :param params: instance of type
+           "PredictMetaboliteBiosynthesisPathwayInput" -> structure:
+           parameter "fbamodel_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "fbamodel_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "media_id" of type "media_id" (A string representing a
+           Media id.), parameter "media_workspace" of type "workspace_name"
+           (A string representing a workspace name.), parameter
+           "target_metabolite_list" of list of type "compound_id" (A string
+           representing a compound id.), parameter "source_metabolite_list"
+           of list of type "compound_id" (A string representing a compound
+           id.), parameter "fba_output_id" of type "fba_id" (A string
+           representing a FBA id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "thermodynamic_constraints" of type "bool" (A binary
+           boolean), parameter "feature_ko_list" of list of type "feature_id"
+           (A string representing a feature id.), parameter
+           "reaction_ko_list" of list of type "reaction_id" (A string
+           representing a reaction id.), parameter "expseries_id" of type
+           "expseries_id" (A string representing an expression matrix id.),
+           parameter "expseries_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "expression_condition"
+           of String, parameter "exp_threshold_percentile" of Double,
+           parameter "exp_threshold_margin" of Double, parameter
+           "activation_coefficient" of Double, parameter "omega" of Double
+        :returns: instance of type
+           "PredictMetaboliteBiosynthesisPathwayResults" -> structure:
+           parameter "report_name" of String, parameter "report_ref" of type
+           "ws_report_id" (The workspace ID for a Report object @id ws
+           KBaseReport.Report)
+        """
+        return self._client.call_method(
+            'fba_tools.predict_metabolite_biosynthesis_pathway',
+            [params], self._service_ver, context)
+
     def compare_models(self, params, context=None):
         """
         Compare models

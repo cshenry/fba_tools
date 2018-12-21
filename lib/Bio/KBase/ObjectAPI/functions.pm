@@ -2234,6 +2234,110 @@ sub func_predict_auxotrophy {
 	return $auxotrophy_hash;
 }
 
+sub func_predict_metabolite_biosynthesis_pathway {
+	my ($params,$datachannel) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","target_metabolite_list","fba_output_id"],{
+		fbamodel_workspace => $params->{workspace},
+		media_id => undef,
+		media_workspace => $params->{workspace},
+		thermodynamic_constraints => 0,
+		all_reversible => 0,
+		feature_ko_list => [],
+		reaction_ko_list => [],
+		custom_bound_list => [],
+		media_supplement_list => [],
+		expseries_id => undef,
+		expseries_workspace => $params->{workspace},
+		expression_condition => undef,
+		exp_threshold_percentile => 0.5,
+		exp_threshold_margin => 0.1,
+		activation_coefficient => 0.5,
+		omega => 0,
+		default_max_uptake => 0,
+		source_metabolite_list => [],
+		gapfill_model => 0
+	});
+	my $base_source = ["cpd00103_c0","cpd00171_c0","cpd00146_c0","cpd00020_c0","cpd00024_c0","cpd00169_c0","cpd00102_c0","cpd00072_c0","cpd00032_c0",
+			"cpd00079_c0","cpd00022_c0","cpd00236_c0","cpd00101_c0","cpd00061_c0","cpd00041_c0","cpd00002_c0","cpd00038_c0","cpd00023_c0","cpd00053_c0"];
+	my $hash = {};
+	for (my $i=0; $i < @{$base_source}; $i++) {
+		$hash->{$base_source->[$i]} = 1;
+	}
+	for (my $i=0; $i < @{$params->{source_metabolite_list}}; $i++) {
+		if (!defined($hash->{$params->{source_metabolite_list}->[$i]})) {
+			push(@{$base_source},$params->{source_metabolite_list}->[$i]);
+		}
+	}
+	if (!defined($datachannel->{fbamodel})) {
+		$handler->util_log("Retrieving model.");
+		$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+	}
+	my $mdlrxnhash = {};
+	my $mdlrxns = $datachannel->{fbamodel}->modelreactions();
+	for (my $i=0; $i < @{$mdlrxns}; $i++) {
+		$mdlrxnhash->{$mdlrxns->[$i]->id()} = $mdlrxns->[$i];
+	}
+	my $mdlcpdhash = {};
+	my $mdlcpds = $datachannel->{fbamodel}->modelcompounds();
+	for (my $i=0; $i < @{$mdlcpds}; $i++) {
+		$mdlcpdhash->{$mdlcpds->[$i]->id()} = $mdlcpds->[$i];
+	}
+	my $filelist = [];
+	Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_id},
+		fba_output_id => $params->{fba_output_id},
+		media_id => $params->{media_id},
+		media_workspace => $params->{media_workspace},
+		target_reaction => "bio1",
+		metabolite_production_analysis => 1,
+		source_metabolite_list => $params->{source_metabolite_list},
+		target_metabolite_list => $params->{target_metabolite_list},
+	},$datachannel);
+	my $output = $datachannel->{fba}->outputfiles()->{MetaboliteProductionResults};
+	my $htmlreport = "<html><head><script type='text/javascript' src='https://www.google.com/jsapi'></script><script type='text/javascript'>google.load('visualization', '1', {packages:['controls'], callback: drawDashboard});google.setOnLoadCallback(drawDashboard);";
+	$htmlreport .= "function drawDashboard() {var data = new google.visualization.DataTable();";
+	$htmlreport .= "data.addColumn('string','Compound ID');";
+	$htmlreport .= "data.addColumn('string','Reaction ID');";
+	$htmlreport .= "data.addColumn('string','Equation');";
+	$htmlreport .= "data.addColumn('string','Genes');";
+	$htmlreport .= "data.addRows([";
+	for (my $k=1; $k < @{$output}; $k++) {
+		my $array = [split(/\t/,$output->[$k])];
+		my $cpd = $array->[1];
+		$cpd =~ s/_c0//;
+		if ($array->[2] ne "none") {
+			my $rxns = [split(/;/,$array->[2])];
+			for (my $m=0; $m < @{$rxns}; $m++) {
+				if ($rxns->[$m] =~ m/(.)(.+)(_[a-zA-Z]\d):(.+)/) {
+					my $rxnid = $2;
+					my $comp = $3;
+					my $flux = $4;
+					print $cpd."\t".$rxnid."\n";
+					my $definition = $mdlrxnhash->{$rxnid.$comp}->definition();
+					if ($flux < 0) {
+						my $list = [split(/\s<=>\s/,$definition)];
+						$definition = $list->[1]." => ".$list->[0];
+					}
+					$htmlreport .= '["'.$mdlcpdhash->{$array->[1]}->name()." (".$cpd.")".'","'.$rxnid.'","'.$definition.'","'.$mdlrxnhash->{$rxnid.$comp}->gprString().'"],';
+				}
+			}
+		}
+	}
+	$htmlreport .= "]);var filterColumns = [];var tab_columns = [];for (var j = 0, dcols = data.getNumberOfColumns(); j < dcols; j++) {filterColumns.push(j);tab_columns.push(j);}filterColumns.push({type: 'string',calc: function (dt, row) {for (var i = 0, vals = [], cols = dt.getNumberOfColumns(); i < cols; i++) {vals.push(dt.getFormattedValue(row, i));}return vals.join('\\n');}});";
+	$htmlreport .= "var table = new google.visualization.ChartWrapper({chartType: 'Table',containerId: 'table_div',options: {allowHtml: true,showRowNumber: true,page: 'enable',pageSize: 20},view: {columns: tab_columns}});";
+	$htmlreport .= "var search_filter = new google.visualization.ControlWrapper({controlType: 'StringFilter',containerId: 'search_div',options: {filterColumnIndex: data.getNumberOfColumns(),matchType: 'any',caseSensitive: false,ui: {label: 'Search data:'}},view: {columns: filterColumns}});";
+	$htmlreport .= "var dashboard = new google.visualization.Dashboard(document.querySelector('#dashboard_div'));var formatter = new google.visualization.ColorFormat();formatter.addRange(0.5, null, 'red', 'white');";
+	#for (my $j=0; $j < @{$genomes}; $j++) {
+	#	$htmlreport .= "formatter.format(data, ".($j+2).");";
+	#}
+	$htmlreport .= "dashboard.bind([search_filter], [table]);dashboard.draw(data);}</script></head>";
+	$htmlreport .= "<body><h4>Results from pathway analysis</h4><div id='dashboard_div'><table class='columns'><tr><td><div id='search_div'></div></td></tr><tr><td><div id='table_div'></div></td></tr></table></div></body></html>";
+	print $htmlreport;
+	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	return {}
+}
+
 sub func_create_or_edit_media {
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","media_output_id"],{

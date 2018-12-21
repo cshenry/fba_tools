@@ -462,6 +462,39 @@ module fba_tools {
          Identifies reactions in the model that are not mass balanced
     */
 	funcdef predict_auxotrophy(PredictAuxotrophyParams params) returns (PredictAuxotrophyResults results) authentication required;
+	
+	typedef structure {
+       fbamodel_id fbamodel_id;
+		workspace_name fbamodel_workspace;
+		media_id media_id;
+		workspace_name media_workspace;
+		list<compound_id> target_metabolite_list;
+		list<compound_id> source_metabolite_list;
+		fba_id fba_output_id;
+		workspace_name workspace;
+		
+		bool thermodynamic_constraints;
+		
+		list<feature_id> feature_ko_list;
+		list<reaction_id> reaction_ko_list;
+		
+		expseries_id expseries_id;
+		workspace_name expseries_workspace;
+		string expression_condition;
+		float exp_threshold_percentile;
+		float exp_threshold_margin;
+		float activation_coefficient;
+		float omega;
+    } PredictMetaboliteBiosynthesisPathwayInput;
+    
+    typedef structure {
+        string report_name;
+		ws_report_id report_ref;
+    } PredictMetaboliteBiosynthesisPathwayResults;
+    /*
+         Identifies reactions in the model that are not mass balanced
+    */
+	funcdef predict_metabolite_biosynthesis_pathway(PredictMetaboliteBiosynthesisPathwayInput params) returns (PredictMetaboliteBiosynthesisPathwayResults results) authentication required;
 
     /*
     ModelComparisonParams object: a list of models and optional pangenome and protein comparison; mc_name is the name for the new object.

@@ -398,6 +398,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: predict_metabolite_biosynthesis_pathway</p>
+     * <pre>
+     * Identifies reactions in the model that are not mass balanced
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.PredictMetaboliteBiosynthesisPathwayInput PredictMetaboliteBiosynthesisPathwayInput}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.PredictMetaboliteBiosynthesisPathwayResults PredictMetaboliteBiosynthesisPathwayResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public PredictMetaboliteBiosynthesisPathwayResults predictMetaboliteBiosynthesisPathway(PredictMetaboliteBiosynthesisPathwayInput params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<PredictMetaboliteBiosynthesisPathwayResults>> retType = new TypeReference<List<PredictMetaboliteBiosynthesisPathwayResults>>() {};
+        List<PredictMetaboliteBiosynthesisPathwayResults> res = caller.jsonrpcCall("fba_tools.predict_metabolite_biosynthesis_pathway", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: compare_models</p>
      * <pre>
      * Compare models

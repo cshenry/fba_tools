@@ -1819,6 +1819,152 @@ Identifies reactions in the model that are not mass balanced
  
 
 
+=head2 predict_metabolite_biosynthesis_pathway
+
+  $results = $obj->predict_metabolite_biosynthesis_pathway($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.PredictMetaboliteBiosynthesisPathwayInput
+$results is a fba_tools.PredictMetaboliteBiosynthesisPathwayResults
+PredictMetaboliteBiosynthesisPathwayInput is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	target_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+	source_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+	fba_output_id has a value which is a fba_tools.fba_id
+	workspace has a value which is a fba_tools.workspace_name
+	thermodynamic_constraints has a value which is a fba_tools.bool
+	feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+	reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+	expseries_id has a value which is a fba_tools.expseries_id
+	expseries_workspace has a value which is a fba_tools.workspace_name
+	expression_condition has a value which is a string
+	exp_threshold_percentile has a value which is a float
+	exp_threshold_margin has a value which is a float
+	activation_coefficient has a value which is a float
+	omega has a value which is a float
+fbamodel_id is a string
+workspace_name is a string
+media_id is a string
+compound_id is a string
+fba_id is a string
+bool is an int
+feature_id is a string
+reaction_id is a string
+expseries_id is a string
+PredictMetaboliteBiosynthesisPathwayResults is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.PredictMetaboliteBiosynthesisPathwayInput
+$results is a fba_tools.PredictMetaboliteBiosynthesisPathwayResults
+PredictMetaboliteBiosynthesisPathwayInput is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	target_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+	source_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+	fba_output_id has a value which is a fba_tools.fba_id
+	workspace has a value which is a fba_tools.workspace_name
+	thermodynamic_constraints has a value which is a fba_tools.bool
+	feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+	reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+	expseries_id has a value which is a fba_tools.expseries_id
+	expseries_workspace has a value which is a fba_tools.workspace_name
+	expression_condition has a value which is a string
+	exp_threshold_percentile has a value which is a float
+	exp_threshold_margin has a value which is a float
+	activation_coefficient has a value which is a float
+	omega has a value which is a float
+fbamodel_id is a string
+workspace_name is a string
+media_id is a string
+compound_id is a string
+fba_id is a string
+bool is an int
+feature_id is a string
+reaction_id is a string
+expseries_id is a string
+PredictMetaboliteBiosynthesisPathwayResults is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+Identifies reactions in the model that are not mass balanced
+
+=back
+
+=cut
+
+ sub predict_metabolite_biosynthesis_pathway
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function predict_metabolite_biosynthesis_pathway (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to predict_metabolite_biosynthesis_pathway:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'predict_metabolite_biosynthesis_pathway');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.predict_metabolite_biosynthesis_pathway",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'predict_metabolite_biosynthesis_pathway',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method predict_metabolite_biosynthesis_pathway",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'predict_metabolite_biosynthesis_pathway',
+				       );
+    }
+}
+ 
+
+
 =head2 compare_models
 
   $return = $obj->compare_models($params)
@@ -6820,6 +6966,102 @@ new_report_ref has a value which is a fba_tools.ws_report_id
 
 a reference to a hash where the following keys are defined:
 new_report_ref has a value which is a fba_tools.ws_report_id
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictMetaboliteBiosynthesisPathwayInput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+target_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+source_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+fba_output_id has a value which is a fba_tools.fba_id
+workspace has a value which is a fba_tools.workspace_name
+thermodynamic_constraints has a value which is a fba_tools.bool
+feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+expseries_id has a value which is a fba_tools.expseries_id
+expseries_workspace has a value which is a fba_tools.workspace_name
+expression_condition has a value which is a string
+exp_threshold_percentile has a value which is a float
+exp_threshold_margin has a value which is a float
+activation_coefficient has a value which is a float
+omega has a value which is a float
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+target_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+source_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+fba_output_id has a value which is a fba_tools.fba_id
+workspace has a value which is a fba_tools.workspace_name
+thermodynamic_constraints has a value which is a fba_tools.bool
+feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+expseries_id has a value which is a fba_tools.expseries_id
+expseries_workspace has a value which is a fba_tools.workspace_name
+expression_condition has a value which is a string
+exp_threshold_percentile has a value which is a float
+exp_threshold_margin has a value which is a float
+activation_coefficient has a value which is a float
+omega has a value which is a float
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictMetaboliteBiosynthesisPathwayResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
 
 
 =end text
