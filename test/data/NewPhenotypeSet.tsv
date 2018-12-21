@@ -1,3 +1,3 @@
 geneko	mediaws	media	addtlCpd	addtlCpdBounds	customReactionBounds	growth
-none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	L-Glutamate;NH3	-5|5;-5|5	-5|rxn00001|5;-5|rxn00002|5	1
-none	jjeffryes:narrative_1502586048308	MinimalGrowthNMS	Thymidine;NH3			1
+none	fba_tools_unittests_ws	Carbon-D-Glucose	Glucose;NH3	-5|5;-5|5	-5|rxn00001|5;-5|rxn00002|5	1
+none	fba_tools_unittests_ws	Carbon-D-Glucose	Phosphate;NH3			1
