@@ -2297,7 +2297,7 @@ sub func_predict_metabolite_biosynthesis_pathway {
 		media_workspace => $params->{media_workspace},
 		target_reaction => "bio1",
 		metabolite_production_analysis => 1,
-		source_metabolite_list => $params->{source_metabolite_list},
+		source_metabolite_list => $base_source,
 		target_metabolite_list => $params->{target_metabolite_list},
 	},$datachannel);
 	my $output = $datachannel->{fba}->outputfiles()->{MetaboliteProductionResults};
