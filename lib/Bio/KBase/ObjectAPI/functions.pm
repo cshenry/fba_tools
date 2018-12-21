@@ -2263,6 +2263,12 @@ sub func_predict_metabolite_biosynthesis_pathway {
 	for (my $i=0; $i < @{$base_source}; $i++) {
 		$hash->{$base_source->[$i]} = 1;
 	}
+	if (ref($params->{source_metabolite_list}) ne "ARRAY") {
+		$params->{source_metabolite_list} = [split(/;/,$params->{source_metabolite_list})];
+	}
+	if (ref($params->{target_metabolite_list}) ne "ARRAY") {
+		$params->{target_metabolite_list} = [split(/;/,$params->{target_metabolite_list})];
+	}
 	for (my $i=0; $i < @{$params->{source_metabolite_list}}; $i++) {
 		if (!defined($hash->{$params->{source_metabolite_list}->[$i]})) {
 			push(@{$base_source},$params->{source_metabolite_list}->[$i]);
