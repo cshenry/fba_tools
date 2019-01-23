@@ -2314,6 +2314,7 @@ sub func_predict_metabolite_biosynthesis_pathway {
 		$cpd =~ s/_c0//;
 		if ($array->[2] ne "none") {
 			my $rxns = [split(/;/,$array->[2])];
+			my $featurehash = {};
 			for (my $m=0; $m < @{$rxns}; $m++) {
 				if ($rxns->[$m] =~ m/(.)(.+)(_[a-zA-Z]\d):(.+)/) {
 					my $rxnid = $2;
@@ -2325,9 +2326,19 @@ sub func_predict_metabolite_biosynthesis_pathway {
 						my $list = [split(/\s<=>\s/,$definition)];
 						$definition = $list->[1]." => ".$list->[0];
 					}
+					my $ftrs = $mdlrxnhash->{$rxnid.$comp}->featureIDs();
+					for (my $m=0; $m < @{$ftrs}; $m++) {
+						$featurehash->{$ftrs->[$m]} = [$datachannel->{fbamodel}->genome_ref()];
+					}
 					$htmlreport .= '["'.$mdlcpdhash->{$array->[1]}->name()." (".$cpd.")".'","'.$rxnid.'","'.$definition.'","'.$mdlrxnhash->{$rxnid.$comp}->gprString().'"],';
 				}
 			}
+			my $geneobj = {
+				description => "",
+  				element_ordering => [sort keys(%{$featurehash})],
+  				elements => $featurehash
+			};
+			my $meta = $handler->util_save_object($geneobj,$params->{workspace}."/".$cpd."_genes",{hash => 1,type => "KBaseCollections.FeatureSet"});
 		}
 	}
 	$htmlreport .= "]);var filterColumns = [];var tab_columns = [];for (var j = 0, dcols = data.getNumberOfColumns(); j < dcols; j++) {filterColumns.push(j);tab_columns.push(j);}filterColumns.push({type: 'string',calc: function (dt, row) {for (var i = 0, vals = [], cols = dt.getNumberOfColumns(); i < cols; i++) {vals.push(dt.getFormattedValue(row, i));}return vals.join('\\n');}});";
