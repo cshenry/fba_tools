@@ -177,11 +177,12 @@ sub compartment_trans {
 my $template_trans = {
 	auto => "auto",
 	plant => "PlantModelTemplate",
-	"Gram negative" => "GramNegModelTemplateV2",
-	"Gram positive" => "GramPosModelTemplateV2",
+	"Gram negative" => "GramNegModelTemplate",
+	"Gram positive" => "GramPosModelTemplate",
 	core => "CoreModelTemplateV2",
-	grampos => "GramPosModelTemplateV2",
-	gramneg => "GramNegModelTemplateV2"
+	grampos => "GramPosModelTemplate",
+	gramneg => "GramNegModelTemplate",
+	metagenome => "GramNegModelTemplate"#TODO - need to make a metagenome template and reset this
 };
 
 sub template_trans {

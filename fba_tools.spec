@@ -48,10 +48,14 @@ module fba_tools {
         A string representing a phenotype simulation id.
     */
     typedef string phenotypesim_id;
-	 /*
+	/*
         A string representing an expression matrix id.
     */
     typedef string expseries_id;
+    /*
+        A string representing a metabolome matrix id.
+    */
+    typedef string metabolome_id;
     /*
         A string representing a reaction id.
     */
@@ -495,6 +499,53 @@ module fba_tools {
          Identifies reactions in the model that are not mass balanced
     */
 	funcdef predict_metabolite_biosynthesis_pathway(PredictMetaboliteBiosynthesisPathwayInput params) returns (PredictMetaboliteBiosynthesisPathwayResults results) authentication required;
+
+	typedef structure {
+		string input_ref;
+		workspace_name input_workspace;
+		media_id media_id;
+		workspace_name media_workspace;
+		fbamodel_id fbamodel_output_id;
+		workspace_name workspace;
+		bool gapfill_model;
+    } BuildMetagenomeMetabolicModelParams;
+    
+    /*
+        Build a genome-scale metabolic model based on annotations in an input genome typed object
+    */
+    funcdef build_metagenome_metabolic_model(BuildMetagenomeMetabolicModelParams params) returns (BuildMetabolicModelResults) authentication required;
+
+	typedef structure {
+		fbamodel_id fbamodel_id;
+		workspace_name fbamodel_workspace;
+		fbamodel_id source_fbamodel_id;
+		workspace_name source_fbamodel_workspace;
+		media_id media_id;
+		workspace_name media_workspace;
+		metabolome_id metabolome_id;
+		workspace_name metabolome_workspace;
+		string metabolome_condition;
+		fbamodel_id fbamodel_output_id;
+		workspace_name workspace;
+		
+		float minimum_target_flux;
+		bool omnidirectional;
+		reaction_id target_reaction;
+		
+		list<feature_id> feature_ko_list;
+		list<reaction_id> reaction_ko_list;
+		list<compound_id> media_supplement_list;
+    } FitExometaboliteDataParams;
+    
+    typedef structure {
+        ws_fbamodel_id new_fbamodel_ref;
+        ws_fba_id new_fba_ref;
+        int number_gapfilled_reactions;
+    } FitExometaboliteDataResults;
+    /*
+        Gapfills a metabolic model to fit input exometabolite data
+    */
+    funcdef fit_exometabolite_data(FitExometaboliteDataParams params) returns (FitExometaboliteDataResults results) authentication required;
 
     /*
     ModelComparisonParams object: a list of models and optional pangenome and protein comparison; mc_name is the name for the new object.

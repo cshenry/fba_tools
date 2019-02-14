@@ -477,6 +477,71 @@ class fba_tools(object):
             'fba_tools.predict_metabolite_biosynthesis_pathway',
             [params], self._service_ver, context)
 
+    def build_metagenome_metabolic_model(self, params, context=None):
+        """
+        Build a genome-scale metabolic model based on annotations in an input genome typed object
+        :param params: instance of type "BuildMetagenomeMetabolicModelParams"
+           -> structure: parameter "input_ref" of String, parameter
+           "input_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "media_id" of type "media_id" (A
+           string representing a Media id.), parameter "media_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "gapfill_model" of type "bool" (A binary boolean)
+        :returns: instance of type "BuildMetabolicModelResults" -> structure:
+           parameter "new_fbamodel_ref" of type "ws_fbamodel_id" (The
+           workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
+           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA),
+           parameter "number_gapfilled_reactions" of Long, parameter
+           "number_removed_biomass_compounds" of Long
+        """
+        return self._client.call_method(
+            'fba_tools.build_metagenome_metabolic_model',
+            [params], self._service_ver, context)
+
+    def fit_exometabolite_data(self, params, context=None):
+        """
+        Gapfills a metabolic model to fit input exometabolite data
+        :param params: instance of type "FitExometaboliteDataParams" ->
+           structure: parameter "fbamodel_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "fbamodel_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "source_fbamodel_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter
+           "source_fbamodel_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "media_id" of type
+           "media_id" (A string representing a Media id.), parameter
+           "media_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "metabolome_id" of type
+           "metabolome_id" (A string representing a metabolome matrix id.),
+           parameter "metabolome_workspace" of type "workspace_name" (A
+           string representing a workspace name.), parameter
+           "metabolome_condition" of String, parameter "fbamodel_output_id"
+           of type "fbamodel_id" (A string representing a FBAModel id.),
+           parameter "workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "minimum_target_flux"
+           of Double, parameter "omnidirectional" of type "bool" (A binary
+           boolean), parameter "target_reaction" of type "reaction_id" (A
+           string representing a reaction id.), parameter "feature_ko_list"
+           of list of type "feature_id" (A string representing a feature
+           id.), parameter "reaction_ko_list" of list of type "reaction_id"
+           (A string representing a reaction id.), parameter
+           "media_supplement_list" of list of type "compound_id" (A string
+           representing a compound id.)
+        :returns: instance of type "FitExometaboliteDataResults" ->
+           structure: parameter "new_fbamodel_ref" of type "ws_fbamodel_id"
+           (The workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
+           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA),
+           parameter "number_gapfilled_reactions" of Long
+        """
+        return self._client.call_method(
+            'fba_tools.fit_exometabolite_data',
+            [params], self._service_ver, context)
+
     def compare_models(self, params, context=None):
         """
         Compare models

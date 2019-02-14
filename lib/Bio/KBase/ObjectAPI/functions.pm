@@ -2355,6 +2355,257 @@ sub func_predict_metabolite_biosynthesis_pathway {
 	return {}
 }
 
+sub func_build_metagenome_metabolic_model {
+	my ($params,$datachannel) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","input_ref"],{
+		input_workspace => $params->{workspace},
+		fbamodel_output_id => undef,
+		media_id => undef,
+		media_workspace => $params->{workspace},
+		gapfill_model => 1,
+		gff_file => undef
+	});
+	my $RoleHash;
+	my $bin_ref;
+	my $assembly_ref;
+	my $annotations;
+	my $htmlreport = "";
+	my $contig_coverages = {};
+	#Reading in input object
+	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
+	if ($object->{_type} eq "Assembly") {
+		foreach my $contig (keys(%{$object->{contigs}})) {
+			$contig_coverages->{$contig} = 1;
+		}
+	} elsif ($object->{_type} eq "BinnedContigs") {
+		$bin_ref = $object->{_reference};
+		$assembly_ref = $object->{assembly_ref};
+		for (my $i=0; $i < @{$object->{bins}}; $i++) {
+			my $coverage = $object->{bins}->[$i]->{cov};
+			foreach my $contig (keys(%{$object->{bins}->[$i]->{contigs}})) {
+				$contig_coverages->{$contig} = $coverage;
+			}
+		}
+	}
+	#Reading in GFF file if provided
+	if (defined($params->{gff_file})) {
+		my $gff_path = $params->{gff_file};
+		if (ref($params->{gff_file}) eq "HASH") {
+			$gff_path = $handler->util_get_file_path($params->{gff_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+		}
+		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($gff_path);
+		for (my $i=0; $i < @{$lines}; $i++) {
+			my $array = [split(/\t/,$lines->[$i])];
+			my $contig = $array->[0];
+			my $coverage = 0;
+			if (defined($contig_coverages->{$contig})) {
+				$coverage += $contig_coverages->{$contig};
+				if (defined($array->[8])) {
+					my $subarray = [split(/;/,$array->[8])];
+					for (my $j=0; $j < @{$subarray}; $j++) {
+						my $type;
+						my $term;
+						if ($subarray->[$j] =~ m/KEGG[:=](KO\w+)/) {
+							$type = "KEGG_KO.ModelSEED";
+							$term = $1;
+						} elsif ($subarray->[$j] =~ m/KEGG[:=](R\d+)/) {
+							$type = "KEGG_RXN.ModelSEED";
+							$term = $1;
+						} elsif ($array->[$j] =~ m/eggNOG[:=](\w+)\|/) {
+							$type = "EGGNOG.ModelSEED";
+							$term = $1;
+						} elsif ($array->[$j] =~ m/eC_number[:=](\w+)\|/) {
+							$type = "EBI_EC.ModelSEED";
+							$term = $1;
+						}
+						if (defined($type)) {
+							if (!defined($annotations->{$type}->{$term})) {
+								$annotations->{$type}->{$term} = [0,0];
+							}
+							$annotations->{$type}->{$term}->[0] += $coverage;
+							$annotations->{$type}->{$term}->[1]++;
+						}
+					}
+				}
+			} else {
+				#TODO - need to parse out contig coverage data
+			}
+		}
+	} else {
+		#TODO: running binning, extraction, and annotation, then pulling down genomes and pulling out annotations
+	}
+	#Loading metagenome template
+	my $template_trans = Bio::KBase::constants::template_trans();
+	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($template_trans->{metagenome},Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")));
+	my $coretemplate = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core});
+	my $corereactions = $coretemplate->reactions();
+	my $ontology_hash = Bio::KBase::kbaseenv::get_ontology_hash();
+	#Creating model
+	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+		id => $params->{fbamodel_output_id},
+		source => Bio::KBase::utilities::conf("ModelSEED","source"),
+		source_id => $params->{fbamodel_output_id},
+		type => "Metagenome",
+		name => $params->{fbamodel_output_id},
+		template_ref => $template->_reference(),
+		template_refs => [$template->_reference()],
+		gapfillings => [],
+		gapgens => [],
+		biomasses => [],
+		modelcompartments => [],
+		modelcompounds => [],
+		modelreactions => []
+	});
+	if (defined($bin_ref)) {
+		$mdl->binning_ref($bin_ref);
+		$mdl->assembly_ref($assembly_ref);
+	} else {
+		$mdl->assembly_ref($assembly_ref);
+	}
+	my $bios = $template->biomasses();
+	for (my $i=0; $i < @{$bios}; $i++) {
+ 		$bios->[$i]->addBioToModel({
+			gc => 0.5,
+			model => $mdl
+		});
+	}
+	#Start by building core model
+	my $core_rxn_hash = {};
+	my $remaining_rxn_hash = {};
+	my $rejected = {};
+	foreach my $type (keys(%{$annotations})) {
+		foreach my $annotation (keys(%{$annotations->{$type}})) {
+			if (defined($ontology_hash->{$type}->{$annotation})) {
+				foreach my $rxn (keys(%{$ontology_hash->{$type}->{$annotation}})) {
+					if (defined($coretemplate->getObject("reactions",$rxn))) {
+						if (!defined($core_rxn_hash->{$rxn})) {
+							$core_rxn_hash->{$rxn} = [0,0];
+						}
+						$core_rxn_hash->{$rxn}->[0] += $annotations->{$type}->{$annotation}->[0];
+						$core_rxn_hash->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];
+					} elsif (defined($template->getObject("reactions",$rxn))) {
+						if (!defined($remaining_rxn_hash->{$rxn})) {
+							$remaining_rxn_hash->{$rxn} = [0,0];
+						}
+						$remaining_rxn_hash->{$rxn}->[0] += $annotations->{$type}->{$annotation}->[0];
+						$remaining_rxn_hash->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];
+					} else {
+						if (!defined($rejected->{$rxn})) {
+							$rejected->{$rxn} = [0,0];
+						}
+						$rejected->{$rxn}->[0] += $annotations->{$type}->{$annotation}->[0];
+						$rejected->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];	
+					}
+				}
+			}
+		}
+	}
+	foreach my $rxn (keys(%{$core_rxn_hash})) {
+		my $trxn = $coretemplate->getObject("reactions",$rxn."_c0");
+		my $reaction = $mdl->addModelReaction({
+			reaction => $rxn."_c0",
+			direction => $trxn->direction(),
+			addReaction => 1
+		});
+		$reaction->probability($core_rxn_hash->{$rxn}->[0]);
+		$reaction->gene_count($core_rxn_hash->{$rxn}->[1]);
+	}
+	$datachannel->{fbamodel} = $mdl;
+	$mdl->add("biomasses",Bio::KBase::constants::atp_hydrolysis_biomass());
+	my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+		workspace => "NULL",
+		fbamodel_id => "tempcore",
+		fbamodel_output_id => "tempcore.gf",
+		target_reaction => "bio2",
+		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+		media_id => "RefGlucoseMinimal",
+		atp_production_check => 0,
+	},$mdl);
+	foreach my $rxn (keys(%{$remaining_rxn_hash})) {
+		my $trxn = $template->getObject("reactions",$rxn."_c0");
+		my $reaction = $mdl->addModelReaction({
+			reaction => $rxn."_c0",
+			direction => $trxn->direction(),
+			addReaction => 1
+		});
+		$reaction->probability($remaining_rxn_hash->{$rxn}->[0]);
+		$reaction->gene_count($remaining_rxn_hash->{$rxn}->[1]);
+	}
+	my $rxnlist = [keys(%{$remaining_rxn_hash})];
+	Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+		workspace => "NULL",
+		fbamodel_id => $params->{fbamodel_output_id},
+		fba_output_id => $params->{fbamodel_output_id}.".atp.fba",
+		media_id => "RefGlucoseMinimal",
+		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+		target_reaction => "bio2",
+		reaction_addition_study => 1,
+		max_objective_limit => $params->{max_objective_limit},
+		reaction_list => $rxnlist
+	},$datachannel);
+	my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
+	my $first = 1;
+	if (defined($rxn_addition_data)) {
+		for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
+			my $row = [split(/\t/,$rxn_addition_data->[$i])];
+			if ($row->[2] == 0) {
+				if ($row->[1] =~ m/(.)(rxn.+)/) {
+					 my $sign = $1;
+					 my $id = $2;
+					 if ($first == 1) {
+					 	$htmlreport .= " Rejected the following reactions due to ATP overproduction: ";
+					 } else {
+					 	$htmlreport .= ", ";
+					 }
+					 $first = 0;
+					 $htmlreport .= $sign.$id;
+					 my $rxnobj = $mdl->queryObject("modelreactions",{id => $id});
+					 if ($sign eq "+") {
+					 	if ($rxnobj->direction() eq "=") {
+					 		$rxnobj->direction("<");
+					 	} else {
+					 		$mdl->remove("modelreactions",$rxnobj);
+					 	}
+					 } else {
+					 	if ($rxnobj->direction() eq "=") {
+					 		$rxnobj->direction(">");
+					 	} else {
+					 		$mdl->remove("modelreactions",$rxnobj);
+					 	}
+					 }
+				}
+			}
+		}
+	}
+	if ($first == 0) {
+		$htmlreport .= ".";	
+	}
+	#Gapfilling model if requested
+	my $output = {};
+	if ($params->{gapfill_model} == 1) {
+		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+			target_reaction => "bio1",
+			minimum_target_flux => $params->{minimum_target_flux},
+			workspace => $params->{workspace},
+			fbamodel_id => $params->{fbamodel_output_id},
+			fbamodel_output_id => $params->{fbamodel_output_id},
+			media_workspace => $params->{media_workspace},
+			media_id => $params->{media_id},
+			atp_production_check => 1
+		},$mdl);
+		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
+	} else {
+		#If not gapfilling, then we just save the model directly
+		$output->{number_gapfilled_reactions} = 0;
+		$output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
+		my $wsmeta = $handler->util_save_object($mdl,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
+		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p></div>"
+	}
+	$datachannel->{fbamodel} = $mdl;
+	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	return $output;
+}
+
 sub func_create_or_edit_media {
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","media_output_id"],{

@@ -11,6 +11,7 @@ our $rast_client = undef;
 our $handle_client = undef;
 our $data_file_client = undef;
 our $objects_created = [];
+our $ontology_hash = undef;
 
 sub log {
 	my ($msg,$tag) = @_;
@@ -259,6 +260,23 @@ sub initialize_call {
 	Bio::KBase::utilities::set_context($ctx);
 	Bio::KBase::kbaseenv::ws_client({refresh => 1});
 	print("Starting ".Bio::KBase::utilities::method()." method.\n");
+}
+
+sub get_ontology_hash {
+	if (!defined($ontology_hash)) {
+		$ontology_hash = {};
+		my $list = Bio::KBase::utilities::conf("ModelSEED","ontology_map_list");
+		$list = [split(/;/,$list)];
+		for (my $i=0; $i < @{$list}; $i++) {
+			my $output = Bio::KBase::kbaseenv::get_object("janakakbase:narrative_1543604022660",$list->[$i]);
+			foreach my $term (keys(%{$output->{translation}})) {
+				foreach my $otherterm (@{$output->{translation}->{$term}->{equiv_terms}}) {
+					$ontology_hash->{$list->[$i]}->{$term}->{$otherterm} = 1;
+				}
+			}
+		}
+	}
+	return $ontology_hash;
 }
 
 1;
