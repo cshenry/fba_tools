@@ -2391,10 +2391,19 @@ sub func_build_metagenome_metabolic_model {
 	#Reading in GFF file if provided
 	if (defined($params->{gff_file})) {
 		my $gff_path = $params->{gff_file};
+		my $lines;
 		if (ref($params->{gff_file}) eq "HASH") {
 			$gff_path = $handler->util_get_file_path($params->{gff_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
+			$lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($gff_path);
+		} elsif ($params->{gff_file} =~ m/^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$/) {
+			my $ua = LWP::UserAgent->new();
+			my $shock_url = Bio::KBase::utilities::conf("fba_tools","shock-url")."/node/".$params->{gff_file}."?download";
+			my $token = Bio::KBase::utilities::token();
+			my $res = $ua->get($shock_url,Authorization => "OAuth " . $token);
+			$lines = [split(/\n/,$res->{_content})];
+		} else {
+			$lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($gff_path);
 		}
-		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($gff_path);
 		for (my $i=0; $i < @{$lines}; $i++) {
 			my $array = [split(/\t/,$lines->[$i])];
 			my $contig = $array->[0];
