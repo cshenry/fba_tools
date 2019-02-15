@@ -29,7 +29,7 @@
                "KBaseGenomeAnnotations.Assembly","KBaseMetagenomes.BinnedContigs"
             ]
          }
-      }
+      },
       {
          "id" : "gff_file",
          "default_values" : [ "" ],
