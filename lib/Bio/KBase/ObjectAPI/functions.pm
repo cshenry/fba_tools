@@ -2374,6 +2374,7 @@ sub func_build_metagenome_metabolic_model {
 	#Reading in input object
 	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 	if ($object->{_type} eq "Assembly") {
+		$assembly_ref = $object->{_reference};
 		foreach my $contig (keys(%{$object->{contigs}})) {
 			$contig_coverages->{$contig} = 1;
 		}
@@ -2399,24 +2400,26 @@ sub func_build_metagenome_metabolic_model {
 			my $contig = $array->[0];
 			my $coverage = 0;
 			if (defined($contig_coverages->{$contig})) {
-				$coverage += $contig_coverages->{$contig};
+				$coverage = $contig_coverages->{$contig};
 				if (defined($array->[8])) {
 					my $subarray = [split(/;/,$array->[8])];
 					for (my $j=0; $j < @{$subarray}; $j++) {
 						my $type;
 						my $term;
-						if ($subarray->[$j] =~ m/KEGG[:=](KO\w+)/) {
+						if ($subarray->[$j] =~ m/KEGG[:=](K\w+)/) {
 							$type = "KEGG_KO.ModelSEED";
 							$term = $1;
 						} elsif ($subarray->[$j] =~ m/KEGG[:=](R\d+)/) {
 							$type = "KEGG_RXN.ModelSEED";
 							$term = $1;
-						} elsif ($array->[$j] =~ m/eggNOG[:=](\w+)\|/) {
+						} elsif ($subarray->[$j] =~ m/eggNOG[:=](\w+)/) {
 							$type = "EGGNOG.ModelSEED";
 							$term = $1;
-						} elsif ($array->[$j] =~ m/eC_number[:=](\w+)\|/) {
+						} elsif ($subarray->[$j] =~ m/eC_number[:=](\w+)/) {
 							$type = "EBI_EC.ModelSEED";
 							$term = $1;
+						} elsif ($subarray->[$j] =~ m/note[:\=]coverage:(\d+\.*\d*)/) {
+							$contig_coverages->{$contig} = $1;
 						}
 						if (defined($type)) {
 							if (!defined($annotations->{$type}->{$term})) {
@@ -2447,8 +2450,8 @@ sub func_build_metagenome_metabolic_model {
 		source_id => $params->{fbamodel_output_id},
 		type => "Metagenome",
 		name => $params->{fbamodel_output_id},
-		template_ref => $template->_reference(),
-		template_refs => [$template->_reference()],
+		template_ref => $coretemplate->_reference(),
+		template_refs => [$coretemplate->_reference()],
 		gapfillings => [],
 		gapgens => [],
 		biomasses => [],
@@ -2456,6 +2459,7 @@ sub func_build_metagenome_metabolic_model {
 		modelcompounds => [],
 		modelreactions => []
 	});
+	$mdl->parent($handler->util_store());
 	if (defined($bin_ref)) {
 		$mdl->binning_ref($bin_ref);
 		$mdl->assembly_ref($assembly_ref);
@@ -2477,13 +2481,13 @@ sub func_build_metagenome_metabolic_model {
 		foreach my $annotation (keys(%{$annotations->{$type}})) {
 			if (defined($ontology_hash->{$type}->{$annotation})) {
 				foreach my $rxn (keys(%{$ontology_hash->{$type}->{$annotation}})) {
-					if (defined($coretemplate->getObject("reactions",$rxn))) {
+					if (defined($coretemplate->getObject("reactions",$rxn."_c"))) {
 						if (!defined($core_rxn_hash->{$rxn})) {
 							$core_rxn_hash->{$rxn} = [0,0];
 						}
 						$core_rxn_hash->{$rxn}->[0] += $annotations->{$type}->{$annotation}->[0];
 						$core_rxn_hash->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];
-					} elsif (defined($template->getObject("reactions",$rxn))) {
+					} elsif (defined($template->getObject("reactions",$rxn."_c"))) {
 						if (!defined($remaining_rxn_hash->{$rxn})) {
 							$remaining_rxn_hash->{$rxn} = [0,0];
 						}
@@ -2501,7 +2505,7 @@ sub func_build_metagenome_metabolic_model {
 		}
 	}
 	foreach my $rxn (keys(%{$core_rxn_hash})) {
-		my $trxn = $coretemplate->getObject("reactions",$rxn."_c0");
+		my $trxn = $coretemplate->getObject("reactions",$rxn."_c");
 		my $reaction = $mdl->addModelReaction({
 			reaction => $rxn."_c0",
 			direction => $trxn->direction(),
@@ -2521,8 +2525,11 @@ sub func_build_metagenome_metabolic_model {
 		media_id => "RefGlucoseMinimal",
 		atp_production_check => 0,
 	},$mdl);
+	$mdl->template_ref($template->_reference());
+	$mdl->template_refs([$template->_reference()]);
+	$mdl->template($template);
 	foreach my $rxn (keys(%{$remaining_rxn_hash})) {
-		my $trxn = $template->getObject("reactions",$rxn."_c0");
+		my $trxn = $template->getObject("reactions",$rxn."_c");
 		my $reaction = $mdl->addModelReaction({
 			reaction => $rxn."_c0",
 			direction => $trxn->direction(),

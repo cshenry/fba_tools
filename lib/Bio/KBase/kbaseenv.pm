@@ -268,10 +268,10 @@ sub get_ontology_hash {
 		my $list = Bio::KBase::utilities::conf("ModelSEED","ontology_map_list");
 		$list = [split(/;/,$list)];
 		for (my $i=0; $i < @{$list}; $i++) {
-			my $output = Bio::KBase::kbaseenv::get_object("janakakbase:narrative_1543604022660",$list->[$i]);
+			my $output = Bio::KBase::kbaseenv::get_object(Bio::KBase::utilities::conf("ModelSEED","ontology_map_workspace"),$list->[$i]);
 			foreach my $term (keys(%{$output->{translation}})) {
 				foreach my $otherterm (@{$output->{translation}->{$term}->{equiv_terms}}) {
-					$ontology_hash->{$list->[$i]}->{$term}->{$otherterm} = 1;
+					$ontology_hash->{$list->[$i]}->{$term}->{$otherterm->{equiv_term}} = 1;
 				}
 			}
 		}
