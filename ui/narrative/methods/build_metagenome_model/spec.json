@@ -31,15 +31,13 @@
          }
       },
       {
-         "id" : "gff_file",
-         "default_values" : [ "" ],
-         "advanced" : true,
-         "field_type" : "file",
-         "optional" : true,
-         "allow_multiple" : false,
-         "text_options" : {
-            "valid_ws_types" : [ ]
-         }
+      	 "id" : "gff_file",
+      	 "optional" : true,
+      	 "advanced" : true,
+      	 "allow_multiple" : false,
+      	 "default_values" : [ "" ],
+      	 "field_type" : "dynamic_dropdown",
+      	 "text_options" : {}
       },
       {
          "text_options" : {
