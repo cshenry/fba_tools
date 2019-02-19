@@ -49,6 +49,11 @@
             {
                "input_parameter" : "minimum_target_flux",
                "target_property" : "minimum_target_flux"
+            },
+            {
+               "input_parameter" : "media_ref",
+               "target_property" : "media_ref",
+               "target_type_transform": "resolved-ref"
             }
          ],
          "method" : "fit_exometabolite_data",
@@ -206,6 +211,38 @@
             ""
          ],
          "id" : "fbamodel_output_id",
+         "advanced" : false
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseBiochem.Media"
+            ],
+            "is_output_name" : true
+         },
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "media_ref",
+         "advanced" : false
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseBiochem.Media"
+            ],
+            "is_output_name" : true
+         },
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "exomedia_output_id",
          "advanced" : false
       },
       {

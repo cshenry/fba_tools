@@ -68,6 +68,22 @@ parameters :
             Name of the model produced by the gapfill analysis
         long-hint : |
             Name of the model produced by the gapfill analysis
+    
+    media_ref :
+        ui-name : |
+            Input base media
+        short-hint : |
+            Name of base media formulation to use when fitting exometabolite data (default is Complete media)
+        long-hint : |
+            Name of base media formulation to use when fitting exometabolite data (default is Complete media)
+            
+    exomedia_output_id :
+        ui-name : |
+            Output media
+        short-hint : |
+            Name of the media with successfully reconciled exometabolites
+        long-hint : |
+            Name of the media with successfully reconciled exometabolites
 
     omindirectional :
         ui-name : |

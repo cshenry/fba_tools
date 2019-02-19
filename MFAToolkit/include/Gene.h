@@ -64,8 +64,8 @@ public:
 	~Gene();
 	
 	//Pubvar
-	MFAVariable* ProteinProd;
-	MFAVariable* ProteinDeg;
+	LinEquation* MassBalanceConstraint;
+	LinEquation* DegradationConstraint;
 	double concentration;
 	double kprime;
 	double turnover;

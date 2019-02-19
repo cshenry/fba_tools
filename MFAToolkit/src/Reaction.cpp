@@ -33,8 +33,7 @@ Reaction::Reaction(vector<string>* InHeaders, string Fileline, Data* InData) {
 	NumReactants = 0;
 	PathwayList = NULL;
 	GeneRootNode = NULL;
-	ProteinProd = NULL;
-	ProteinDeg = NULL;
+	MassBalanceConstraint = NULL;
 	kprime = 1;
 	turnover = 0.034537;
 	concentration = 1;
@@ -59,8 +58,7 @@ Reaction::Reaction(string Filename, Data* InData) {
 	Type = REVERSIBLE; //Default is reversible
 	NumReactants = 0;
 	PathwayList = NULL;
-	ProteinProd = NULL;
-	ProteinDeg = NULL;
+	MassBalanceConstraint = NULL;
 	kprime = 1;
 	turnover = 0.034537;
 	concentration = 1;
@@ -87,8 +85,7 @@ Reaction::Reaction(string id,string equation,string name,Data* InData) {
 	Type = REVERSIBLE; //Default is reversible
 	NumReactants = 0;
 	PathwayList = NULL;
-	ProteinProd = NULL;
-	ProteinDeg = NULL;
+	MassBalanceConstraint = NULL;
 	kprime = 1;
 	turnover = 0.034537;
 	concentration = 1;
@@ -3271,16 +3268,16 @@ void Reaction::CreateReactionFluxConstraints(OptimizationParameter* InParameters
 				for (int k=0; k < int(this->gprdata[i][j].size()); k++) {
 					if (this->PrimaryForFluxConstraint != NULL) {
 						NewForComplexConstraint->RightHandSide += this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
-						NewForComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinProd);
+						//NewForComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinProd);
 						NewForComplexConstraint->Coefficient.push_back(-0.5*this->gprdata[i][j][k]->kprime);
-						NewForComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinDeg);
+						//NewForComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinDeg);
 						NewForComplexConstraint->Coefficient.push_back(0.5*this->gprdata[i][j][k]->kprime);
 					}
 					if (this->PrimaryRevFluxConstraint != NULL) {
 						NewRevComplexConstraint->RightHandSide += this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
-						NewRevComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinProd);
+						//NewRevComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinProd);
 						NewRevComplexConstraint->Coefficient.push_back(-0.5*this->gprdata[i][j][k]->kprime);
-						NewRevComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinDeg);
+						//NewRevComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinDeg);
 						NewRevComplexConstraint->Coefficient.push_back(0.5*this->gprdata[i][j][k]->kprime);
 					}
 				}

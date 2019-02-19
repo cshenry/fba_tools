@@ -2597,7 +2597,7 @@ sub func_build_metagenome_metabolic_model {
 		$htmlreport .= ".";	
 	}
 	#Gapfilling model if requested
-	my $output = {};
+	$output = {};
 	if ($params->{gapfill_model} == 1) {
 		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			target_reaction => "bio1",
@@ -2619,6 +2619,226 @@ sub func_build_metagenome_metabolic_model {
 	}
 	$datachannel->{fbamodel} = $mdl;
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	return $output;
+}
+
+sub func_fit_exometabolite_data {
+	my ($params,$model,$source_model) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","metabolite_condition","metabolite_matrix_ref"],{
+		fbamodel_workspace => $params->{workspace},
+		metabolite_matrix_workspace => $params->{workspace},
+		target_reaction => "bio1",
+		fbamodel_output_id => $params->{fbamodel_id},
+		media_ref => "KBaseMedia/Complete",
+		media_workspace => $params->{workspace},
+ 		source_fbamodel_id => undef,
+		source_fbamodel_workspace => $params->{workspace},
+		reaction_ko_list => [],
+		equal_weighting => 0,
+		omindirectional => 0,
+		minimum_target_flux => 0.1,
+		probanno_id => undef,
+		probanno_workspace => $params->{workspace},
+		atp_production_check => 1,
+		exomedia_output_id => $params->{fbamodel_id}.".exomedia"
+	});
+	my $printreport = 1;
+	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
+		if (length($params->{reaction_ko_list}) > 0) {
+			$params->{reaction_ko_list} = [split(/,/,$params->{reaction_ko_list})];
+		} else {
+			 $params->{reaction_ko_list} = [];
+		}
+	}
+	$handler->util_log("Retrieving metabolite matrix.");
+	my $matrix = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metabolite_matrix_ref},$params->{fbamodel_workspace}));
+	if (!defined($model)) {
+		$handler->util_log("Retrieving model.");
+		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+	} else {
+		$printreport = 0;
+	}
+	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_ref},$params->{media_workspace}));
+	$handler->util_log("Preparing flux balance analysis problem.");
+	if (defined($params->{source_fbamodel_id}) && !defined($source_model)) {
+		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));	
+	}
+	my $gfs = $model->gapfillings();
+	my $currentid = 0;
+	for (my $i=0; $i < @{$gfs}; $i++) {
+		if ($gfs->[$i]->id() =~ m/gf\.(\d+)$/) {
+			if ($1 >= $currentid) {
+				$currentid = $1+1;
+			}
+		}
+	}
+	my $gfid = "gf.".$currentid;
+	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fbamodel_output_id}.".".$gfid,1,1,$source_model,1);
+	if ($params->{atp_production_check} == 1) {
+		$fba->parameters()->{"ATP check gapfilling solutions"} = 1;
+	}
+	#Finding the column of exometabolite data and translating to FBA parameters
+	my $values;
+	for (my $i=0; $i < @{$matrix->{data}->{col_ids}}; $i++) {
+		if ($matrix->{data}->{col_ids}->[$i] eq $params->{metabolite_condition}) {
+			$values = [];
+			for (my $j=0; $j < @{$matrix->{data}->{values}}; $j++) {
+				push(@{$values},$matrix->{data}->{values}->[$j]->[$i]);	
+			}
+			last;
+		}
+	}
+	#First, check if row_ids are ModelSEED ids
+	my $labels = [];
+	my $names = [];
+	for (my $i=0; $i < @{$matrix->{data}->{row_ids}}; $i++) {
+		if ($matrix->{data}->{row_ids}->[$i] =~ m/cpd\d+/) {
+			$labels->[$i] = $matrix->{data}->{row_ids}->[$i];
+		}	
+	}
+	if (@{$labels} == 0) {
+		#Fetching attributes and searching for ModelSEED attribute
+		my $mapping = $handler->util_get_object(Bio::KBase::utilities::buildref($matrix->{row_attributemapping_ref},$params->{workspace}));
+		for (my $i=0; $i < @{$mapping->{attributes}}; $i++) {
+			if ($mapping->{attributes}->[$i]->{attribute} eq "seed_id") {
+				for (my $j=0; $j < @{$matrix->{data}->{row_ids}}; $j++) {
+					if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]})) {
+						$labels->[$j] = $mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$i];
+					} else {
+						$labels->[$j] = undef;
+					}
+				}
+			}
+		}
+	}
+	if (@{$labels} == 0) {
+		Bio::KBase::utilities::error("Compound ModelSEED IDs not found in input matrix!");
+	}
+	my $exometparam = "";
+	for (my $i=0; $i < @{$labels}; $i++) {
+		if (defined($values->[$i]) && defined($labels->[$i]) && $labels->[$i] =~ m/cpd\d+/) {
+			if (length($exometparam) > 0) {
+				$exometparam .= ";";
+			}
+			push(@{$names},$matrix->{data}->{row_ids}->[$i]);
+			$exometparam .= $labels->[$i].":".$values->[$i];
+		}
+	}
+	if (length($exometparam) == 0) {
+		Bio::KBase::utilities::error("No exometabolites with meaningful values found!");
+	}
+	$fba->parameters()->{"equal_weighting"} = $params->{equal_weighting};
+	$fba->parameters()->{"omnidirectional"} = $params->{omnidirectional};
+	$fba->parameters()->{"Exometabolite data"} = $exometparam;
+	$handler->util_log("Running flux balance analysis problem.");
+	$fba->runFBA();
+	#Error checking the FBA and gapfilling solution
+	if (!defined($fba->gapfillingSolutions()->[0]) || !defined($fba->outputfiles()->{ExometaboliteOutput})) {
+		Bio::KBase::utilities::error("Analysis completed, but no valid solutions found!");
+	}
+	$handler->util_log("Saving gapfilled model.");
+	# If the model is saved in the workspace, add it to the genome reference path
+	if ($model->_reference() =~ m/^(\w+\/\w+\/\w+)/) {
+		$model->genome_ref($model->_reference() . ";" . $model->genome_ref());
+	}
+	my $media = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_media_workspace")."/Carbon-D-Glucose");
+	$media->id($params->{exomedia_output_id});
+	$media->name($params->{exomedia_output_id});
+	$media->source_id($params->{exomedia_output_id});
+	my $mediacpds = $media->mediacompounds();
+	my $mediahash = {};
+	for (my $i=0; $i < @{$mediacpds}; $i++) {
+		$mediahash->{$mediacpds->[$i]->compound()->id()} = $mediacpds->[$i];
+	}
+	my $output_rows = $fba->outputfiles()->{ExometaboliteOutput};
+	my $htmlreport = "<html><head><script type='text/javascript' src='https://www.google.com/jsapi'></script><script type='text/javascript'>google.load('visualization', '1', {packages:['controls'], callback: drawDashboard});google.setOnLoadCallback(drawDashboard);";
+	$htmlreport .= "function drawDashboard() {var data = new google.visualization.DataTable();";
+	$htmlreport .= "data.addColumn('string','Exometabolite');";
+	$htmlreport .= "data.addColumn('string','Score');";
+	$htmlreport .= "data.addColumn('string','Status');";
+	$htmlreport .= "data.addColumn('string','Flux');";
+	$htmlreport .= "data.addColumn('string','Dependent reactions');";
+	$htmlreport .= "data.addRows([";
+	for (my $i=1; $i < @{$output_rows}; $i++) {
+		my $array = [split(/\t/,$output_rows->[$i])];
+		if ($array->[3] eq "yes") {
+			if (defined($mediahash->{$array->[0]})) {
+				if ($array->[1] > 0) {
+					$mediahash->{$array->[0]}->maxFlux(-0.01);
+					$mediahash->{$array->[0]}->minFlux(-100);
+				} elsif ($array->[1] < 0) {
+					$mediahash->{$array->[0]}->maxFlux(100);
+					$mediahash->{$array->[0]}->minFlux(0.01);
+				}
+			} else {
+				if ($array->[1] > 0) {
+					$media->add("mediacompounds",{
+						compound_ref => "kbase/default/compounds/id/".$array->[0],
+						concentration => 0.001,
+						maxFlux => -0.01,
+						minFlux => -100
+					});
+				} elsif ($array->[1] < 0) {
+					$media->add("mediacompounds",{
+						compound_ref => "kbase/default/compounds/id/".$array->[0],
+						concentration => 0.001,
+						maxFlux => 100,
+						minFlux => 0.01
+					});
+				}
+			}
+		}
+		#Adding transport reactions for any exometabolite for which no transporter exists in the database
+		if ($array->[2] eq "no transport" && $array->[1] != 0 && $array->[3] eq "yes") {
+			my $equation = $array->[0]."_e0 => ".$array->[0]."_c0";
+			if ($array->[1] > 0) {
+				$equation = $array->[0]."_c0 => ".$array->[0]."_e0";
+			}
+			$array->[4] .= ";".$array->[0]."-transport";
+			$model->addModelReaction({
+				reaction => $array->[0]."-transport",
+				equation => $equation,
+				direction => ">",
+				compartment => "c",
+				compartmentIndex => 0,
+				addReaction => 1,
+				name => $names->[$i-1]." transport"
+			});
+		}
+		my $row = [$names->[$i-1]." (".$array->[0].")",$array->[1],$array->[2],$array->[3],$array->[4]];
+		$htmlreport .= '["'.join('","',@{$row}).'"],';
+	}
+	$htmlreport .= "]);var filterColumns = [];var tab_columns = [];for (var j = 0, dcols = data.getNumberOfColumns(); j < dcols; j++) {filterColumns.push(j);tab_columns.push(j);}filterColumns.push({type: 'string',calc: function (dt, row) {for (var i = 0, vals = [], cols = dt.getNumberOfColumns(); i < cols; i++) {vals.push(dt.getFormattedValue(row, i));}return vals.join('\\n');}});";
+	$htmlreport .= "var table = new google.visualization.ChartWrapper({chartType: 'Table',containerId: 'table_div',options: {allowHtml: true,showRowNumber: true,page: 'enable',pageSize: 20},view: {columns: tab_columns}});";
+	$htmlreport .= "var search_filter = new google.visualization.ControlWrapper({controlType: 'StringFilter',containerId: 'search_div',options: {filterColumnIndex: data.getNumberOfColumns(),matchType: 'any',caseSensitive: false,ui: {label: 'Search data:'}},view: {columns: filterColumns}});";
+	$htmlreport .= "var dashboard = new google.visualization.Dashboard(document.querySelector('#dashboard_div'));var formatter = new google.visualization.ColorFormat();formatter.addRange(0.5, null, 'red', 'white');";
+	$htmlreport .= "dashboard.bind([search_filter], [table]);dashboard.draw(data);}</script></head>";
+	$htmlreport .= "<body><h4>Results from exometabolite data gapfilling</h4><div id='dashboard_div'><table class='columns'><tr><td><div id='search_div'></div></td></tr><tr><td><div id='table_div'></div></td></tr></table>";
+	$htmlreport .= Bio::KBase::utilities::gapfilling_html_table()."</div></body></html>";
+	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	my $mediameta = $handler->util_save_object($media,$params->{workspace}."/".$params->{exomedia_output_id});
+	my $modelmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
+	$handler->util_log("Saving FBA object with gapfilling sensitivity analysis and flux.");
+	$fba->fbamodel_ref($model->_reference());
+	if (!defined($params->{gapfill_output_id})) {
+		$params->{gapfill_output_id} = $params->{fbamodel_output_id}.".".$gfid;
+	}
+	$fba->id($params->{gapfill_output_id});
+	my $fbameta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{gapfill_output_id},$params->{workspace}),{type => "KBaseFBA.FBA", hidden => 1});
+	print $htmlreport;
+	my $output = {
+		new_fbamodel => $model,
+		html_report => $htmlreport,
+		new_fba_ref => util_get_ref($fbameta),
+		new_fbamodel_ref => util_get_ref($modelmeta),
+		number_gapfilled_reactions => 0
+	};
+	if (defined($fba->parameters()->{growth})) {
+		$output->{growth} = $fba->parameters()->{growth};
+	}
+	if (defined($fba->parameters()->{atpproduction})) {
+		$output->{atpproduction} = $fba->parameters()->{atpproduction};
+	}
 	return $output;
 }
 

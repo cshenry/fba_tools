@@ -22,8 +22,7 @@
 
 Gene::Gene(string InFilename, Data* InData) {
 	MainData = InData;
-	ProteinProd = NULL;
-	ProteinDeg = NULL;
+	MassBalanceConstraint = NULL;
 	if (InFilename.length() > 0) {
 		AddData("DATABASE",InFilename.data(),STRING);
 		AddData("FILENAME",InFilename.data(),STRING);
