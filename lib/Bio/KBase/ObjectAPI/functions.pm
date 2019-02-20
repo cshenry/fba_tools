@@ -2816,7 +2816,7 @@ sub func_fit_exometabolite_data {
 	$htmlreport .= "<body><h4>Results from exometabolite data gapfilling</h4><div id='dashboard_div'><table class='columns'><tr><td><div id='search_div'></div></td></tr><tr><td><div id='table_div'></div></td></tr></table>";
 	$htmlreport .= Bio::KBase::utilities::gapfilling_html_table()."</div></body></html>";
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
-	my $mediameta = $handler->util_save_object($media,Bio::KBase::utilities::buildref($params->{exomedia_output_id},$params->{workspace});
+	my $mediameta = $handler->util_save_object($media,Bio::KBase::utilities::buildref($params->{exomedia_output_id},$params->{workspace}));
 	my $modelmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
 	$handler->util_log("Saving FBA object with gapfilling sensitivity analysis and flux.");
 	$fba->fbamodel_ref($model->_reference());
