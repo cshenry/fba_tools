@@ -217,8 +217,7 @@
          "text_options" : {
             "valid_ws_types" : [
                "KBaseBiochem.Media"
-            ],
-            "is_output_name" : true
+            ]
          },
          "field_type" : "text",
          "optional" : true,

@@ -2825,7 +2825,6 @@ sub func_fit_exometabolite_data {
 	}
 	$fba->id($params->{gapfill_output_id});
 	my $fbameta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{gapfill_output_id},$params->{workspace}),{type => "KBaseFBA.FBA", hidden => 1});
-	print $htmlreport;
 	my $output = {
 		new_fbamodel => $model,
 		html_report => $htmlreport,
