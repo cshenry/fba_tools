@@ -43,6 +43,10 @@
                "target_property" : "equal_weighting"
             },
             {
+               "input_parameter" : "exomedia_output_id",
+               "target_property" : "exomedia_output_id"
+            },
+            {
                "input_parameter" : "omindirectional",
                "target_property" : "omindirectional"
             },
