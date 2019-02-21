@@ -150,13 +150,12 @@
             "show_src_obj" : true,
             "subdata_selection" : {
                "path_to_subdata" : [
-                  "data",
-                  "col_ids"
+                  "col_mapping"
                ],
                "parameter_id" : "metabolite_matrix_ref",
                "selection_id" : "id",
                "subdata_included" : [
-                  "data/col_ids"
+                  "col_mapping/[*]"
                ]
             },
             "multiselection" : false
