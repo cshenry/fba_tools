@@ -353,7 +353,10 @@ sub func_build_metabolic_model {
 		max_objective_limit => 1.2,
 		predict_auxotrophy => 0,
 		mode => "new",
-		anaerobe => 0
+		anaerobe => 0,
+		use_annotated_functions => 1,
+        merge_all_annotations => 0,
+        source_ontology_list => [[], []]
 	});
 	#Getting genome
 	$handler->util_log("Retrieving genome.");
@@ -379,21 +382,62 @@ sub func_build_metabolic_model {
 	}
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
+	#Clearning up annotation source array
+	my $anno_sources = [];
+	for (my $i=0; $i < @{$param->{source_ontology_list}};$i++) {
+		if (defined($param->{source_ontology_list}->[$i]->[0])) {
+			push(@{$anno_sources},$param->{source_ontology_list}->[$i]->[0]);
+		}
+	}
 	#Building model with classic template
-	my $fullmodel = $template->buildModel({
-		genome => $genome,
-		modelid => $params->{fbamodel_output_id},
-		fulldb => 0
-	});
+	my $fullmodel;
+	if ($params->{use_annotated_functions} == 1) {
+		$fullmodel = $template->buildModel({
+			genome => $genome,
+			modelid => $params->{fbamodel_output_id},
+			fulldb => 0
+		});
+	} else {
+		$fullmodel = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+			id => $params->{fbamodel_output_id},
+			source => Bio::KBase::utilities::conf("ModelSEED","source"),
+			source_id => $params->{fbamodel_output_id},
+			type => $template->type(),
+			name => $params->{fbamodel_output_id},
+			template_ref => $template->_reference(),
+			template_refs => [$template->_reference()],
+			genome_ref => $genome->_reference()
+		});
+	}
+	if (@{$anno_sources} > 0) {
+		$template->add_reactions_from_ontology_events($fullmodel,$anno_sources);
+	}
 	#If this is a "new" mode model, we build a core model first and run FBA to see ATP production
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
 	if ($params->{mode} eq "new" && $params->{template_id} ne $template_trans->{plant} && $params->{template_id} ne $template_trans->{core}) {
 		my $template = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core});
-		my $coremodel = $template->buildModel({
-			genome => $genome,
-			modelid => "tempcore",
-			fulldb => 0
-		});
+		my $coremodel;
+		if ($params->{use_annotated_functions} == 1) {
+			$coremodel = $template->buildModel({
+				genome => $genome,
+				modelid => "tempcore",
+				fulldb => 0
+			});
+		} else {
+			$coremodel = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+				id => $params->{fbamodel_output_id},
+				source => Bio::KBase::utilities::conf("ModelSEED","source"),
+				source_id => $params->{fbamodel_output_id},
+				type => $template->type(),
+				name => $params->{fbamodel_output_id},
+				template_ref => $template->_reference(),
+				template_refs => [$template->_reference()],
+				genome_ref => $genome->_reference()
+			});
+		}
+		if (@{$anno_sources} > 0) {
+			$template->add_reactions_from_ontology_events($coremodel,$anno_sources);
+		}
 		my $blacklist = [];
 		if ($params->{anaerobe} == 1) {
 			my $mdlrxn = $coremodel->getObject("modelreactions","rxn14419_c0");
