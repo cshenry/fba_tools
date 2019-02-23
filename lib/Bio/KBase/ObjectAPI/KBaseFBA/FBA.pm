@@ -1628,7 +1628,8 @@ sub createJobDirectory {
 		"database root input directory" => $self->jobDirectory()."/",
 		"Min flux multiplier" => 1,
 		"Max deltaG" => 10000,
-		"max objective limit" => 1.2
+		"max objective limit" => 1.6,
+		"steady state community modeling" => 0
 	};
 	if (defined($self->{"fit phenotype data"})) {
 		$parameters->{"fit phenotype data"} = $self->{"fit phenotype data"};
@@ -2489,6 +2490,7 @@ sub loadMFAToolkitResults {
 	$self->parseMFALog();
 	$self->parseMetaboliteInteraction();
 	$self->parseReactionAdditionAnalysis();
+	$self->parseSSCommunityFluxAnalysis();
 }
 
 =head3 parseBiomassRemovals
@@ -2973,6 +2975,22 @@ sub parseReactionAdditionAnalysis {
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/MFAOutput/ReactionAdditionAnalysis.txt") {
 		$self->outputfiles()->{ReactionAdditionAnalysis} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/ReactionAdditionAnalysis.txt");
+	}
+}
+
+=head3 parseSSCommunityFluxAnalysis
+Definition:
+	void ModelSEED::MS::Model->parseSSCommunityFluxAnalysis();
+Description:
+	Parses community flux analysis results
+
+=cut
+
+sub parseSSCommunityFluxAnalysis {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MFAOutput/SSCommunityFluxAnalysis.txt") {
+		$self->outputfiles()->{SSCommunityFluxAnalysis} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/SSCommunityFluxAnalysis.txt");
 	}
 }
 
