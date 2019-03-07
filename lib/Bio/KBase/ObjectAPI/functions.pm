@@ -384,9 +384,9 @@ sub func_build_metabolic_model {
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
 	#Clearning up annotation source array
 	my $anno_sources = [];
-	for (my $i=0; $i < @{$param->{source_ontology_list}};$i++) {
-		if (defined($param->{source_ontology_list}->[$i]->[0])) {
-			push(@{$anno_sources},$param->{source_ontology_list}->[$i]->[0]);
+	for (my $i=0; $i < @{$params->{source_ontology_list}};$i++) {
+		if (defined($params->{source_ontology_list}->[$i]->[0])) {
+			push(@{$anno_sources},$params->{source_ontology_list}->[$i]->[0]);
 		}
 	}
 	#Building model with classic template
@@ -2785,7 +2785,7 @@ sub func_fit_exometabolite_data {
 	if ($model->_reference() =~ m/^(\w+\/\w+\/\w+)/) {
 		$model->genome_ref($model->_reference() . ";" . $model->genome_ref());
 	}
-	my $media = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_media_workspace")."/Carbon-D-Glucose");
+	$media = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_media_workspace")."/Carbon-D-Glucose");
 	$media->id($params->{exomedia_output_id});
 	$media->name($params->{exomedia_output_id});
 	$media->source_id($params->{exomedia_output_id});
