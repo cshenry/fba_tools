@@ -75,7 +75,7 @@ private:
 
 	//This is where the gene dependancies for the reaction are stored
 	//This first vector hold independant genes while each second vector contains gene components of a complex
-	vector<vector<vector<Gene*> > > gprdata;
+
 	vector<vector<Gene*> > GeneDependency;
 	map<Gene*, int, std::less<Gene*> > GeneIndecies;
 	vector<GeneLogicNode*> LogicNodes;
@@ -91,7 +91,10 @@ private:
 	list<Pathway*>* PathwayList;
 	vector<MFAVariable*> ComplexMFAVariables;
 public:
+	vector<vector<vector<Gene*> > > gprdata;
 	map<int , MFAVariable* , std::less<int> > MFAVariables;
+	LinEquation* MassBalanceConstraint;
+	LinEquation* DegradationConstraint;
 	Reaction(vector<string>* InHeaders, string Fileline, Data* InData);
 	Reaction(string Filename, Data* InData);
 	Reaction(string id,string equation,string name,Data* InData);

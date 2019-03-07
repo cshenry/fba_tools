@@ -2491,6 +2491,7 @@ sub loadMFAToolkitResults {
 	$self->parseMetaboliteInteraction();
 	$self->parseReactionAdditionAnalysis();
 	$self->parseSSCommunityFluxAnalysis();
+	$self->parseExometaboiteResults();
 }
 
 =head3 parseBiomassRemovals
@@ -2991,6 +2992,22 @@ sub parseSSCommunityFluxAnalysis {
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/MFAOutput/SSCommunityFluxAnalysis.txt") {
 		$self->outputfiles()->{SSCommunityFluxAnalysis} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/SSCommunityFluxAnalysis.txt");
+	}
+}
+
+=head3 parseExometaboiteResults
+Definition:
+	void ModelSEED::MS::Model->parseExometaboiteResults();
+Description:
+	Parsing exometabolite analysis output
+	
+=cut
+
+sub parseExometaboiteResults {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/ExometaboliteOutput.txt") {
+		$self->outputfiles()->{ExometaboliteOutput} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/ExometaboliteOutput.txt");
 	}
 }
 
@@ -3496,7 +3513,9 @@ Description:
 sub parseGapfillingOutput {
 	my $self = shift;
 	my $directory = $self->jobDirectory();
-
+	if (-e $directory."ATPTesting.out") {
+		$self->atp_checking_fail(1);
+	}
 	sub addExpressionLeveltoGPR {
 	my ($gprstring, $sample) = @_;
 	my $exphash = $sample;

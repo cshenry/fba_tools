@@ -250,15 +250,20 @@ sub buildModelFromFunctions {
 		modelcompounds => [],
 		modelreactions => []
 	});
+	my $probabilities = {};
 	my $rxns = $self->reactions();
 	my $roleFeatures = {};
 	foreach my $function (keys(%{$args->{functions}})) {
-		my $searchrole = Bio::KBase::ObjectAPI::Utilities::GlobalFunctions::convertRoleToSearchRole($function);
+		my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function);
 		my $subroles = [split(/;/,$searchrole)];
 		for (my $m=0; $m < @{$subroles}; $m++) {
 			$searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($subroles->[$m]);
 			if (defined($self->roleSearchNameHash()->{$searchrole})) {
 				foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
+					if (!defined($probabilities->{$roleid})) {
+						$probabilities->{$roleid} = 0;
+					}
+					$probabilities->{$roleid} += $args->{functions}->{$function};
 					if ($self->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
 						$roleFeatures->{$roleid}->{"c"}->[0] = "Role-based-annotation";
 					}
@@ -270,7 +275,8 @@ sub buildModelFromFunctions {
 		my $rxn = $rxns->[$i];
 		$rxn->addRxnToModel({
 			role_features => $roleFeatures,
-			model => $mdl
+			model => $mdl,
+			probabilities => $probabilities
 		});
 	}
 	my $bios = $self->biomasses();

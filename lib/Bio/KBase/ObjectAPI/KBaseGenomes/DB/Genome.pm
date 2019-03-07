@@ -44,6 +44,9 @@ has close_genomes => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { r
 has features => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(Feature)', metaclass => 'Typed', reader => '_features', printOrder => '0');
 has contigs => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(Contig)', metaclass => 'Typed', reader => '_contigs', printOrder => '-1');
 
+# Using Feature Class
+has mrnas => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(Feature)', metaclass => 'Typed', reader => '_mrnas', printOrder => '0');
+has cdss => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(Feature)', metaclass => 'Typed', reader => '_cdss', printOrder => '0');
 
 # LINKS:
 has contigset => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,ContigSet,contigset_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_contigset', clearer => 'clear_contigset', isa => 'Bio::KBase::ObjectAPI::KBaseGenomes::ContigSet', weak_ref => 1);
@@ -259,10 +262,24 @@ my $subobjects = [
             'type' => 'child',
             'class' => 'Contig',
             'module' => 'KBaseGenomes'
+          },
+          {
+            'printOrder' => 1,
+            'name' => 'mrnas',
+            'type' => 'child',
+            'class' => 'Feature',
+            'module' => 'KBaseGenomes'
+          },
+          {
+            'printOrder' => 1,
+            'name' => 'cdss',
+            'type' => 'child',
+            'class' => 'Feature',
+            'module' => 'KBaseGenomes'
           }
         ];
 
-my $subobject_map = {close_genomes => 0, features => 1, contigs => 2};
+my $subobject_map = {close_genomes => 0, features => 1, contigs => 2, mrnas => 3, cdss => 4};
 sub _subobjects {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {
@@ -284,6 +301,14 @@ around 'close_genomes' => sub {
 around 'features' => sub {
 	 my ($orig, $self) = @_;
 	 return $self->_build_all_objects('features');
+};
+around 'mrnas' => sub {
+	 my ($orig, $self) = @_;
+	 return $self->_build_all_objects('mrnas');
+};
+around 'cdss' => sub {
+	 my ($orig, $self) = @_;
+	 return $self->_build_all_objects('cdss');
 };
 around 'contigs' => sub {
 	 my ($orig, $self) = @_;

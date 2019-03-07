@@ -143,6 +143,68 @@
          }
       },
       {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "use_annotated_functions",
+         "advanced" : true,
+         "default_values" : [
+            "1"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : "0",
+            "checked_value" : "1"
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "merge_all_annotations",
+         "advanced" : true,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : "0",
+            "checked_value" : "1"
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "textsubdata",
+         "allow_multiple" : true,
+         "optional" : true,
+         "id" : "source_ontology_list",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "textsubdata_options" : {
+            "allow_custom" : false,
+            "show_src_obj" : true,
+            "subdata_selection" : {
+               "path_to_subdata" : [
+                  "ontologies_present"
+               ],
+               "parameter_id" : "genome_id",
+               "selection_id" : "id",
+               "subdata_included" : [
+                  "ontologies_present/[*]"
+               ]
+            },
+            "multiselection" : false
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
          "text_options" : {
             "valid_ws_types" : []
          },
@@ -245,6 +307,18 @@
             {
                "target_property" : "media_supplement_list",
                "input_parameter" : "media_supplement_list"
+            },
+            {
+               "target_property" : "use_annotated_functions",
+               "input_parameter" : "use_annotated_functions"
+            },
+            {
+               "target_property" : "source_ontology_list",
+               "input_parameter" : "source_ontology_list"
+            },
+            {
+               "target_property" : "merge_all_annotations",
+               "input_parameter" : "merge_all_annotations"
             },
             {
                "target_property" : "minimum_target_flux",

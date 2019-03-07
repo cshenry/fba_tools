@@ -69,7 +69,30 @@ parameters :
         placeholder : |
             Output metabolic model name
 
-
+    use_annotated_functions :
+        ui-name : |
+            Use annotation functions
+        short-hint : |
+            Use the annotated functional roles in the genome as the primary annoation source (must be RAST annotations at this time)
+        long-hint : |
+            Use the annotated functional roles in the genome as the primary annoation source (must be RAST annotations at this time)
+    
+    source_ontology_list :
+        ui-name : |
+            Prioritized annotation sources
+        short-hint : |
+            Select the available annotation sources in this genome to use in model reconstruction in prioritized order
+        long-hint : |
+            Select the available annotation sources in this genome to use in model reconstruction in prioritized order
+            
+    merge_all_annotations :
+        ui-name : |
+            Merge all selected annotations
+        short-hint : |
+            Merge all selected annotations mapping all associated reactions to genes even if annotation sources disaggree on function
+        long-hint : |
+            Merge all selected annotations mapping all associated reactions to genes even if annotation sources disaggree on function
+            
     custom_bound_list :
         ui-name : |
             Custom flux bounds

@@ -86,6 +86,13 @@ parameters :
         long-hint : |
             Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
 
+    predict_community_composition :
+        ui-name : |
+            Predict community composition
+        short-hint : |
+            Only applies to compartmentalized community models - simulates those models with flexible rather than fixed species compositions
+        long-hint : |
+            Only applies to compartmentalized community models - simulates those models with flexible rather than fixed species compositions
 
     max_s_uptake :
         ui-name : |

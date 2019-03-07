@@ -200,9 +200,10 @@ sub process_object {
 			$data = $gaoutput->{genomes}->[0]->{data};
 			$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
 		}
-		if ($type eq "MediaSet" || $type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
+		if ($type eq "AttributeMapping" || $type eq "MetaboliteMatrix" || $type eq "BinnedContigs" || $type eq "Assembly" || $type eq "MediaSet" || $type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
 			$self->cache()->{$ref} = $data;
 			$self->cache()->{$ref}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
+			$self->cache()->{$ref}->{_type} = $type;
 			$self->cache()->{$ref}->{_ref_chain} = $origref;
 		} else {
 			$self->cache()->{$ref} = $class->new($data);

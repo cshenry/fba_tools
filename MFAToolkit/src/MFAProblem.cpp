@@ -4190,7 +4190,7 @@ int MFAProblem::AnalyzeMetaboliteInteractions(Data* InData, OptimizationParamete
 }
 
 int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution,LinEquation* NewObjective,vector<MFAVariable*> TestVariables,bool PrintResults) {
-	cout << "Reaction addition tessting: " << TestVariables.size() << endl;
+	cout << "Reaction addition testing: " << TestVariables.size() << endl;
 	int rejected_count = 0;
 	if (this->Solver != CPLEX) {
 		this->Solver = GLPK;
@@ -4200,6 +4200,34 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 	if (NewObjective != NULL) {
 		ObjFunct = NewObjective;
 	}
+	//Turning off any forced excretion or uptake in the media
+	vector<double> original_media_bound;
+	vector<bool> upper_media_bound;
+	vector<int> media_bound_index;
+	for (int i=0; i < this->Variables.size(); i++) {
+		if (this->Variables[i]->Type == DRAIN_FLUX) {
+			if (this->Variables[i]->UpperBound < 0) {
+				original_media_bound.push_back(this->Variables[i]->UpperBound);
+				upper_media_bound.push_back(true);
+				media_bound_index.push_back(i);
+				this->Variables[i]->UpperBound = 0;
+			}
+		} else if (this->Variables[i]->Type == DRAIN_FLUX || this->Variables[i]->Type == FORWARD_DRAIN_FLUX || this->Variables[i]->Type == REVERSE_DRAIN_FLUX) {
+			if (this->Variables[i]->LowerBound > 0) {
+				original_media_bound.push_back(this->Variables[i]->LowerBound);
+				upper_media_bound.push_back(false);
+				media_bound_index.push_back(i);
+				this->Variables[i]->LowerBound = 0;
+			}
+		}else if (this->Variables[i]->Type == METABOLITE_SLACK) {
+			if (this->Variables[i]->UpperBound == 0) {
+				media_bound_index.push_back(i);
+				original_media_bound.push_back(this->Variables[i]->UpperBound);
+				upper_media_bound.push_back(true);
+				this->Variables[i]->UpperBound = 0.01;
+			}
+		}
+	}
 	//Turning off reactions from input list
 	vector<double> original_upper_bound;
 	vector<double> original_lower_bound;
@@ -4208,7 +4236,6 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 		original_upper_bound.push_back(TestVariables[i]->UpperBound);
 		TestVariables[i]->UpperBound = 0;
 		TestVariables[i]->LowerBound = 0;
-		this->LoadVariable(TestVariables[i]->Index);
 	}
 	//Optimizing with reactions completely knocked out
 	this->LoadSolver();
@@ -4253,11 +4280,109 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 		CurrentSolution = RunSolver(true,true,false);
 		PrintSolutions(FNumSolutions()-1,FNumSolutions());
 	}
+	//Restoring media constraints
+	for (int i=0; i < original_media_bound.size(); i++) {
+		if (upper_media_bound[i]) {
+			this->Variables[media_bound_index[i]]->UpperBound = original_media_bound[i];
+			this->LoadVariable(media_bound_index[i]);
+		} else {
+			this->Variables[media_bound_index[i]]->LowerBound = original_media_bound[i];
+			this->LoadVariable(media_bound_index[i]);
+		}
+	}
 	if (PrintResults) {
 		Output.close();
 	}
 	ObjFunct = OldObjective;
 	return rejected_count;
+}
+
+int MFAProblem::SteadyStateCommunityModeling(Data* InData, OptimizationParameter* InParameters) {
+	int StartState = this->SaveState();
+	LinEquation* OldObjective = ObjFunct;
+	ClearSolutions();
+	ObjFunct = InitializeLinEquation("Max total biomass objective",0);
+	SetMax();
+	//Remove restrictions on objective function
+	if (ObjectiveConstraint != NULL) {
+		ObjectiveConstraint->RightHandSide = 0;
+	}
+	//Constraining bio1 to 0
+	Reaction* community_biomass = InData->FindReaction("DATABASE","bio1");
+	if (community_biomass != NULL) {
+		community_biomass->ResetFluxBounds(0,0,this);
+	}
+	//Adding drain fluxes for all biomass compounds and creating object function as sum of these drains
+	vector<MFAVariable*> biomass_variables;
+	vector<int> compartment_indecies;
+	vector<LinEquation*> flux_constraints;
+	double flux_coefficient = 2000;
+	for (int i=1; i < 1000; i++) {
+		string bio_id("cpd11416_c");
+		bio_id += itoa(i);
+		Species* biospecies = InData->FindSpecies("DATABASE",bio_id.data());
+		if (biospecies == NULL) {
+			break;
+		} else {
+			MFAVariable* drain_var = CreateOrGetDrainVariable(biospecies,GetDefaultCompartment()->Index);
+			ObjFunct->Variables.push_back(drain_var);
+			ObjFunct->Coefficient.push_back(-1);
+			compartment_indecies.push_back(i);
+			biomass_variables.push_back(drain_var);
+			LinEquation* NewConstraint = InitializeLinEquation("Compartment total flux constraint",0,LESS);
+			NewConstraint->Variables.push_back(drain_var);
+			NewConstraint->Coefficient.push_back(flux_coefficient);
+			flux_constraints.push_back(NewConstraint);
+			this->AddConstraint(NewConstraint);
+		}
+	}
+	//Adding all fluxes from all reactions in each compartment to the flux constraints
+	for (int i=0; i < int(this->Variables.size()); i++) {
+		if (this->Variables[i]->Type == FLUX || this->Variables[i]->Type == FORWARD_FLUX || this->Variables[i]->Type == REVERSE_FLUX) {
+			string id = this->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING);
+			vector<string>* strings = StringToStrings(id,"_");
+			string comp = strings->back();
+			comp = comp.substr(1);
+			int index = atoi(comp.data());
+			for (int j=0; j < compartment_indecies.size(); j++) {
+				if (compartment_indecies[j] == index) {
+					flux_constraints[j]->Variables.push_back(this->Variables[i]);
+					flux_constraints[j]->Coefficient.push_back(1);
+				}
+			}
+		}
+	}
+	//Running solver iteratively, while increasing flux constraints
+	ofstream Output;
+	OpenOutput(Output,FOutputFilepath()+"MFAOutput/SSCommunityFluxAnalysis.txt");
+	Output << "Flux coefficient\tObjective";
+	for (int i=0; i < compartment_indecies.size(); i++) {
+		Output << "\tbio" << compartment_indecies[i];
+	}
+	Output << endl;
+	for (int j=0; j < 20; j++) {
+		this->LoadSolver();
+		OptSolutionData* NewSolution = RunSolver(false,true,false);
+		if (NewSolution->Status == SUCCESS) {
+			Output << flux_coefficient << "\t" << NewSolution->Objective;
+			for (int i=0; i < biomass_variables.size(); i++) {
+				Output << "\t" << -1*NewSolution->SolutionData[biomass_variables[i]->Index];
+			}
+			Output << endl;
+		} else {
+			Output << flux_coefficient << "\tInfeasible" << endl;
+		}
+		flux_coefficient += 100;
+		for (int i=0; i < flux_constraints.size(); i++) {
+			flux_constraints[i]->Coefficient[0] = flux_coefficient;
+		}
+	}
+	Output.close();
+	PrintSolutions(-1,-1);
+	ClearSolutions();
+	this->LoadState(StartState,true,true,true,true,true);
+	ResetSolver();
+	return SUCCESS;
 }
 
 int MFAProblem::ReduceObjective(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution) {
@@ -4537,7 +4662,7 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 								this->ObjectiveConstraint->RightHandSide = InParameters->MinimumTargetFlux;
 								LoadConstToSolver(this->ObjectiveConstraint->Index);
 								this->SetMin();
-								bool gapfilled = SolveGapfillingProblem(0,NewSolution,label,InParameters,"GapfillingOutput.txt");
+								SolveGapfillingProblem(0,NewSolution,label,InParameters,"GapfillingOutput.txt");
 								this->SetMax();
 								cout << "Setting gapfilling:" << GetParameter("current gapfilled reactions") << endl;
 								cout << "WTgrowth:" << WTgrowth << endl;
@@ -5563,6 +5688,10 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 		ComputeOptimalDeadends(InData);
 	}
 
+	if (InParameters->SteadyStateCommunityModeling) {
+		return SteadyStateCommunityModeling(InData,InParameters);
+	}
+
 	//In this optional analysis, we maximize the number of reactions carrying flux at the same time
 	int BeforeActivationState = this->SaveState();
 	if (InParameters->MaximizeActiveReactions) {
@@ -5714,7 +5843,7 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 	double flow_in = InParameters->FlowIn;
 	double flow_out = InParameters->FlowOut;
 	double biomass = InParameters->InitialBiomass;
-	double proteinlimit = InParameters->ProteinLimit;
+	double last_v_bio = 0;
 	bool ProteinFormulation = false;
 	vector<string> proteins;
 	if (GetParameter("protein formulation").compare("1") == 0) {
@@ -5724,94 +5853,144 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 	//Creating max production and max protein constraints
 	LinEquation* ProteinProductionConstraint = NULL;
 	LinEquation* MaxProteinConstraint = NULL;
+	//These vectors house the protein variables
+	vector<Gene*> AllGeneProteins;
+	vector<Reaction*> AllReactionProteins;
+	vector<MFAVariable*> ProteinVariables;
+	vector<LinEquation*> ProteinMassBalances;
 	if (ProteinFormulation) {
 		//Add max protein production constraint
 		ProteinProductionConstraint = InitializeLinEquation("Max protein production constraint",InParameters->ProteinProdLimit,LESS);
 		this->AddConstraint(ProteinProductionConstraint);
 		//Add max protein constraint
-		MaxProteinConstraint = InitializeLinEquation("Max protein constraint",0,LESS);
+		MaxProteinConstraint = InitializeLinEquation("Max protein constraint",InParameters->ProteinLimit,LESS);
 		this->AddConstraint(MaxProteinConstraint);
+		//Creating and adding protein concentration variables for all genes with reactions
+		for (int i=0; i < InData->FNumGenes(); i++) {
+			Gene* current = InData->GetGene(i);
+			if (current->FNumReactions() > 0 && current->GetData("DATABASE",STRING).compare("Unknown") != 0) {
+				if (current->MassBalanceConstraint == NULL) {
+					MFAVariable* proteinconc = InitializeMFAVariable();
+					proteinconc->LowerBound = 0;
+					proteinconc->UpperBound = InParameters->ProteinLimit;
+					proteinconc->AssociatedGene = current;
+					proteinconc->Type = PROTEIN_CONC;
+					proteinconc->Name = current->GetData("DATABASE",STRING);
+					MaxProteinConstraint->Variables.push_back(proteinconc);
+					MaxProteinConstraint->Coefficient.push_back(1);
+					//Create protein mass balanced constraint: Pi,t*(B0+vb) - Pi,syn*(B0+vb/2) + Pi,deg*(B0+vb/2) = Pi,0*B0
+					current->MassBalanceConstraint = InitializeLinEquation("Protein mass balance constraint",current->concentration*biomass,EQUAL);
+					current->MassBalanceConstraint->Coefficient.push_back(biomass+last_v_bio);
+					current->MassBalanceConstraint->Coefficient.push_back(-1*biomass-last_v_bio/2);
+					current->MassBalanceConstraint->Coefficient.push_back(biomass+last_v_bio/2);
+					current->MassBalanceConstraint->Variables.push_back(proteinconc);
+					current->MassBalanceConstraint->Variables.push_back(NULL);
+					current->MassBalanceConstraint->Variables.push_back(NULL);
+					//Note - we still need to add synthesis and degradation variables which we will do later
+					//Each round of simulation, we will need to update these coefficients as the value of last_v_bio will keep changing
+					ProteinVariables.push_back(proteinconc);
+					ProteinMassBalances.push_back(current->MassBalanceConstraint);
+					this->AddVariable(proteinconc);
+					this->AddConstraint(current->MassBalanceConstraint);
+				}
+			}
+		}
+		//Creating pseudoprotein variables for all reactions without genes
+		for (int i=0; i < InData->FNumReactions(); i++) {
+			Reaction* current = InData->GetReaction(i);
+			if (current->gprdata.size() == 0 || current->gprdata[0][0][0]->GetData("DATABASE",STRING).compare("Unknown") == 0) {
+				if (current->MFAVariables[PROTEIN_CONC] == NULL) {
+					MFAVariable* proteinconc = InitializeMFAVariable();
+					proteinconc->LowerBound = 0;
+					proteinconc->UpperBound = InParameters->ProteinLimit;
+					proteinconc->AssociatedReaction = current;
+					proteinconc->Type = PROTEIN_CONC;
+					proteinconc->Name = current->GetData("DATABASE",STRING);
+					MaxProteinConstraint->Variables.push_back(proteinconc);
+					MaxProteinConstraint->Coefficient.push_back(1);
+					//Create protein mass balanced constraint: Pi,t*(B0+vb) - Pi,syn*(B0+vb/2) + Pi,deg*(B0+vb/2) = Pi,0*B0
+					current->MassBalanceConstraint = InitializeLinEquation("Protein mass balance constraint",current->concentration*biomass,EQUAL);
+					current->MassBalanceConstraint->Coefficient.push_back(biomass+last_v_bio);
+					current->MassBalanceConstraint->Coefficient.push_back(NULL);
+					current->MassBalanceConstraint->Coefficient.push_back(NULL);
+					current->MassBalanceConstraint->Variables.push_back(proteinconc);
+					current->MassBalanceConstraint->Coefficient.push_back(-1*biomass-last_v_bio/2);
+					current->MassBalanceConstraint->Coefficient.push_back(biomass+last_v_bio/2);
+					//Note - we still need to add synthesis and degradation variables which we will do later
+					//Each round of simulation, we will need to update these coefficients as the value of last_v_bio will keep changing
+					ProteinVariables.push_back(proteinconc);
+					ProteinMassBalances.push_back(current->MassBalanceConstraint);
+					this->AddVariable(proteinconc);
+					this->AddConstraint(current->MassBalanceConstraint);
+				}
+			}
+		}
+		//Iterating over all variables to find protein synthesis and degradation fluxes and add to mass balance constraints
+		for (int i=0; i < this->Variables.size(); i++) {
+			if (Variables[i]->Type == FLUX || Variables[i]->Type == FORWARD_FLUX || Variables[i]->Type == REVERSE_FLUX) {
+				if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).length() > 5 && Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(0,5).compare("PSYN_") == 0) {
+					Gene* geneobj = InData->FindGene("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
+					if (geneobj != NULL) {
+						geneobj->MassBalanceConstraint->Variables[1] = Variables[i];
+					} else {
+						Reaction* rxnobj = InData->FindReaction("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
+						if (rxnobj != NULL) {
+							rxnobj->MassBalanceConstraint->Variables[1] = Variables[i];
+						}
+					}
+					ProteinProductionConstraint->Variables.push_back(Variables[i]);
+					ProteinProductionConstraint->Coefficient.push_back(1);
+				} else if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).length() > 5 && Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(0,5).compare("PDEG_") == 0) {
+					//Adding a constraint that sets the degradation value: Pdeg,i = kdeg * Pi,0 + kdeg * (Pi,t - Pi,0)/2 = 0.5 * kdeg * Pi,0  + 0.5 * kdeg * Pi,t
+					LinEquation* DegradationConstraint = InitializeLinEquation("Degradation constraint",0,EQUAL);
+					MFAVariable* ProteinConc = NULL;
+					DegradationConstraint->Coefficient.push_back(1);
+					DegradationConstraint->Variables.push_back(Variables[i]);
+					Gene* geneobj = InData->FindGene("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
+					if (geneobj != NULL) {
+						geneobj->DegradationConstraint = DegradationConstraint;
+						ProteinConc = geneobj->MassBalanceConstraint->Variables[0];
+						DegradationConstraint->Coefficient.push_back(-0.5*geneobj->turnover);
+						DegradationConstraint->RightHandSide = 0.5 * geneobj->turnover * geneobj->concentration;
+						geneobj->MassBalanceConstraint->Variables[2] = Variables[i];
+					} else {
+						Reaction* rxnobj = InData->FindReaction("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
+						if (rxnobj != NULL) {
+							rxnobj->DegradationConstraint = DegradationConstraint;
+							ProteinConc = rxnobj->MassBalanceConstraint->Variables[0];
+							DegradationConstraint->Coefficient.push_back(-0.5*rxnobj->turnover);
+							DegradationConstraint->RightHandSide = 0.5 * rxnobj->turnover * rxnobj->concentration;
+							rxnobj->MassBalanceConstraint->Variables[2] = Variables[i];
+						}
+					}
+					if (ProteinConc != NULL) {
+						this->AddConstraint(DegradationConstraint);
+						DegradationConstraint->Variables.push_back(ProteinConc);
+					}
+
+				}
+			}
+		}
+		//Creating special reaction flux constraints
+		for (int i=0; i < InData->FNumReactions(); i++) {
+			InData->GetReaction(i)->CreateReactionFluxConstraints(InParameters,this);
+		}
 	}
-	//Adding initial concentration for all drain fluxes
+	//Finding the biomass flux variable
 	MFAVariable* biomassvar = NULL;
-	vector<LinEquation*> DegradationConstraints;
-	vector<Gene*> DegradationGenes;
-	vector<Reaction*> DegradationReactions;
 	for (int i=0; i < this->Variables.size(); i++) {
 		if (Variables[i]->Type == FLUX || Variables[i]->Type == FORWARD_FLUX || Variables[i]->Type == REVERSE_FLUX) {
 			if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).compare(GetParameter("biomass variable")) == 0) {
 				biomassvar = Variables[i];
 			}
-			//Adding protein synthesis rates to protein production and max protein constraints
-			if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).length() > 5 && Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(0,5).compare("PSYN_") == 0) {
-				Gene* geneobj = InData->FindGene("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
-				if (geneobj != NULL) {
-					geneobj->ProteinProd = Variables[i];
-				} else {
-					Reaction* rxnobj = InData->FindReaction("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
-					if (rxnobj != NULL) {
-						rxnobj->ProteinProd = Variables[i];
-					}
-				}
-				ProteinProductionConstraint->Variables.push_back(Variables[i]);
-				ProteinProductionConstraint->Coefficient.push_back(1);
-				MaxProteinConstraint->Variables.push_back(Variables[i]);
-				MaxProteinConstraint->Coefficient.push_back(1);
-			} else if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).length() > 5 && Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(0,5).compare("PDEG_") == 0) {
-				//Adding a constraint that sets the degradation value
-				LinEquation* DegradationConstraint = InitializeLinEquation("Degradation constraint",0,EQUAL);
-				DegradationConstraint->Variables.push_back(Variables[i]);
-				DegradationConstraint->Coefficient.push_back(1);
-				DegradationConstraints.push_back(DegradationConstraint);
-				this->AddConstraint(DegradationConstraint);
-				//Adding protein degradation rates to max protein constraints
-				Gene* geneobj = InData->FindGene("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
-				if (geneobj != NULL) {
-					geneobj->ProteinDeg = Variables[i];
-					DegradationGenes.push_back(geneobj);
-					DegradationReactions.push_back(NULL);
-				} else {
-					DegradationGenes.push_back(NULL);
-					Reaction* rxnobj = InData->FindReaction("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
-					if (rxnobj != NULL) {
-						rxnobj->ProteinDeg = Variables[i];
-						DegradationGenes.push_back(geneobj);
-						DegradationReactions.push_back(rxnobj);
-					} else {
-						DegradationReactions.push_back(NULL);
-					}
-				}
-				MaxProteinConstraint->Variables.push_back(Variables[i]);
-				MaxProteinConstraint->Coefficient.push_back(-1);
-			}
-		}
-	}
-	//Configuring degradation constraints
-	for (int i=0; i < DegradationConstraints.size(); i++) {
-		if (DegradationGenes[i] != NULL) {
-			DegradationConstraints[i]->Variables.push_back(DegradationGenes[i]->ProteinProd);
-			DegradationConstraints[i]->Coefficient.push_back(0);
-		} else if (DegradationReactions[i] != NULL) {
-			DegradationConstraints[i]->Variables.push_back(DegradationReactions[i]->ProteinProd);
-			DegradationConstraints[i]->Coefficient.push_back(0);
-		}
-		DegradationConstraints[i]->Variables.push_back(biomassvar);
-		DegradationConstraints[i]->Coefficient.push_back(0);
-	}
-	//Creating special reaction flux constraints
-	if (ProteinFormulation) {
-		for (int i=0; i < InData->FNumReactions(); i++) {
-			InData->GetReaction(i)->CreateReactionFluxConstraints(InParameters,this);
 		}
 	}
 	//Initializing concentration vectors and printing header
 	ofstream output;
 	OpenOutput(output,FOutputFilepath()+"DynamicFBAOutput.txt");
 	output << "Time\tBiomass";
-	//Printing compound headers
+	//Printing headers in this order: Extracellular compounds, Gene proteins, Pseudoproteins, Exchange fluxes, Reaction fluxes
 	vector<Species*> ExtracellularSpecies;
-	vector<Gene*> ProteinSpecies;
-	vector<Reaction*> ReactionEntities;
 	vector<MFAVariable*> fordrains;
 	vector<MFAVariable*> revdrains;
 	vector<double> DynamicConcentrations;
@@ -5828,69 +6007,17 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 			fordrains.push_back(forvar);
 			revdrains.push_back(revvar);
 			ExtracellularSpecies.push_back(InData->GetSpecies(i));
-			ProteinSpecies.push_back(NULL);
-			ReactionEntities.push_back(NULL);
 			DynamicConcentrations.push_back(InData->GetSpecies(i)->concentration);
 			FlowInConcentrations.push_back(InData->GetSpecies(i)->flow_in_concentration);
 		}
 	}
 	//Printing headers and initializing variables for all protein variables
-	for (int i=0; i < Bounds->VarName.size(); i++) {
-		if (Bounds->VarName[i].length() > 5 && Bounds->VarName[i].substr(0,5).compare("PROT_") == 0) {
-			Gene* geneobj = InData->FindGene("DATABASE",Bounds->VarName[i].substr(5).data());
-			if (geneobj != NULL) {
-				output << "\t" << Bounds->VarName[i];
-				for (int j=0; j < this->FNumVariables(); j++) {
-					if (Variables[j]->AssociatedSpecies != NULL && Variables[j]->AssociatedSpecies->GetData("DATABASE",STRING).compare(Bounds->VarName[i]) == 0) {
-						if (Variables[j]->Type == FORWARD_DRAIN_FLUX || Variables[j]->Type == DRAIN_FLUX) {
-							fordrains.push_back(Variables[j]);
-						} else if (Variables[j]->Type == REVERSE_DRAIN_FLUX) {
-							revdrains.push_back(Variables[j]);
-						}
-					}
-				}
-				ExtracellularSpecies.push_back(NULL);
-				ProteinSpecies.push_back(geneobj);
-				ReactionEntities.push_back(NULL);
-				DynamicConcentrations.push_back(geneobj->concentration);
-				if (fordrains.size() < ExtracellularSpecies.size()) {
-					fordrains.push_back(NULL);
-				}
-				if (revdrains.size() < ExtracellularSpecies.size()) {
-					revdrains.push_back(NULL);
-				}
-			}
-		}
+	for (int i=0; i < AllGeneProteins.size(); i++) {
+		output << "\t" << AllGeneProteins[i]->GetData("DATABASE",STRING) << endl;
 	}
-	//Printing headers and initializing variables for all psuedo protein variables
-	for (int i=0; i < Bounds->VarName.size(); i++) {
-		if (Bounds->VarName[i].length() > 5 && Bounds->VarName[i].substr(0,5).compare("PROT_") == 0) {
-			if (InData->FindGene("DATABASE",Bounds->VarName[i].substr(5).data()) == NULL) {
-				Reaction* rxnobj = InData->FindReaction("DATABASE",Bounds->VarName[i].substr(5).data());
-				if (rxnobj != NULL && rxnobj->ProteinDeg != NULL) {
-					output << "\t" << Bounds->VarName[i];
-					for (int j=0; j < this->FNumVariables(); j++) {
-						if (Variables[j]->AssociatedSpecies != NULL && Variables[j]->AssociatedSpecies->GetData("DATABASE",STRING).compare(Bounds->VarName[i]) == 0) {
-							if (Variables[j]->Type == FORWARD_DRAIN_FLUX || Variables[j]->Type == DRAIN_FLUX) {
-								fordrains.push_back(Variables[j]);
-							} else if (Variables[j]->Type == REVERSE_DRAIN_FLUX) {
-								revdrains.push_back(Variables[j]);
-							}
-						}
-					}
-					ExtracellularSpecies.push_back(NULL);
-					ProteinSpecies.push_back(NULL);
-					ReactionEntities.push_back(rxnobj);
-					DynamicConcentrations.push_back(rxnobj->concentration);
-					if (fordrains.size() < ExtracellularSpecies.size()) {
-						fordrains.push_back(NULL);
-					}
-					if (revdrains.size() < ExtracellularSpecies.size()) {
-						revdrains.push_back(NULL);
-					}
-				}
-			}
-		}
+	//Printing headers and initializing variables for all pseudo protein variables
+	for (int i=0; i < AllReactionProteins.size(); i++) {
+		output << "\t" << AllReactionProteins[i]->GetData("DATABASE",STRING) << endl;
 	}
 	//Printing exchanged species headers
 	for (int i=0; i < ExtracellularSpecies.size(); i++) {
@@ -5924,60 +6051,26 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 	while (currtime < endtime) {
 		//Printing current variable values
 		output << currtime << "\t" << biomass;
-		double totalprotein = 0;
 		cout << "Time:" << currtime << endl;
-		//Printing all (compound, protein, psuedo protein) current concentrations first
+		//Printing current variable values
 		for (int i=0; i < ExtracellularSpecies.size(); i++) {
-			output << "\t" << DynamicConcentrations[i];
-			//Updating degradation constraint
-			for (int i=0; i < DegradationConstraints.size(); i++) {
-				double bioflux = 0;
-				if (CurrentSolution != NULL) {
-					bioflux = CurrentSolution->SolutionData[biomassvar->Index];
-				}
-				DegradationConstraints[i]->Coefficient[1] = -1*bioflux/(1+bioflux);
-				if (DegradationGenes[i] != NULL) {
-					DegradationConstraints[i]->RightHandSide = DegradationGenes[i]->concentration*DegradationGenes[i]->turnover/(1+bioflux);
-					DegradationConstraints[i]->Coefficient[2] = -1*DegradationGenes[i]->concentration/2;
-				} else if (DegradationReactions[i] != NULL) {
-					DegradationConstraints[i]->RightHandSide = DegradationReactions[i]->concentration*DegradationReactions[i]->turnover/(1+bioflux);
-					DegradationConstraints[i]->Coefficient[2] = -1*DegradationReactions[i]->concentration/2;
-				}
-				this->LoadConstToSolver(DegradationConstraints[i]->Index);
-			}
-			//Updating other protein terms
-			if (ProteinSpecies[i] != NULL) {
-				//Adding total current protein for use in max protein constraint
-				totalprotein += DynamicConcentrations[i];
-				ProteinSpecies[i]->concentration = DynamicConcentrations[i];
-			} else if (ReactionEntities[i] != NULL) {
-				//Adding total current protein for use in max protein constraint
-				totalprotein += DynamicConcentrations[i];
-				ReactionEntities[i]->concentration = DynamicConcentrations[i];
-			} else if (ExtracellularSpecies[i] != NULL) {
-				ExtracellularSpecies[i]->concentration = DynamicConcentrations[i];
-			}
-			if (fordrains[i] != NULL) {
-				if (ExtracellularSpecies[i] != NULL) {
-					fordrains[i]->UpperBound = (FlowInConcentrations[i]*flow_in*timestep/volume - DynamicConcentrations[i]*flow_out*timestep/volume + DynamicConcentrations[i])*volume/timestep/biomass;
-				} else {
-					fordrains[i]->UpperBound = DynamicConcentrations[i]/timestep;
-				}
-				LoadVariable(fordrains[i]->Index);
-			}
+			output << "\t" << ExtracellularSpecies[i]->concentration;
 		}
-		//Printing current exchanges
+		for (int i=0; i < AllGeneProteins.size(); i++) {
+			output << "\t" << AllGeneProteins[i]->concentration;
+		}
+		for (int i=0; i < AllReactionProteins.size(); i++) {
+			output << "\t" << AllReactionProteins[i]->concentration;
+		}
 		for (int i=0; i < int(fordrains.size()); i++) {
-			if (ExtracellularSpecies[i] != NULL) {
-				double flux = 0;
-				if (fordrains[i] != NULL) {
-					flux += fordrains[i]->Value;
-				}
-				if (revdrains[i] != NULL) {
-					flux -= revdrains[i]->Value;
-				}
-				output << "\t" << flux;
+			double flux = 0;
+			if (fordrains[i] != NULL) {
+				flux += fordrains[i]->Value;
 			}
+			if (revdrains[i] != NULL) {
+				flux -= revdrains[i]->Value;
+			}
+			output << "\t" << flux;
 		}
 		//Printing current reactions
 		for (int i=0; i < int(forfluxes.size()); i++) {
@@ -5991,23 +6084,81 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 			output << "\t" << flux;
 		}
 		output << endl;
-		if (ProteinFormulation) {
-			//Updating max protein constraints
-			MaxProteinConstraint->RightHandSide = proteinlimit-totalprotein;
-			LoadConstToSolver(MaxProteinConstraint->Index);
-			//Updating reaction bounds based on protein concentration
-			for (int i=0; i < InData->FNumReactions(); i++) {
-				InData->GetReaction(i)->UpdateReactionFluxConstraints(InParameters,this);
+		//Updating the formulation for the next simulation
+		double bioflux = 0;
+		if (CurrentSolution != NULL) {
+			bioflux = CurrentSolution->SolutionData[biomassvar->Index];
+		}
+		//To formulate our constraints, we have to predict the future biomass flux - for now, predict equal to last biomass flux
+		double expected_biomass = bioflux;
+		while (1) {
+			double avebiomass = biomass + expected_biomass/2;
+			//Adjusting upper bound on compounds to ensure they never go negative
+			for (int i=0; i < ExtracellularSpecies.size(); i++) {
+				if (fordrains[i] != NULL) {
+					fordrains[i]->UpperBound = (volume*ExtracellularSpecies[i]->concentration + flow_in*FlowInConcentrations[i]*timestep - 0.5*ExtracellularSpecies[i]->concentration*flow_out*timestep)/(timestep*avebiomass);
+					LoadVariable(fordrains[i]->Index);
+				}
+			}
+			//Updating degradation and protein mass balance constraints for gene proteins
+			for (int i=0; i < AllGeneProteins.size(); i++) {
+				if (AllGeneProteins[i]->DegradationConstraint != NULL) {
+					AllGeneProteins[i]->DegradationConstraint->RightHandSide = 0.5 * AllGeneProteins[i]->turnover * AllGeneProteins[i]->concentration;
+					this->LoadConstToSolver(AllGeneProteins[i]->DegradationConstraint->Index);
+				}
+				if (AllGeneProteins[i]->MassBalanceConstraint != NULL) {
+					AllGeneProteins[i]->MassBalanceConstraint->RightHandSide = biomass * AllGeneProteins[i]->concentration;
+					AllGeneProteins[i]->MassBalanceConstraint->Coefficient.push_back(biomass+expected_biomass);
+					AllGeneProteins[i]->MassBalanceConstraint->Coefficient.push_back(-1*biomass-expected_biomass/2);
+					AllGeneProteins[i]->MassBalanceConstraint->Coefficient.push_back(biomass+expected_biomass/2);
+					this->LoadConstToSolver(AllGeneProteins[i]->MassBalanceConstraint->Index);
+				}
+			}
+			//Updating degradation and protein mass balance constraints for reaction proteins
+			for (int i=0; i < AllReactionProteins.size(); i++) {
+				output << "\t" << AllReactionProteins[i]->concentration;
+				if (AllReactionProteins[i]->DegradationConstraint != NULL) {
+					AllReactionProteins[i]->DegradationConstraint->RightHandSide = 0.5 * AllReactionProteins[i]->turnover * AllReactionProteins[i]->concentration;
+					this->LoadConstToSolver(AllReactionProteins[i]->DegradationConstraint->Index);
+				}
+				if (AllReactionProteins[i]->MassBalanceConstraint != NULL) {
+					AllReactionProteins[i]->MassBalanceConstraint->RightHandSide = biomass * AllReactionProteins[i]->concentration;
+					AllReactionProteins[i]->MassBalanceConstraint->Coefficient.push_back(biomass+expected_biomass);
+					AllReactionProteins[i]->MassBalanceConstraint->Coefficient.push_back(-1*biomass-expected_biomass/2);
+					AllReactionProteins[i]->MassBalanceConstraint->Coefficient.push_back(biomass+expected_biomass/2);
+					this->LoadConstToSolver(AllReactionProteins[i]->MassBalanceConstraint->Index);
+				}
+			}
+			if (ProteinFormulation) {
+				//Updating reaction bounds based on protein concentration
+				for (int i=0; i < InData->FNumReactions(); i++) {
+					InData->GetReaction(i)->UpdateReactionFluxConstraints(InParameters,this);
+				}
+			}
+			//Running the simualation first minimizing slack on reaction flux constraints
+			cout << "Minimizing slack on flux constraints" << endl;
+			OptSolutionData* CurrentSolution = RunSolver(false,true,false);
+			//Now maximizing the objective with the flux slack fixed at the optimal value
+			cout << "Now maximizing primary objective" << endl;
+			CurrentSolution = RunSolver(false,true,false);
+			if (CurrentSolution == NULL) {
+				cout << "FBA failed" << endl;
+				break;
+			}
+			bioflux = CurrentSolution->SolutionData[biomassvar->Index];
+			if (abs(expected_biomass-bioflux)/bioflux > 0.05) {
+				cout << "Biomass too far off expective value... rerunning!" << endl;
+				expected_biomass = bioflux;
+			} else {
+				cout << "FBA done" << endl;
+				break;
 			}
 		}
-		cout << "Running FBA" << endl;
-		//Running the solver
-		OptSolutionData* CurrentSolution = RunSolver(false,true,false);
-		cout << "FBA done" << endl;
 		//Updating time
 		currtime += timestep;
 		//Computing new biomass
-		newbiomass = biomass + CurrentSolution->SolutionData[biomassvar->Index]*timestep*biomass - biomass*flow_out*timestep/volume;
+		double avebiomass = biomass + CurrentSolution->SolutionData[biomassvar->Index]/2;
+		newbiomass = biomass + CurrentSolution->SolutionData[biomassvar->Index]*timestep*avebiomass - avebiomass*flow_out*timestep;
 		//Updating all dynamic variables
 		for (int i=0; i < ExtracellularSpecies.size(); i++) {
 			double flux = 0;
@@ -6017,20 +6168,26 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 			if (revdrains[i] != NULL) {
 				flux -= revdrains[i]->Value;
 			}
-			if (ProteinSpecies[i] != NULL || ReactionEntities[i] != NULL) {
-				DynamicConcentrations[i] -= flux*timestep;
-			} else {
-				DynamicConcentrations[i] -= flux*timestep*biomass/volume + FlowInConcentrations[i]*flow_in*timestep/volume - DynamicConcentrations[i]*flow_out*timestep/volume;
-			}
-			//Rounding very small concentrations to zero
-			if (DynamicConcentrations[i] < 0.000000001) {
-				DynamicConcentrations[i] = 0;
-			}
-			//Computing change if volume in case flow_in is different than flow out
-			volume += (flow_in - flow_out)*timestep;
+			ExtracellularSpecies[i]->concentration -= flux*timestep*avebiomass/volume + FlowInConcentrations[i]*flow_in*timestep/volume - ExtracellularSpecies[i]->concentration*flow_out*timestep/volume;
 		}
+		//Updating degradation and protein mass balance constraints for gene proteins
+		for (int i=0; i < AllGeneProteins.size(); i++) {
+			//AllGeneProteins[i]->concentration = ??
+			if (AllGeneProteins[i]->concentration < 0.000000001) {
+				AllGeneProteins[i]->concentration = 0;
+			}
+		}
+		//Updating degradation and protein mass balance constraints for reaction proteins
+		for (int i=0; i < AllReactionProteins.size(); i++) {
+			//AllReactionProteins[i]->concentration = ??
+			if (AllReactionProteins[i]->concentration < 0.000000001) {
+				AllReactionProteins[i]->concentration = 0;
+			}
+		}
+		//Computing change if volume in case flow_in is different than flow out
+		volume += (flow_in - flow_out)*timestep;
 		//Updating biomass
-		biomass += CurrentSolution->SolutionData[biomassvar->Index]*timestep*biomass;
+		biomass = newbiomass;
 	}
 	//Printing final set of variable values
 	output << currtime << "\t" << biomass;
@@ -9106,10 +9263,110 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 	//Saving the old objective
 	SavedBounds* bounds = this->saveBounds();
 	LinEquation* OldObjective = GetObjective();
-	LinEquation* GapfillingObjective;
-	this->ObjectiveConstraint->RightHandSide = InParameters->MinimumTargetFlux;
-	ObjFunct = NULL;
 	bool originalsense = this->FMax();
+	//Setting the old objective to be greater than its minimum value
+	this->ObjectiveConstraint->RightHandSide = InParameters->MinimumTargetFlux;
+	//If provided with exometabolite data, we maximize the consistency with this data
+	LinEquation* ExometaboliteObjective = NULL;
+	vector<string> exometabolites;
+	vector<int> working_exo_indecies;
+	vector<int> exo_indecies;
+	if (GetParameter("Exometabolite data").length() > 0) {
+		this->ResetSolver();
+		ExometaboliteObjective = InitializeLinEquation("Exometabolite objective");
+		vector<string>* metabolites = StringToStrings(GetParameter("Exometabolite data"),";");
+		for (int i=0; i < metabolites->size(); i++) {
+			vector<string>* metabolite_data = StringToStrings((*metabolites)[i],":");
+			string status("transport");
+			double score = atof((*metabolite_data)[1].data());
+			string compartment = "e";
+			//Try and find the exometabolite, starting with the extracellular compartment
+			Species* current_species = InData->FindSpecies("DATABASE",((*metabolite_data)[0]+"_e0").data());
+			if (current_species == NULL) {
+				compartment.assign("c");
+				current_species = InData->FindSpecies("DATABASE",((*metabolite_data)[0]+"_c0").data());
+			}
+			if (current_species != NULL) {
+				if (compartment.compare("c") == 0) {
+					status.assign("no transport");
+				}
+				int type = FORWARD_DRAIN_FLUX;
+				int othertype = REVERSE_DRAIN_FLUX;
+				if (score < 0) {
+					type = REVERSE_DRAIN_FLUX;
+					othertype = FORWARD_DRAIN_FLUX;
+				}
+				//Creating drain flux for each exometabolite
+				MFAVariable* speciesvar = this->CreateOrGetDrainVariable(current_species,GetCompartment(compartment.data())->Index,false,type);
+				//Searching for other drain variables for this metabolite and deactivating them
+				MFAVariable* othervar = current_species->GetMFAVar(DRAIN_FLUX,GetCompartment(compartment.data())->Index);
+				if (othervar != NULL) {
+					othervar->UpperBound = 0;
+					othervar->LowerBound = 0;
+				}
+				othervar = current_species->GetMFAVar(othertype,GetCompartment(compartment.data())->Index);
+				if (othervar != NULL) {
+					othervar->UpperBound = 0;
+					othervar->LowerBound = 0;
+				}
+				//Creating a constraint to enforce the exometabolite slack variable
+				LinEquation* newconstraint = InitializeLinEquation("exometabolite_constraint",0.01,GREATER);
+				newconstraint->Variables.push_back(speciesvar);
+				newconstraint->Coefficient.push_back(1);
+				MFAVariable* slack = InitializeMFAVariable();
+				this->AddVariable(slack);
+				slack->Type = METABOLITE_SLACK;
+				slack->AssociatedSpecies = current_species;
+				slack->UpperBound = 0.01;
+				slack->LowerBound = 0;
+				newconstraint->Variables.push_back(slack);
+				newconstraint->Coefficient.push_back(1);
+				//If omnidirectional, we add drains in both directions
+				if (GetParameter("omnidirectional").compare("1") == 0) {
+					if (type == FORWARD_DRAIN_FLUX) {
+						type = REVERSE_DRAIN_FLUX;
+					} else {
+						type = FORWARD_DRAIN_FLUX;
+					}
+					//speciesvar = this->CreateOrGetDrainVariable(current_species,GetCompartment(compartment.data())->Index,false,type);
+					//newconstraint->Variables.push_back(speciesvar);
+					//newconstraint->Coefficient.push_back(1);
+				}
+				this->AddConstraint(newconstraint);
+				exo_indecies.push_back(i);
+				ExometaboliteObjective->Variables.push_back(slack);
+				if (GetParameter("equal_weighting").compare("1") == 0) {
+					ExometaboliteObjective->Coefficient.push_back(1);
+				} else {
+					ExometaboliteObjective->Coefficient.push_back(abs(score));
+				}
+			} else {
+				status.assign("not found");
+			}
+			exometabolites.push_back((*metabolite_data)[0]+"\t"+(*metabolite_data)[1]+"\t"+status);
+			delete metabolite_data;
+		}
+		delete metabolites;
+		this->SetMin();
+		ObjFunct = ExometaboliteObjective;
+		this->LoadSolver();
+		//Now we run the solver
+		OptSolutionData* ExometaboliteSolution = RunSolver(true,false,true);
+		//Now we set every slack that *can* go off to zero to force maximum reconciliation of exometabolite data
+		for (int i=0; i < ExometaboliteObjective->Variables.size(); i++) {
+			if (ExometaboliteSolution->SolutionData[ExometaboliteObjective->Variables[i]->Index] == 0) {
+				exometabolites[exo_indecies[i]].append("\tyes\t");
+				working_exo_indecies.push_back(exo_indecies[i]);
+				ExometaboliteObjective->Variables[i]->UpperBound = 0;
+			} else {
+				exometabolites[exo_indecies[i]].append("\tno\t");
+			}
+		}
+		//Now we can run our standard gapfilling optimization to minimize the gapfilled reactions
+	}
+	//Now creating standard gapfilling objective
+	ObjFunct = NULL;
+	LinEquation* GapfillingObjective;
 	double omegap = 1-InParameters->omega;
 	if (InParameters->omega > 0) {
 		ObjFunct = CloneLinEquation(OldObjective);
@@ -9126,7 +9383,6 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 		ObjFunct = InitializeLinEquation("Gapfilling objective");
 		GapfillingObjective = ObjFunct;
 	}
-
 	// apply MaxPenalty to entire collection of high and low expression penalty terms
 	int startsize = int(ObjFunct->Variables.size());
 	double penaltysum = 0;
@@ -9229,6 +9485,7 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 		threshold = MFA_ZERO_TOLERANCE;
 	}
 	this->SetMin();
+	vector<MFAVariable*> gapfilled_reactions;
 	if (InParameters->PhenotypeAnalysis) {
 		this->RunDeletionExperiments(InData,InParameters,true,CurrentSolution);
 	} else {
@@ -9237,9 +9494,6 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 			output << "Label\tObjective\tGF objective\tRR score/count\tAR score/count\tRJ score/count\tCC score/count\tReactions retained\tActivated reactions\tRejected reactions\tCandidates cut\n";
 			output.close();
 		}
-		bool stay_in_loop = true;
-		int currentround = 0;
-		int count = 0;
 		if (InParameters->GapfillingTargetReactions.size() > 0) {
 			for (int i=0; i < int(InParameters->GapfillingTargetReactions.size()); i++) {
 				Reaction* current = InData->FindReaction("DATABASE",InParameters->GapfillingTargetReactions[i].data());
@@ -9248,25 +9502,18 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 					if (currvar != NULL) {
 						currvar->UpperBound = 0;
 						LoadVariable(currvar->Index);
-						SolveGapfillingProblem(1,CurrentSolution,InParameters->GapfillingTargetReactions[i],InParameters,"GapfillingOutput.txt");
+						gapfilled_reactions = SolveGapfillingProblem(1,CurrentSolution,InParameters->GapfillingTargetReactions[i],InParameters,"GapfillingOutput.txt");
 						currvar->UpperBound = 1;
 						LoadVariable(currvar->Index);
 					}
 				}
 			}
 		} else {
-			while (stay_in_loop) {
-				stay_in_loop = SolveGapfillingProblem(currentround,CurrentSolution,"objective",InParameters,"GapfillingOutput.txt");
-				//if (InParameters->alpha == 0) {
-					//If this is a straight up gapfilling with no activation, then we only solve once
-					stay_in_loop = false;
-				//}
-				currentround++;
-			}
+			gapfilled_reactions = SolveGapfillingProblem(0,CurrentSolution,"objective",InParameters,"GapfillingOutput.txt");
 		}
 		delete ObjFunct;
 	}
-
+	//Restoring original problem
 	if (originalsense) {
 		this->SetMax();
 	}
@@ -9274,6 +9521,83 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 	this->RelaxIntegerVariables = false;
 	if (this->Solver != CPLEX) {
 		this->Solver = SOLVER_SCIP;
+	}
+	//Checking dependency of each exometabolite to gapfilled reactions
+	if (ExometaboliteObjective != NULL) {
+		//Reactivating slack on all exometabolites
+		vector<MFAVariable*> working_exometabolites;
+		for (int i=0; i < ExometaboliteObjective->Variables.size(); i++) {
+			if (ExometaboliteObjective->Variables[i]->UpperBound == 0) {
+				working_exometabolites.push_back(ExometaboliteObjective->Variables[i]);
+				ExometaboliteObjective->Variables[i]->UpperBound = 0.01;
+			}
+		}
+		//Turning off all gapfilled reactions not in solution
+		vector<string>* gapfilledrxns = StringToStrings(GetParameter("current gapfilled reactions"),";"); // low expression, carry flux
+		vector<string>* cutrxns = StringToStrings(GetParameter("current cut candidate reactions"),";"); // low expression, do not carry flux
+		vector<int> variables;
+		variables.push_back(FLUX);
+		variables.push_back(FORWARD_FLUX);
+		variables.push_back(REVERSE_FLUX);
+		for (int cri=0; cri < (*cutrxns).size(); cri++) {
+			string ReactionID = (*cutrxns)[cri].substr(1,(*cutrxns)[cri].length()-1);
+			string Sign = (*cutrxns)[cri].substr(0,1);
+			Reaction* current = InData->FindReaction("DATABASE",ReactionID.data());
+			if (current != NULL) {
+				for (int vi=0; vi < int(variables.size()); vi++) {
+					MFAVariable* currvar = current->GetMFAVar(variables[vi]);
+					if (currvar != NULL) {
+						if ((Sign.compare("+") == 0 && vi < 2) || (Sign.compare("-") == 0 && vi == 2)) {
+							currvar->UpperBound = 0;
+							currvar->LowerBound = 0;
+						}
+					}
+				}
+			}
+		}
+		//Removing gapfilled reactions one at a time and minimizing exometabolite slacks
+		ObjFunct = ExometaboliteObjective;
+		this->SetMin();
+		this->LoadSolver();
+		vector<string> dependent_rxn(exometabolites.size());
+		for (int gfri=0; gfri < (*gapfilledrxns).size(); gfri++) {
+			string ReactionID = (*gapfilledrxns)[gfri];
+			string Sign = ReactionID.substr(0,1);
+			ReactionID = ReactionID.substr(1,ReactionID.length()-1);
+			Reaction* current = InData->FindReaction("DATABASE",ReactionID.data());
+			if (current != NULL) {
+				for (int vi=0; vi < int(variables.size()); vi++) {
+					MFAVariable* currvar = current->GetMFAVar(variables[vi]);
+					if (currvar != NULL) {
+						if ((Sign.compare("+") == 0 && vi < 2) || (Sign.compare("-") == 0 && vi == 2)) {
+							double original_upper = currvar->UpperBound;
+							currvar->UpperBound = 0;
+							this->LoadVariable(currvar->Index);
+							OptSolutionData* ExometaboliteSolution = RunSolver(true,false,true);
+							//Now we set every slack that *can* go off to zero to force maximum reconciliation of exometabolite data
+							string dependent_exometabolite = "";
+							for (int j=0; j < working_exometabolites.size(); j++) {
+								if (ExometaboliteSolution->SolutionData[working_exometabolites[j]->Index] > 0.0001) {
+									if (dependent_rxn[working_exo_indecies[j]].length() > 0) {
+										dependent_rxn[working_exo_indecies[j]].append(";");
+									}
+									dependent_rxn[working_exo_indecies[j]].append((*gapfilledrxns)[gfri]);
+								}
+							}
+							currvar->UpperBound = original_upper;
+							this->LoadVariable(currvar->Index);
+						}
+					}
+				}
+			}
+		}
+		ofstream exooutput;
+		OpenOutput(exooutput,(FOutputFilepath()+"ExometaboliteOutput.txt").data(),true);
+		exooutput << "Exometabolite\tScore\tDB status\tFlux\tDependent reactions" << endl;
+		for (int j=0; j < exometabolites.size(); j++) {
+			exooutput << exometabolites[j] << dependent_rxn[j] << endl;
+		}
+		exooutput.close();
 	}
 	this->LoadSolver();
 	if (GetParameter("Metabolite production analysis").compare("1") == 0 || GetParameter("Metabolite consumption analysis").compare("1") == 0) {
@@ -9432,7 +9756,8 @@ vector<MFAVariable*> MFAProblem::BiomassSensitivityAnalysis(OptSolutionData*& Cu
 	return activated_variables;
 }
 
-bool MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& CurrentSolution,string label,OptimizationParameter* InParameters,string OutputFilename) {
+vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& CurrentSolution,string label,OptimizationParameter* InParameters,string OutputFilename) {
+	vector<MFAVariable*> output_solution;
 	//Saving state, which makes a copy of the current variables, constraints, and objectives
 	int state = this->SaveState();
 	int vartype;
@@ -9458,6 +9783,7 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& Curre
 	}
 	LinEquation* ATPObjective = ConvertStringToObjective(GetParameter("atp objective"), this->SourceDatabase,false);
 	for (int m=0; m < InParameters->RecursiveMILPSolutionLimit; m++) {
+		OptSolutionData* InternalSolution = NULL;
 		//Resetting the solver to ensure all bounds and constraints are synchronized with solver
 		vector<MFAVariable*> solutionvariables;
 		while (true) {
@@ -9466,120 +9792,159 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& Curre
 			this->SetMin();
 			this->ResetSolver();
 			this->LoadSolver(false);
-			InternalSolution = RunSolver(true,false,true);
+			OptSolutionData* NewSolution = RunSolver(true,false,true);
 			//Returning if the optimization failed
-			if (InternalSolution->Status != SUCCESS) {
-				SetParameter("current gapfilled reactions","fail");
-				if (m == 0) {
-					return false;
+			if (NewSolution->Status != SUCCESS) {
+				if (InternalSolution == NULL) {
+					//In this scenario no valid solution was ever found this round and we should just exit with an empty solution
+					SetParameter("current gapfilled reactions","fail");
+					return output_solution;
 				} else {
-					return true;
+					//In this scenario, a valid solution was found this round, but it failed ATP testing
+					if (m > 0) {
+						//A valid solution has already been found in a previous round that may or may not have passed testing - regardless we should just quit this round
+						return output_solution;
+					}
+					ofstream outputtwo;
+					OpenOutput(outputtwo,(FOutputFilepath()+"ATPTesting.out").data(),true);
+					outputtwo << "ATP testing failed" << endl;
+					outputtwo.close();
+					break;
 				}
-			}
-			//Now adding a step in case binary variables are not being used, which intoduces binary variables for key terms and reminimizes
-			if (InParameters->ReactionsUse == false && slacks_in_objective == false) {
-				LinEquation* NewObjFunct = InitializeLinEquation("objective",0,EQUAL);
-				for (int i=0; i < this->ObjFunct->Variables.size(); i++) {
-					if (i >= gfstart && ObjFunct->Coefficient[i] > 0) {
-						MFAVariable* current = this->ObjFunct->Variables[i];
-						double value = InternalSolution->SolutionData[ObjFunct->Variables[i]->Index];
-						if (value > MFA_ZERO_TOLERANCE) {
-							if (current->Type == REACTION_SLACK) {
-								ObjFunct->Variables[i]->Binary = true;
-								NewObjFunct->Variables.push_back(ObjFunct->Variables[i]);
-								NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
-							} else if (current->Type == FLUX || current->Type == FORWARD_FLUX || current->Type == REVERSE_FLUX) {
-								string sign = "+";
-								int vartype = REACTION_USE;
-								if (current->Type == REVERSE_FLUX || current->Type == REVERSE_USE) {
-									sign = "-";
-									vartype = REVERSE_USE;
-								} else if (current->Type == FORWARD_FLUX) {
-									vartype = FORWARD_USE;
+			} else {
+				InternalSolution = NewSolution;
+				if (m == 0) {
+					output_solution.clear();
+				}
+				//Now adding a step in case binary variables are not being used, which intoduces binary variables for key terms and reminimizes
+				vector<int> original_bound_indecies;
+				vector<double> original_upper_bound;
+				vector<double> original_lower_bound;
+				if (InParameters->ReactionsUse == false && slacks_in_objective == false) {
+					LinEquation* NewObjFunct = InitializeLinEquation("objective",0,EQUAL);
+					for (int i=0; i < this->ObjFunct->Variables.size(); i++) {
+						if (i >= gfstart && ObjFunct->Coefficient[i] > 0) {
+							MFAVariable* current = this->ObjFunct->Variables[i];
+							double value = InternalSolution->SolutionData[ObjFunct->Variables[i]->Index];
+							if (value > MFA_ZERO_TOLERANCE) {
+								if (current->Type == REACTION_SLACK) {
+									ObjFunct->Variables[i]->Binary = true;
+									NewObjFunct->Variables.push_back(ObjFunct->Variables[i]);
+									NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
+								} else if (current->Type == FLUX || current->Type == FORWARD_FLUX || current->Type == REVERSE_FLUX) {
+									string sign = "+";
+									int vartype = REACTION_USE;
+									if (current->Type == REVERSE_FLUX || current->Type == REVERSE_USE) {
+										sign = "-";
+										vartype = REVERSE_USE;
+									} else if (current->Type == FORWARD_FLUX) {
+										vartype = FORWARD_USE;
+									}
+									MFAVariable* NewVariable;
+									if (current->AssociatedReaction->MFAVariables[vartype] == NULL) {
+										NewVariable = InitializeMFAVariable();
+										NewVariable->AssociatedReaction = ObjFunct->Variables[i]->AssociatedReaction;
+										NewVariable->Name.assign(sign);
+										NewVariable->Name.assign(NewVariable->AssociatedReaction->GetData("DATABASE",STRING));
+										NewVariable->Type = vartype;
+										NewVariable->UpperBound = 1;
+										NewVariable->LowerBound = 0;
+										NewVariable->Binary = true;
+										this->AddVariable(NewVariable);
+										current->AssociatedReaction->MFAVariables[vartype] = NewVariable;
+										LinEquation* newconstraint = InitializeLinEquation("Use constraints",0,LESS);
+										newconstraint->Variables.push_back(current);
+										newconstraint->Variables.push_back(NewVariable);
+										newconstraint->Coefficient.push_back(1);
+										newconstraint->Coefficient.push_back(-1*current->UpperBound);
+										this->AddConstraint(newconstraint);
+									} else {
+										NewVariable = current->AssociatedReaction->MFAVariables[vartype];
+									}
+									NewObjFunct->Variables.push_back(NewVariable);
+									NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
+								} else if (current->Type == DRAIN_FLUX || current->Type == FORWARD_DRAIN_FLUX || current->Type == REVERSE_DRAIN_FLUX) {
+									string sign = "+";
+									int vartype = DRAIN_USE;
+									if (current->Type == REVERSE_DRAIN_FLUX || current->Type == REVERSE_DRAIN_USE) {
+										sign = "-";
+										vartype = REVERSE_DRAIN_USE;
+									} else if (current->Type == FORWARD_DRAIN_FLUX) {
+										vartype = FORWARD_DRAIN_USE;
+									}
+									MFAVariable* NewVariable;
+									if (current->AssociatedSpecies->GetMFAVar(vartype,current->Compartment) == NULL) {
+										NewVariable = current->AssociatedSpecies->CreateMFAVariable(vartype,current->Compartment,0, 1);;
+										NewVariable->Name.assign(sign);
+										NewVariable->Name.assign(NewVariable->AssociatedSpecies->GetData("DATABASE",STRING));
+										NewVariable->Binary = true;
+										this->AddVariable(NewVariable);
+										LinEquation* newconstraint = InitializeLinEquation("Use constraints",0,LESS);
+										newconstraint->Variables.push_back(current);
+										newconstraint->Variables.push_back(NewVariable);
+										newconstraint->Coefficient.push_back(1);
+										newconstraint->Coefficient.push_back(-1*current->UpperBound);
+										this->AddConstraint(newconstraint);
+									} else {
+										NewVariable = current->AssociatedSpecies->GetMFAVar(vartype,current->Compartment);
+									}
+									NewObjFunct->Variables.push_back(NewVariable);
+									NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
 								}
-								MFAVariable* NewVariable;
-								if (current->AssociatedReaction->MFAVariables[vartype] == NULL) {
-									NewVariable = InitializeMFAVariable();
-									NewVariable->AssociatedReaction = ObjFunct->Variables[i]->AssociatedReaction;
-									NewVariable->Name.assign(sign);
-									NewVariable->Name.assign(NewVariable->AssociatedReaction->GetData("DATABASE",STRING));
-									NewVariable->Type = vartype;
-									NewVariable->UpperBound = 1;
-									NewVariable->LowerBound = 0;
-									NewVariable->Binary = true;
-									this->AddVariable(NewVariable);
-									current->AssociatedReaction->MFAVariables[vartype] = NewVariable;
-									LinEquation* newconstraint = InitializeLinEquation("Use constraints",0,LESS);
-									newconstraint->Variables.push_back(current);
-									newconstraint->Variables.push_back(NewVariable);
-									newconstraint->Coefficient.push_back(1);
-									newconstraint->Coefficient.push_back(-1*current->UpperBound);
-									this->AddConstraint(newconstraint);
-								} else {
-									NewVariable = current->AssociatedReaction->MFAVariables[vartype];
-								}
-								NewObjFunct->Variables.push_back(NewVariable);
-								NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
-							} else if (current->Type == DRAIN_FLUX || current->Type == FORWARD_DRAIN_FLUX || current->Type == REVERSE_DRAIN_FLUX) {
-								string sign = "+";
-								int vartype = DRAIN_USE;
-								if (current->Type == REVERSE_DRAIN_FLUX || current->Type == REVERSE_DRAIN_USE) {
-									sign = "-";
-									vartype = REVERSE_DRAIN_USE;
-								} else if (current->Type == FORWARD_DRAIN_FLUX) {
-									vartype = FORWARD_DRAIN_USE;
-								}
-								MFAVariable* NewVariable;
-								if (current->AssociatedSpecies->GetMFAVar(vartype,current->Compartment) == NULL) {
-									NewVariable = current->AssociatedSpecies->CreateMFAVariable(vartype,current->Compartment,0, 1);;
-									NewVariable->Name.assign(sign);
-									NewVariable->Name.assign(NewVariable->AssociatedSpecies->GetData("DATABASE",STRING));
-									NewVariable->Binary = true;
-									this->AddVariable(NewVariable);
-									LinEquation* newconstraint = InitializeLinEquation("Use constraints",0,LESS);
-									newconstraint->Variables.push_back(current);
-									newconstraint->Variables.push_back(NewVariable);
-									newconstraint->Coefficient.push_back(1);
-									newconstraint->Coefficient.push_back(-1*current->UpperBound);
-									this->AddConstraint(newconstraint);
-								} else {
-									NewVariable = current->AssociatedSpecies->GetMFAVar(vartype,current->Compartment);
-								}
-								NewObjFunct->Variables.push_back(NewVariable);
-								NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
+							} else {
+								original_bound_indecies.push_back(i);
+								original_upper_bound.push_back(ObjFunct->Variables[i]->UpperBound);
+								original_lower_bound.push_back(ObjFunct->Variables[i]->LowerBound);
+								ObjFunct->Variables[i]->UpperBound = 0;
+								ObjFunct->Variables[i]->LowerBound = 0;
 							}
-						} else {
-							ObjFunct->Variables[i]->UpperBound = 0;
-							ObjFunct->Variables[i]->LowerBound = 0;
+						}
+					}
+					//Minimizing modified objective with only boolean variables
+					LinEquation* oldobj = ObjFunct;
+					ObjFunct = NewObjFunct;
+					this->LoadSolver(false);
+					InternalSolution = RunSolver(true,false,true);
+					for (int j=0; j < int(NewObjFunct->Variables.size());j++) {
+						if (NewObjFunct->Variables[j]->Type != REACTION_SLACK) {
+							if (m==0) {
+								output_solution.push_back(NewObjFunct->Variables[j]);
+							}
+							solutionvariables.push_back(NewObjFunct->Variables[j]);
+						}
+					}
+					//Restoring the old objective
+					ObjFunct = oldobj;
+				} else {
+					for (int j=0; j < int(ObjFunct->Variables.size());j++) {
+						if (ObjFunct->Variables[j]->Type != REACTION_SLACK) {
+							if (m==0) {
+								output_solution.push_back(ObjFunct->Variables[j]);
+							}
+							solutionvariables.push_back(ObjFunct->Variables[j]);
 						}
 					}
 				}
-				//Minimizing modified objective with only boolean variables
-				LinEquation* oldobj = ObjFunct;
-				ObjFunct = NewObjFunct;
+				this->ObjectiveConstraint->RightHandSide = 0;
+				this->LoadConstToSolver(this->ObjectiveConstraint->Index);
+				int reject_count = 0;
+				if (GetParameter("ATP check gapfilling solutions").compare("1") == 0) {
+					reject_count = this->ReactionAdditionTesting(this->SourceDatabase,InParameters,CurrentSolution,ATPObjective,solutionvariables,false);
+				}
+				cout << "Reject count:" << reject_count << endl;
+				if (this->Solver != CPLEX) {
+					this->Solver = SOLVER_SCIP;
+				}
+				for (int j=0; j < int(original_bound_indecies.size()); j++) {
+					ObjFunct->Variables[original_bound_indecies[j]]->UpperBound = original_upper_bound[j];
+					ObjFunct->Variables[original_bound_indecies[j]]->LowerBound = original_lower_bound[j];
+				}
+				this->ObjectiveConstraint->RightHandSide = InParameters->MinimumTargetFlux;
+				this->ResetSolver();
 				this->LoadSolver(false);
-				InternalSolution = RunSolver(true,false,true);
-				for (int j=0; j < int(NewObjFunct->Variables.size());j++) {
-					if (NewObjFunct->Variables[j]->Type != REACTION_SLACK) {
-						solutionvariables.push_back(NewObjFunct->Variables[j]);
-					}
+				if (reject_count == 0) {
+					break;
 				}
-				//Restoring the old objective
-				ObjFunct = oldobj;
-			} else {
-				for (int j=0; j < int(ObjFunct->Variables.size());j++) {
-					if (ObjFunct->Variables[j]->Type != REACTION_SLACK) {
-						solutionvariables.push_back(ObjFunct->Variables[j]);
-					}
-				}
-			}
-			this->ObjectiveConstraint->RightHandSide = 0;
-			this->LoadConstToSolver(this->ObjectiveConstraint->Index);
-			int reject_count = this->ReactionAdditionTesting(this->SourceDatabase,InParameters,CurrentSolution,ATPObjective,solutionvariables,false);
-			this->ObjectiveConstraint->RightHandSide = InParameters->MinimumTargetFlux;
-			this->LoadConstToSolver(this->ObjectiveConstraint->Index);
-			if (reject_count == 0) {
-				break;
 			}
 		}
 		//Adding constraint to eliminate the current solution from being generated again if we haven't found all desired solutions yet
@@ -9809,7 +10174,7 @@ bool MFAProblem::SolveGapfillingProblem(int currentround,OptSolutionData*& Curre
 	output.close();
 	this->LoadState(state,true,true,true,false,true);
 	this->ClearState(state);
-	return stay_in_loop;
+	return output_solution;
 }
 
 int MFAProblem::ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters) {

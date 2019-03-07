@@ -170,6 +170,8 @@
 #define FORWARD_REACTION 37
 #define POSITIVE_DELTAG 38
 #define NEGATIVE_DELTAG 39
+#define PROTEIN_CONC 40
+#define METABOLITE_SLACK 41
 
 //Logic types
 #define AND 0
