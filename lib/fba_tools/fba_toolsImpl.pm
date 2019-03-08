@@ -557,7 +557,7 @@ sub build_plant_metabolic_model
 	modelid => $params->{fbamodel_output_id},
 	fulldb => 0});
 
-    my $return = {new_fbamodel_ref => Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace})};
+    $return = {new_fbamodel_ref => Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace})};
     my $wsmeta = $self->util_save_object($fullmodel,$return->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
 
     $self->util_finalize_call({
