@@ -410,7 +410,12 @@ sub func_build_metabolic_model {
 		});
 	}
 	if (@{$anno_sources} > 0) {
-		$template->add_reactions_from_ontology_events($fullmodel,$anno_sources);
+		$template->add_reactions_from_ontology_events({
+			annotation_sources => $anno_sources,
+			fbamodel => $fullmodel,
+			genome => $genome,
+			mdl_id => $params->{fbamodel_output_id}
+		});
 	}
 	#If this is a "new" mode model, we build a core model first and run FBA to see ATP production
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
@@ -436,7 +441,12 @@ sub func_build_metabolic_model {
 			});
 		}
 		if (@{$anno_sources} > 0) {
-			$template->add_reactions_from_ontology_events($coremodel,$anno_sources);
+			$template->add_reactions_from_ontology_events({
+				annotation_sources => $anno_sources,
+				fbamodel => $coremodel,
+				genome => $genome,
+				mdl_id => $params->{fbamodel_output_id}
+			});
 		}
 		my $blacklist = [];
 		if ($params->{anaerobe} == 1) {

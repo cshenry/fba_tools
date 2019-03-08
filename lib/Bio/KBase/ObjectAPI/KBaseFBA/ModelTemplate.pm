@@ -188,7 +188,37 @@ sub buildModel {
 	}
 	return $mdl;
 }	
+
+sub add_reactions_from_ontology_events {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["genome",],{
+		fbamodel => undef,
+		annotation_sources => [],
+		mdl_id => $args->{genome}->id().".mdl",
+		merge => 0
+	}, @_);	
+	if (@{$args->{annotation_sources}} == 0) {
+		return;
+	}
+	if (!defined($args->{fbamodel})) {
+		if (!defined($args->{mdl_id})) {
+			$args->{mdl_id} = $args->{genome}->id().".mdl";
+		}
+		$args->{fbamodel} = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+			id => $args->{mdl_id},
+			source => Bio::KBase::utilities::conf("ModelSEED","source"),
+			source_id => $args->{mdl_id},
+			type => $template->type(),
+			name => $args->{genome}->scientific_name(),
+			template_ref => $template->_reference(),
+			template_refs => [$template->_reference()],
+			genome_ref => $genome->_reference()
+		});
+	}
+	my $ftrs = $args->{genome}->features();
 	
+	
+}	
 sub extend_model_from_features {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["features","model"],{
