@@ -854,7 +854,7 @@ sub func_run_flux_balance_analysis {
 		Bio::KBase::utilities::error("FBA failed with no solution returned!");
 	}
 	if ($params->{predict_community_composition} == 1) {
-		Bio::KBase::utilities::print_report_message("<p>Predict community compositions with varied flux coefficient</p><p>".join("<br>",@{$fba->outputfiles()->{SSCommunityFluxAnalysis}})."</p>");
+		Bio::KBase::utilities::print_report_message({message => "<p>Predict community compositions with varied flux coefficient</p><p>".join("<br>",@{$fba->outputfiles()->{SSCommunityFluxAnalysis}})."</p>",append => 1,html => 1});
 	}
 	$handler->util_log("Saving FBA results.");
 	$fba->id($params->{fba_output_id});
