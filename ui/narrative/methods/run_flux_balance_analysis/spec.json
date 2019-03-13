@@ -469,6 +469,10 @@
                "target_property" : "expression_condition"
             },
             {
+               "input_parameter" : "predict_community_composition",
+               "target_property" : "predict_community_composition"
+            },
+            {
                "input_parameter" : "exp_threshold_percentile",
                "target_property" : "exp_threshold_percentile"
             },

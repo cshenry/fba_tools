@@ -771,7 +771,7 @@ sub func_run_flux_balance_analysis {
 		reaction_addition_study => 0,
 		max_objective_limit => 1.2,
 		reaction_list => [],
-		community_fba => 0
+		predict_community_composition => 0
 	});
 	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
 		if (length($params->{reaction_ko_list}) > 0) {
@@ -812,7 +812,7 @@ sub func_run_flux_balance_analysis {
 	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
 	$handler->util_log("Preparing flux balance analysis problem.");
 	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
-	if ($params->{community_fba} == 1) {
+	if ($params->{predict_community_composition} == 1) {
 		$fba->parameters()->{"steady state community modeling"} = 1;
 	}
 	$fba->parameters()->{"reduce objective"} = $params->{reduce_objective};
@@ -852,6 +852,9 @@ sub func_run_flux_balance_analysis {
 	#};
 	if (!defined($objective)) {
 		Bio::KBase::utilities::error("FBA failed with no solution returned!");
+	}
+	if ($params->{predict_community_composition} == 1) {
+		Bio::KBase::utilities::print_report_message("<p>Predict community compositions with varied flux coefficient</p><p>".join("<br>",@{$fba->outputfiles()->{SSCommunityFluxAnalysis}})."</p>");
 	}
 	$handler->util_log("Saving FBA results.");
 	$fba->id($params->{fba_output_id});

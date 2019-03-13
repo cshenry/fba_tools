@@ -4362,7 +4362,7 @@ int MFAProblem::SteadyStateCommunityModeling(Data* InData, OptimizationParameter
 	Output << endl;
 	for (int j=0; j < 20; j++) {
 		this->LoadSolver();
-		OptSolutionData* NewSolution = RunSolver(false,true,false);
+		OptSolutionData* NewSolution = RunSolver(true,true,false);
 		if (NewSolution->Status == SUCCESS) {
 			Output << flux_coefficient << "\t" << NewSolution->Objective;
 			for (int i=0; i < biomass_variables.size(); i++) {
@@ -6049,6 +6049,9 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 	this->LoadSolver();
 	OptSolutionData* CurrentSolution = NULL;
 	while (currtime < endtime) {
+		//Computing volume variables
+		double newvolume = flow_in*timestep + volume - flow_out*timestep;
+		double avevolume = (volume + newvolume)/2;
 		//Printing current variable values
 		output << currtime << "\t" << biomass;
 		cout << "Time:" << currtime << endl;
@@ -6093,6 +6096,9 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 		double expected_biomass = bioflux;
 		while (1) {
 			double avebiomass = biomass + expected_biomass/2;
+			//Starting to print current variable values
+			output << currtime << "\t" << biomass;
+
 			//Adjusting upper bound on compounds to ensure they never go negative
 			for (int i=0; i < ExtracellularSpecies.size(); i++) {
 				if (fordrains[i] != NULL) {
@@ -6154,10 +6160,8 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 				break;
 			}
 		}
-		//Updating time
-		currtime += timestep;
 		//Computing new biomass
-		double avebiomass = biomass + CurrentSolution->SolutionData[biomassvar->Index]/2;
+		double avebiomass = biomass / (1 - 0.5*CurrentSolution->SolutionData[biomassvar->Index]*timestep); //(avebiomass = biomass + vbio*avebiomass/2)
 		newbiomass = biomass + CurrentSolution->SolutionData[biomassvar->Index]*timestep*avebiomass - avebiomass*flow_out*timestep;
 		//Updating all dynamic variables
 		for (int i=0; i < ExtracellularSpecies.size(); i++) {
@@ -6168,7 +6172,10 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 			if (revdrains[i] != NULL) {
 				flux -= revdrains[i]->Value;
 			}
-			ExtracellularSpecies[i]->concentration -= flux*timestep*avebiomass/volume + FlowInConcentrations[i]*flow_in*timestep/volume - ExtracellularSpecies[i]->concentration*flow_out*timestep/volume;
+			//new_mol = old_mol + flow_in * timestep * flow_in_conc + flux * avebiomass * timestep - flow_out * timestep * (new_mol + old_mol)/(2*avevolume)
+			double oldmol = ExtracellularSpecies[i]->concentration*volume;
+			double newmol = (oldmol + flow_in*timestep*FlowInConcentrations[i] + flux*avebiomass*timestep - flow_out*timestep*oldmol/(2*avevolume) ) / (1 + flow_out*timestep/(2*avevolume) );
+			ExtracellularSpecies[i]->concentration = newmol/newvolume;
 		}
 		//Updating degradation and protein mass balance constraints for gene proteins
 		for (int i=0; i < AllGeneProteins.size(); i++) {
@@ -6184,10 +6191,12 @@ int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
 				AllReactionProteins[i]->concentration = 0;
 			}
 		}
-		//Computing change if volume in case flow_in is different than flow out
-		volume += (flow_in - flow_out)*timestep;
+		//Updating volume
+		volume = newvolume;
 		//Updating biomass
 		biomass = newbiomass;
+		//Updating time
+		currtime += timestep;
 	}
 	//Printing final set of variable values
 	output << currtime << "\t" << biomass;
