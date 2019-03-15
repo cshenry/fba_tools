@@ -1765,6 +1765,21 @@ sub merge_models {
 		print "Loading model ".$parameters->{models}->[$i]."\n";
 		my $model = $self->getLinkedObject($parameters->{models}->[$i]);
 		my $biomassCpd = $model->getObject("modelcompounds","cpd11416_c0");
+		if (!defined($biomassCpd)) {
+			$biomassCpd = $model->add("modelcompounds",{
+				id => "cpd11416_c0",
+				compound_ref => "~/template/compounds/id/cpd11416",
+				charge => 0,
+				modelcompartment_ref => "~/modelcompartments/id/c0"
+			});
+			my $biomasses = $model->biomasses();
+			for (my $j=0; $j < @{$biomasses}; $j++) {
+				$biomasses->[$j]->add("biomasscompounds",{
+					modelcompound_ref => "~/modelcompounds/id/cpd11416_c0",
+					coefficient => 1
+				});
+			}
+		}
 		#Adding genome, features, and roles to master mapping and annotation
 		my $mdlgenome = $model->genome();
 		my $prior_size = $genomeObj->dna_size();
