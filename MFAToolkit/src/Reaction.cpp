@@ -33,7 +33,12 @@ Reaction::Reaction(vector<string>* InHeaders, string Fileline, Data* InData) {
 	NumReactants = 0;
 	PathwayList = NULL;
 	GeneRootNode = NULL;
-	
+	MassBalanceConstraint = NULL;
+	kprime = 1;
+	turnover = 0.034537;
+	concentration = 1;
+	PrimaryForFluxConstraint = NULL;
+	PrimaryRevFluxConstraint = NULL;
 	ReadFromFileline(InHeaders,Fileline);
 	AddToReactants();
 	PerformAllCalculations();
@@ -53,6 +58,12 @@ Reaction::Reaction(string Filename, Data* InData) {
 	Type = REVERSIBLE; //Default is reversible
 	NumReactants = 0;
 	PathwayList = NULL;
+	MassBalanceConstraint = NULL;
+	kprime = 1;
+	turnover = 0.034537;
+	concentration = 1;
+	PrimaryForFluxConstraint = NULL;
+	PrimaryRevFluxConstraint = NULL;
 	if (Filename.length() > 0) {
 		LoadReaction(Filename);
 		AddToReactants();
@@ -74,6 +85,12 @@ Reaction::Reaction(string id,string equation,string name,Data* InData) {
 	Type = REVERSIBLE; //Default is reversible
 	NumReactants = 0;
 	PathwayList = NULL;
+	MassBalanceConstraint = NULL;
+	kprime = 1;
+	turnover = 0.034537;
+	concentration = 1;
+	PrimaryForFluxConstraint = NULL;
+	PrimaryRevFluxConstraint = NULL;
 	Interpreter("id",id,true);
 	Interpreter("equation",equation,true);
 	Interpreter("name",name,true);
@@ -112,18 +129,11 @@ void Reaction::AddReactant(Species* InReactant, double ICoef, int InCompartment,
 	}
 
 	int OriginalCompartment = InCompartment;
-	if (OriginalCompartment >= 1000) {
-		OriginalCompartment = OriginalCompartment - 1000;
-	}
 
 	if (InCompartment == 100) {
 		InReactant->AddCompartment(Compartment);
 	} else {
 		InReactant->AddCompartment(InCompartment);
-	}
-		
-	if ((InReactant->FCofactor() || InCofactor) && InCompartment < 1000) {
-		InCompartment = InCompartment + 1000;
 	}
 
 	if (ICoef == 0) {
@@ -139,8 +149,9 @@ void Reaction::AddReactant(Species* InReactant, double ICoef, int InCompartment,
 			Reactants.erase(Reactants.begin()+i,Reactants.begin()+i+1);
 			ReactCoef.erase(ReactCoef.begin()+i,ReactCoef.begin()+i+1);
 			ReactCompartments.erase(ReactCompartments.begin()+i,ReactCompartments.begin()+i+1);
+			ReactantCofactors.erase(ReactantCofactors.begin()+i,ReactantCofactors.begin()+i+1);
 			if (NewCoef != 0) {
-				AddReactant(InReactant,NewCoef,InCompartment);
+				AddReactant(InReactant,NewCoef,InCompartment,InCofactor);
 			}
 			return;
 		}
@@ -152,12 +163,14 @@ void Reaction::AddReactant(Species* InReactant, double ICoef, int InCompartment,
 				Reactants.insert(Reactants.begin()+i, InReactant);
 				ReactCoef.insert(ReactCoef.begin()+i, ICoef);
 				ReactCompartments.insert(ReactCompartments.begin()+i, InCompartment);
+				ReactantCofactors.insert(ReactantCofactors.begin()+i, InCofactor);
 				return;
 			}
 			else if (ReactCoef[i] > 0) {
 				Reactants.insert(Reactants.begin()+i, InReactant);
 				ReactCoef.insert(ReactCoef.begin()+i, ICoef);
 				ReactCompartments.insert(ReactCompartments.begin()+i, InCompartment);
+				ReactantCofactors.insert(ReactantCofactors.begin()+i, InCofactor);
 				NumReactants++;
 				return;
 			}
@@ -167,6 +180,7 @@ void Reaction::AddReactant(Species* InReactant, double ICoef, int InCompartment,
 				Reactants.insert(Reactants.begin()+i, InReactant);
 				ReactCoef.insert(ReactCoef.begin()+i, ICoef);
 				ReactCompartments.insert(ReactCompartments.begin()+i, InCompartment);
+				ReactantCofactors.insert(ReactantCofactors.begin()+i, InCofactor);
 				return;
 			}
 		}
@@ -177,6 +191,7 @@ void Reaction::AddReactant(Species* InReactant, double ICoef, int InCompartment,
 	Reactants.push_back(InReactant);
 	ReactCoef.push_back(ICoef);
 	ReactCompartments.push_back(InCompartment);
+	ReactantCofactors.push_back(InCofactor);
 };
 
 void Reaction::SetEstDeltaG(double InDG) {
@@ -194,14 +209,8 @@ void Reaction::AddStructuralCue(Species* InCue, double Coeff) {
 };
 
 void Reaction::SetReactantToCofactor(int InIndex, bool Cofactor) {
-	if (Cofactor) {
-		if (ReactCompartments[InIndex] < 1000) {
-			ReactCompartments[InIndex] += 1000;
-		}
-	} else {
-		if (ReactCompartments[InIndex] >= 1000) {
-			ReactCompartments[InIndex] += -1000;
-		}
+	if (InIndex < this->FNumReactants()) {
+		this->ReactantCofactors[InIndex] = Cofactor;
 	}
 };
 
@@ -214,6 +223,7 @@ void Reaction::RemoveCompound(Species* InSpecies, int InCompartment) {
 			Reactants.erase(Reactants.begin()+i,Reactants.begin()+i+1);
 			ReactCoef.erase(ReactCoef.begin()+i,ReactCoef.begin()+i+1);
 			ReactCompartments.erase(ReactCompartments.begin()+i,ReactCompartments.begin()+i+1);
+			ReactantCofactors.erase(ReactantCofactors.begin()+i,ReactantCofactors.begin()+i+1);
 			i--;
 		}
 	}
@@ -670,11 +680,10 @@ Data* Reaction::FMainData() {
 }
 
 bool Reaction::IsReactantCofactor(int InIndex) {
-	if (ReactCompartments[InIndex] >= 1000) {
+	if (Reactants[InIndex]->FCofactor()) {
 		return true;
-	} else {
-		return false;
 	}
+	return ReactantCofactors[InIndex];
 };
 
 int Reaction::FNumReactants(int ProductOrReactant){
@@ -697,9 +706,6 @@ double Reaction::GetReactantCoef(int InIndex) {
 
 int Reaction::GetReactantCompartment(int InIndex) {
 	int ReturnCompartment = ReactCompartments[InIndex];
-	if (ReturnCompartment >= 1000) {
-		ReturnCompartment = ReturnCompartment - 1000; 
-	}
 	if (ReturnCompartment == 100) {
 		ReturnCompartment = Compartment;
 	}
@@ -1761,14 +1767,12 @@ string Reaction::FComplexes() {
 //This function uses the data item headings listed in the input files to determine where the data in those files should be added 
 int Reaction::Interpreter(string DataName, string& DataItem, bool Input) {
 	int DataID = TranslateFileHeader(DataName,REACTION);
-	
 	if (DataID == -1) {
 		AddData(DataName.data(),DataItem.data(),STRING);
 		//FErrorFile() << "UNRECOGNIZED REFERENCE: " << GetData("FILENAME",STRING) << " data reference: " << DataName << " not recognized." << endl;
 		//FlushErrorFile();
 		return FAIL;
 	}
-	
 	switch (DataID) {
 		case RXN_EQUATION: {
 			if (Input) {
@@ -1817,6 +1821,56 @@ int Reaction::Interpreter(string DataName, string& DataItem, bool Input) {
 				EstDeltaGUncertainty = atof(DataItem.data());
 			} else {
 				DataItem.assign(dtoa(EstDeltaGUncertainty));
+			}
+			break;
+		} case RXN_CONCENTRATION: {
+			if (Input) {
+				concentration = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(concentration));
+			}
+			break;
+		} case RXN_KPRIME: {
+			if (Input) {
+				kprime = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(kprime));
+			}
+			break;
+		} case RXN_TURNOVER: {
+			if (Input) {
+				turnover = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(turnover));
+			}
+			break;
+		} case RXN_KMCPD: {
+			if (Input) {
+				if (DataItem.compare("none") == 0) {
+					break;
+				}
+				vector<string>* Strings = StringToStrings(DataItem,"|");
+				for (int i=0; i < int(Strings->size()); i++) {
+					vector<string>* InnerStrings = StringToStrings((*Strings)[i],";");
+					if (InnerStrings->size() >= 2) {
+						Species* cpd = MainData->FindSpecies("DATABASE;NAME;ENTRY",(*InnerStrings)[0].data());
+						if (cpd != NULL) {
+							kmcpd.push_back(cpd);
+							kmlist.push_back(atof((*InnerStrings)[1].data()));
+						}
+					}
+				}
+				delete Strings;
+			} else {
+				DataItem.assign("");
+				for (int i=0; i < int(kmcpd.size()); i++) {
+					if (DataItem.length() > 0) {
+						DataItem.append("|");
+					}
+					DataItem.append(kmcpd[i]->GetData("DATABASE",STRING));
+					DataItem.append(";");
+					DataItem.append(dtoa(kmlist[i]));
+				}
 			}
 			break;
 		} case RXN_COMPONENTS: {
@@ -1994,6 +2048,7 @@ int Reaction::LoadReaction(string InFilename) {
 	Reactants.clear();
 	ReactCoef.clear();
 	ReactCompartments.clear();
+	ReactantCofactors.clear();
 	NumReactants = 0;
 	for (int i=0; i < reactionObj->get_table()->number_of_attributes();i++) {
 		string attribute = reactionObj->get_table()->get_attribute(i);
@@ -2179,20 +2234,24 @@ void Reaction::ReverseReaction() {
 	vector<int> Comp;
 	vector<double> Coef;
 	vector<Species*> Spec;
+	vector<bool> Cof;
 	for (int i=0; i < FNumReactants(REACTANT); i++) {
 		Comp.push_back(GetReactantCompartment(i));
 		Coef.push_back(GetReactantCoef(i));
 		Spec.push_back(GetReactant(i));
+		Cof.push_back(IsReactantCofactor(i));
 		if ((FNumReactants(REACTANT)+i)<FNumReactants()) {
 			Reactants[i] = Reactants[FNumReactants(REACTANT)+i];
 			ReactCoef[i] = -ReactCoef[FNumReactants(REACTANT)+i];
 			ReactCompartments[i] = ReactCompartments[FNumReactants(REACTANT)+i];
+			ReactantCofactors[i] = ReactantCofactors[FNumReactants(REACTANT)+i];
 		}
 	}
 	for(int i = 0; i < int(Spec.size()); i++) {
 		Reactants[i+FNumReactants(PRODUCT)] = Spec[i];
 		ReactCoef[i+FNumReactants(PRODUCT)] = -Coef[i];
 		ReactCompartments[i+FNumReactants(PRODUCT)] = Comp[i];
+		ReactantCofactors[i+FNumReactants(PRODUCT)] = Comp[i];
 	}
 	NumReactants = FNumReactants(PRODUCT);
 }
@@ -3028,7 +3087,7 @@ void Reaction::CreateMFAVariables(OptimizationParameter* InParameters) {
 		NewVariable->AssociatedReaction = this;
 		NewVariable->Type = POSITIVE_DELTAG;
 		MFAVariables[POSITIVE_DELTAG] = NewVariable;
-		NewVariable->LowerBound = -InParameters->MaxDeltaG;
+		NewVariable->LowerBound = 0;
 		NewVariable->UpperBound = InParameters->MaxDeltaG;
 
 		NewVariable = InitializeMFAVariable();
@@ -3036,7 +3095,7 @@ void Reaction::CreateMFAVariables(OptimizationParameter* InParameters) {
 		NewVariable->AssociatedReaction = this;
 		NewVariable->Type = NEGATIVE_DELTAG;
 		MFAVariables[NEGATIVE_DELTAG] = NewVariable;
-		NewVariable->LowerBound = -InParameters->MaxDeltaG;
+		NewVariable->LowerBound = 0;
 		NewVariable->UpperBound = InParameters->MaxDeltaG;
 
 		NewVariable = InitializeMFAVariable();
@@ -3099,6 +3158,239 @@ void Reaction::CreateMFAVariables(OptimizationParameter* InParameters) {
 				ComplexMFAVariables.push_back(NULL);
 			}
 		}
+	}
+}
+
+void Reaction::CreateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem) {
+	if (GetData("DATABASE",STRING).length() > 5 && (GetData("DATABASE",STRING).substr(0,5).compare("PSYN_") == 0 || GetData("DATABASE",STRING).substr(0,5).compare("PDEG_") == 0)) {
+		return;
+	}
+	if (GetData("DATABASE",STRING).compare(GetParameter("biomass variable")) == 0) {
+		return;
+	}
+	string biomass_var_comp = GetParameter("biomass variable");
+	biomass_var_comp.append("_");
+	if (GetData("DATABASE",STRING).length() > 5 && GetData("DATABASE",STRING).substr(0,5).compare(biomass_var_comp) == 0) {
+		return;
+	}
+	if (PrimaryForFluxConstraint != NULL && PrimaryRevFluxConstraint != NULL) {
+		return;
+	}
+	MFAVariable* ForFluxVar = this->GetMFAVar(FLUX);
+	MFAVariable* RevFluxVar = this->GetMFAVar(REVERSE_FLUX);
+	if (ForFluxVar == NULL) {
+		ForFluxVar = this->GetMFAVar(FORWARD_FLUX);
+	}
+	//Instantiating flux constraint
+	if (ForFluxVar != NULL) {
+		this->PrimaryForFluxConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
+		this->PrimaryForFluxConstraint->Coefficient.push_back(1);
+		this->PrimaryForFluxConstraint->Variables.push_back(ForFluxVar);
+	}
+	if (RevFluxVar != NULL) {
+		this->PrimaryRevFluxConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
+		this->PrimaryRevFluxConstraint->Coefficient.push_back(1);
+		this->PrimaryRevFluxConstraint->Variables.push_back(RevFluxVar);
+	}
+	if (this->gprdata.size() == 0 || gprdata[0][0][0]->GetData("DATABASE",STRING).compare("Unknown") == 0) {
+		if (this->ProteinProd == NULL || this->ProteinDeg == NULL) {
+			if (this->PrimaryForFluxConstraint != NULL) {
+				delete this->PrimaryForFluxConstraint;
+				this->PrimaryForFluxConstraint = NULL;
+			}
+			if (this->PrimaryRevFluxConstraint != NULL) {
+				delete this->PrimaryRevFluxConstraint;
+				this->PrimaryRevFluxConstraint = NULL;
+			}
+			return;
+		}
+		//Instantiating psuedoprotein constraints when a reaction has no genes associated
+		if (this->PrimaryForFluxConstraint != NULL) {
+			this->PrimaryForFluxConstraint->RightHandSide += this->kprime*this->concentration;
+			this->PrimaryForFluxConstraint->Variables.push_back(this->ProteinProd);
+			this->PrimaryForFluxConstraint->Coefficient.push_back(-0.5*this->kprime);
+			this->PrimaryForFluxConstraint->Variables.push_back(this->ProteinDeg);
+			this->PrimaryForFluxConstraint->Coefficient.push_back(0.5*this->kprime);
+		}
+		if (this->PrimaryRevFluxConstraint != NULL) {
+			this->PrimaryRevFluxConstraint->RightHandSide += this->kprime*this->concentration;
+			this->PrimaryRevFluxConstraint->Variables.push_back(this->ProteinProd);
+			this->PrimaryRevFluxConstraint->Coefficient.push_back(-0.5*this->kprime);
+			this->PrimaryRevFluxConstraint->Variables.push_back(this->ProteinDeg);
+			this->PrimaryRevFluxConstraint->Coefficient.push_back(0.5*this->kprime);
+		}
+	} else {
+		for (int i=0; i < int(this->gprdata.size()); i++) {
+			vector<LinEquation*>* newforvect = new vector<LinEquation*>;
+			this->ForFluxConstraints.push_back(newforvect);
+			vector<LinEquation*>* newrevvect = new vector<LinEquation*>;
+			this->RevFluxConstraints.push_back(newrevvect);
+			MFAVariable* NewComplexVariable = NULL;
+			LinEquation* NewForComplexConstraint = NULL;
+			LinEquation* NewRevComplexConstraint = NULL;
+			if (this->gprdata[i].size() > 1) {
+				NewComplexVariable = InitializeMFAVariable();
+				InProblem->AddVariable(NewComplexVariable);
+				NewComplexVariable->AssociatedReaction = this;
+				NewComplexVariable->UpperBound = InParameters->MaxFlux;
+				NewComplexVariable->LowerBound = 0;
+				if (this->PrimaryForFluxConstraint != NULL) {
+					this->PrimaryForFluxConstraint->Coefficient.push_back(-1);
+					this->PrimaryForFluxConstraint->Variables.push_back(NewComplexVariable);
+				}
+				if (this->PrimaryRevFluxConstraint != NULL) {
+					this->PrimaryRevFluxConstraint->Coefficient.push_back(-1);
+					this->PrimaryRevFluxConstraint->Variables.push_back(NewComplexVariable);
+				}
+			}
+			for (int j=0; j < int(this->gprdata[i].size()); j++) {
+				if (NewComplexVariable != NULL) {
+					if (this->PrimaryForFluxConstraint != NULL) {
+						NewForComplexConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
+						this->ForFluxConstraints[i]->push_back(NewForComplexConstraint);
+						InProblem->AddConstraint(NewForComplexConstraint);
+						NewForComplexConstraint->Variables.push_back(NewComplexVariable);
+						NewForComplexConstraint->Coefficient.push_back(1);
+					}
+					if (this->PrimaryRevFluxConstraint != NULL) {
+						NewRevComplexConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
+						this->RevFluxConstraints[i]->push_back(NewRevComplexConstraint);
+						InProblem->AddConstraint(NewRevComplexConstraint);
+						NewRevComplexConstraint->Variables.push_back(NewComplexVariable);
+						NewRevComplexConstraint->Coefficient.push_back(1);
+					}
+				} else {
+					NewForComplexConstraint = this->PrimaryForFluxConstraint;
+					NewRevComplexConstraint = this->PrimaryRevFluxConstraint;
+					this->ForFluxConstraints[i]->push_back(this->PrimaryForFluxConstraint);
+					this->RevFluxConstraints[i]->push_back(this->PrimaryRevFluxConstraint);
+				}
+				for (int k=0; k < int(this->gprdata[i][j].size()); k++) {
+					if (this->PrimaryForFluxConstraint != NULL) {
+						NewForComplexConstraint->RightHandSide += this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
+						//NewForComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinProd);
+						NewForComplexConstraint->Coefficient.push_back(-0.5*this->gprdata[i][j][k]->kprime);
+						//NewForComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinDeg);
+						NewForComplexConstraint->Coefficient.push_back(0.5*this->gprdata[i][j][k]->kprime);
+					}
+					if (this->PrimaryRevFluxConstraint != NULL) {
+						NewRevComplexConstraint->RightHandSide += this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
+						//NewRevComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinProd);
+						NewRevComplexConstraint->Coefficient.push_back(-0.5*this->gprdata[i][j][k]->kprime);
+						//NewRevComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinDeg);
+						NewRevComplexConstraint->Coefficient.push_back(0.5*this->gprdata[i][j][k]->kprime);
+					}
+				}
+			}
+		}
+	}
+	if (this->PrimaryForFluxConstraint != NULL) {
+		InProblem->AddConstraint(this->PrimaryForFluxConstraint);
+	}
+	if (this->PrimaryRevFluxConstraint != NULL) {
+		InProblem->AddConstraint(this->PrimaryRevFluxConstraint);
+	}
+}
+
+void Reaction::UpdateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem) {
+	if (PrimaryForFluxConstraint == NULL && PrimaryRevFluxConstraint == NULL) {
+		return;
+	}
+	if (this->PrimaryForFluxConstraint != NULL) {
+		this->PrimaryForFluxConstraint->RightHandSide = 0;
+	}
+	if (this->PrimaryRevFluxConstraint != NULL) {
+		this->PrimaryRevFluxConstraint->RightHandSide = 0;
+	}
+	if (this->gprdata.size() == 0 || gprdata[0][0][0]->GetData("DATABASE",STRING).compare("Unknown") == 0) {
+		//Instantiating psuedoprotein constraints when a reaction has no genes associated
+		if (this->PrimaryForFluxConstraint != NULL) {
+			this->PrimaryForFluxConstraint->RightHandSide += this->kprime*this->concentration;
+			for (int i=0; i < kmcpd.size(); i++) {
+				for (int j=0; j < FNumReactants(); j++) {
+					if (Reactants[j] == this->kmcpd[i] && ReactCompartments[j] == GetCompartment("e")->Index) {
+						if (ReactCoef[j] < 0) {
+							this->PrimaryForFluxConstraint->RightHandSide = this->PrimaryForFluxConstraint->RightHandSide * kmcpd[i]->concentration / (kmcpd[i]->concentration + kmlist[i]);
+							break;
+						} else {
+							//this->PrimaryForFluxConstraint->RightHandSide = this->PrimaryForFluxConstraint->RightHandSide * (kmcpd[i]->concentration + kmlist[i]) / kmcpd[i]->concentration;
+							break;
+						}
+					}
+				}
+			}
+			this->PrimaryForFluxConstraint->Coefficient[1] = (-0.5*this->kprime);
+			this->PrimaryForFluxConstraint->Coefficient[2] = (0.5*this->kprime);
+		}
+		if (this->PrimaryRevFluxConstraint != NULL) {
+			this->PrimaryRevFluxConstraint->RightHandSide += this->kprime*this->concentration;
+			for (int i=0; i < kmcpd.size(); i++) {
+				for (int j=0; j < FNumReactants(); j++) {
+					if (Reactants[j] == this->kmcpd[i] && ReactCompartments[j] == GetCompartment("e")->Index) {
+						if (ReactCoef[j] > 0) {
+							this->PrimaryRevFluxConstraint->RightHandSide = this->PrimaryRevFluxConstraint->RightHandSide * kmcpd[i]->concentration / (kmcpd[i]->concentration + kmlist[i]);
+							break;
+						} else {
+							//this->PrimaryRevFluxConstraint->RightHandSide = this->PrimaryRevFluxConstraint->RightHandSide * (kmcpd[i]->concentration + kmlist[i]) / kmcpd[i]->concentration;
+							break;
+						}
+					}
+				}
+			}
+			this->PrimaryRevFluxConstraint->Coefficient[1] = (-0.5*this->kprime);
+			this->PrimaryRevFluxConstraint->Coefficient[2] = (0.5*this->kprime);
+		}
+	} else {
+		for (int i=0; i < int(this->gprdata.size()); i++) {
+			for (int j=0; j < int(this->gprdata[i].size()); j++) {
+				if ((*this->ForFluxConstraints[i])[j] != this->PrimaryForFluxConstraint && (*this->ForFluxConstraints[i])[j] != NULL) {
+					(*this->ForFluxConstraints[i])[j]->RightHandSide = 0;
+				}
+				if ((*this->RevFluxConstraints[i])[j] != this->PrimaryRevFluxConstraint && (*this->RevFluxConstraints[i])[j] != NULL) {
+					(*this->RevFluxConstraints[i])[j]->RightHandSide = 0;
+				}
+				//int count = 0;
+				for (int k=0; k < int(this->gprdata[i][j].size()); k++) {
+					double forfactor = 1;
+					double revfactor = 1;
+					for (int m=0; m < this->gprdata[i][j][k]->kmcpd.size(); m++) {
+						for (int n=0; n < FNumReactants(); n++) {
+							if (Reactants[n] == this->gprdata[i][j][k]->kmcpd[m] && ReactCompartments[n] == GetCompartment("e")->Index) {
+								if (ReactCoef[n] < 0) {
+									forfactor = forfactor * this->gprdata[i][j][k]->kmcpd[m]->concentration / (this->gprdata[i][j][k]->kmcpd[m]->concentration + this->gprdata[i][j][k]->kmlist[m]);
+									//revfactor = revfactor * (this->gprdata[i][j][k]->kmcpd[m]->concentration + this->gprdata[i][j][k]->kmlist[m]) / this->gprdata[i][j][k]->kmcpd[m]->concentration;
+								} else {
+									//forfactor = forfactor * (this->gprdata[i][j][k]->kmcpd[m]->concentration + this->gprdata[i][j][k]->kmlist[m]) / this->gprdata[i][j][k]->kmcpd[m]->concentration;
+									revfactor = revfactor * this->gprdata[i][j][k]->kmcpd[m]->concentration / (this->gprdata[i][j][k]->kmcpd[m]->concentration + this->gprdata[i][j][k]->kmlist[m]);
+								}
+							}
+						}
+					}
+					if ((*this->ForFluxConstraints[i])[j] != NULL) {
+						(*this->ForFluxConstraints[i])[j]->RightHandSide += forfactor*this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
+					}
+					if ((*this->RevFluxConstraints[i])[j] != NULL) {
+						(*this->RevFluxConstraints[i])[j]->RightHandSide += revfactor*this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
+					}
+					//count++;
+					//(*this->FluxConstraints[i])[j]->Coefficient[count] = (-0.5*this->gprdata[i][j][k]->kprime);
+					//count++;
+					//(*this->FluxConstraints[i])[j]->Coefficient[count] = (0.5*this->gprdata[i][j][k]->kprime);
+				}
+				if ((*this->ForFluxConstraints[i])[j] != this->PrimaryForFluxConstraint && (*this->ForFluxConstraints[i])[j] != NULL) {
+					InProblem->LoadConstToSolver((*this->ForFluxConstraints[i])[j]->Index);
+				}
+				if ((*this->RevFluxConstraints[i])[j] != this->PrimaryRevFluxConstraint && (*this->RevFluxConstraints[i])[j] != NULL) {
+					InProblem->LoadConstToSolver((*this->RevFluxConstraints[i])[j]->Index);
+				}
+			}
+		}
+	}
+	if (this->PrimaryForFluxConstraint != NULL) {
+		InProblem->LoadConstToSolver(this->PrimaryForFluxConstraint->Index);
+	}
+	if (this->PrimaryRevFluxConstraint != NULL) {
+		InProblem->LoadConstToSolver(this->PrimaryRevFluxConstraint->Index);
 	}
 }
 

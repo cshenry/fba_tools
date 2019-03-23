@@ -29,6 +29,7 @@ our $CallContext;
 
 our %return_counts = (
         'build_metabolic_model' => 1,
+        'build_plant_metabolic_model' => 1,
         'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
         'run_flux_balance_analysis' => 1,
@@ -40,6 +41,9 @@ our %return_counts = (
         'compare_flux_with_expression' => 1,
         'check_model_mass_balance' => 1,
         'predict_auxotrophy' => 1,
+        'predict_metabolite_biosynthesis_pathway' => 1,
+        'build_metagenome_metabolic_model' => 1,
+        'fit_exometabolite_data' => 1,
         'compare_models' => 1,
         'edit_metabolic_model' => 1,
         'edit_media' => 1,
@@ -75,6 +79,7 @@ our %return_counts = (
 
 our %method_authentication = (
         'build_metabolic_model' => 'required',
+        'build_plant_metabolic_model' => 'required',
         'build_multiple_metabolic_models' => 'required',
         'gapfill_metabolic_model' => 'required',
         'run_flux_balance_analysis' => 'required',
@@ -86,6 +91,9 @@ our %method_authentication = (
         'compare_flux_with_expression' => 'required',
         'check_model_mass_balance' => 'required',
         'predict_auxotrophy' => 'required',
+        'predict_metabolite_biosynthesis_pathway' => 'required',
+        'build_metagenome_metabolic_model' => 'required',
+        'fit_exometabolite_data' => 'required',
         'compare_models' => 'required',
         'edit_metabolic_model' => 'required',
         'edit_media' => 'required',
@@ -123,6 +131,7 @@ sub _build_valid_methods
     my($self) = @_;
     my $methods = {
         'build_metabolic_model' => 1,
+        'build_plant_metabolic_model' => 1,
         'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
         'run_flux_balance_analysis' => 1,
@@ -134,6 +143,9 @@ sub _build_valid_methods
         'compare_flux_with_expression' => 1,
         'check_model_mass_balance' => 1,
         'predict_auxotrophy' => 1,
+        'predict_metabolite_biosynthesis_pathway' => 1,
+        'build_metagenome_metabolic_model' => 1,
+        'fit_exometabolite_data' => 1,
         'compare_models' => 1,
         'edit_metabolic_model' => 1,
         'edit_media' => 1,

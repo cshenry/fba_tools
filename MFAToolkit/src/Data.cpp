@@ -962,7 +962,7 @@ bool PathwayGreater ( Pathway* One, Pathway* Two ) {
 	return One->Length < Two->Length;
 }
 
-map<Species* , list<Pathway*> , std::less<Species*> >* Data::FindPathways(Species* Source, vector<Species*> Targets, int MaxLength, int TimeInterval, bool AddReverseConnections, int LengthInterval, int &ClockIndex) {
+map<Species* , list<Pathway*> , std::less<Species*> >* Data::FindPathways(Species* Source, vector<Species*> Targets, int MaxLength, int TimeInterval, bool AllReactionsReversible, int LengthInterval, int &ClockIndex, bool UseFlux) {
 	Node* CurrentNode = NULL;
 	vector<Node*> MyTree(FNumSpecies());
 
@@ -978,33 +978,40 @@ map<Species* , list<Pathway*> , std::less<Species*> >* Data::FindPathways(Specie
 		NewClimber->NodesVisited[i] = false;
 		MyTree[i] = NewNode;
 	}
+
 	for (int i=0; i < int(FNumReactions()); i++) {
-		for (int j=0; j < GetReaction(i)->FNumReactants(REACTANT); j++) {
-			if (!GetReaction(i)->IsReactantCofactor(j)) {
-				for (int k=GetReaction(i)->FNumReactants(REACTANT); k < GetReaction(i)->FNumReactants(); k++) {
-					if (!GetReaction(i)->IsReactantCofactor(k)) {
-						MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->Children.push_back(MyTree[GetReaction(i)->GetReactant(k)->FIndex()]);
-						MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->EdgeLables.push_back(GetReaction(i));
-						MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->ForwardDirection.push_back(true);
+		Reaction* current = GetReaction(i);
+		if (GetReaction(i)->FType() == FORWARD || GetReaction(i)->FType() == REVERSIBLE || AllReactionsReversible || (UseFlux && GetReaction(i)->FFlux(NULL) > MFA_ZERO_TOLERANCE)) {
+			if (!UseFlux || GetReaction(i)->FFlux(NULL) > MFA_ZERO_TOLERANCE) {
+				for (int j=0; j < GetReaction(i)->FNumReactants(REACTANT); j++) {
+					if (!GetReaction(i)->IsReactantCofactor(j)) {
+						for (int k=GetReaction(i)->FNumReactants(REACTANT); k < GetReaction(i)->FNumReactants(); k++) {
+							if (!GetReaction(i)->IsReactantCofactor(k)) {
+								MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->Children.push_back(MyTree[GetReaction(i)->GetReactant(k)->FIndex()]);
+								MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->EdgeLables.push_back(GetReaction(i));
+								MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->ForwardDirection.push_back(true);
+							}
+						}
 					}
 				}
 			}
 		}
-		if (AddReverseConnections) {
-			for (int j=GetReaction(i)->FNumReactants(REACTANT); j < GetReaction(i)->FNumReactants(); j++) {
-				if (!GetReaction(i)->IsReactantCofactor(j)) {
-					for (int k=0; k < GetReaction(i)->FNumReactants(REACTANT); k++) {
-						if (!GetReaction(i)->IsReactantCofactor(k)) {
-							MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->Children.push_back(MyTree[GetReaction(i)->GetReactant(k)->FIndex()]);
-							MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->EdgeLables.push_back(GetReaction(i));
-							MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->ForwardDirection.push_back(false);
+		if (GetReaction(i)->FType() == REVERSE || GetReaction(i)->FType() == REVERSIBLE || AllReactionsReversible || (UseFlux && GetReaction(i)->FFlux(NULL) < -MFA_ZERO_TOLERANCE)) {
+			if (!UseFlux || GetReaction(i)->FFlux(NULL) < -MFA_ZERO_TOLERANCE) {
+				for (int j=GetReaction(i)->FNumReactants(REACTANT); j < GetReaction(i)->FNumReactants(); j++) {
+					if (!GetReaction(i)->IsReactantCofactor(j)) {
+						for (int k=0; k < GetReaction(i)->FNumReactants(REACTANT); k++) {
+							if (!GetReaction(i)->IsReactantCofactor(k)) {
+								MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->Children.push_back(MyTree[GetReaction(i)->GetReactant(k)->FIndex()]);
+								MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->EdgeLables.push_back(GetReaction(i));
+								MyTree[GetReaction(i)->GetReactant(j)->FIndex()]->ForwardDirection.push_back(false);
+							}
 						}
 					}
 				}
 			}
 		}
 	}
-
 	for (int i=0; i < MAX_PATH_LENGTH; i++) {
 		NewClimber->CurrentPathway[i] = NULL;
 		NewClimber->CurrentPathEdgeLabels[i] = NULL;
@@ -1017,13 +1024,10 @@ map<Species* , list<Pathway*> , std::less<Species*> >* Data::FindPathways(Specie
 		Targets[i]->SetMark(true);
 		Targets[i]->PathwayMark = -1;
 	}
-
 	ClockIndex = StartClock(ClockIndex);
 	SetTimeout(ClockIndex,atof(GetParameter("max search time").data()));
-	
 	map<Species* , list<Pathway*> , std::less<Species*> >* Pathways = new map<Species* , list<Pathway*> , std::less<Species*> >;
 	CurrentNode = MyTree[Source->FIndex()];
-
 	//I initialize the starting and target node.
 	do {
 		if (TimedOut(ClockIndex)) {
@@ -1081,15 +1085,51 @@ map<Species* , list<Pathway*> , std::less<Species*> >* Data::FindPathways(Specie
 		} else {
 			//Setting everything up to explore the node's child.
 			if (!NewClimber->NodesVisited[(*NewClimber->CurrentPathwayIterators[CurrentPathLength])->ID]) {
-				//Changing the current node to the node child.
-				CurrentNode = (*NewClimber->CurrentPathwayIterators[CurrentPathLength]);
-				//Changing the iterator and pathlength
-				NewClimber->CurrentPathEdgeLabels[CurrentPathLength] = (*NewClimber->CurrentPathwayLabelIterators[CurrentPathLength]);
-				NewClimber->CurrentPathEdgeDirections[CurrentPathLength] = (*NewClimber->CurrentPathwayDirectionIterators[CurrentPathLength]);
-				NewClimber->CurrentPathwayIterators[CurrentPathLength]++;
-				NewClimber->CurrentPathwayLabelIterators[CurrentPathLength]++;
-				NewClimber->CurrentPathwayDirectionIterators[CurrentPathLength]++;
-				NewClimber->CurrentPathLength++;
+//				if (UseFlux) {
+//					double curr_target_flux = 10;
+//					if (CurrentPathLength >= 1) {
+//						curr_target_flux = NewClimber->CurrentPathEdgeLabels[CurrentPathLength-1]->FFlux(NuLL);
+//						if (curr_target_flux < 0) {
+//							curr_target_flux = -1*curr_target_flux;
+//						}
+//					}
+//					double factor = 10;
+//					while (0.8 > factor || factor > 1.2) {
+//						double flux = NewClimber->CurrentPathwayLabelIterators[CurrentPathLength]->FFlux(NULL);
+//						factor = flux/curr_target_flux;
+//						CurrentNode = (*NewClimber->CurrentPathwayIterators[CurrentPathLength]);
+//						NewClimber->CurrentPathEdgeLabels[CurrentPathLength] = (*NewClimber->CurrentPathwayLabelIterators[CurrentPathLength]);
+//						NewClimber->CurrentPathEdgeDirections[CurrentPathLength] = (*NewClimber->CurrentPathwayDirectionIterators[CurrentPathLength]);
+//						NewClimber->CurrentPathwayIterators[CurrentPathLength]++;
+//						NewClimber->CurrentPathwayLabelIterators[CurrentPathLength]++;
+//						NewClimber->CurrentPathwayDirectionIterators[CurrentPathLength]++;
+//						if (NewClimber->CurrentPathwayIterators[CurrentPathLength] == CurrentNode->Children.end()) {
+//							break;
+//						}
+//					}
+//					if (0.8 <= factor && factor = 1.2) {
+//						NewClimber->CurrentPathway[CurrentPathLength] = NULL;
+//						NewClimber->CurrentPathEdgeLabels[CurrentPathLength] = NULL;
+//						NewClimber->CurrentPathEdgeDirections[CurrentPathLength] = true;
+//						NewClimber->NodesVisited[CurrentNode->ID] = false;
+//						NewClimber->CurrentPathLength--;
+//						if (CurrentPathLength != -1) {
+//							CurrentNode = NewClimber->CurrentPathway[NewClimber->CurrentPathLength];
+//						}
+//					} else {
+//						NewClimber->CurrentPathLength++;
+//					}
+//				} else {
+					//Changing the current node to the node child.
+					CurrentNode = (*NewClimber->CurrentPathwayIterators[CurrentPathLength]);
+					//Changing the iterator and pathlength
+					NewClimber->CurrentPathEdgeLabels[CurrentPathLength] = (*NewClimber->CurrentPathwayLabelIterators[CurrentPathLength]);
+					NewClimber->CurrentPathEdgeDirections[CurrentPathLength] = (*NewClimber->CurrentPathwayDirectionIterators[CurrentPathLength]);
+					NewClimber->CurrentPathwayIterators[CurrentPathLength]++;
+					NewClimber->CurrentPathwayLabelIterators[CurrentPathLength]++;
+					NewClimber->CurrentPathwayDirectionIterators[CurrentPathLength]++;
+					NewClimber->CurrentPathLength++;
+				//}
 			} else {
 				NewClimber->CurrentPathwayIterators[CurrentPathLength]++;
 				NewClimber->CurrentPathwayLabelIterators[CurrentPathLength]++;
@@ -1097,7 +1137,6 @@ map<Species* , list<Pathway*> , std::less<Species*> >* Data::FindPathways(Specie
 			}
 		}
 	} while(NewClimber->CurrentPathLength != -1);
-
 	map<Species* , list<Pathway*> >::iterator MapIt = Pathways->begin();
 	for (int i=0; i < int(Pathways->size()); i++) {
 		RemovePathsOutsideLengthInterval RemovalFunctor;
@@ -1107,14 +1146,12 @@ map<Species* , list<Pathway*> , std::less<Species*> >* Data::FindPathways(Specie
 		MapIt->second.sort(PathwayGreater);
 		MapIt++;
 	}
-
 	for (int i=0; i < int(FNumSpecies()); i++) {
 		delete MyTree[i];
 	}
 
 	delete [] NewClimber->NodesVisited;
 	delete NewClimber;
-	
 	return Pathways;
 }
 
@@ -1168,7 +1205,7 @@ void Data::SearchForPathways() {
 			vector<Species*> TempTarget;
 			TempTarget.push_back(Targets[j]);
 			int ClockIndex = -1;
-			map<Species* , list<Pathway*> , std::less<Species*> >* Pathways = FindPathways(Sources[i], TempTarget, MaxLength, MaxTime, false, LengthInterval,ClockIndex);
+			map<Species* , list<Pathway*> , std::less<Species*> >* Pathways = FindPathways(Sources[i], TempTarget, MaxLength, MaxTime, false, LengthInterval,ClockIndex,false);
 			if (TimedOut(ClockIndex)) {
 				cout << Sources[i]->GetData("DATABASE",STRING) << " " << Targets[j]->GetData("DATABASE",STRING) << " timeout!" << endl;			
 			} else {
@@ -1447,7 +1484,11 @@ void Data::LabelKEGGSingleCofactors() {
 	vector<string>* KEGGCofactors = StringToStrings(GetParameter("kegg cofactors"),";");
 
 	for (int i=0; i < int(KEGGCofactors->size()); i++) {
-		Species* Temp = FindSpecies("DATABASE",(*KEGGCofactors)[i].data());
+		Species* Temp = FindSpecies("DATABASE",((*KEGGCofactors)[i]+"_c0").data());
+		if (Temp != NULL) {
+			Temp->SetCofactor(true);
+		}
+		Temp = FindSpecies("DATABASE",((*KEGGCofactors)[i]+"_e0").data());
 		if (Temp != NULL) {
 			Temp->SetCofactor(true);
 		}
@@ -1463,8 +1504,18 @@ void Data::LabelKEGGCofactorPairs() {
 	for (int i=0; i < int(KEGGCofactorPairs->size()); i++) {
 		vector<string>* CofactorPair = StringToStrings((*KEGGCofactorPairs)[i]," ");
 		if (CofactorPair->size() >= 2) {
-			Species* Temp = FindSpecies("DATABASE",(*CofactorPair)[0].data());
-			Species* TempTwo = FindSpecies("DATABASE",(*CofactorPair)[1].data());
+			Species* Temp = FindSpecies("DATABASE",((*CofactorPair)[0]+"_c0").data());
+			Species* TempTwo = FindSpecies("DATABASE",((*CofactorPair)[1]+"_c0").data());
+			if (Temp != NULL && TempTwo != NULL) {
+				for (int j=0; j < FNumReactions(); j++) {
+					if (GetReaction(j)->GetReactantCoef(Temp)*GetReaction(j)->GetReactantCoef(TempTwo) < 0) {
+						GetReaction(j)->SetReactantToCofactor(GetReaction(j)->CheckForReactant(Temp), true);
+						GetReaction(j)->SetReactantToCofactor(GetReaction(j)->CheckForReactant(TempTwo), true);
+					}
+				}
+			}
+			Temp = FindSpecies("DATABASE",((*CofactorPair)[0]+"_e0").data());
+			TempTwo = FindSpecies("DATABASE",((*CofactorPair)[1]+"_e0").data());
 			if (Temp != NULL && TempTwo != NULL) {
 				for (int j=0; j < FNumReactions(); j++) {
 					if (GetReaction(j)->GetReactantCoef(Temp)*GetReaction(j)->GetReactantCoef(TempTwo) < 0) {

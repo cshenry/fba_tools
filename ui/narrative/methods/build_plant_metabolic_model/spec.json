@@ -1,0 +1,99 @@
+{
+   "name" : "build_plant_metabolic_model",
+   "ver" : "1.0.0",
+   "authors" : [
+      "seaver"
+   ],
+   "contact" : "http://kbase.us/contact-us/",
+   "visible" : true,
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "parameters" : [
+      {
+         "id" : "genome_id",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseGenomes.Genome","KBaseGenomeAnnotations.GenomeAnnotation"
+            ]
+         }
+      },
+      {
+         "text_options" : {
+            "is_output_name" : true,
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "fbamodel_output_id",
+         "advanced" : false
+      }
+   ], 
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "name" : "fba_tools",
+         "method" : "build_plant_metabolic_model",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "input_parameter" : "genome_id",
+               "target_property" : "genome_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "target_property" : "fbamodel_output_id",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ],
+         "output_mapping" : [
+            {
+ 	        "service_method_output_path": [0, "report_name"],
+		"target_property": "report_name"
+            },
+	    {
+	        "service_method_output_path": [0, "report_ref"],
+		"target_property": "report_ref"
+	    },
+	    {
+	        "narrative_system_variable": "workspace",
+		"target_property": "workspace_name"
+	    },
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
+            },
+            {
+               "target_property" : "obj",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ]
+      }
+   },
+   "job_id_output_field" : "docker"
+}

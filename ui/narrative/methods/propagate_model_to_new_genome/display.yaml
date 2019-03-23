@@ -2,7 +2,7 @@
 # Define basic display information
 #
 name     : Propagate Model to New Genome
- 
+
 tooltip  : |
     Translate the metabolic model of one organism to another, using a mapping of similar proteins between their genomes.
 
@@ -144,6 +144,11 @@ description : |
     <li>If the reaction has one or more genes in the original model and at least one has a homolog in the new genome, then the reaction is retained, and all genes with homologs are translated and retained.</li>
     </ol>
     </p>
-    
+
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
 
+publications :
+    -
+        display-text: |
+            Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
+        link: https://www.nature.com/articles/nbt.4163

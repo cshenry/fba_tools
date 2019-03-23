@@ -1,0 +1,140 @@
+#
+# Define basic display information
+#
+name     : Fit Model to Exometabolite Data
+tooltip  : |
+    Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable production and consumption of as many exometabolites as possible
+
+screenshots :
+
+    - gapfill_metabolic_model_input.png
+    - gapfill_metabolic_model_output.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            [run_flux_balance_analysis]
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    fbamodel_id :
+        ui-name : |
+            Input model
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+
+    metabolite_matrix_ref :
+        ui-name : |
+            Exometabolite matrix
+        short-hint : |
+            Matrix of exometabolite data to fit model to
+        long-hint : |
+            Matrix of exometabolite data to fit model to
+
+    metabolite_condition :
+        ui-name : |
+            Data column to fit
+        short-hint : |
+            ID of the data column to fit in the analysis
+        long-hint : |
+            ID of the data column to fit in the analysis
+            
+    target_reaction :
+        ui-name : |
+            Reaction to target
+        short-hint : |
+            ID of reaction that must carry flux in the gapfilled model
+        long-hint : |
+            ID of reaction that must carry flux in the gapfilled model
+
+    fbamodel_output_id :
+        ui-name : |
+            Output model
+        short-hint : |
+            Name of the model produced by the gapfill analysis
+        long-hint : |
+            Name of the model produced by the gapfill analysis
+    
+    media_ref :
+        ui-name : |
+            Input base media
+        short-hint : |
+            Name of base media formulation to use when fitting exometabolite data (default is Complete media)
+        long-hint : |
+            Name of base media formulation to use when fitting exometabolite data (default is Complete media)
+            
+    exomedia_output_id :
+        ui-name : |
+            Output media
+        short-hint : |
+            Name of the media with successfully reconciled exometabolites
+        long-hint : |
+            Name of the media with successfully reconciled exometabolites
+
+    omindirectional :
+        ui-name : |
+            Omnidirectional
+        short-hint : |
+            Ignore directionality of exometabolite data
+        long-hint : |
+            Ignore directionality of exometabolite data
+            
+    equal_weighting :
+        ui-name : |
+            Equal weighting
+        short-hint : |
+            Weigh all exometabolites equally
+        long-hint : |
+            Weigh all exometabolites equally
+
+    minimum_target_flux :
+        ui-name : |
+            Minimum transport flux
+        short-hint : |
+            The minimum flux that the transporter of the target compound should have
+        long-hint : |
+            The minimum flux that the transporter of the target compound should have
+
+    source_fbamodel_id :
+        ui-name : |
+            Source Gapfill Model
+        short-hint : |
+            A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
+        long-hint : |
+            A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
+
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+
+icon: modelseed-teal.png
+
+description : |
+    <p>This algorithm adds a drain flux for each exometabolite and forces these drains to operate in the approapriate direction.</p>
+
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Chris Henry, Janaka Edirisinghe, Jose Faria, Trent Northen, Ben Bowen. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
+
+publications :
+    -
+        display-text: |
+            [1] Henry CS, DeJongh M, Best AA, Frybarger PM, Linsay B, Stevens RL. High-throughput generation, optimization and analysis of genome-scale metabolic models. Nat Biotechnol. 2010;28: 977–982. doi:10.1038/nbt.1672
+        link: https://www.nature.com/articles/nbt.1672
