@@ -178,14 +178,14 @@ parameters :
             Primary cellular compartment for specified reaction (two distinct reactions cannot have same compartment and ID)
     add_reaction_name :
         ui-name : |
-            New reaction name 
+            New reaction name
         short-hint : |
-            New name for the specified reaction (leave blank to use default name for ModelSEED reactions) 
+            New name for the specified reaction (leave blank to use default name for ModelSEED reactions)
     add_reaction_direction :
         ui-name : |
-            New reaction direction 
+            New reaction direction
         short-hint : |
-            New direction for the specified reaction (leave blank to use directionality predicted from thermodynamics) 
+            New direction for the specified reaction (leave blank to use directionality predicted from thermodynamics)
     add_reaction_gpr :
         ui-name : |
             New reaction GPR
@@ -207,7 +207,7 @@ parameters :
         short-hint : |
             Coefficient for specified compound in specified reaction (set to zero to remove compound from reaction, negative values for reactants, positive values for products)
 parameter-groups:
-  compounds_to_add: 
+  compounds_to_add:
     ui-name: |
       Compounds to add to model
     short-hint: |
@@ -216,27 +216,27 @@ parameter-groups:
     ui-name: |
       Alter existing compounds in model
     short-hint: |
-      Use this interface to adjust the name, formula, or charge of compounds already present in the model           
+      Use this interface to adjust the name, formula, or charge of compounds already present in the model
   biomasses_to_add:
     ui-name: |
       Biomass objectives to add to model
     short-hint: |
-      Use this interface to add a new objective function to the model - a biomass reaction is automatically generated based on input parameters       
+      Use this interface to add a new objective function to the model - a biomass reaction is automatically generated based on input parameters
   biomass_compounds_to_change:
     ui-name: |
       Biomass objective compounds to change
     short-hint: |
-      Use this interface to adjust the coefficient for a single compound in a single biomass objective function - can be used to add or remove a compound from a biomass          
+      Use this interface to adjust the coefficient for a single compound in a single biomass objective function - can be used to add or remove a compound from a biomass
   reactions_to_change:
     ui-name: |
       Alter existing reactions in model
     short-hint: |
-      Use this interface to alter an existing reaction in the model           
+      Use this interface to alter an existing reaction in the model
   reactions_to_add:
     ui-name: |
       Add new reaction to model
     short-hint: |
-      Use this interface to add a new reaction to the model       
+      Use this interface to add a new reaction to the model
   edit_compound_stoichiometry:
     ui-name: |
       Alter the stoichiometry of reactions
@@ -245,3 +245,9 @@ parameter-groups:
 
 description : |
     <p>Modify a metabolic model by adding or removing reactions, or changing directionality.</p>
+
+publications :
+    -
+        display-text: |
+            Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
+        link: https://www.nature.com/articles/nbt.4163

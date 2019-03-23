@@ -182,6 +182,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: build_plant_metabolic_model</p>
+     * <pre>
+     * Build a genome-scale metabolic model based on annotations in an input genome typed object
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.BuildPlantMetabolicModelParams BuildPlantMetabolicModelParams}
+     * @return   instance of type {@link us.kbase.fbatools.BuildPlantMetabolicModelResults BuildPlantMetabolicModelResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public BuildPlantMetabolicModelResults buildPlantMetabolicModel(BuildPlantMetabolicModelParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<BuildPlantMetabolicModelResults>> retType = new TypeReference<List<BuildPlantMetabolicModelResults>>() {};
+        List<BuildPlantMetabolicModelResults> res = caller.jsonrpcCall("fba_tools.build_plant_metabolic_model", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: build_multiple_metabolic_models</p>
      * <pre>
      * Build multiple genome-scale metabolic models based on annotations in an input genome typed object
@@ -376,6 +394,60 @@ public class FbaToolsClient {
         args.add(params);
         TypeReference<List<PredictAuxotrophyResults>> retType = new TypeReference<List<PredictAuxotrophyResults>>() {};
         List<PredictAuxotrophyResults> res = caller.jsonrpcCall("fba_tools.predict_auxotrophy", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: predict_metabolite_biosynthesis_pathway</p>
+     * <pre>
+     * Identifies reactions in the model that are not mass balanced
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.PredictMetaboliteBiosynthesisPathwayInput PredictMetaboliteBiosynthesisPathwayInput}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.PredictMetaboliteBiosynthesisPathwayResults PredictMetaboliteBiosynthesisPathwayResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public PredictMetaboliteBiosynthesisPathwayResults predictMetaboliteBiosynthesisPathway(PredictMetaboliteBiosynthesisPathwayInput params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<PredictMetaboliteBiosynthesisPathwayResults>> retType = new TypeReference<List<PredictMetaboliteBiosynthesisPathwayResults>>() {};
+        List<PredictMetaboliteBiosynthesisPathwayResults> res = caller.jsonrpcCall("fba_tools.predict_metabolite_biosynthesis_pathway", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: build_metagenome_metabolic_model</p>
+     * <pre>
+     * Build a genome-scale metabolic model based on annotations in an input genome typed object
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.BuildMetagenomeMetabolicModelParams BuildMetagenomeMetabolicModelParams}
+     * @return   instance of type {@link us.kbase.fbatools.BuildMetabolicModelResults BuildMetabolicModelResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public BuildMetabolicModelResults buildMetagenomeMetabolicModel(BuildMetagenomeMetabolicModelParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<BuildMetabolicModelResults>> retType = new TypeReference<List<BuildMetabolicModelResults>>() {};
+        List<BuildMetabolicModelResults> res = caller.jsonrpcCall("fba_tools.build_metagenome_metabolic_model", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: fit_exometabolite_data</p>
+     * <pre>
+     * Gapfills a metabolic model to fit input exometabolite data
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.FitExometaboliteDataParams FitExometaboliteDataParams}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.FitExometaboliteDataResults FitExometaboliteDataResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public FitExometaboliteDataResults fitExometaboliteData(FitExometaboliteDataParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<FitExometaboliteDataResults>> retType = new TypeReference<List<FitExometaboliteDataResults>>() {};
+        List<FitExometaboliteDataResults> res = caller.jsonrpcCall("fba_tools.fit_exometabolite_data", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 

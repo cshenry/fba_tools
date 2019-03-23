@@ -70,7 +70,9 @@ void Species::SetDefaults() {
 	NumNoIDGroups = 0;
 	Cofactor = false;
 	Coa = false;
-	
+	concentration = 0;
+	minflux = -100;
+	maxflux = 100;
 	Charge = 0;
 	NumHeteroRings = 0;
 	ThreeMemberRings = 0;
@@ -1420,6 +1422,34 @@ int Species::Interpreter(string DataName, string& DataItem, bool Input) {
 				SetCharge(atoi(DataItem.data()));
 			} else {
 				DataItem.assign(itoa(FCharge()));
+			}
+			break;
+		} case CPD_MINFLUX: {
+			if (Input) {
+				minflux = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(minflux));
+			}
+			break;
+		} case CPD_MAXFLUX: {
+			if (Input) {
+				maxflux = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(maxflux));
+			}
+			break;
+		} case CPD_CONCENTRATION: {
+			if (Input) {
+				concentration = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(concentration));
+			}
+			break;
+		} case CPD_FLOW_IN_CONC: {
+			if (Input) {
+				flow_in_concentration = atof(DataItem.data());
+			} else {
+				DataItem.assign(dtoa(flow_in_concentration));
 			}
 			break;
 		} case CPD_SMALLMOLEC: {
@@ -3958,7 +3988,7 @@ void Species::CreateMFAVariables(OptimizationParameter* InParameters) {
 				NewVariable->Compartment = MapIT->second->Compartment->Index;
 				NewVariable->Type = POTENTIAL;
 				MapIT->second->MFAVariables[POTENTIAL] = NewVariable;
-				if (this->FEstDeltaG() != FLAG) {
+				if (this->FEstDeltaG() != FLAG && !InParameters->SimpleThermoConstraints) {
 					NewVariable->LowerBound = this->FEstDeltaG() - InParameters->DeltaGSlack + -8.180523005;
 					NewVariable->UpperBound = this->FEstDeltaG() + InParameters->DeltaGSlack + -1.363420501;
 				} else {
@@ -4110,9 +4140,164 @@ void Species::BuildSpeciesConstraints(OptimizationParameter* InParameters,MFAPro
 			}
 		}
 	}
+	MFAVariable* evar = NULL;
 	if (this->Compartments[GetCompartment("e")->Index] != NULL && this->Compartments[GetCompartment("e")->Index]->MFAVariables[POTENTIAL] != NULL) {
-
+		evar = this->Compartments[GetCompartment("e")->Index]->MFAVariables[POTENTIAL];
 	}
+	MFAVariable* pvar = NULL;
+	if (this->Compartments[GetCompartment("p")->Index] != NULL && this->Compartments[GetCompartment("p")->Index]->MFAVariables[POTENTIAL] != NULL) {
+		pvar = this->Compartments[GetCompartment("p")->Index]->MFAVariables[POTENTIAL];
+	}
+	MFAVariable* cvar = NULL;
+	if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+		cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+	}
+//	if (evar != NULL && cvar != NULL && this->Charge != 0) {
+//		LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//		NewConstraint->Variables.push_back(evar);
+//		NewConstraint->Variables.push_back(cvar);
+//		if (this->Charge < 0) {
+//			NewConstraint->Coefficient.push_back(-1);
+//			NewConstraint->Coefficient.push_back(1);
+//		} else {
+//			NewConstraint->Coefficient.push_back(1);
+//			NewConstraint->Coefficient.push_back(-1);
+//		}
+//		InProblem->AddConstraint(NewConstraint);
+//	}
+//	if (pvar != NULL && cvar != NULL && this->Charge != 0) {
+//		LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//		NewConstraint->Variables.push_back(pvar);
+//		NewConstraint->Variables.push_back(cvar);
+//		if (this->Charge < 0) {
+//			NewConstraint->Coefficient.push_back(-1);
+//			NewConstraint->Coefficient.push_back(1);
+//		} else {
+//			NewConstraint->Coefficient.push_back(1);
+//			NewConstraint->Coefficient.push_back(-1);
+//		}
+//		InProblem->AddConstraint(NewConstraint);
+//	}
+//	if (cvar != NULL && this->GetData("DATABASE",STRING).compare("cpd00002_c0") == 0) {
+//		Species* otherspecies = this->MainData->FindSpecies("DATABASE;NAME;ENTRY","cpd00008_c0");
+//		if (otherspecies != NULL) {
+//			if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+//				MFAVariable* othercvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//				NewConstraint->Variables.push_back(cvar);
+//				NewConstraint->Variables.push_back(othercvar);
+//				NewConstraint->Coefficient.push_back(1);
+//				NewConstraint->Coefficient.push_back(-1);
+//				InProblem->AddConstraint(NewConstraint);
+//			}
+//		}
+//	}
+//	if (cvar != NULL && this->GetData("DATABASE",STRING).compare("cpd00008_c0") == 0) {
+//		Species* otherspecies = this->MainData->FindSpecies("DATABASE;NAME;ENTRY","cpd00018_c0");
+//		if (otherspecies != NULL) {
+//			if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+//				MFAVariable* othercvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//				NewConstraint->Variables.push_back(cvar);
+//				NewConstraint->Variables.push_back(othercvar);
+//				NewConstraint->Coefficient.push_back(1);
+//				NewConstraint->Coefficient.push_back(-1);
+//				InProblem->AddConstraint(NewConstraint);
+//			}
+//		}
+//	}
+//	if (cvar != NULL && this->GetData("DATABASE",STRING).compare("cpd00038_c0") == 0) {
+//		Species* otherspecies = this->MainData->FindSpecies("DATABASE;NAME;ENTRY","cpd00031_c0");
+//		if (otherspecies != NULL) {
+//			if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+//				MFAVariable* othercvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//				NewConstraint->Variables.push_back(cvar);
+//				NewConstraint->Variables.push_back(othercvar);
+//				NewConstraint->Coefficient.push_back(1);
+//				NewConstraint->Coefficient.push_back(-1);
+//				InProblem->AddConstraint(NewConstraint);
+//			}
+//		}
+//	}
+//	if (cvar != NULL && this->GetData("DATABASE",STRING).compare("cpd00031_c0") == 0) {
+//		Species* otherspecies = this->MainData->FindSpecies("DATABASE;NAME;ENTRY","cpd00126_c0");
+//		if (otherspecies != NULL) {
+//			if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+//				MFAVariable* othercvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//				NewConstraint->Variables.push_back(cvar);
+//				NewConstraint->Variables.push_back(othercvar);
+//				NewConstraint->Coefficient.push_back(1);
+//				NewConstraint->Coefficient.push_back(-1);
+//				InProblem->AddConstraint(NewConstraint);
+//			}
+//		}
+//	}
+//	if (cvar != NULL && this->GetData("DATABASE",STRING).compare("cpd00052_c0") == 0) {
+//		Species* otherspecies = this->MainData->FindSpecies("DATABASE;NAME;ENTRY","cpd00096_c0");
+//		if (otherspecies != NULL) {
+//			if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+//				MFAVariable* othercvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//				NewConstraint->Variables.push_back(cvar);
+//				NewConstraint->Variables.push_back(othercvar);
+//				NewConstraint->Coefficient.push_back(1);
+//				NewConstraint->Coefficient.push_back(-1);
+//				InProblem->AddConstraint(NewConstraint);
+//			}
+//		}
+//	}
+//	if (cvar != NULL && this->GetData("DATABASE",STRING).compare("cpd00096_c0") == 0) {
+//		Species* otherspecies = this->MainData->FindSpecies("DATABASE;NAME;ENTRY","cpd00046_c0");
+//		if (otherspecies != NULL) {
+//			if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+//				MFAVariable* othercvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//				NewConstraint->Variables.push_back(cvar);
+//				NewConstraint->Variables.push_back(othercvar);
+//				NewConstraint->Coefficient.push_back(1);
+//				NewConstraint->Coefficient.push_back(-1);
+//				InProblem->AddConstraint(NewConstraint);
+//			}
+//		}
+//	}
+//	if (cvar != NULL && this->GetData("DATABASE",STRING).compare("cpd00062_c0") == 0) {
+//		Species* otherspecies = this->MainData->FindSpecies("DATABASE;NAME;ENTRY","cpd00014_c0");
+//		if (otherspecies != NULL) {
+//			if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+//				MFAVariable* othercvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//				NewConstraint->Variables.push_back(cvar);
+//				NewConstraint->Variables.push_back(othercvar);
+//				NewConstraint->Coefficient.push_back(1);
+//				NewConstraint->Coefficient.push_back(-1);
+//				InProblem->AddConstraint(NewConstraint);
+//			}
+//		}
+//	}
+//	if (cvar != NULL && this->GetData("DATABASE",STRING).compare("cpd00014_c0") == 0) {
+//		Species* otherspecies = this->MainData->FindSpecies("DATABASE;NAME;ENTRY","cpd00091_c0");
+//		if (otherspecies != NULL) {
+//			if (this->Compartments[GetCompartment("c")->Index] != NULL && this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL] != NULL) {
+//				MFAVariable* othercvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				cvar = this->Compartments[GetCompartment("c")->Index]->MFAVariables[POTENTIAL];
+//				LinEquation* NewConstraint = InitializeLinEquation("Species use constraint",10,GREATER);
+//				NewConstraint->Variables.push_back(cvar);
+//				NewConstraint->Variables.push_back(othercvar);
+//				NewConstraint->Coefficient.push_back(1);
+//				NewConstraint->Coefficient.push_back(-1);
+//				InProblem->AddConstraint(NewConstraint);
+//			}
+//		}
+//	}
 }
 
 MFAVariable* Species::CreateMFAVariable(int InType,int InCompartment,double Min, double Max) {

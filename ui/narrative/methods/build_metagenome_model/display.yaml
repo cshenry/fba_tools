@@ -1,0 +1,99 @@
+#
+# Define basic display information
+#
+name     : Build Metagenome Metabolic Model (v0.1)
+
+tooltip  : |
+    Generate a draft metabolic model based on an annotated genome.
+
+screenshots :
+
+    - build_metabolic_model_input.png
+    - build_metabolic_model_output.png
+
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            [gapfill_metabolic_model,run_flux_balance_analysis]
+
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    gapfill_model :
+        ui-name : |
+            Gapfill model?
+        short-hint : |
+            Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
+        long-hint : |
+            Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
+
+    media_id :
+        ui-name : |
+            Gapfilling Media (defaults to complete media)
+        short-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used.
+        long-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run FBA with complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
+        placeholder : |
+            Growth condition for gapfilling
+
+    fbamodel_output_id :
+        ui-name : |
+            Output model
+        short-hint : |
+            Enter a name for the metabolic model to be created
+        long-hint : |
+            Enter a name for the metabolic model to be created
+        placeholder : |
+            Output metabolic model name
+
+    gff_file :
+        ui-name : |
+            GFF file of annotations
+        short-hint : |
+            A GFF file containing externally generated metagenome annotations
+        long-hint : |
+            A GFF file containing externally generated metagenome annotations
+
+
+    input_ref :
+        ui-name : |
+            Input assembly or bins
+        short-hint : |
+            A metagenome assembly, or a binned metagenome assembly to construct a model from
+        long-hint : |
+            A metagenome assembly, or a binned metagenome assembly to construct a model from
+        placeholder : |
+            Assembly or bins for modeling
+
+
+icon: modelseed-teal.png
+
+description : |
+
+    <p>This tool applies the ModelSEED approach to build a model from a metagenome assembly. 
+    If a GFF file of annotations is not supplied, the assembly is binned and annotated with RAST.
+    If a GFF file is supplied, the annotations in that file are applied to determine the reactions in the model.
+    Gene associations are not included in metagenome models. Instead, wherever possible, reactions are associated with the list
+    of species predicted to contain them. Also, reactions include total coverage and total hit count.</p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Chris Henry, Janaka Edirisinghe, Sam Seaver, Neal Conrad. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
+publications :
+    -
+        display-text: |
+            [1] Henry CS, DeJongh M, Best AA, Frybarger PM, Linsay B, Stevens RL. High-throughput generation, optimization and analysis of genome-scale metabolic models. Nat Biotechnol. 2010;28: 977–982. doi:10.1038/nbt.1672
+        link: https://www.ncbi.nlm.nih.gov/pubmed/20802497

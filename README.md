@@ -10,6 +10,26 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
+### VERSION: 1.7.8 (Released 10/16/2018)
+------------------------------------------
+#### UPDATED FEATURES
+- improving the model reconstruction pipeline to prevent the overproduction of ATP by draft metabolic models
+------------------------------------------
+### VERSION: 1.7.7 (Released 10/15/2018)
+------------------------------------------
+- added KBase paper citation in PLOS format to utilities, added citations to Gapfill Metabolic Model, and created RELEASE_NOTES.md file 
+------------------------------------------
+### VERSION: 1.7.6 (Released 9/28/2018)
+------------------------------------------
+#### UPDATED FEATURES / MAJOR BUG FIXES:
+- Refinements to auxotrophy method
+- Patch for _check_job failures
+- Make sure GAAPI does not provide CDSs in feature list
+- Fixes for media importer
+- Correcting unit scale in SBML export
+- Update app citations
+
+------------------------------------------
 ### VERSION: 1.7.4 (Released 3/2/2017)
 ------------------------------------------
 #### UPDATED FEATURES / MAJOR BUG FIXES:

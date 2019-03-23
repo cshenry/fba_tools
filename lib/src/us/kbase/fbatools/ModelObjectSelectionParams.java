@@ -21,7 +21,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "workspace_name",
     "model_name",
-    "save_to_shock"
+    "save_to_shock",
+    "fulldb"
 })
 public class ModelObjectSelectionParams {
 
@@ -31,6 +32,8 @@ public class ModelObjectSelectionParams {
     private String modelName;
     @JsonProperty("save_to_shock")
     private Long saveToShock;
+    @JsonProperty("fulldb")
+    private Long fulldb;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("workspace_name")
@@ -78,6 +81,21 @@ public class ModelObjectSelectionParams {
         return this;
     }
 
+    @JsonProperty("fulldb")
+    public Long getFulldb() {
+        return fulldb;
+    }
+
+    @JsonProperty("fulldb")
+    public void setFulldb(Long fulldb) {
+        this.fulldb = fulldb;
+    }
+
+    public ModelObjectSelectionParams withFulldb(Long fulldb) {
+        this.fulldb = fulldb;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -90,7 +108,7 @@ public class ModelObjectSelectionParams {
 
     @Override
     public String toString() {
-        return ((((((((("ModelObjectSelectionParams"+" [workspaceName=")+ workspaceName)+", modelName=")+ modelName)+", saveToShock=")+ saveToShock)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((("ModelObjectSelectionParams"+" [workspaceName=")+ workspaceName)+", modelName=")+ modelName)+", saveToShock=")+ saveToShock)+", fulldb=")+ fulldb)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

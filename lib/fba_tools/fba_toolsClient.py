@@ -77,6 +77,29 @@ class fba_tools(object):
             'fba_tools.build_metabolic_model',
             [params], self._service_ver, context)
 
+    def build_plant_metabolic_model(self, params, context=None):
+        """
+        Build a genome-scale metabolic model based on annotations in an input genome typed object
+        :param params: instance of type "BuildPlantMetabolicModelParams" ->
+           structure: parameter "genome_id" of type "genome_id" (A string
+           representing a Genome id.), parameter "genome_workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "template_id" of type "template_id" (A string
+           representing a NewModelTemplate id.), parameter
+           "template_workspace" of type "workspace_name" (A string
+           representing a workspace name.)
+        :returns: instance of type "BuildPlantMetabolicModelResults" ->
+           structure: parameter "new_fbamodel_ref" of type "ws_fbamodel_id"
+           (The workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel)
+        """
+        return self._client.call_method(
+            'fba_tools.build_plant_metabolic_model',
+            [params], self._service_ver, context)
+
     def build_multiple_metabolic_models(self, params, context=None):
         """
         Build multiple genome-scale metabolic models based on annotations in an input genome typed object
@@ -403,18 +426,120 @@ class fba_tools(object):
         """
         Identifies reactions in the model that are not mass balanced
         :param params: instance of type "PredictAuxotrophyParams" ->
-           structure: parameter "genome_id" of type "genome_id" (A string
-           representing a Genome id.), parameter "media_output_id" of type
-           "media_id" (A string representing a Media id.), parameter
-           "genome_workspace" of type "workspace_name" (A string representing
-           a workspace name.), parameter "workspace" of type "workspace_name"
-           (A string representing a workspace name.)
+           structure: parameter "genome_ids" of list of type "genome_id" (A
+           string representing a Genome id.), parameter "genome_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "workspace" of type "workspace_name" (A string
+           representing a workspace name.)
         :returns: instance of type "PredictAuxotrophyResults" -> structure:
            parameter "new_report_ref" of type "ws_report_id" (The workspace
            ID for a Report object @id ws KBaseReport.Report)
         """
         return self._client.call_method(
             'fba_tools.predict_auxotrophy',
+            [params], self._service_ver, context)
+
+    def predict_metabolite_biosynthesis_pathway(self, params, context=None):
+        """
+        Identifies reactions in the model that are not mass balanced
+        :param params: instance of type
+           "PredictMetaboliteBiosynthesisPathwayInput" -> structure:
+           parameter "fbamodel_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "fbamodel_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "media_id" of type "media_id" (A string representing a
+           Media id.), parameter "media_workspace" of type "workspace_name"
+           (A string representing a workspace name.), parameter
+           "target_metabolite_list" of list of type "compound_id" (A string
+           representing a compound id.), parameter "source_metabolite_list"
+           of list of type "compound_id" (A string representing a compound
+           id.), parameter "fba_output_id" of type "fba_id" (A string
+           representing a FBA id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "thermodynamic_constraints" of type "bool" (A binary
+           boolean), parameter "feature_ko_list" of list of type "feature_id"
+           (A string representing a feature id.), parameter
+           "reaction_ko_list" of list of type "reaction_id" (A string
+           representing a reaction id.), parameter "expseries_id" of type
+           "expseries_id" (A string representing an expression matrix id.),
+           parameter "expseries_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "expression_condition"
+           of String, parameter "exp_threshold_percentile" of Double,
+           parameter "exp_threshold_margin" of Double, parameter
+           "activation_coefficient" of Double, parameter "omega" of Double
+        :returns: instance of type
+           "PredictMetaboliteBiosynthesisPathwayResults" -> structure:
+           parameter "report_name" of String, parameter "report_ref" of type
+           "ws_report_id" (The workspace ID for a Report object @id ws
+           KBaseReport.Report)
+        """
+        return self._client.call_method(
+            'fba_tools.predict_metabolite_biosynthesis_pathway',
+            [params], self._service_ver, context)
+
+    def build_metagenome_metabolic_model(self, params, context=None):
+        """
+        Build a genome-scale metabolic model based on annotations in an input genome typed object
+        :param params: instance of type "BuildMetagenomeMetabolicModelParams"
+           -> structure: parameter "input_ref" of String, parameter
+           "input_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "media_id" of type "media_id" (A
+           string representing a Media id.), parameter "media_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "gapfill_model" of type "bool" (A binary boolean)
+        :returns: instance of type "BuildMetabolicModelResults" -> structure:
+           parameter "new_fbamodel_ref" of type "ws_fbamodel_id" (The
+           workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
+           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA),
+           parameter "number_gapfilled_reactions" of Long, parameter
+           "number_removed_biomass_compounds" of Long
+        """
+        return self._client.call_method(
+            'fba_tools.build_metagenome_metabolic_model',
+            [params], self._service_ver, context)
+
+    def fit_exometabolite_data(self, params, context=None):
+        """
+        Gapfills a metabolic model to fit input exometabolite data
+        :param params: instance of type "FitExometaboliteDataParams" ->
+           structure: parameter "fbamodel_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "fbamodel_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "source_fbamodel_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter
+           "source_fbamodel_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "media_id" of type
+           "media_id" (A string representing a Media id.), parameter
+           "media_workspace" of type "workspace_name" (A string representing
+           a workspace name.), parameter "metabolome_id" of type
+           "metabolome_id" (A string representing a metabolome matrix id.),
+           parameter "metabolome_workspace" of type "workspace_name" (A
+           string representing a workspace name.), parameter
+           "metabolome_condition" of String, parameter "fbamodel_output_id"
+           of type "fbamodel_id" (A string representing a FBAModel id.),
+           parameter "workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "minimum_target_flux"
+           of Double, parameter "omnidirectional" of type "bool" (A binary
+           boolean), parameter "target_reaction" of type "reaction_id" (A
+           string representing a reaction id.), parameter "feature_ko_list"
+           of list of type "feature_id" (A string representing a feature
+           id.), parameter "reaction_ko_list" of list of type "reaction_id"
+           (A string representing a reaction id.), parameter
+           "media_supplement_list" of list of type "compound_id" (A string
+           representing a compound id.)
+        :returns: instance of type "FitExometaboliteDataResults" ->
+           structure: parameter "new_fbamodel_ref" of type "ws_fbamodel_id"
+           (The workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
+           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA),
+           parameter "number_gapfilled_reactions" of Long
+        """
+        return self._client.call_method(
+            'fba_tools.fit_exometabolite_data',
             [params], self._service_ver, context)
 
     def compare_models(self, params, context=None):
@@ -565,7 +690,8 @@ class fba_tools(object):
         :param model: instance of type "ModelObjectSelectionParams" ->
            structure: parameter "workspace_name" of String, parameter
            "model_name" of String, parameter "save_to_shock" of type
-           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1)),
+           parameter "fulldb" of type "bool" (A binary boolean)
         :returns: instance of type "File" -> structure: parameter "path" of
            String, parameter "shock_id" of String
         """
@@ -578,7 +704,8 @@ class fba_tools(object):
         :param model: instance of type "ModelObjectSelectionParams" ->
            structure: parameter "workspace_name" of String, parameter
            "model_name" of String, parameter "save_to_shock" of type
-           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1)),
+           parameter "fulldb" of type "bool" (A binary boolean)
         :returns: instance of type "File" -> structure: parameter "path" of
            String, parameter "shock_id" of String
         """
@@ -591,7 +718,8 @@ class fba_tools(object):
         :param model: instance of type "ModelObjectSelectionParams" ->
            structure: parameter "workspace_name" of String, parameter
            "model_name" of String, parameter "save_to_shock" of type
-           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+           "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1)),
+           parameter "fulldb" of type "bool" (A binary boolean)
         :returns: instance of type "ModelTsvFiles" -> structure: parameter
            "compounds_file" of type "File" -> structure: parameter "path" of
            String, parameter "shock_id" of String, parameter "reactions_file"
@@ -877,7 +1005,8 @@ class fba_tools(object):
            "bool" (A binary boolean), parameter "model_format" of String,
            parameter "fba_format" of String, parameter "media_format" of
            String, parameter "phenotype_format" of String, parameter
-           "phenosim_format" of String, parameter "workspace" of String
+           "phenosim_format" of String, parameter "workspace" of String,
+           parameter "report_workspace" of String
         :returns: instance of type "BulkExportObjectsResult" -> structure:
            parameter "report_name" of String, parameter "report_ref" of type
            "ws_report_id" (The workspace ID for a Report object @id ws

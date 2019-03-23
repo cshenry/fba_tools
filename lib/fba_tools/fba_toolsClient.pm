@@ -271,6 +271,116 @@ Build a genome-scale metabolic model based on annotations in an input genome typ
  
 
 
+=head2 build_plant_metabolic_model
+
+  $return = $obj->build_plant_metabolic_model($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.BuildPlantMetabolicModelParams
+$return is a fba_tools.BuildPlantMetabolicModelResults
+BuildPlantMetabolicModelParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+workspace_name is a string
+fbamodel_id is a string
+template_id is a string
+BuildPlantMetabolicModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+ws_fbamodel_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.BuildPlantMetabolicModelParams
+$return is a fba_tools.BuildPlantMetabolicModelResults
+BuildPlantMetabolicModelParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+workspace_name is a string
+fbamodel_id is a string
+template_id is a string
+BuildPlantMetabolicModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+ws_fbamodel_id is a string
+
+
+=end text
+
+=item Description
+
+Build a genome-scale metabolic model based on annotations in an input genome typed object
+
+=back
+
+=cut
+
+ sub build_plant_metabolic_model
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function build_plant_metabolic_model (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to build_plant_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'build_plant_metabolic_model');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.build_plant_metabolic_model",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'build_plant_metabolic_model',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method build_plant_metabolic_model",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'build_plant_metabolic_model',
+				       );
+    }
+}
+ 
+
+
 =head2 build_multiple_metabolic_models
 
   $return = $obj->build_multiple_metabolic_models($params)
@@ -1623,12 +1733,10 @@ Identifies reactions in the model that are not mass balanced
 $params is a fba_tools.PredictAuxotrophyParams
 $results is a fba_tools.PredictAuxotrophyResults
 PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
-	genome_id has a value which is a fba_tools.genome_id
-	media_output_id has a value which is a fba_tools.media_id
+	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 	genome_workspace has a value which is a fba_tools.workspace_name
 	workspace has a value which is a fba_tools.workspace_name
 genome_id is a string
-media_id is a string
 workspace_name is a string
 PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
 	new_report_ref has a value which is a fba_tools.ws_report_id
@@ -1643,12 +1751,10 @@ ws_report_id is a string
 $params is a fba_tools.PredictAuxotrophyParams
 $results is a fba_tools.PredictAuxotrophyResults
 PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
-	genome_id has a value which is a fba_tools.genome_id
-	media_output_id has a value which is a fba_tools.media_id
+	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 	genome_workspace has a value which is a fba_tools.workspace_name
 	workspace has a value which is a fba_tools.workspace_name
 genome_id is a string
-media_id is a string
 workspace_name is a string
 PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
 	new_report_ref has a value which is a fba_tools.ws_report_id
@@ -1707,6 +1813,418 @@ Identifies reactions in the model that are not mass balanced
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method predict_auxotrophy",
 					    status_line => $self->{client}->status_line,
 					    method_name => 'predict_auxotrophy',
+				       );
+    }
+}
+ 
+
+
+=head2 predict_metabolite_biosynthesis_pathway
+
+  $results = $obj->predict_metabolite_biosynthesis_pathway($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.PredictMetaboliteBiosynthesisPathwayInput
+$results is a fba_tools.PredictMetaboliteBiosynthesisPathwayResults
+PredictMetaboliteBiosynthesisPathwayInput is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	target_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+	source_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+	fba_output_id has a value which is a fba_tools.fba_id
+	workspace has a value which is a fba_tools.workspace_name
+	thermodynamic_constraints has a value which is a fba_tools.bool
+	feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+	reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+	expseries_id has a value which is a fba_tools.expseries_id
+	expseries_workspace has a value which is a fba_tools.workspace_name
+	expression_condition has a value which is a string
+	exp_threshold_percentile has a value which is a float
+	exp_threshold_margin has a value which is a float
+	activation_coefficient has a value which is a float
+	omega has a value which is a float
+fbamodel_id is a string
+workspace_name is a string
+media_id is a string
+compound_id is a string
+fba_id is a string
+bool is an int
+feature_id is a string
+reaction_id is a string
+expseries_id is a string
+PredictMetaboliteBiosynthesisPathwayResults is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.PredictMetaboliteBiosynthesisPathwayInput
+$results is a fba_tools.PredictMetaboliteBiosynthesisPathwayResults
+PredictMetaboliteBiosynthesisPathwayInput is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	target_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+	source_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+	fba_output_id has a value which is a fba_tools.fba_id
+	workspace has a value which is a fba_tools.workspace_name
+	thermodynamic_constraints has a value which is a fba_tools.bool
+	feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+	reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+	expseries_id has a value which is a fba_tools.expseries_id
+	expseries_workspace has a value which is a fba_tools.workspace_name
+	expression_condition has a value which is a string
+	exp_threshold_percentile has a value which is a float
+	exp_threshold_margin has a value which is a float
+	activation_coefficient has a value which is a float
+	omega has a value which is a float
+fbamodel_id is a string
+workspace_name is a string
+media_id is a string
+compound_id is a string
+fba_id is a string
+bool is an int
+feature_id is a string
+reaction_id is a string
+expseries_id is a string
+PredictMetaboliteBiosynthesisPathwayResults is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+Identifies reactions in the model that are not mass balanced
+
+=back
+
+=cut
+
+ sub predict_metabolite_biosynthesis_pathway
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function predict_metabolite_biosynthesis_pathway (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to predict_metabolite_biosynthesis_pathway:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'predict_metabolite_biosynthesis_pathway');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.predict_metabolite_biosynthesis_pathway",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'predict_metabolite_biosynthesis_pathway',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method predict_metabolite_biosynthesis_pathway",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'predict_metabolite_biosynthesis_pathway',
+				       );
+    }
+}
+ 
+
+
+=head2 build_metagenome_metabolic_model
+
+  $return = $obj->build_metagenome_metabolic_model($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.BuildMetagenomeMetabolicModelParams
+$return is a fba_tools.BuildMetabolicModelResults
+BuildMetagenomeMetabolicModelParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+	input_workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	gapfill_model has a value which is a fba_tools.bool
+workspace_name is a string
+media_id is a string
+fbamodel_id is a string
+bool is an int
+BuildMetabolicModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+	number_gapfilled_reactions has a value which is an int
+	number_removed_biomass_compounds has a value which is an int
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.BuildMetagenomeMetabolicModelParams
+$return is a fba_tools.BuildMetabolicModelResults
+BuildMetagenomeMetabolicModelParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+	input_workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	gapfill_model has a value which is a fba_tools.bool
+workspace_name is a string
+media_id is a string
+fbamodel_id is a string
+bool is an int
+BuildMetabolicModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+	number_gapfilled_reactions has a value which is an int
+	number_removed_biomass_compounds has a value which is an int
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+
+=end text
+
+=item Description
+
+Build a genome-scale metabolic model based on annotations in an input genome typed object
+
+=back
+
+=cut
+
+ sub build_metagenome_metabolic_model
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function build_metagenome_metabolic_model (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to build_metagenome_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'build_metagenome_metabolic_model');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.build_metagenome_metabolic_model",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'build_metagenome_metabolic_model',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method build_metagenome_metabolic_model",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'build_metagenome_metabolic_model',
+				       );
+    }
+}
+ 
+
+
+=head2 fit_exometabolite_data
+
+  $results = $obj->fit_exometabolite_data($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.FitExometaboliteDataParams
+$results is a fba_tools.FitExometaboliteDataResults
+FitExometaboliteDataParams is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	source_fbamodel_id has a value which is a fba_tools.fbamodel_id
+	source_fbamodel_workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	metabolome_id has a value which is a fba_tools.metabolome_id
+	metabolome_workspace has a value which is a fba_tools.workspace_name
+	metabolome_condition has a value which is a string
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	minimum_target_flux has a value which is a float
+	omnidirectional has a value which is a fba_tools.bool
+	target_reaction has a value which is a fba_tools.reaction_id
+	feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+	reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+fbamodel_id is a string
+workspace_name is a string
+media_id is a string
+metabolome_id is a string
+bool is an int
+reaction_id is a string
+feature_id is a string
+compound_id is a string
+FitExometaboliteDataResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+	number_gapfilled_reactions has a value which is an int
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.FitExometaboliteDataParams
+$results is a fba_tools.FitExometaboliteDataResults
+FitExometaboliteDataParams is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	source_fbamodel_id has a value which is a fba_tools.fbamodel_id
+	source_fbamodel_workspace has a value which is a fba_tools.workspace_name
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	metabolome_id has a value which is a fba_tools.metabolome_id
+	metabolome_workspace has a value which is a fba_tools.workspace_name
+	metabolome_condition has a value which is a string
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	minimum_target_flux has a value which is a float
+	omnidirectional has a value which is a fba_tools.bool
+	target_reaction has a value which is a fba_tools.reaction_id
+	feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+	reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+	media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+fbamodel_id is a string
+workspace_name is a string
+media_id is a string
+metabolome_id is a string
+bool is an int
+reaction_id is a string
+feature_id is a string
+compound_id is a string
+FitExometaboliteDataResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+	number_gapfilled_reactions has a value which is an int
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+
+=end text
+
+=item Description
+
+Gapfills a metabolic model to fit input exometabolite data
+
+=back
+
+=cut
+
+ sub fit_exometabolite_data
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function fit_exometabolite_data (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to fit_exometabolite_data:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'fit_exometabolite_data');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.fit_exometabolite_data",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'fit_exometabolite_data',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method fit_exometabolite_data",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'fit_exometabolite_data',
 				       );
     }
 }
@@ -2426,7 +2944,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2443,7 +2963,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2524,7 +3046,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2541,7 +3065,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
@@ -2622,7 +3148,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 ModelTsvFiles is a reference to a hash where the following keys are defined:
 	compounds_file has a value which is a fba_tools.File
 	reactions_file has a value which is a fba_tools.File
@@ -2642,7 +3170,9 @@ ModelObjectSelectionParams is a reference to a hash where the following keys are
 	workspace_name has a value which is a string
 	model_name has a value which is a string
 	save_to_shock has a value which is a fba_tools.boolean
+	fulldb has a value which is a fba_tools.bool
 boolean is an int
+bool is an int
 ModelTsvFiles is a reference to a hash where the following keys are defined:
 	compounds_file has a value which is a fba_tools.File
 	reactions_file has a value which is a fba_tools.File
@@ -4629,6 +5159,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
 	workspace has a value which is a string
+	report_workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -4657,6 +5188,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
 	workspace has a value which is a string
+	report_workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -5182,6 +5714,37 @@ a string
 
 
 
+=head2 metabolome_id
+
+=over 4
+
+
+
+=item Description
+
+A string representing a metabolome matrix id.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
 =head2 reaction_id
 
 =over 4
@@ -5666,6 +6229,76 @@ new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 new_fba_ref has a value which is a fba_tools.ws_fba_id
 number_gapfilled_reactions has a value which is an int
 number_removed_biomass_compounds has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 BuildPlantMetabolicModelParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+genome_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+genome_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 BuildPlantMetabolicModelResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 
 
 =end text
@@ -6586,8 +7219,7 @@ new_report_ref has a value which is a fba_tools.ws_report_id
 
 <pre>
 a reference to a hash where the following keys are defined:
-genome_id has a value which is a fba_tools.genome_id
-media_output_id has a value which is a fba_tools.media_id
+genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 genome_workspace has a value which is a fba_tools.workspace_name
 workspace has a value which is a fba_tools.workspace_name
 
@@ -6598,8 +7230,7 @@ workspace has a value which is a fba_tools.workspace_name
 =begin text
 
 a reference to a hash where the following keys are defined:
-genome_id has a value which is a fba_tools.genome_id
-media_output_id has a value which is a fba_tools.media_id
+genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
 genome_workspace has a value which is a fba_tools.workspace_name
 workspace has a value which is a fba_tools.workspace_name
 
@@ -6632,6 +7263,240 @@ new_report_ref has a value which is a fba_tools.ws_report_id
 
 a reference to a hash where the following keys are defined:
 new_report_ref has a value which is a fba_tools.ws_report_id
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictMetaboliteBiosynthesisPathwayInput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+target_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+source_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+fba_output_id has a value which is a fba_tools.fba_id
+workspace has a value which is a fba_tools.workspace_name
+thermodynamic_constraints has a value which is a fba_tools.bool
+feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+expseries_id has a value which is a fba_tools.expseries_id
+expseries_workspace has a value which is a fba_tools.workspace_name
+expression_condition has a value which is a string
+exp_threshold_percentile has a value which is a float
+exp_threshold_margin has a value which is a float
+activation_coefficient has a value which is a float
+omega has a value which is a float
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+target_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+source_metabolite_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+fba_output_id has a value which is a fba_tools.fba_id
+workspace has a value which is a fba_tools.workspace_name
+thermodynamic_constraints has a value which is a fba_tools.bool
+feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+expseries_id has a value which is a fba_tools.expseries_id
+expseries_workspace has a value which is a fba_tools.workspace_name
+expression_condition has a value which is a string
+exp_threshold_percentile has a value which is a float
+exp_threshold_margin has a value which is a float
+activation_coefficient has a value which is a float
+omega has a value which is a float
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictMetaboliteBiosynthesisPathwayResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+
+
+=end text
+
+=back
+
+
+
+=head2 BuildMetagenomeMetabolicModelParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+input_ref has a value which is a string
+input_workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+gapfill_model has a value which is a fba_tools.bool
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+input_ref has a value which is a string
+input_workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+gapfill_model has a value which is a fba_tools.bool
+
+
+=end text
+
+=back
+
+
+
+=head2 FitExometaboliteDataParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+source_fbamodel_id has a value which is a fba_tools.fbamodel_id
+source_fbamodel_workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+metabolome_id has a value which is a fba_tools.metabolome_id
+metabolome_workspace has a value which is a fba_tools.workspace_name
+metabolome_condition has a value which is a string
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+minimum_target_flux has a value which is a float
+omnidirectional has a value which is a fba_tools.bool
+target_reaction has a value which is a fba_tools.reaction_id
+feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+source_fbamodel_id has a value which is a fba_tools.fbamodel_id
+source_fbamodel_workspace has a value which is a fba_tools.workspace_name
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+metabolome_id has a value which is a fba_tools.metabolome_id
+metabolome_workspace has a value which is a fba_tools.workspace_name
+metabolome_condition has a value which is a string
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+minimum_target_flux has a value which is a float
+omnidirectional has a value which is a fba_tools.bool
+target_reaction has a value which is a fba_tools.reaction_id
+feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
+reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
+media_supplement_list has a value which is a reference to a list where each element is a fba_tools.compound_id
+
+
+=end text
+
+=back
+
+
+
+=head2 FitExometaboliteDataResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+number_gapfilled_reactions has a value which is an int
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+number_gapfilled_reactions has a value which is an int
 
 
 =end text
@@ -7138,6 +8003,7 @@ a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 model_name has a value which is a string
 save_to_shock has a value which is a fba_tools.boolean
+fulldb has a value which is a fba_tools.bool
 
 </pre>
 
@@ -7149,6 +8015,7 @@ a reference to a hash where the following keys are defined:
 workspace_name has a value which is a string
 model_name has a value which is a string
 save_to_shock has a value which is a fba_tools.boolean
+fulldb has a value which is a fba_tools.bool
 
 
 =end text
@@ -7466,6 +8333,7 @@ media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
 workspace has a value which is a string
+report_workspace has a value which is a string
 
 </pre>
 
@@ -7486,6 +8354,7 @@ media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
 workspace has a value which is a string
+report_workspace has a value which is a string
 
 
 =end text

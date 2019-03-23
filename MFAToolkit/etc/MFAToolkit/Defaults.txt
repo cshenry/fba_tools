@@ -18,8 +18,8 @@ database|DefaultPaths|0|Database information
 entities to process|ProcessList.txt|The name of a file containing a list of the compounds and reactions to be processed by the MFAToolkit|Database information
 overide errors|1|This binary parameter indicates that errors will be ignored and energies will be calculated regardless of whether or not there is an error for the reaction or compound.|Code operation preferences
 simple constraint and variable names|0|Indicates that complex and more descriptive variable and constraint names should not be used.
-kegg cofactor pairs|cpd00097 cpd00986;cpd00109 cpd00110;cpd11620 cpd11621;cpd00228 cpd00823;cpd11665 cpd11669;cpd00733 cpd00734;cpd11807 cpd11808;cpd00364 cpd00415;cpd12505 cpd12576;cpd12669 cpd12694;cpd00003 cpd00004;cpd00005 cpd00006|0|Cofactor data
-kegg cofactors|cpd00001;cpd00009;cpd00010;cpd00011;cpd00012;cpd00013;cpd00015;cpd11609;cpd11610;cpd00067;cpd00099;cpd00099;cpd12713;cpd00242;cpd00007;cpd00025|0|Cofactor data
+kegg cofactor pairs|cpd00062 cpd00014;cpd00014 cpd00091;cpd00062 cpd00091;cpd00052 cpd00096;cpd00096 cpd00046;cpd00052 cpd00046;cpd00038 cpd00031;cpd00031 cpd00126;cpd00038 cpd00126;cpd00002 cpd00008;cpd00008 cpd00018;cpd00002 cpd00018;cpd00097 cpd00986;cpd00109 cpd00110;cpd11620 cpd11621;cpd00228 cpd00823;cpd11665 cpd11669;cpd00733 cpd00734;cpd11807 cpd11808;cpd00364 cpd00415;cpd12505 cpd12576;cpd12669 cpd12694;cpd00003 cpd00004;cpd00005 cpd00006|0|Cofactor data
+kegg cofactors|cpd00074_c0;cpd03422_c0;cpd01997_c0;cpd12370_c0;cpd15666_c0;cpd00008_c0;cpd11574_c0;pd10516_c0;cpd10515_c0;cpd00971_c0;cpd00254_c0;cpd00244_c0;cpd00205_c0;cpd00149_c0;cpd00063_c0;cpd00058_c0;cpd00048_c0;cpd00034_c0;cpd00030_c0;cpd00047_c0;cpd15560_c0;cpd12370_c0;cpd00001_c0;cpd00009_c0;cpd00010_c0;cpd00011_c0;cpd00012_c0;cpd00013_c0;cpd00015_c0;cpd11609_c0;cpd11610_c0;cpd00067_c0;cpd00099_c0;cpd12713_c0;cpd00242_c0;cpd00007_c0;cpd00025_c0|0|Cofactor data
 indicate cofactors in reaction equation|0|This binary parameter indicates whether or not cofactors in reactions should be denoted with capital or lowercase compartment notation.|Cofactor data
 calculate properties from groups|0|This binary parameter indicates whether or not the compound charge and deltaG should be recalculated based on the properties of the structural cues contained in the compound.|Compound calculation specifications
 identify dead ends|0|This binary parameter indicates if dead ends in the reaction network should be identified by scanning the reaction network for intracellular compounds that are produced and not consumed or consumed and not produced.|Compound calculation specifications
@@ -212,7 +212,7 @@ pathway target compounds|none|"This is some reference to the compound(s) at whic
 max pathways to print|1000|This parameter indicates the maximum number of pathways that should be printed in the pathway output file.|Pathway output specifications
 max search time|500|This is the maximum period of time (in seconds) that will be spent on the pathway search.|Pathway output specifications
 Print overall reaction data|1|Indicates that the overall reaction for each pathway should be printed.|Pathway output specifications
-max length interval|5|This is the maximum difference between the longest printed pathway and the shortest printed pathway.|Pathway output specifications
+max length interval|0|This is the maximum difference between the longest printed pathway and the shortest printed pathway.|Pathway output specifications
 Min external pH|7.5|This is the minimum value for the extracellular pH. This parameter may become obselete as this info is stored in the compartment file.|Physical parameters
 pH|7|This is the pH used for all thermodynamic calculations.|Physical parameters
 allow pH to vary|0|Physical parameters

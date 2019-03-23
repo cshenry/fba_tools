@@ -86,6 +86,13 @@ parameters :
         long-hint : |
             Check this box to simulate FBA on single gene knockouts for all the genes in the model, identifying genes associated with essential reactions that carry fluxes on a given media condition
 
+    predict_community_composition :
+        ui-name : |
+            Predict community composition
+        short-hint : |
+            Only applies to compartmentalized community models - simulates those models with flexible rather than fixed species compositions
+        long-hint : |
+            Only applies to compartmentalized community models - simulates those models with flexible rather than fixed species compositions
 
     max_s_uptake :
         ui-name : |
@@ -229,12 +236,12 @@ parameters :
 icon: fba-teal.png
 
 description : |
-    
+
     <p>This method constructs a model of how metabolites flow through the metabolic network of a microbe or a plant. Flux Balance Analysis (FBA) is a constraint-based approach that estimates growth-optimal fluxes through all reactions in the metabolic network, thereby making it possible to estimate the growth rate of an organism (the rate of biomass production) or the rate of production of a given metabolic output on a specified media.This method allows you to analyze the organism''s growth on different substrates and to evaluate the reactions and metabolites that carry fluxes in each growth condition.</p>
     <p>Begin by selecting the metabolic model of organism that you want to perform the Flux Balance Analysis upon. Then, specify the media on which you will grow your organism. In KBase, the media object contains the chemical compounds on which you want to analyze the growth of your organism. KBase provides users with more than 500 commonly used media conditions to use when running FBA. These media formulations can be added to your narrative by clicking the “Add Data” button, navigating to the “Public” tab, filtering for “Media” using the dropdown menu in the top left corner, and selecting a desired media type.  In addition, users can build and upload their own custom media formulations. KBase will then simulate flux balance analysis with the model, enabling a wide range of custom FBA algorithms, including flux variability analysis, knockout of all individual genes, fitting to expression data, and Probabilistic Regulation of Metabolism (PROM). This method produces an FBA object, which may be exported in Excel or SBML format.</p>
-    
+
     <p><a href="http://kbase.us/run-flux-balance-analysis-method/" target="_blank">Tutorial for Run Flux Balance Analysis Method</a></p>
-    
+
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Chris Henry, Janaka Edirisinghe, Sam Seaver, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
 
@@ -242,9 +249,9 @@ publications :
     -
         pmid: 20802497
         display-text: |
-            Henry CS, DeJongh M, Best AA, Frybarger PM, Linsay B, et al. (2010) High-throughput generation, optimization and analysis of genome-scale metabolic models. Nat Biotechnol 28: 977-982. doi:10.1038/nbt.1672.
+            Henry CS, DeJongh M, Best AA, Frybarger PM, Linsay B, Stevens RL. High-throughput generation, optimization and analysis of genome-scale metabolic models. Nat Biotechnol. 2010;28: 977–982. doi:10.1038/nbt.1672
         link: http://www.ncbi.nlm.nih.gov/pubmed/20802497
     -
         display-text: |
-            Orth JD, Thiele I, Palsson BØ (2010) What is flux balance analysis? Nature Biotechnology 28: 245–248. doi:10.1038/nbt.1614.
+             Orth JD, Thiele I, Palsson BØ. What is flux balance analysis? Nature Biotechnology. 2010;28: 245–248. doi:10.1038/nbt.1614
         link: http://www.nature.com/nbt/journal/v28/n3/abs/nbt.1614.html

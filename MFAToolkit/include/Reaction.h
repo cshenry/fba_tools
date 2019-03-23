@@ -50,6 +50,10 @@ struct GeneLogicNode;
 #define RXN_COMPARTMENT 14
 #define RXN_QUERY 100
 #define RXN_COMPLEXES 15
+#define RXN_KPRIME 16
+#define RXN_CONCENTRATION 17
+#define RXN_KMCPD 18
+#define RXN_TURNOVER 19
 
 class Reaction : public Identity{
 private:
@@ -59,6 +63,7 @@ private:
 	vector<Species*> Reactants;
 	vector<double> ReactCoef;
 	vector<int> ReactCompartments;
+	vector<bool> ReactantCofactors;
 
 	int Type; //0 for reversible, 1 for forward, 2 for backward
 	int Compartment;
@@ -70,7 +75,7 @@ private:
 
 	//This is where the gene dependancies for the reaction are stored
 	//This first vector hold independant genes while each second vector contains gene components of a complex
-	vector<vector<vector<Gene*> > > gprdata;
+
 	vector<vector<Gene*> > GeneDependency;
 	map<Gene*, int, std::less<Gene*> > GeneIndecies;
 	vector<GeneLogicNode*> LogicNodes;
@@ -86,7 +91,10 @@ private:
 	list<Pathway*>* PathwayList;
 	vector<MFAVariable*> ComplexMFAVariables;
 public:
+	vector<vector<vector<Gene*> > > gprdata;
 	map<int , MFAVariable* , std::less<int> > MFAVariables;
+	LinEquation* MassBalanceConstraint;
+	LinEquation* DegradationConstraint;
 	Reaction(vector<string>* InHeaders, string Fileline, Data* InData);
 	Reaction(string Filename, Data* InData);
 	Reaction(string id,string equation,string name,Data* InData);
@@ -113,6 +121,18 @@ public:
 	void SetComplexes(string InComplexes);
 
 	//Output functions
+	double kprime;
+	double turnover;
+	vector<Species*> kmcpd;
+	vector<double> kmlist;
+	double concentration;
+	MFAVariable* ProteinProd;
+	MFAVariable* ProteinDeg;
+	vector<LinEquation*> ComplexFluxConstraints;
+	vector<vector<LinEquation*>* > ForFluxConstraints;
+	vector<vector<LinEquation*>* > RevFluxConstraints;
+	LinEquation* PrimaryForFluxConstraint;
+	LinEquation* PrimaryRevFluxConstraint;
 	int FType();
 	Data* FMainData();
 	bool IsReactantCofactor(int InIndex);
@@ -198,6 +218,8 @@ public:
 	void CreateReactionDrainFluxes();
 	void DecomposeToPiecewiseFluxBounds(double threshold,int minimum,MFAProblem* InProblem);
 	void CreateMFAVariables(OptimizationParameter* InParameters);
+	void CreateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem);
+	void UpdateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem);
 	void BuildReactionConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem);
 	void UpdateBounds(int VarType, double Min, double Max, bool ApplyToMinMax = false);
 	void AddUseVariables(OptimizationParameter* InParameters);
