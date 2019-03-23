@@ -73,10 +73,10 @@ sub export {
 sub printTSV {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tgrowth\tsimulated growth\tsimulated growth fraction\tgapfilled reaction count\tgapfilled reactions"];
+	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\taddtlCpdBounds\tcustomReactionBounds\tgrowth\tsimulated growth\tsimulated growth fraction\tgapfilled reaction count\tgapfilled reactions"];
 	my $phenotypes = $self->phenotypeSimulations();
 	for (my $i=0; $i < @{$phenotypes}; $i++) {
-		push(@{$output},$phenotypes->[$i]->phenotype()->geneKOString()."\t".$phenotypes->[$i]->phenotype()->media()->_wsworkspace()."\t".$phenotypes->[$i]->phenotype()->media()->_wsname()."\t".$phenotypes->[$i]->phenotype()->additionalCpdString()."\t".$phenotypes->[$i]->phenotype()->normalizedGrowth()."\t".$phenotypes->[$i]->simulatedGrowth()."\t".$phenotypes->[$i]->simulatedGrowthFraction()."\t".$phenotypes->[$i]->numGapfilledReactions()."\t".join(";",@{$phenotypes->[$i]->gapfilledReactions()}));
+		push(@{$output},$phenotypes->[$i]->phenotype()->geneKOString()."\t".$phenotypes->[$i]->phenotype()->media()->_wsworkspace()."\t".$phenotypes->[$i]->phenotype()->media()->_wsname()."\t".$phenotypes->[$i]->phenotype()->additionalCpdString()."\t".$phenotypes->[$i]->phenotype()->compoundBoundsString()."\t".$phenotypes->[$i]->phenotype()->reactionBoundsString()."\t".$phenotypes->[$i]->phenotype()->normalizedGrowth()."\t".$phenotypes->[$i]->simulatedGrowth()."\t".$phenotypes->[$i]->simulatedGrowthFraction()."\t".$phenotypes->[$i]->numGapfilledReactions()."\t".join(";",@{$phenotypes->[$i]->gapfilledReactions()}));
 	}
 	if ($args->{file} == 1) {
 		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id().".tsv",$output);
@@ -120,6 +120,15 @@ sub export_text {
     		"\t".$pheno->phenoclass()."\n";
     }
     return $output;
+}
+
+sub translate_to_localrefs {
+	my $self = shift;
+	for (my $j = 0; $j < @{$self->phenotypeSimulations()}; $j++) {
+		if ($self->phenotypeSimulations()->[$j]->phenotype_ref() =~ m/\/([^\/]+)$/) {
+			$self->phenotypeSimulations()->[$j]->phenotype_ref("~/phenotypeset/phenotypes/id/" . $1);
+		}
+	}
 }
 
 __PACKAGE__->meta->make_immutable;

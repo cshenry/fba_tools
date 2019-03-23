@@ -136,6 +136,15 @@ parameters :
         long-hint : |
             Automatically gapfill model on any condition where it fails to grow and the cell is observed to grow, and integrate all gapfilled reactions into the model. Results currently appear in the console log.
 
+    save_fluxes :
+        ui-name : |
+            Save flux values?
+        short-hint : |
+            Saves flux values for all phenotype simulations with nonzero growth in phenotype simulation set object output
+        long-hint : |
+            Saves flux values for all phenotype simulations with nonzero growth in phenotype simulation set object output
+
+
 icon: fba-teal.png
 
 description : |

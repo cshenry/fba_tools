@@ -17,11 +17,13 @@
             },
             {
                "input_parameter" : "fbamodel_id",
-               "target_property" : "fbamodel_id"
+               "target_property" : "fbamodel_id",
+               "target_type_transform": "resolved-ref"
             },
             {
                "target_property" : "media_id",
-               "input_parameter" : "media_id"
+               "input_parameter" : "media_id",
+               "target_type_transform": "resolved-ref"
             },
             {
                "input_parameter" : "target_reaction",
@@ -61,7 +63,8 @@
             },
             {
                "input_parameter" : "expseries_id",
-               "target_property" : "expseries_id"
+               "target_property" : "expseries_id",
+               "target_type_transform": "ref"
             },
             {
                "input_parameter" : "expression_condition",
@@ -150,7 +153,8 @@
       {
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseBiochem.Media"
+               "KBaseBiochem.Media",
+               "KBaseBiochem.MediaSet"
             ]
          },
          "advanced" : false,

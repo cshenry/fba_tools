@@ -3733,7 +3733,7 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 			LoadConstToSolver(this->ObjectiveConstraint->Index);
 			this->SetMax();
 			LoadObjective();
-			NewSolution = RunSolver(false,false,false);
+			NewSolution = RunSolver(false,true,false);
 			if (NewSolution != NULL && NewSolution->Status == SUCCESS) {
 				WTgrowth = NewSolution->Objective;
 				if (WTgrowth < 1e-7) {
@@ -3781,6 +3781,7 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 					} else {
 						gapfilling.assign("not attempted");
 					}
+					growth = 0;
 				} else {
 					vector<Gene*> KOList;
 					if (InParameters->KOSets[i].size() > 0 && ConvertToLower(InParameters->KOSets[i][0]).compare("none") != 0) {
@@ -3834,29 +3835,35 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 						KOList[j]->SetMark(false);
 					}
 					//Simulating KO if reactions are knocked out. Not simulating otherwise
-					if (KOReactions.size() == 0) {
-						growth = WTgrowth;
-						if (growth > 1e-7 && GetParameter("Combinatorial deletions").compare("none") != 0) {
-							cout << "ComboKO" << endl;
-							CombinatorialKO(1,InData,false);
-							vector<string>* strings = StringToStrings(GetParameter("Essential Gene List"),";");
-							for (int j=0; j < int(strings->size()); j++) {
-								if (essentialGenes.count((*strings)[j]) == 0) {
-									if (newEssentialGenes.length() > 0) {
-										newEssentialGenes.append(";");
+					growth = WTgrowth;
+					if (KOReactions.size() > 0) {
+						NewSolution = RunSolver(false,true,false);
+						growth = NewSolution->Objective;
+					}
+					if (NewSolution != NULL && NewSolution->Status == SUCCESS && growth > 1e-7) {
+						if (GetParameter("Combinatorial deletions").compare("none") != 0) {
+							if (CombinatorialKO(1,InData,false)) {
+								vector<string>* strings = StringToStrings(GetParameter("Essential Gene List"),";");
+								for (int i=0; i < int(strings->size()); i++) {
+									if (essentialGenes.count((*strings)[i]) == 0) {
+										if (newEssentialGenes.length() > 0) {
+											newEssentialGenes.append(";");
+										}
+										newEssentialGenes.append((*strings)[i]);
 									}
-									newEssentialGenes.append((*strings)[j]);
 								}
+								delete strings;
 							}
-							delete strings;
 						}
-						if (growth > 1e-7 && GetParameter("find tight bounds").compare("1") == 0) {
+						//Finding tight bounds if this is also specified
+						if (GetParameter("find tight bounds").compare("1") == 0) {
 							objectiveConstraint->RightHandSide = NewSolution->Objective*0.1;
 							this->LoadConstToSolver(objectiveConstraint->Index);
 							bool currentSense = this->FMax();
 							LinEquation* currObj = this->GetObjective();
 							ObjFunct = NULL;
 							this->FindTightBounds(InData,InParameters,false,true);
+							bool nonContributing = true;
 							for (int j=0; j < FNumVariables(); j++) {
 								if ((GetVariable(j)->AssociatedReaction != NULL && GetVariable(j)->Type == FLUX) || (GetVariable(j)->AssociatedSpecies != NULL && GetVariable(j)->Type == DRAIN_FLUX && GetVariable(j)->Compartment == GetCompartment("c")->Index)) {
 									if (fabs(GetVariable(j)->Max) < 1e-7 && fabs(GetVariable(j)->Min) < 1e-7) {
@@ -3870,6 +3877,9 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 											}
 										}
 										if (databaseID.length() > 0 && inactiveReactions.count(databaseID) == 0) {
+											if (GetVariable(j)->AssociatedReaction != NULL && koReactions.count(databaseID) == 0) {
+												nonContributing = false;
+											}
 											if (newInactiveReactions.length() > 0) {
 												newInactiveReactions.append(";");
 											}
@@ -3877,6 +3887,11 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 										}
 									}
 								}
+							}
+							if (nonContributing && GetParameter("delete noncontributing reactions").compare("1") == 0) {
+								deletedReactions[label] = true;
+								newInactiveReactions.assign("DELETED");
+								rerun = 1;
 							}
 							objectiveConstraint->RightHandSide = -10000;
 							this->LoadConstToSolver(objectiveConstraint->Index);
@@ -3888,84 +3903,38 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 							}
 							this->LoadObjective();
 						}
+						//Adding flux minimization if the user has asked to save fluxes
+						if (InParameters->DoMinimizeFlux == 0 && GetParameter("save phenotype simulation fluxes").compare("1") == 0) {
+							//For flux minimization, we force the current objective to a near maximal value
+							ObjectiveConstraint->RightHandSide = NewSolution->Objective;
+							LinEquation* CurrentObjective = this->ObjFunct;//Backing up old objective
+							this->ObjFunct = NULL;
+							this->AddSumObjective(FLUX,false,false,1,false);
+							this->AddSumObjective(REVERSE_FLUX,false,true,1,false);
+							this->AddSumObjective(FORWARD_FLUX,false,true,1,false);
+							this->SetMin();
+							if (this->Solver != CPLEX) {
+								this->Solver = SOLVER_SCIP;
+							}
+							this->LoadSolver();
+							OptSolutionData* CurrentSolution = RunSolver(true,true,true);
+							CurrentSolution->Objective = CurrentOptimum;
+							ObjFunct = CurrentObjective;
+							if (this->FMax()) {
+								this->SetMax();
+							}
+							LoadObjective();
+						}
+						fluxes = this->fluxToString();
 					} else {
-						NewSolution = RunSolver(false,false,false);
-						if (NewSolution != NULL && NewSolution->Status == SUCCESS) {
-							if (NewSolution->Objective/WTgrowth < 0.9) {
-								cout << "Reduced growth" << endl;
-							}
-							if (InParameters->OptimizeMetabolitesWhenZero && NewSolution->Objective < 1e-7) {
-								string note;
-								CheckIndividualMetaboliteProduction(InData,InParameters,GetParameter("metabolites to optimize"),false,false,note,true);
-								noGrowth = GetParameter("No growth metabolites");
-								this->LoadSolver();
-							} else if (NewSolution->Objective > 1e-7) {
-								if (GetParameter("Combinatorial deletions").compare("none") != 0) {
-									if (CombinatorialKO(1,InData,false)) {
-										vector<string>* strings = StringToStrings(GetParameter("Essential Gene List"),";");
-										for (int i=0; i < int(strings->size()); i++) {
-											if (essentialGenes.count((*strings)[i]) == 0) {
-												if (newEssentialGenes.length() > 0) {
-													newEssentialGenes.append(";");
-												}
-												newEssentialGenes.append((*strings)[i]);
-											}
-										}
-										delete strings;
-									}
-								}
-								if (NewSolution->Objective > 1e-7 && GetParameter("find tight bounds").compare("1") == 0) {
-									objectiveConstraint->RightHandSide = NewSolution->Objective*0.1;
-									this->LoadConstToSolver(objectiveConstraint->Index);
-									bool currentSense = this->FMax();
-									LinEquation* currObj = this->GetObjective();
-									ObjFunct = NULL;
-									this->FindTightBounds(InData,InParameters,false,true);
-									bool nonContributing = true;
-									for (int j=0; j < FNumVariables(); j++) {
-										if ((GetVariable(j)->AssociatedReaction != NULL && GetVariable(j)->Type == FLUX) || (GetVariable(j)->AssociatedSpecies != NULL && GetVariable(j)->Type == DRAIN_FLUX && GetVariable(j)->Compartment == GetCompartment("c")->Index)) {
-											if (fabs(GetVariable(j)->Max) < 1e-7 && fabs(GetVariable(j)->Min) < 1e-7) {
-												string databaseID;
-												if (GetVariable(j)->AssociatedReaction != NULL) {
-													databaseID = GetVariable(j)->AssociatedReaction->GetData("DATABASE",STRING);
-												} else {
-													databaseID = GetVariable(j)->AssociatedSpecies->GetData("DATABASE",STRING);
-													if (compoundsToAssess.count(databaseID) == 0) {
-														databaseID = "";
-													}
-												}
-												if (databaseID.length() > 0 && inactiveReactions.count(databaseID) == 0 && databaseID.compare(InParameters->labels[i]) != 0) {
-													if (GetVariable(j)->AssociatedReaction != NULL && koReactions.count(databaseID) == 0) {
-														nonContributing = false;
-													}
-													if (newInactiveReactions.length() > 0) {
-														newInactiveReactions.append(";");
-													}
-													newInactiveReactions.append(databaseID);
-												}
-											}
-										}
-									}
-									if (nonContributing && GetParameter("delete noncontributing reactions").compare("1") == 0) {
-										deletedReactions[label] = true;
-										newInactiveReactions.assign("DELETED");
-										rerun = 1;
-									}
-									objectiveConstraint->RightHandSide = -10000;
-									this->LoadConstToSolver(objectiveConstraint->Index);
-									this->AddObjective(currObj);
-									if (currentSense) {
-										this->SetMax();
-									} else {
-										this->SetMin();
-									}
-									this->LoadObjective();
-								}
-							}
-							growth = NewSolution->Objective;
+						growth = 0;
+						if (NewSolution != NULL && NewSolution->Status == SUCCESS && InParameters->OptimizeMetabolitesWhenZero) {
+							string note;
+							CheckIndividualMetaboliteProduction(InData,InParameters,GetParameter("metabolites to optimize"),false,false,note,true);
+							noGrowth = GetParameter("No growth metabolites");
+							this->LoadSolver();
 						}
 					}
-					fluxes = this->fluxToString();
 				}
 			}
 		}
@@ -3988,8 +3957,10 @@ int MFAProblem::RunDeletionExperiments(Data* InData,OptimizationParameter* InPar
 		newLine.append(newEssentialGenes);
 		newLine.append("\t");
 		newLine.append(gapfilling);
-		//newLine.append("\t");
-		//newLine.append(fluxes);
+		if (GetParameter("save phenotype simulation fluxes").compare("1") == 0) {
+			newLine.append("\t");
+			newLine.append(fluxes);
+		}
 		cout << newLine << endl;
 		outputVector.push_back(newLine);
 		if (newInactiveReactions.compare("DELETED") == 0) {
@@ -4238,7 +4209,7 @@ int MFAProblem::LoadAdditionalReactions(Data* InData,OptimizationParameter* InPa
 }
 
 int MFAProblem::BuildCoreProblem(Data* InData,OptimizationParameter*& InParameters) {
-	this->LoadBiomassDrainReactions(InData,InParameters);
+	//this->LoadBiomassDrainReactions(InData,InParameters);
 	this->LoadAdditionalReactions(InData,InParameters);
 	if (InParameters == NULL) {
 		InParameters = ReadParameters();
@@ -7037,7 +7008,7 @@ int MFAProblem::CompleteGapFilling(Data* InData, OptimizationParameter* InParame
 	}
 	ClearSolutions();
 	//First we load the complete reaction list from file
-	this->LoadBiomassDrainReactions(InData,InParameters);
+	//this->LoadBiomassDrainReactions(InData,InParameters);
 	if (GetParameter("Add DB reactions for gapfilling").compare("1") == 0) {
 		if (this->LoadGapFillingReactions(InData,InParameters) != SUCCESS) {
 			return FAIL;
@@ -8595,21 +8566,30 @@ int MFAProblem::ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& Curre
 	this->ObjFunct = InitializeLinEquation("minimize slack variables",0);
 	vector<MFAVariable*> biomass_supplies;
 	this->SetMin();
+	vector<MFAVariable*> off_variables;
+	vector<double> original_lower_bounds;
+	vector<double> original_upper_bounds;
 	for (int i=0; i < int(this->Variables.size()); i++) {
 		if (this->Variables[i]->Exclude == false && (this->Variables[i]->Type == FLUX || this->Variables[i]->Type == FORWARD_FLUX || this->Variables[i]->Type == REVERSE_FLUX)) {
+			cout << this->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING) << "\t" << CurrentSolution->SolutionData[this->Variables[i]->Index] << endl;
 			if (CurrentSolution->SolutionData[this->Variables[i]->Index] > MFA_ZERO_TOLERANCE || CurrentSolution->SolutionData[this->Variables[i]->Index] < -MFA_ZERO_TOLERANCE) {
+				cout << "test1;";
 				if (!this->Variables[i]->AssociatedReaction->IsBiomassReaction()) {
+					cout << "test2;";
 					MFAVariable* currentvar = this->Variables[i]->AssociatedReaction->GetMFAVar(REACTION_SLACK);
 					if (currentvar != NULL) {
+						cout << "test3;";
 						this->ObjFunct->Variables.push_back(currentvar);
 						this->ObjFunct->Coefficient.push_back(1);
 						if (this->Variables[i]->Type == FORWARD_FLUX) {
+							cout << "test4;";
 							currentvar = this->Variables[i]->AssociatedReaction->GetMFAVar(REVERSE_FLUX);
 							if (currentvar != NULL) {
 								currentvar->UpperBound = 0;
 								currentvar->LowerBound = 0;
 							}
 						} else if (this->Variables[i]->Type == REVERSE_FLUX) {
+							cout << "test5;";
 							currentvar = this->Variables[i]->AssociatedReaction->GetMFAVar(FORWARD_FLUX);
 							if (currentvar != NULL) {
 								currentvar->UpperBound = 0;
@@ -8618,7 +8598,12 @@ int MFAProblem::ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& Curre
 						}
 					}
 				}
+			} else {
+				off_variables.push_back(this->Variables[i]);
+				original_lower_bounds.push_back(this->Variables[i]->LowerBound);
+				original_upper_bounds.push_back(this->Variables[i]->UpperBound);
 			}
+			cout << endl;
 		}
 	}
 	for (int i=0; i < int(this->Variables.size()); i++) {
@@ -8639,10 +8624,15 @@ int MFAProblem::ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& Curre
 	if(!OpenOutput(output,(FOutputFilepath()+"ReactionSensitivity.txt").data(),false)) {
 		return FAIL;
 	}
-	output << "Reaction\tBiomassAdj\tCoupledReactions" << endl;
+	output << "Reaction\tBiomassAdjMin\tCoupledReactionsMin\tBiomassAdj\tCoupledReactions" << endl;
 	for (int i=0; i < int(this->ObjFunct->Variables.size()); i++) {
 		if (this->ObjFunct->Coefficient[i] == 100) {
 			break;
+		}
+		for (int j=0; j < int(off_variables.size()); j++) {
+			off_variables[j]->LowerBound = 0;
+			off_variables[j]->UpperBound = 0;
+			LoadVariable(off_variables[j]->Index);
 		}
 		Reaction* currentreaction = this->ObjFunct->Variables[i]->AssociatedReaction;
 		cout << "Iteration " << i << " " << currentreaction->GetData("DATABASE",STRING) << endl;
@@ -8684,22 +8674,54 @@ int MFAProblem::ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& Curre
 			LoadSolver();
 			NewSolution = this->RunSolver(false,false,false);
 		}
+		string couplereactions("NOSOLUTION");
+		string coupledbiomass("NOSOLUTION");
 		if (NewSolution->Status == SUCCESS) {
 			//Compare current slacks against old slacks and record all new ones
-			string coupledreactions;
+			couplereactions.assign("");
+			coupledbiomass.assign("");
 			for (int j=0; j < int(this->ObjFunct->Variables.size()); j++) {
 				if (i != j && NewSolution->SolutionData[this->ObjFunct->Variables[j]->Index] > MFA_ZERO_TOLERANCE) {
 					if (this->ObjFunct->Coefficient[j] == 100) {
-						output << this->ObjFunct->Variables[j]->AssociatedReaction->GetData("DATABASE",STRING) << ";";
+						coupledbiomass.append(this->ObjFunct->Variables[j]->AssociatedReaction->GetData("DATABASE",STRING));
+						coupledbiomass.append(";");
 					} else {
-						coupledreactions.append(this->ObjFunct->Variables[j]->AssociatedReaction->GetData("DATABASE",STRING));
-						coupledreactions.append(";");
+						couplereactions.append(this->ObjFunct->Variables[j]->AssociatedReaction->GetData("DATABASE",STRING));
+						couplereactions.append(";");
 					}
 				}
 			}
-			output << "\t" << coupledreactions;
 		}
-		output << endl;
+		output << coupledbiomass << "\t" << couplereactions << "\t";
+		for (int j=0; j < int(off_variables.size()); j++) {
+			off_variables[j]->LowerBound = original_lower_bounds[j];
+			off_variables[j]->UpperBound = original_upper_bounds[j];
+			LoadVariable(off_variables[j]->Index);
+		}
+		NewSolution = this->RunSolver(false,false,false);
+		if (NewSolution->Status != SUCCESS) {
+			LoadSolver();
+			NewSolution = this->RunSolver(false,false,false);
+		}
+		couplereactions.assign("NOSOLUTION");
+		coupledbiomass.assign("NOSOLUTION");
+		if (NewSolution->Status == SUCCESS) {
+			//Compare current slacks against old slacks and record all new ones
+			couplereactions.assign("");
+			coupledbiomass.assign("");
+			for (int j=0; j < int(this->ObjFunct->Variables.size()); j++) {
+				if (i != j && NewSolution->SolutionData[this->ObjFunct->Variables[j]->Index] > MFA_ZERO_TOLERANCE) {
+					if (this->ObjFunct->Coefficient[j] == 100) {
+						coupledbiomass.append(this->ObjFunct->Variables[j]->AssociatedReaction->GetData("DATABASE",STRING));
+						coupledbiomass.append(";");
+					} else {
+						couplereactions.append(this->ObjFunct->Variables[j]->AssociatedReaction->GetData("DATABASE",STRING));
+						couplereactions.append(";");
+					}
+				}
+			}
+		}
+		output << coupledbiomass << "\t" << couplereactions << endl;
 		for (int j=0; j < int(fluxvars.size()); j++) {
 			fluxvars[j]->UpperBound = oldupperbound[j];
 			fluxvars[j]->LowerBound = oldlowerbound[j];

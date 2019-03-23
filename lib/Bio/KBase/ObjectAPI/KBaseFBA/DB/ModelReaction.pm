@@ -32,6 +32,11 @@ has pathway => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute
 has aliases => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has gapfill_data => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 has edits => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has displayID => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has imported_gpr => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has dblinks => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has string_attributes => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has numerical_attributes => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
 has modelReactionReagents => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(ModelReactionReagent)', metaclass => 'Typed', reader => '_modelReactionReagents', printOrder => '-1');
@@ -174,9 +179,47 @@ my $attributes = [
             'type' => 'HashRef',
             'perm' => 'rw'
           },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'displayID',
+            'type' => 'Str',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'imported_gpr',
+            'type' => 'Str',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'dblinks',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'string_attributes',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'numerical_attributes',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
+          }
         ];
 
-my $attribute_map = {protons => 0, reaction_ref => 1, direction => 2, modelcompartment_ref => 3, maxforflux => 4, reference => 5, id => 6, maxrevflux => 7, name => 8, probability => 9, pathway => 10, aliases => 11,gapfill_data => 12,edits => 13};
+my $attribute_map = {protons => 0, reaction_ref => 1, direction => 2, modelcompartment_ref => 3, maxforflux => 4, reference => 5, id => 6, maxrevflux => 7, name => 8, probability => 9, pathway => 10, aliases => 11,gapfill_data => 12,edits => 13,displayID => 14,imported_gpr => 15,dblinks => 16,string_attributes => 17,numerical_attributes => 18};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

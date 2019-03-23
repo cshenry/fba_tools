@@ -7,6 +7,8 @@ use Workspace::WorkspaceClient;
 our $ws_client = undef;
 our $ga_client = undef;
 our $ac_client = undef;
+our $rast_client = undef;
+our $handle_client = undef;
 our $data_file_client = undef;
 our $objects_created = [];
 
@@ -62,7 +64,7 @@ sub create_report {
 			description => "Debug file"
 		});
 	};
-	return $kr->create_extended_report({
+	my $data = {
 		message => Bio::KBase::utilities::report_message(),
         objects_created => $objects_created,
         warnings => $parameters->{warnings},
@@ -72,7 +74,8 @@ sub create_report {
         file_links => Bio::KBase::utilities::report_files(),
         report_object_name => $parameters->{report_object_name},
         workspace_name => $parameters->{workspace_name}
-	});
+	};
+	return $kr->create_extended_report($data);
 }
 
 sub create_context_from_client_config {
@@ -99,10 +102,11 @@ sub create_context_from_client_config {
 sub ws_client {
 	my($parameters) = @_;
 	$parameters = Bio::KBase::utilities::args($parameters,[],{
-		refresh => 0
+		refresh => 0,
+		url => Bio::KBase::utilities::utilconf("workspace-url")
 	});
 	if ($parameters->{refresh} == 1 || !defined($ws_client)) {
-		$ws_client = new Workspace::WorkspaceClient(Bio::KBase::utilities::utilconf("workspace-url"),token => Bio::KBase::utilities::token());
+		$ws_client = new Workspace::WorkspaceClient($parameters->{url},token => Bio::KBase::utilities::token());
 	}
 	return $ws_client;
 }
@@ -114,9 +118,21 @@ sub ga_client {
 	});
 	if ($parameters->{refresh} == 1 || !defined($ga_client)) {
 		require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-		$ga_client = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"));
+		$ga_client = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ga_client;
+}
+
+sub rast_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($rast_client)) {
+		require "Bio/KBase/GenomeAnnotation/Client.pm";
+		$rast_client = new Bio::KBase::GenomeAnnotation::Client("http://tutorial.theseed.org/services/genome_annotation");
+	}
+	return $rast_client;
 }
 
 sub ac_client {
@@ -126,9 +142,21 @@ sub ac_client {
 	});
 	if ($parameters->{refresh} == 1 || !defined($ac_client)) {
 		require "AssemblyUtil/AssemblyUtilClient.pm";
-		$ac_client = new AssemblyUtil::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"));
+		$ac_client = new AssemblyUtil::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ac_client;
+}
+
+sub handle_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($handle_client)) {
+		require "Bio/KBase/HandleService.pm";
+		$handle_client = new Bio::KBase::HandleService(Bio::KBase::utilities::conf("fba_tools","handle-service-url"),token => Bio::KBase::utilities::token());
+	}
+	return $handle_client;
 }
 
 sub get_object {

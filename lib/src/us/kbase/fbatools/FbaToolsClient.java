@@ -308,6 +308,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: view_flux_network</p>
+     * <pre>
+     * Merge two or more metabolic models into a compartmentalized community model
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.ViewFluxNetworkParams ViewFluxNetworkParams}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.ViewFluxNetworkResults ViewFluxNetworkResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public ViewFluxNetworkResults viewFluxNetwork(ViewFluxNetworkParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<ViewFluxNetworkResults>> retType = new TypeReference<List<ViewFluxNetworkResults>>() {};
+        List<ViewFluxNetworkResults> res = caller.jsonrpcCall("fba_tools.view_flux_network", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: compare_flux_with_expression</p>
      * <pre>
      * Merge two or more metabolic models into a compartmentalized community model
@@ -340,6 +358,24 @@ public class FbaToolsClient {
         args.add(params);
         TypeReference<List<CheckModelMassBalanceResults>> retType = new TypeReference<List<CheckModelMassBalanceResults>>() {};
         List<CheckModelMassBalanceResults> res = caller.jsonrpcCall("fba_tools.check_model_mass_balance", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: predict_auxotrophy</p>
+     * <pre>
+     * Identifies reactions in the model that are not mass balanced
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.PredictAuxotrophyParams PredictAuxotrophyParams}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.PredictAuxotrophyResults PredictAuxotrophyResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public PredictAuxotrophyResults predictAuxotrophy(PredictAuxotrophyParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<PredictAuxotrophyResults>> retType = new TypeReference<List<PredictAuxotrophyResults>>() {};
+        List<PredictAuxotrophyResults> res = caller.jsonrpcCall("fba_tools.predict_auxotrophy", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 

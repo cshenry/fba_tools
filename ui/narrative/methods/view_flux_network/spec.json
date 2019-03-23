@@ -1,0 +1,67 @@
+{
+   "name" : "view_flux_network",
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "method" : "view_flux_network",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "target_property" : "fba_id",
+               "input_parameter" : "fba_id",
+               "target_type_transform": "resolved-ref"
+            }
+         ],
+         "name" : "fba_tools",
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			}
+         ]
+      }
+   },
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "authors" : [
+      "chenry"
+   ],
+   "widgets" : {
+      "input" : null,
+      "output" : "no-display"
+   },
+   "contact" : "http://kbase.us/contact-us/",
+   "visible" : true,
+   "parameters" : [
+      {
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "id" : "fba_id",
+         "allow_multiple" : false,
+         "optional" : false,
+         "field_type" : "text",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBA"
+            ]
+         }
+      }
+   ],
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker"
+}

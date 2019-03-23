@@ -140,9 +140,40 @@
 			"id" : "add_compound_id",
 			"field_type" : "text",
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"text_options" : {
 				"valid_ws_types" : []
+			}
+		},
+		{
+			"allow_multiple" : false,
+			"optional" : false,
+			"field_type" : "textsubdata",
+			"id" : "add_compartment_id",
+			"advanced" : false,
+			"default_values" : [""],
+			"text_options" : {
+				"valid_ws_types" : []
+			},
+			"textsubdata_options" : {
+				"allow_custom" : false,
+				"show_src_obj" : false,
+				"subdata_selection" : {
+					"parameter_id" : "fbamodel_id",
+					"path_to_subdata" : [
+						"modelcompartments"
+					],
+					"selection_id" : "id",
+					"selection_description" : [
+						"label"
+					],
+					"subdata_included" : [
+						"modelcompartments/[*]/id",
+						"modelcompartments/[*]/label"
+					],
+					"description_template" : "- {{label}}"
+				},
+				"multiselection" : false
 			}
 		},
 		{
@@ -151,7 +182,7 @@
 			"id" : "add_compound_name",
 			"field_type" : "text",
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"text_options" : {
 				"valid_ws_types" : []
 			}
@@ -164,7 +195,7 @@
 			"default_values" : [""],
 			"advanced" : false,
 			"field_type" : "text",
-			"optional" : true,
+			"optional" : false,
 			"allow_multiple" : false
 		},
 		{
@@ -173,7 +204,7 @@
 			"id" : "add_compound_formula",
 			"field_type" : "text",
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"text_options" : {
 				"valid_ws_types" : []
 			}
@@ -540,13 +571,13 @@
 			"id" : "add_reaction_id",
 			"field_type" : "text",
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"text_options" : {
 				"valid_ws_types" : []
 			}
 		},
 		{
-         "optional" : true,
+         "optional" : false,
          "allow_multiple" : false,
          "field_type" : "dropdown",
          "dropdown_options" : {
@@ -573,7 +604,7 @@
          },
          "id" : "add_reaction_direction",
          "advanced" : false,
-         "default_values" : [""],
+         "default_values" : ["="],
          "text_options" : {
             "valid_ws_types" : []
          }
@@ -584,7 +615,7 @@
 			"id" : "add_reaction_name",
 			"field_type" : "text",
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"text_options" : {
 				"valid_ws_types" : []
 			}
@@ -602,38 +633,7 @@
 		},
 		{
 			"allow_multiple" : false,
-			"optional" : true,
-			"field_type" : "textsubdata",
-			"id" : "add_compartment_id",
-			"advanced" : false,
-			"default_values" : [""],
-			"text_options" : {
-				"valid_ws_types" : []
-			},
-			"textsubdata_options" : {
-				"allow_custom" : false,
-				"show_src_obj" : false,
-				"subdata_selection" : {
-					"parameter_id" : "fbamodel_id",
-					"path_to_subdata" : [
-						"modelcompartments"
-					],
-					"selection_id" : "id",
-					"selection_description" : [
-						"label"
-					],
-					"subdata_included" : [
-						"modelcompartments/[*]/id",
-						"modelcompartments/[*]/label"
-					],
-					"description_template" : "- {{label}}"
-				},
-				"multiselection" : false
-			}
-		},
-		{
-			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"field_type" : "textsubdata",
 			"id" : "reaction_compartment_id",
 			"advanced" : false,
@@ -664,7 +664,7 @@
 		},
 		{
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"field_type" : "textsubdata",
 			"id" : "stoich_reaction_id",
 			"advanced" : false,
@@ -695,7 +695,7 @@
 		},
 		{
 			"allow_multiple" : false,
-			"optional" : true,
+			"optional" : false,
 			"field_type" : "textsubdata",
 			"id" : "stoich_compound_id",
 			"advanced" : false,
@@ -732,7 +732,7 @@
 			"default_values" : [""],
 			"advanced" : false,
 			"field_type" : "text",
-			"optional" : true,
+			"optional" : false,
 			"allow_multiple" : false
 		}
 	],
@@ -744,7 +744,8 @@
        "input_mapping": [
 			{
 				"input_parameter": "fbamodel_id",
-				"target_property": "fbamodel_id"
+				"target_property": "fbamodel_id",
+				"target_type_transform": "resolved-ref"
 			},
 			{
 				"input_parameter": "fbamodel_output_id",

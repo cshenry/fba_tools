@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.5.3';
-our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = 'c8042e971c32b9ed927068c086160556d22dd1f5';
+our $VERSION = '1.7.1';
+our $GIT_URL = 'git@github.com:cshenry/fba_tools.git';
+our $GIT_COMMIT_HASH = '287e65f90831e93836d44041b1011ca11af09c5b';
 
 =head1 NAME
 
@@ -25,6 +25,9 @@ use Bio::KBase::ObjectAPI::functions;
 use Bio::KBase::utilities;
 use Bio::KBase::kbaseenv;
 use DataFileUtil::DataFileUtilClient;
+use Bio::KBase::HandleService;
+use Archive::Zip;
+use Data::Dumper;
 
 #Initialization function for call
 sub util_initialize_call {
@@ -41,13 +44,15 @@ sub util_finalize_call {
 	my ($self,$params) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","report_name"],{
 		output => {},
+		direct_html_link_index => undef,
 	});
 	if ((!defined(Bio::KBase::utilities::report_html()) || length(Bio::KBase::utilities::report_html()) == 0) && defined(Bio::KBase::utilities::report_message()) && length(Bio::KBase::utilities::report_message()) > 0) {
 		Bio::KBase::utilities::print_report_message({message => "<p>".Bio::KBase::utilities::report_message()."</p>",append => 1,html => 1});
 	}
 	my $reportout = Bio::KBase::kbaseenv::create_report({
     	workspace_name => $params->{workspace},
-    	report_object_name => $params->{report_name}
+    	report_object_name => $params->{report_name},
+    	direct_html_link_index => $params->{direct_html_link_index}
     });
     $params->{output}->{report_ref} = $reportout->{"ref"};
 	$params->{output}->{report_name} = $params->{report_name};
@@ -57,7 +62,10 @@ sub util_finalize_call {
 }
 
 sub util_store {
-	my ($self) = @_;
+	my ($self,$store) = @_;
+    if (defined($store)) {
+		$self->{_kbase_store} = $store;
+	}
     if (!defined($self->{_kbase_store})) {
     	$self->{_kbase_store} = Bio::KBase::ObjectAPI::KBaseStore->new();
     }
@@ -121,12 +129,19 @@ sub util_get_file_path {
 
 sub util_parse_input_table {
 	my($self,$filename,$columns) = @_;
+	# $columns is a list(string column_name, bool required, ? default_value)
 	if (!-e $filename) {
 		Bio::KBase::utilities::error("Could not find input file:".$filename."!\n");
 	}
 	open(my $fh, "<", $filename) || die "Could not open file ".$filename;
 	my $headingline = <$fh>;
-	$headingline =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+	my @split_text;
+	if (eof $fh){
+		print('Useing alternate parseing');
+		@split_text = split(/\r/, $headingline);
+		$headingline = shift(@split_text)
+	}
+	$headingline =~ tr/\r\n_//d;#This line removes line endings from nix and windows files and underscores
 	my $delim = undef;
 	if ($headingline =~ m/\t/) {
 		$delim = "\\t";
@@ -136,22 +151,37 @@ sub util_parse_input_table {
 	if (!defined($delim)) {
 		Bio::KBase::utilities::error("$filename either does not use commas or tabs as a separator!");
 	}
-	my $headings = [split(/$delim/,$headingline)];
+	# remove capitalization for column matching
+	my $headings = [split(/$delim/,lc($headingline))];
 	my $data = [];
 	while (my $line = <$fh>) {
 		$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
-		push(@{$data},[split(/$delim/,$line)]);
+		#chop up line while accounting for blank lines and leading and trailing spaces
+		push(@{$data},[map{(my $s = $_) =~ s/^\s+|\s+$//g; $s} split(/$delim/,$line)])  if $line;
 	}
 	close($fh);
-	my $headingColums;
+	# fix for \r delimeted files that perl's fh does not recognize
+	if (@split_text) {
+		while (my $line = shift(@split_text)) {
+			$line =~ tr/\r\n//d;#This line removes line endings from nix and windows files
+			#chop up line while accounting for blank lines and leading and trailing spaces
+			push(@{$data}, [map{(my $s = $_) =~ s/^\s+|\s+$//g; $s} split(/$delim/, $line)]) if $line;
+		}
+	}
+	my $headingColumns;
 	for (my $i=0;$i < @{$headings}; $i++) {
-		$headingColums->{$headings->[$i]} = $i;
+		$headingColumns->{$headings->[$i]} = $i;
 	}
 	my $error = 0;
 	for (my $j=0;$j < @{$columns}; $j++) {
-		if (!defined($headingColums->{$columns->[$j]->[0]}) && defined($columns->[$j]->[1]) && $columns->[$j]->[1] == 1) {
-			$error = 1;
-			print "Model file missing required column '".$columns->[$j]->[0]."'!\n";
+		if (!defined($headingColumns->{$columns->[$j]->[0]})){
+			if (defined($columns->[$j]->[1]) && $columns->[$j]->[1] == 1) {
+				$error = 1;
+				print "ERROR: Model file missing required column '" . $columns->[$j]->[0] . "'!\n";
+			} else {
+				print "WARNING: Import file missing optional column '" .
+					$columns->[$j]->[0] . "' Defaults may be used.\n";
+			}
 		}
 	}
 	if ($error == 1) {
@@ -162,12 +192,15 @@ sub util_parse_input_table {
 		my $object = [];
 		for (my $j=0;$j < @{$columns}; $j++) {
 			$object->[$j] = undef;
+			# if default defined, start with default value
 			if (defined($columns->[$j]->[2])) {
 				$object->[$j] = $columns->[$j]->[2];
 			}
-			if (defined($headingColums->{$columns->[$j]->[0]}) && defined($item->[$headingColums->{$columns->[$j]->[0]}])) {
-				$object->[$j] = $item->[$headingColums->{$columns->[$j]->[0]}];
+			#if value defiend in $item, copy it over
+			if (defined($headingColumns->{$columns->[$j]->[0]}) && defined($item->[$headingColumns->{$columns->[$j]->[0]}])) {
+				$object->[$j] = $item->[$headingColumns->{$columns->[$j]->[0]}];
 			}
+			# ? this may have something to do with lists...
 			if (defined($columns->[$j]->[3])) {
 				if (defined($object->[$j]) && length($object->[$j]) > 0) {
 					my $d = $columns->[$j]->[3];
@@ -175,7 +208,7 @@ sub util_parse_input_table {
 				} else {
 					$object->[$j] = [];
 				}
-			}
+			};
 		}
 		push(@{$objects},$object);
 	}
@@ -434,6 +467,7 @@ $params is a fba_tools.BuildMultipleMetabolicModelsParams
 $return is a fba_tools.BuildMultipleMetabolicModelsResults
 BuildMultipleMetabolicModelsParams is a reference to a hash where the following keys are defined:
 	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+	genome_text has a value which is a string
 	genome_workspace has a value which is a fba_tools.workspace_name
 	media_id has a value which is a fba_tools.media_id
 	media_workspace has a value which is a fba_tools.workspace_name
@@ -481,6 +515,7 @@ $params is a fba_tools.BuildMultipleMetabolicModelsParams
 $return is a fba_tools.BuildMultipleMetabolicModelsResults
 BuildMultipleMetabolicModelsParams is a reference to a hash where the following keys are defined:
 	genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+	genome_text has a value which is a string
 	genome_workspace has a value which is a fba_tools.workspace_name
 	media_id has a value which is a fba_tools.media_id
 	media_workspace has a value which is a fba_tools.workspace_name
@@ -550,20 +585,18 @@ sub build_multiple_metabolic_models
     $self->util_initialize_call($params,$ctx);
 	my $orig_genome_workspace = $params->{genome_workspace};
 	my $genomes = $params->{genome_ids};
+	# If user provides a list of genomes in text form, append these to the existing gemome ids
 	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
 	for (my $i=0; $i < @{$new_genome_list}; $i++) {
 		push(@{$genomes},$new_genome_list->[$i]);
 	}
 	my $htmlmessage = "<p>";
+    # run build metabolic model
 	for (my $i=0; $i < @{$genomes}; $i++) {
 		$params->{genome_workspace} = $orig_genome_workspace;
 		$params->{genome_id} = $genomes->[$i];
-		if ($genomes->[$i] =~ m/(\d+)\/(\d+)\/*(\d*)/) {
-			$params->{genome_id} = $2;
-			$params->{genome_workspace} = $1;
-		}
-		$params->{fbamodel_output_id} = $params->{genome_id}.".mdl";
-		print "Now building model of ".$genomes->[$i]."\n";
+		$params->{fbamodel_output_id} = undef;
+		print "Now building model of ".$params->{genome_id}."\n";
 		eval {
 			my $output = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
 		};
@@ -812,7 +845,10 @@ expseries_id is a string
 RunFluxBalanceAnalysisResults is a reference to a hash where the following keys are defined:
 	new_fba_ref has a value which is a fba_tools.ws_fba_id
 	objective has a value which is an int
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
 ws_fba_id is a string
+ws_report_id is a string
 
 </pre>
 
@@ -868,7 +904,10 @@ expseries_id is a string
 RunFluxBalanceAnalysisResults is a reference to a hash where the following keys are defined:
 	new_fba_ref has a value which is a fba_tools.ws_fba_id
 	objective has a value which is an int
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
 ws_fba_id is a string
+ws_report_id is a string
 
 
 =end text
@@ -1046,6 +1085,7 @@ PropagateModelToNewGenomeParams is a reference to a hash where the following key
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
 	expression_condition has a value which is a string
+	translation_policy has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1094,6 +1134,7 @@ PropagateModelToNewGenomeParams is a reference to a hash where the following key
 	expseries_id has a value which is a fba_tools.expseries_id
 	expseries_workspace has a value which is a fba_tools.workspace_name
 	expression_condition has a value which is a string
+	translation_policy has a value which is a string
 	exp_threshold_percentile has a value which is a float
 	exp_threshold_margin has a value which is a float
 	activation_coefficient has a value which is a float
@@ -1187,6 +1228,12 @@ SimulateGrowthOnPhenotypeDataParams is a reference to a hash where the following
 	phenotypesim_output_id has a value which is a fba_tools.phenotypesim_id
 	workspace has a value which is a fba_tools.workspace_name
 	all_reversible has a value which is a fba_tools.bool
+	gapfill_phenotypes has a value which is a fba_tools.bool
+	fit_phenotype_data has a value which is a fba_tools.bool
+	save_fluxes has a value which is a fba_tools.bool
+	add_all_transporters has a value which is a fba_tools.bool
+	add_positive_transporters has a value which is a fba_tools.bool
+	target_reaction has a value which is a fba_tools.reaction_id
 	feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
 	reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
 	custom_bound_list has a value which is a reference to a list where each element is a string
@@ -1196,8 +1243,8 @@ workspace_name is a string
 phenotypeset_id is a string
 phenotypesim_id is a string
 bool is an int
-feature_id is a string
 reaction_id is a string
+feature_id is a string
 compound_id is a string
 SimulateGrowthOnPhenotypeDataResults is a reference to a hash where the following keys are defined:
 	new_phenotypesim_ref has a value which is a fba_tools.ws_phenotypesim_id
@@ -1219,6 +1266,12 @@ SimulateGrowthOnPhenotypeDataParams is a reference to a hash where the following
 	phenotypesim_output_id has a value which is a fba_tools.phenotypesim_id
 	workspace has a value which is a fba_tools.workspace_name
 	all_reversible has a value which is a fba_tools.bool
+	gapfill_phenotypes has a value which is a fba_tools.bool
+	fit_phenotype_data has a value which is a fba_tools.bool
+	save_fluxes has a value which is a fba_tools.bool
+	add_all_transporters has a value which is a fba_tools.bool
+	add_positive_transporters has a value which is a fba_tools.bool
+	target_reaction has a value which is a fba_tools.reaction_id
 	feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
 	reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
 	custom_bound_list has a value which is a reference to a list where each element is a string
@@ -1228,8 +1281,8 @@ workspace_name is a string
 phenotypeset_id is a string
 phenotypesim_id is a string
 bool is an int
-feature_id is a string
 reaction_id is a string
+feature_id is a string
 compound_id is a string
 SimulateGrowthOnPhenotypeDataResults is a reference to a hash where the following keys are defined:
 	new_phenotypesim_ref has a value which is a fba_tools.ws_phenotypesim_id
@@ -1375,6 +1428,133 @@ sub merge_metabolic_models_into_community_model
 	my $msg = "Invalid returns passed to merge_metabolic_models_into_community_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'merge_metabolic_models_into_community_model');
+    }
+    return($results);
+}
+
+
+
+
+=head2 view_flux_network
+
+  $results = $obj->view_flux_network($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.ViewFluxNetworkParams
+$results is a fba_tools.ViewFluxNetworkResults
+ViewFluxNetworkParams is a reference to a hash where the following keys are defined:
+	fba_id has a value which is a fba_tools.fba_id
+	fba_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+fba_id is a string
+workspace_name is a string
+ViewFluxNetworkResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.ViewFluxNetworkParams
+$results is a fba_tools.ViewFluxNetworkResults
+ViewFluxNetworkParams is a reference to a hash where the following keys are defined:
+	fba_id has a value which is a fba_tools.fba_id
+	fba_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+fba_id is a string
+workspace_name is a string
+ViewFluxNetworkResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Merge two or more metabolic models into a compartmentalized community model
+
+=back
+
+=cut
+
+sub view_flux_network
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to view_flux_network:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'view_flux_network');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($results);
+    #BEGIN view_flux_network
+	$self->util_initialize_call($params,$ctx);
+	my $output = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
+	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir")."zippedhtml";
+	my $zip = Archive::Zip->new();
+	$zip->addTree( $output->{path} );
+	File::Path::mkpath([$path], 1);
+	$zip->writeToFileNamed($path."/NetworkViewer.zip");
+    my $file = $path."/NetworkViewer.zip";
+	my $token = Bio::KBase::utilities::token();
+	my $url   = Bio::KBase::utilities::conf("fba_tools","shock-url");
+	my $attr  = q('{"file":"reporter"}');
+	my $cmd   = 'curl --connect-timeout 100 -s -X POST -F attributes=@- -F upload=@'.$file." $url/node ";
+	$cmd     .= " -H 'Authorization: OAuth $token'";
+	my $out   = `echo $attr | $cmd` or die "Connection timeout uploading file to Shock: $file\n";
+	my $json  = Bio::KBase::ObjectAPI::utilities::FROMJSON($out);
+	$json->{status} == 200 or die "Error uploading file: $file\n".$json->{status}." ".$json->{error}->[0]."\n";
+	my $handle_service = Bio::KBase::HandleService->new(Bio::KBase::utilities::conf("fba_tools","handle-service-url"));
+	my $hid = $handle_service->persist_handle({
+		url => $url,
+		type => 'shock',
+		id => $json->{data}->{id}
+	});
+	my $report_name = $params->{fba_id} =~ s/\//-/gr.".view_flux_network.report";
+	my $meta = $self->util_save_object({
+		direct_html_link_index => 0,
+		html_window_height => undef,
+		html_links => [{
+			label => "Species interaction view",
+			name => "index.html",
+			handle => $hid,
+			description => "Species interaction view",
+			URL => $url."/node/".$json->{data}->{id}
+		}],
+		file_links => [],
+		direct_html => undef,
+		text_message => undef,
+		summary_window_height => undef,
+		objects_created => []
+	},Bio::KBase::utilities::buildref($report_name,$params->{workspace}),{hash => 1,type => "KBaseReport.Report", hidden => 1});
+    $results = {
+    	report_ref => $meta->[6]."/".$meta->[0]."/".$meta->[4],
+		report_name => $report_name
+    };
+    #END view_flux_network
+    my @_bad_returns;
+    (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to view_flux_network:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'view_flux_network');
     }
     return($results);
 }
@@ -1565,11 +1745,12 @@ sub check_model_mass_balance
     #BEGIN check_model_mass_balance
     $self->util_initialize_call($params,$ctx);
 	$results = {};
-	Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
+	my $model_name = Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
+	$params->{fbamodel_id} =~ s/\//-/g;
     $self->util_finalize_call({
 		output => $results,
 		workspace => $params->{workspace},
-		report_name => $params->{fbamodel_id}.".check_mass_balance.report",
+		report_name => $model_name.".check_mass_balance.report",
 	});
     #END check_model_mass_balance
     my @_bad_returns;
@@ -1578,6 +1759,108 @@ sub check_model_mass_balance
 	my $msg = "Invalid returns passed to check_model_mass_balance:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'check_model_mass_balance');
+    }
+    return($results);
+}
+
+
+
+
+=head2 predict_auxotrophy
+
+  $results = $obj->predict_auxotrophy($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.PredictAuxotrophyParams
+$results is a fba_tools.PredictAuxotrophyResults
+PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	media_output_id has a value which is a fba_tools.media_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+media_id is a string
+workspace_name is a string
+PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.PredictAuxotrophyParams
+$results is a fba_tools.PredictAuxotrophyResults
+PredictAuxotrophyParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	media_output_id has a value which is a fba_tools.media_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	workspace has a value which is a fba_tools.workspace_name
+genome_id is a string
+media_id is a string
+workspace_name is a string
+PredictAuxotrophyResults is a reference to a hash where the following keys are defined:
+	new_report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Identifies reactions in the model that are not mass balanced
+
+=back
+
+=cut
+
+sub predict_auxotrophy
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to predict_auxotrophy:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'predict_auxotrophy');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($results);
+    #BEGIN predict_auxotrophy
+    $self->util_initialize_call($params,$ctx);
+	$params = Bio::KBase::utilities::args($params,[],{genome_workspace => $params->{workspace}});
+	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
+	for (my $i=0; $i < @{$new_genome_list}; $i++) {
+		push(@{$params->{genome_ids}},Bio::KBase::utilities::buildref($new_genome_list->[$i],$params->{genome_workspace}));
+	}
+	delete $params->{genome_text};
+	$results = {};
+	Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy($params);
+	$self->util_finalize_call({
+		output => $results,
+		workspace => $params->{workspace},
+		report_name => $params->{media_output_id}.".auxotrophy.report",
+	});
+    #END predict_auxotrophy
+    my @_bad_returns;
+    (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to predict_auxotrophy:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'predict_auxotrophy');
     }
     return($results);
 }
@@ -1706,7 +1989,14 @@ EditMetabolicModelParams is a reference to a hash where the following keys are d
 	fbamodel_workspace has a value which is a fba_tools.workspace_name
 	fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 	fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
-	data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
+	compounds_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	compounds_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	biomasses_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	biomass_compounds_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	reactions_to_remove has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	reactions_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	reactions_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	edit_compound_stoichiometry has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
 workspace_name is a string
 ws_fbamodel_id is a string
 EditMetabolicModelResult is a reference to a hash where the following keys are defined:
@@ -1728,7 +2018,14 @@ EditMetabolicModelParams is a reference to a hash where the following keys are d
 	fbamodel_workspace has a value which is a fba_tools.workspace_name
 	fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 	fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
-	data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
+	compounds_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	compounds_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	biomasses_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	biomass_compounds_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	reactions_to_remove has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	reactions_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	reactions_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+	edit_compound_stoichiometry has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
 workspace_name is a string
 ws_fbamodel_id is a string
 EditMetabolicModelResult is a reference to a hash where the following keys are defined:
@@ -1818,10 +2115,15 @@ EditMediaParams is a reference to a hash where the following keys are defined:
 		2: (min_flux) a float
 		3: (max_flux) a float
 
+	pH_data has a value which is a string
+	temperature has a value which is a float
+	isDefined has a value which is a fba_tools.bool
+	type has a value which is a string
 	media_output_id has a value which is a fba_tools.media_id
 workspace_name is a string
 media_id is a string
 compound_id is a string
+bool is an int
 EditMediaResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a fba_tools.ws_report_id
@@ -1853,10 +2155,15 @@ EditMediaParams is a reference to a hash where the following keys are defined:
 		2: (min_flux) a float
 		3: (max_flux) a float
 
+	pH_data has a value which is a string
+	temperature has a value which is a float
+	isDefined has a value which is a fba_tools.bool
+	type has a value which is a string
 	media_output_id has a value which is a fba_tools.media_id
 workspace_name is a string
 media_id is a string
 compound_id is a string
+bool is an int
 EditMediaResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a fba_tools.ws_report_id
@@ -2002,8 +2309,8 @@ sub excel_file_to_model
 	};
 	my $file_path = $self->util_get_file_path($p->{model_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $sheets = $self->util_parse_excel($file_path);
-	my $compounds = (grep { $_ =~ /Compound/ } keys %$sheets)[0];
-	my $reactions = (grep { $_ =~ /Reaction/ } keys %$sheets)[0];
+	my $compounds = (grep { $_ =~ /Compound/i } keys %$sheets)[0];
+	my $reactions = (grep { $_ =~ /Reaction/i } keys %$sheets)[0];
     $input->{reactions} = $self->util_parse_input_table($sheets->{$reactions},[
 		["id",1],
 		["direction",0,"="],
@@ -2020,7 +2327,9 @@ sub excel_file_to_model
 		["charge",0,undef],
 		["formula",0,undef],
 		["name",1],
-		["aliases",0,undef]
+		["aliases",0,undef],
+ 		['smiles',0,undef],
+ 		['inchikey',0,undef]
 	]);
     $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
     #END excel_file_to_model
@@ -2138,7 +2447,9 @@ sub sbml_file_to_model
 				["charge",0,undef],
 				["formula",0,undef],
 				["name",1],
-				["aliases",0,undef]
+				["aliases",0,undef],
+				['smiles',0,undef],
+		 		['inchikey',0,undef]
 			]);
 		}
 	}
@@ -2262,7 +2573,9 @@ sub tsv_file_to_model
 		["formula",0,undef],
 		["name",1],
 		["aliases",0,undef],
-		["compartment",0,undef]
+		["compartment",0,undef],
+ 		['smiles',0,undef],
+ 		['inchikey',0,undef]
 	]);
     $return = Bio::KBase::ObjectAPI::functions::func_importmodel($input);
     #END tsv_file_to_model
@@ -2348,11 +2661,15 @@ sub model_to_excel_file
     my($f);
     #BEGIN model_to_excel_file
     $self->util_initialize_call($model,$ctx);
-    $f = Bio::KBase::ObjectAPI::functions::func_export($model,{
+    my $input = {
 		object => "model",
 		format => "excel",
 		file_util => 1
-	});
+	};
+    if (defined($model->{fulldb}) && $model->{fulldb} == 1) {
+    	$input->{format} = "fullexcel";
+    }
+    $f = Bio::KBase::ObjectAPI::functions::func_export($model,$input);
     #END model_to_excel_file
     my @_bad_returns;
     (ref($f) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"f\" (value was \"$f\")");
@@ -2530,11 +2847,15 @@ sub model_to_tsv_file
     my($files);
     #BEGIN model_to_tsv_file
     $self->util_initialize_call($model,$ctx);
-    $files = Bio::KBase::ObjectAPI::functions::func_export($model,{
+    my $input = {
 		object => "model",
 		format => "tsv",
 		file_util => 1
-	});
+	};
+    if (defined($model->{fulldb}) && $model->{fulldb} == 1) {
+    	$input->{format} = "fulltsv";
+    }
+    $files = Bio::KBase::ObjectAPI::functions::func_export($model,$input);
     #END model_to_tsv_file
     my @_bad_returns;
     (ref($files) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"files\" (value was \"$files\")");
@@ -2610,10 +2931,14 @@ sub export_model_as_excel_file
     my($output);
     #BEGIN export_model_as_excel_file
     $self->util_initialize_call($params,$ctx);
-    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+    my $input = {
 		object => "model",
 		format => "excel"
-	});
+	};
+    if (defined($params->{fulldb}) && $params->{fulldb} == 1) {
+    	$input->{format} = "fullexcel";
+    }
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,$input);
     #END export_model_as_excel_file
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -2689,10 +3014,14 @@ sub export_model_as_tsv_file
     my($output);
     #BEGIN export_model_as_tsv_file
     $self->util_initialize_call($params,$ctx);
-    $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
+    my $input = {
 		object => "model",
 		format => "tsv"
-	});
+	};
+    if (defined($params->{fulldb}) && $params->{fulldb} == 1) {
+    	$input->{format} = "fulltsv";
+    }
+    $output = Bio::KBase::ObjectAPI::functions::func_export($params,$input);
     #END export_model_as_tsv_file
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
@@ -3200,9 +3529,9 @@ sub tsv_file_to_media
     my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $mediadata = $self->util_parse_input_table($file_path,[
 		["compounds",1],
-		["concentrations",0,"0.001"],
-		["minFlux",0,"-100"],
-		["maxFlux",0,"100"],
+		["concentration",0,"0.001"],
+		["minflux",0,"-100"],
+		["maxflux",0,"100"],
 	]);
 	my $input = {media_id => $p->{media_name},workspace => $p->{workspace_name}};
 	for (my $i=0; $i < @{$mediadata}; $i++) {
@@ -3302,7 +3631,7 @@ sub excel_file_to_media
 	my $Media = (grep { $_ =~ /[Mm]edia/ } keys %$sheets)[0];
     my $mediadata = $self->util_parse_input_table($sheets->{$Media},[
 		["compounds",1],
-		["concentrations",0,"0.001"],
+		["concentration",0,"0.001"],
 		["minflux",0,"-100"],
 		["maxflux",0,"100"],
 	]);
@@ -3740,8 +4069,10 @@ sub tsv_file_to_phenotype_set
 		["geneko",0,"",";"],
 		["media",1,""],
 		["mediaws",1,""],
-		["addtlCpd",0,"",";"],
-		["growth",1]
+		["addtlcpd",0,"",";"],
+		["growth",1],
+		['addtlcpdbounds',0,""],
+		['customreactionbounds',0,""],
 	]);
 	for (my $i=0; $i < @{$phenodata}; $i++) {
 		if (defined($phenodata->[$i]->[0]->[0]) && $phenodata->[$i]->[0]->[0] eq "none") {
@@ -3756,7 +4087,9 @@ sub tsv_file_to_phenotype_set
     	phenotypeset_id => $p->{phenotype_set_name},
     	workspace => $p->{workspace_name},
     	genome => $p->{genome},
+    	genome_workspace => $p->{genome_workspace}
     });
+	print "Phenotype Set Loaded\n";
     #END tsv_file_to_phenotype_set
     my @_bad_returns;
     (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -4297,6 +4630,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	media_format has a value which is a string
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
+	workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -4324,6 +4658,7 @@ BulkExportObjectsParams is a reference to a hash where the following keys are de
 	media_format has a value which is a string
 	phenotype_format has a value which is a string
 	phenosim_format has a value which is a string
+	workspace has a value which is a string
 bool is an int
 BulkExportObjectsResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
@@ -5306,6 +5641,7 @@ number_removed_biomass_compounds has a value which is an int
 <pre>
 a reference to a hash where the following keys are defined:
 genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+genome_text has a value which is a string
 genome_workspace has a value which is a fba_tools.workspace_name
 media_id has a value which is a fba_tools.media_id
 media_workspace has a value which is a fba_tools.workspace_name
@@ -5338,6 +5674,7 @@ number_of_solutions has a value which is an int
 
 a reference to a hash where the following keys are defined:
 genome_ids has a value which is a reference to a list where each element is a fba_tools.genome_id
+genome_text has a value which is a string
 genome_workspace has a value which is a fba_tools.workspace_name
 media_id has a value which is a fba_tools.media_id
 media_workspace has a value which is a fba_tools.workspace_name
@@ -5623,6 +5960,8 @@ massbalance has a value which is a string
 a reference to a hash where the following keys are defined:
 new_fba_ref has a value which is a fba_tools.ws_fba_id
 objective has a value which is an int
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
 
 </pre>
 
@@ -5633,6 +5972,8 @@ objective has a value which is an int
 a reference to a hash where the following keys are defined:
 new_fba_ref has a value which is a fba_tools.ws_fba_id
 objective has a value which is an int
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
 
 
 =end text
@@ -5736,6 +6077,7 @@ media_supplement_list has a value which is a reference to a list where each elem
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
 expression_condition has a value which is a string
+translation_policy has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -5768,6 +6110,7 @@ media_supplement_list has a value which is a reference to a list where each elem
 expseries_id has a value which is a fba_tools.expseries_id
 expseries_workspace has a value which is a fba_tools.workspace_name
 expression_condition has a value which is a string
+translation_policy has a value which is a string
 exp_threshold_percentile has a value which is a float
 exp_threshold_margin has a value which is a float
 activation_coefficient has a value which is a float
@@ -5838,6 +6181,12 @@ phenotypeset_workspace has a value which is a fba_tools.workspace_name
 phenotypesim_output_id has a value which is a fba_tools.phenotypesim_id
 workspace has a value which is a fba_tools.workspace_name
 all_reversible has a value which is a fba_tools.bool
+gapfill_phenotypes has a value which is a fba_tools.bool
+fit_phenotype_data has a value which is a fba_tools.bool
+save_fluxes has a value which is a fba_tools.bool
+add_all_transporters has a value which is a fba_tools.bool
+add_positive_transporters has a value which is a fba_tools.bool
+target_reaction has a value which is a fba_tools.reaction_id
 feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
 reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
 custom_bound_list has a value which is a reference to a list where each element is a string
@@ -5857,6 +6206,12 @@ phenotypeset_workspace has a value which is a fba_tools.workspace_name
 phenotypesim_output_id has a value which is a fba_tools.phenotypesim_id
 workspace has a value which is a fba_tools.workspace_name
 all_reversible has a value which is a fba_tools.bool
+gapfill_phenotypes has a value which is a fba_tools.bool
+fit_phenotype_data has a value which is a fba_tools.bool
+save_fluxes has a value which is a fba_tools.bool
+add_all_transporters has a value which is a fba_tools.bool
+add_positive_transporters has a value which is a fba_tools.bool
+target_reaction has a value which is a fba_tools.reaction_id
 feature_ko_list has a value which is a reference to a list where each element is a fba_tools.feature_id
 reaction_ko_list has a value which is a reference to a list where each element is a fba_tools.reaction_id
 custom_bound_list has a value which is a reference to a list where each element is a string
@@ -5959,6 +6314,70 @@ new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 
 a reference to a hash where the following keys are defined:
 new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+
+
+=end text
+
+=back
+
+
+
+=head2 ViewFluxNetworkParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fba_id has a value which is a fba_tools.fba_id
+fba_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fba_id has a value which is a fba_tools.fba_id
+fba_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 ViewFluxNetworkResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
 
 
 =end text
@@ -6109,6 +6528,72 @@ new_report_ref has a value which is a fba_tools.ws_report_id
 
 
 
+=head2 PredictAuxotrophyParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+media_output_id has a value which is a fba_tools.media_id
+genome_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+media_output_id has a value which is a fba_tools.media_id
+genome_workspace has a value which is a fba_tools.workspace_name
+workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 PredictAuxotrophyResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_report_ref has a value which is a fba_tools.ws_report_id
+
+
+=end text
+
+=back
+
+
+
 =head2 ModelComparisonParams
 
 =over 4
@@ -6209,7 +6694,14 @@ workspace has a value which is a fba_tools.workspace_name
 fbamodel_workspace has a value which is a fba_tools.workspace_name
 fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
-data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
+compounds_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+compounds_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+biomasses_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+biomass_compounds_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+reactions_to_remove has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+reactions_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+reactions_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+edit_compound_stoichiometry has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
 
 </pre>
 
@@ -6222,7 +6714,14 @@ workspace has a value which is a fba_tools.workspace_name
 fbamodel_workspace has a value which is a fba_tools.workspace_name
 fbamodel_id has a value which is a fba_tools.ws_fbamodel_id
 fbamodel_output_id has a value which is a fba_tools.ws_fbamodel_id
-data has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a reference to a list where each element is a string
+compounds_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+compounds_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+biomasses_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+biomass_compounds_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+reactions_to_remove has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+reactions_to_change has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+reactions_to_add has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
+edit_compound_stoichiometry has a value which is a reference to a list where each element is a reference to a hash where the key is a string and the value is a string
 
 
 =end text
@@ -6298,6 +6797,10 @@ compounds_to_add has a value which is a reference to a list where each element i
 	2: (min_flux) a float
 	3: (max_flux) a float
 
+pH_data has a value which is a string
+temperature has a value which is a float
+isDefined has a value which is a fba_tools.bool
+type has a value which is a string
 media_output_id has a value which is a fba_tools.media_id
 
 </pre>
@@ -6323,6 +6826,10 @@ compounds_to_add has a value which is a reference to a list where each element i
 	2: (min_flux) a float
 	3: (max_flux) a float
 
+pH_data has a value which is a string
+temperature has a value which is a float
+isDefined has a value which is a fba_tools.bool
+type has a value which is a string
 media_output_id has a value which is a fba_tools.media_id
 
 
@@ -6912,6 +7419,7 @@ fba_format has a value which is a string
 media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
+workspace has a value which is a string
 
 </pre>
 
@@ -6931,6 +7439,7 @@ fba_format has a value which is a string
 media_format has a value which is a string
 phenotype_format has a value which is a string
 phenosim_format has a value which is a string
+workspace has a value which is a string
 
 
 =end text

@@ -41,10 +41,10 @@ sub export {
 sub printTSV {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\tgrowth"];
+	my $output = ["geneko\tmediaws\tmedia\taddtlCpd\taddtlCpdBounds\tcustomReactionBounds\tgrowth"];
 	my $phenotypes = $self->phenotypes();
 	for (my $i=0; $i < @{$phenotypes}; $i++) {
-		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString()."\t".$phenotypes->[$i]->normalizedGrowth());
+		push(@{$output},$phenotypes->[$i]->geneKOString()."\t".$phenotypes->[$i]->media()->_wsworkspace()."\t".$phenotypes->[$i]->media()->_wsname()."\t".$phenotypes->[$i]->additionalCpdString() ."\t".$phenotypes->[$i]->compoundBoundsString()."\t".$phenotypes->[$i]->reactionBoundsString()."\t".$phenotypes->[$i]->normalizedGrowth());
 	}
 	if ($args->{file} == 1) {
 		Bio::KBase::ObjectAPI::utilities::PRINTFILE($args->{path}."/".$self->id().".tsv",$output);
@@ -90,7 +90,7 @@ sub import_phenotype_table {
     	if (defined($mediaHash->{$output->[$i]->[7]}->{$output->[$i]->[1]})) {
     		$mediaHash->{$output->[$i]->[7]}->{$output->[$i]->[1]} = $output->[$i]->[6]."/".$output->[$i]->[0];
     	}
-    }		
+    }
     for (my $i=0; $i < @{$data}; $i++) {
     	my $phenotype = $data->[$i];
     	#Validating gene IDs
@@ -127,6 +127,23 @@ sub import_phenotype_table {
     		$missingMedia->{$phenotype->[2]."/".$phenotype->[1]} = 1;
     		next;
     	}
+		sub nest_arr{
+			my $raw = shift;
+			return undef if !$raw;
+			my $nested = [];
+			my $sets = [split(/;/, $raw)];
+			while (my($ind, $set) = each $sets){
+				my $inner = [split(/\|/, $set)];
+				if (scalar @{$inner} < 2 || scalar @{$inner} > 3){
+					print "Unable to parse $raw";
+					return undef
+				}
+				$inner->[0] = $inner->[0]+0;
+				$inner->[-1] = $inner->[-1]+0;
+				$nested->[$ind] = $inner
+			}
+			return $nested
+		}
     	#Adding phenotype to object
     	$self->add("phenotypes",{
     		id => $self->id().".phe.".$count,
@@ -134,6 +151,8 @@ sub import_phenotype_table {
 			geneko_refs => $generefs,
 			additionalcompound_refs => $cpdrefs,
 			normalizedGrowth => $phenotype->[4],
+			additionalcompound_bounds => nest_arr($phenotype->[5]),
+			custom_reaction_bounds => nest_arr($phenotype->[6]),
 			name => $self->id().".phe.".$count
     	});
     	$count++;
@@ -149,7 +168,7 @@ sub import_phenotype_table {
     if (keys(%{$missingMedia}) > 0) {
     	$msg .= "Could not find media:".join(";",keys(%{$missingMedia}))."\n";
     }
-    print "ERRORS:".$msg."\n";
+    print "ERRORS:".$msg."\n" if $msg;
     $self->importErrors($msg);
 }
 

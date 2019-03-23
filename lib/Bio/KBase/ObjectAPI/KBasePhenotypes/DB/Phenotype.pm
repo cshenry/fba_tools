@@ -22,6 +22,8 @@ has geneko_refs => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default =
 has id => (is => 'rw', isa => 'Str', printOrder => '0', required => 1, type => 'attribute', metaclass => 'Typed');
 has additionalcompound_refs => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has normalizedGrowth => (is => 'rw', isa => 'Num', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has additionalcompound_bounds => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
+has custom_reaction_bounds => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 
 
 # LINKS:
@@ -97,10 +99,26 @@ my $attributes = [
             'name' => 'normalizedGrowth',
             'type' => 'Num',
             'perm' => 'rw'
-          }
+          },
+		  {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'additionalcompound_bounds',
+            'default' => 'sub {return [];}',
+            'type' => 'ArrayRef',
+            'perm' => 'rw'
+          },
+		  {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'custom_reaction_bounds',
+            'default' => 'sub {return [];}',
+            'type' => 'ArrayRef',
+            'perm' => 'rw'
+          },
         ];
 
-my $attribute_map = {media_ref => 0, name => 1, geneko_refs => 2, id => 3, additionalcompound_refs => 4, normalizedGrowth => 5};
+my $attribute_map = {media_ref => 0, name => 1, geneko_refs => 2, id => 3, additionalcompound_refs => 4, normalizedGrowth => 5, additionalcompound_bounds => 6, custom_reaction_bounds =>7};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

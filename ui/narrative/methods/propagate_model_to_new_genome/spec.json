@@ -29,7 +29,7 @@
          "id" : "proteincomparison_id",
          "advanced" : false,
          "field_type" : "text",
-         "optional" : true,
+         "optional" : false,
          "allow_multiple" : false
       },
       {
@@ -215,15 +215,18 @@
             },
             {
                "target_property" : "fbamodel_id",
-               "input_parameter" : "fbamodel_id"
+               "input_parameter" : "fbamodel_id",
+               "target_type_transform": "resolved-ref"
             },
             {
                "input_parameter" : "proteincomparison_id",
-               "target_property" : "proteincomparison_id"
+               "target_property" : "proteincomparison_id",
+               "target_type_transform": "resolved-ref"
             },
             {
                "target_property" : "media_id",
-               "input_parameter" : "media_id"
+               "input_parameter" : "media_id",
+               "target_type_transform": "resolved-ref"
             },
             {
                "target_property" : "fbamodel_output_id",

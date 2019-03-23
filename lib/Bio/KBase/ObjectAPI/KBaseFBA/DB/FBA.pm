@@ -81,6 +81,9 @@ has maximizeActiveReactions => (is => 'rw', isa => 'Bool', printOrder => '-1', d
 has biomassRemovals => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 has expression_matrix_column => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has MFALog => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has media_list_refs => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub{return [];}, type => 'attribute', metaclass => 'Typed');
+has mediaset_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has other_objectives => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
 has FBAMetaboliteProductionResults => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(FBAMetaboliteProductionResult)', metaclass => 'Typed', reader => '_FBAMetaboliteProductionResults', printOrder => '-1');
@@ -110,7 +113,8 @@ has regulome => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,Reg
 has fbamodel => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,FBAModel,fbamodel_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_fbamodel', clearer => 'clear_fbamodel', isa => 'Bio::KBase::ObjectAPI::KBaseFBA::FBAModel', weak_ref => 1);
 has reactionKOs => (is => 'rw', type => 'link(FBAModel,modelreactions,reactionKO_refs)', metaclass => 'Typed', lazy => 1, builder => '_build_reactionKOs', clearer => 'clear_reactionKOs', isa => 'ArrayRef');
 has expression_matrix => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,ExpressionMatrix,expression_matrix_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_expression_matrix', clearer => 'clear_expression_matrix', isa => 'Ref', weak_ref => 1);
-
+has media_list => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,Media,media_list_refs)', metaclass => 'Typed', lazy => 1, builder => '_build_media_list', clearer => 'clear_media_list', isa => 'ArrayRef');
+has mediaset => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,MediaSet,mediaset_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_mediaset', clearer => 'clear_mediaset', isa => 'HashRef', weak_ref => 1);
 
 # BUILDERS:
 sub _build_reference { my ($self) = @_;return $self->uuid(); }
@@ -155,7 +159,14 @@ sub _build_expression_matrix {
 	 my ($self) = @_;
 	 return $self->getLinkedObject($self->expression_matrix_ref());
 }
-
+sub _build_mediaset {
+	 my ($self) = @_;
+	 return $self->getLinkedObject($self->mediaset_ref());
+}
+sub _build_media_list {
+	 my ($self) = @_;
+	 return $self->getLinkedObjectArray($self->media_list_refs());
+}
 
 # CONSTANTS:
 sub __version__ { return $VERSION; }
@@ -580,10 +591,37 @@ my $attributes = [
             'name' => 'MFALog',
             'type' => 'Str',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'media_list_refs',
+            'default' => 'sub{return [];}',
+            'type' => 'ArrayRef',
+            'description' => undef,
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'mediaset_ref',
+            'default' => undef,
+            'type' => 'Str',
+            'description' => undef,
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'other_objectives',
+            'default' => 'sub{return [];}',
+            'type' => 'ArrayRef',
+            'description' => undef,
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {media_ref => 0, compoundflux_objterms => 1, phenotypesimulationset_ref => 2, maximizeObjective => 3, jobnode => 4, promconstraint_ref => 5, id => 6, phenotypeset_ref => 7, geneKO_refs => 8, inputfiles => 9, drainfluxUseVariables => 10, quantitativeOptimization => 11, additionalCpd_refs => 12, outputfiles => 13, parameters => 14, noErrorThermodynamicConstraints => 15, objectiveConstraintFraction => 16, regulome_ref => 17, minimize_reactions => 18, minimizeErrorThermodynamicConstraints => 19, uptakeLimits => 20, allReversible => 21, tintleKappa => 22, objectiveValue => 23, minimize_reaction_costs => 24, numberOfSolutions => 25, fluxMinimization => 26, thermodynamicConstraints => 27, defaultMaxDrainFlux => 28, reactionflux_objterms => 29, fbamodel_ref => 30, tintleW => 31, reactionKO_refs => 32, fluxUseVariables => 33, findMinimalMedia => 34, PROMKappa => 35, simpleThermoConstraints => 36, comboDeletions => 37, defaultMinDrainFlux => 38, expression_matrix_ref => 39, fva => 40, decomposeReversibleDrainFlux => 41, biomassflux_objterms => 42, defaultMaxFlux => 43, decomposeReversibleFlux => 44,calculateReactionKnockoutSensitivity => 45,maximizeActiveReactions => 46,biomassRemovals => 47,expression_matrix_column => 48,MFALog => 49};
+my $attribute_map = {media_ref => 0, compoundflux_objterms => 1, phenotypesimulationset_ref => 2, maximizeObjective => 3, jobnode => 4, promconstraint_ref => 5, id => 6, phenotypeset_ref => 7, geneKO_refs => 8, inputfiles => 9, drainfluxUseVariables => 10, quantitativeOptimization => 11, additionalCpd_refs => 12, outputfiles => 13, parameters => 14, noErrorThermodynamicConstraints => 15, objectiveConstraintFraction => 16, regulome_ref => 17, minimize_reactions => 18, minimizeErrorThermodynamicConstraints => 19, uptakeLimits => 20, allReversible => 21, tintleKappa => 22, objectiveValue => 23, minimize_reaction_costs => 24, numberOfSolutions => 25, fluxMinimization => 26, thermodynamicConstraints => 27, defaultMaxDrainFlux => 28, reactionflux_objterms => 29, fbamodel_ref => 30, tintleW => 31, reactionKO_refs => 32, fluxUseVariables => 33, findMinimalMedia => 34, PROMKappa => 35, simpleThermoConstraints => 36, comboDeletions => 37, defaultMinDrainFlux => 38, expression_matrix_ref => 39, fva => 40, decomposeReversibleDrainFlux => 41, biomassflux_objterms => 42, defaultMaxFlux => 43, decomposeReversibleFlux => 44,calculateReactionKnockoutSensitivity => 45,maximizeActiveReactions => 46,biomassRemovals => 47,expression_matrix_column => 48,MFALog => 49,media_list_refs => 50,mediaset_ref => 51,other_objectives => 52};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {
@@ -694,10 +732,29 @@ my $links = [
             'method' => 'ExpressionMatrix',
             'class' => 'Bio::KBase::ObjectAPI::KBaseFeatureValue::ExpressionMatrix',
             'module' => 'KBaseFeatureValue'
-          }
+          },
+          {
+            'attribute' => 'media_list_refs',
+            'parent' => 'Bio::KBase::ObjectAPI::KBaseStore',
+            'array' => 1,
+            'clearer' => 'clear_media_list',
+            'name' => 'media_list',
+            'method' => 'media_list',
+            'class' => 'Bio::KBase::ObjectAPI::KBaseBiochem::Media',
+            'module' => 'KBaseBiochem'
+          },
+          {
+            'attribute' => 'mediaset_ref',
+            'parent' => 'Bio::KBase::ObjectAPI::KBaseStore',
+            'clearer' => 'clear_mediaset',
+            'name' => 'mediaset',
+            'method' => 'mediaset',
+            'class' => 'Bio::KBase::ObjectAPI::KBaseBiochem::MediaSet',
+            'module' => 'KBaseBiochem'
+          },
         ];
 
-my $link_map = {media => 0, phenotypesimulationset => 1, promconstraint => 2, phenotypeset => 3, geneKOs => 4, additionalCpds => 5, regulome => 6, fbamodel => 7, reactionKOs => 8, expression_matrix => 9};
+my $link_map = {media => 0, phenotypesimulationset => 1, promconstraint => 2, phenotypeset => 3, geneKOs => 4, additionalCpds => 5, regulome => 6, fbamodel => 7, reactionKOs => 8, expression_matrix => 9, media_list => 10, mediaset => 11};
 sub _links {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

@@ -1048,6 +1048,7 @@ sub load_config {
 sub rest_download {
 	my ($args,$params) = @_;
 	$args = Bio::KBase::ObjectAPI::utilities::ARGS($args,["url"],{
+		json => 1,
 		retry => 5,
 		token => undef
 	});
@@ -1061,7 +1062,11 @@ sub rest_download {
 			if (defined($res->{_headers}->{"content-range"}) && $res->{_headers}->{"content-range"} =~ m/\/(.+)/) {
 				$params->{count} = $1;
 			}
-			return Bio::KBase::ObjectAPI::utilities::FROMJSON($res->{_content});
+			if ($args->{json} == 1) {
+				return Bio::KBase::ObjectAPI::utilities::FROMJSON($res->{_content});
+			} else {
+				return $res->{_content};
+			}
 		} else {
 		}
 	}

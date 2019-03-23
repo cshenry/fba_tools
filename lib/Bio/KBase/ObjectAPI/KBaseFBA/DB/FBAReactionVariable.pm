@@ -29,6 +29,9 @@ has coupled_reactions => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', def
 has expression => (is => 'rw', isa => 'Num', printOrder => '5', default => 0, type => 'attribute', metaclass => 'Typed');
 has scaled_exp => (is => 'rw', isa => 'Num', printOrder => '5', default => 0, type => 'attribute', metaclass => 'Typed');
 has exp_state => (is => 'rw', isa => 'Str', printOrder => '5', default => "unknown", type => 'attribute', metaclass => 'Typed');
+has other_values => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
+has other_min => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
+has other_max => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 
 # LINKS:
 has modelreaction => (is => 'rw', type => 'link(FBAModel,modelreactions,modelreaction_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_modelreaction', clearer => 'clear_modelreaction', isa => 'Ref', weak_ref => 1);
@@ -167,10 +170,34 @@ my $attributes = [
             'type' => 'Str',
             'description' => undef,
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'other_values',
+            'default' => 'sub {return [];}',
+            'type' => 'ArrayRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'other_min',
+            'default' => 'sub {return [];}',
+            'type' => 'ArrayRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'other_max',
+            'default' => 'sub {return [];}',
+            'type' => 'ArrayRef',
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {value => 0, min => 1, lowerBound => 2, max => 3, modelreaction_ref => 4, upperBound => 5, class => 6, variableType => 7,biomass_dependencies => 8,coupled_reactions => 9,expression => 10,scaled_exp => 11, exp_state => 12};
+my $attribute_map = {value => 0, min => 1, lowerBound => 2, max => 3, modelreaction_ref => 4, upperBound => 5, class => 6, variableType => 7,biomass_dependencies => 8,coupled_reactions => 9,expression => 10,scaled_exp => 11, exp_state => 12,other_values => 13,other_min => 14,other_max => 15};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {
