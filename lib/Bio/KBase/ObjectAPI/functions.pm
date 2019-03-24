@@ -6,6 +6,11 @@ use Data::Dumper;
 use Data::UUID;
 use Bio::KBase::utilities;
 use Bio::KBase::constants;
+use kb_maxbin::kb_maxbinClient;
+use MetagenomeUtils::MetagenomeUtilsClient;
+use RAST_SDK::RAST_SDKClient;
+use ProkkaAnnotation::ProkkaAnnotationClient;
+
 
 our $handler;#Needs: log(string),save_object,get_object
 
@@ -556,7 +561,7 @@ sub func_build_metabolic_model {
 			}
 		}
 		if ($first == 0) {
-			$htmlreport .= ".";	
+			$htmlreport .= ".";
 		}
 		#Predicting auxotrophy
 		if ($params->{predict_auxotrophy} == 1) {
@@ -674,7 +679,7 @@ sub func_gapfill_metabolic_model {
 	$handler->util_log("Preparing flux balance analysis problem.");
 	if (defined($params->{source_fbamodel_id}) && !defined($source_model)) {
 		$htmlreport .= " During the gapfilling, the source biochemistry database was augmented with all the reactions contained in the existing ".$params->{source_fbamodel_id}." model.";
-		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));	
+		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));
 	}
 	my $gfs = $model->gapfillings();
 	my $currentid = 0;
@@ -932,12 +937,12 @@ sub func_simulate_metabolite_production_consumption {
 #	$fba->toJSON({pp => 1});
 #	alarm 0;
 #	#Simulating metabolite production
-#	
-#	
-#	
-#	
-#	
-#	
+#
+#
+#
+#
+#
+#
 #	if (!defined($objective)) {
 #		Bio::KBase::utilities::error("FBA failed with no solution returned!");
 #	}
@@ -1358,54 +1363,54 @@ sub func_view_flux_network {
 			if ($extcpdhash->{$mdlcpd}->{species_flux}->{$species} > 0.0000001) {
 				push(@{$network->{nodes}},{
 					data => {
-						reaction =>  $mdlcpd."_".$species, 
-		                direction => "=", 
-		                features => [], 
+						reaction =>  $mdlcpd."_".$species,
+		                direction => "=",
+		                features => [],
 		                definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0]",
 		                products => [{
-							compartment => "e0", 
-							id => $extcpdhash->{$mdlcpd}->{node}->{id}, 
-							stoich => "1", 
+							compartment => "e0",
+							id => $extcpdhash->{$mdlcpd}->{node}->{id},
+							stoich => "1",
 							compound => $extcpdhash->{$mdlcpd}->{node}->{id}
-						}], 
-		                flux => $extcpdhash->{$mdlcpd}->{species_flux}->{$species}, 
-		                node_type => "reaction", 
+						}],
+		                flux => $extcpdhash->{$mdlcpd}->{species_flux}->{$species},
+		                node_type => "reaction",
 		                reactants => [{
-							compartment => $species, 
-							id => $species, 
-							stoich => "1", 
+							compartment => $species,
+							id => $species,
+							stoich => "1",
 							compound => $species
-		                }], 
-		                gapfilled => 0, 
-		                compartment => $species, 
-		                id => $mdlcpd."_".$species, 
+		                }],
+		                gapfilled => 0,
+		                compartment => $species,
+		                id => $mdlcpd."_".$species,
 		                name => $mdlcpd."_".$species
 					}
 				});
 			} elsif ($extcpdhash->{$mdlcpd}->{species_flux}->{$species} < -0.0000001) {
 				push(@{$network->{nodes}},{
 					data => {
-						reaction =>  $mdlcpd."_".$species, 
-		                direction => "=", 
-		                features => [], 
+						reaction =>  $mdlcpd."_".$species,
+		                direction => "=",
+		                features => [],
 		                definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."]",
 		                reactants => [{
-							compartment => "e0", 
-							id => $extcpdhash->{$mdlcpd}->{node}->{id}, 
-							stoich => "1", 
+							compartment => "e0",
+							id => $extcpdhash->{$mdlcpd}->{node}->{id},
+							stoich => "1",
 							compound => $extcpdhash->{$mdlcpd}->{node}->{id}
-						}], 
-		                flux => abs($extcpdhash->{$mdlcpd}->{species_flux}->{$species}), 
-		                node_type => "reaction", 
+						}],
+		                flux => abs($extcpdhash->{$mdlcpd}->{species_flux}->{$species}),
+		                node_type => "reaction",
 		                products => [{
-							compartment => $species, 
-							id => $species, 
-							stoich => "1", 
+							compartment => $species,
+							id => $species,
+							stoich => "1",
 							compound => $species
-		                }], 
-		                gapfilled => 0, 
-		                compartment => $species, 
-		                id => $mdlcpd."_".$species, 
+		                }],
+		                gapfilled => 0,
+		                compartment => $species,
+		                id => $mdlcpd."_".$species,
 		                name => $mdlcpd."_".$species
 					}
 				});
@@ -2170,7 +2175,7 @@ sub func_predict_auxotrophy_from_model {
 					});
 				}
 			}
-			
+
 		}
 	}
 	$datachannel->{media} = $current_media;
@@ -2335,7 +2340,7 @@ sub func_predict_auxotrophy {
 		}
 		print "\n";
 	}
-	
+
 	my $htmlreport = "<html><head><script type='text/javascript' src='https://www.google.com/jsapi'></script><script type='text/javascript'>google.load('visualization', '1', {packages:['controls'], callback: drawDashboard});google.setOnLoadCallback(drawDashboard);";
 	$htmlreport .= "function drawDashboard() {var data = new google.visualization.DataTable();";
 	$htmlreport .= "data.addColumn('string','Class');";
@@ -2350,7 +2355,7 @@ sub func_predict_auxotrophy {
 		for (my $j=0; $j < @{$genomes}; $j++) {
 			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
 				if ($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{auxotrophic} == 1) {
-					push(@{$row},'{v:1,f:"Gapfilling: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}.'<br>Reactions: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}.'<br>Auxotrophic"}');	
+					push(@{$row},'{v:1,f:"Gapfilling: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}.'<br>Reactions: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}.'<br>Auxotrophic"}');
 				} else {
 					push(@{$row},'{v:0,f:"Gapfilling: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}.'<br>Reactions: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}.'"}');
 				}
@@ -2585,6 +2590,104 @@ sub func_build_metagenome_metabolic_model {
 		}
 	} else {
 		#TODO: running binning, extraction, and annotation, then pulling down genomes and pulling out annotations
+
+		# Instantiating SDK callbacks should change into the setup you already have. I used the following for local testing.#
+		my $maxb = new kb_maxbin::kb_maxbinClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
+                                                            )
+                                                 );
+		my $be = new MetagenomeUtils::MetagenomeUtilsClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
+                                                            )
+                                                 );
+		my $ra = new RAST_SDK::RAST_SDKClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
+                                                            )
+                                                 );
+		my $pa = new ProkkaAnnotation::ProkkaAnnotationClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
+                                                            )
+                                                 );
+
+		my $mgap = Bio::KBase::kbaseenv::ws_client()->get_objects2({objects => [{ref => $assembly_ref}]})->{data}->[0];
+
+		#Reads ref is not in assembly object, accqurie from assembly object provenance data
+		my $readsProvRef;
+		for (my $j=0; $j< @{$mgap->{provenance}}; $j++){
+			my $readsProvList = $mgap->{provenance}->[$j]->{method_params};
+			for (my $k=0; $k< @{$readsProvList}; $k++){
+				if (defined $readsProvList->[$k]->{read_libraries}){
+					$readsProvRef = $readsProvList->[$k]->{read_libraries}->[0];
+					print &Dumper ($readsProvRef);
+				}
+			}
+		}
+
+		my $maxbinOut = $maxb->run_max_bin ({
+			assembly_ref => $assembly_ref,
+			workspace_name => $params->{workspace},
+			reads_list => [$readsProvRef],
+			binned_contig_name => 'binnedOut',
+			prob_threshold => 0.8,
+			markerset => '107',
+			min_contig_length => 1000,
+			plotmarker => 0
+
+		});
+		my $bContigs = $handler->util_get_object(Bio::KBase::utilities::buildref($maxbinOut->{binned_contig_obj_ref},$params->{workspace}));
+
+		print "Following bins will be extracted\n";
+		for (my $i =0; $i< @{$bContigs->{bins}}; $i++){
+
+			print $bContigs->{bins}->[$i]->{bid}."\n";
+		}
+
+		my $binExt = $be->extract_binned_contigs_as_assembly({
+			binned_contig_obj_ref => $maxbinOut->{binned_contig_obj_ref},
+			extracted_assemblies => '',
+			assembly_suffix => "_assembly",
+			workspace_name => $params->{workspace},
+			assembly_set_name => 'extracted_bins.AssemblySet'
+		});
+
+
+		#Annoate with Prokka
+		for (my $j=0; $j < @{$binExt->{assembly_ref_list}}; $j++){
+
+		 	my $ProkAnno = $pa->annotate({
+			output_workspace => $params->{workspace},
+			object_ref => $binExt->{assembly_ref_list}->[$j],
+			output_genome_name => $binExt->{assembly_ref_list}->[$j]."_Prokka"
+
+			});
+
+		}
+
+
+		#Annoate with RAST
+		#The API call is here, but I could not work test locally as it cannot copy the kmer ref data file through sdk call back.
+=head
+		for (my $j=0; $j < @{$binExt->{assembly_ref_list}}; $j++){
+			my $rastAnno = $ra->annotate_genome({
+			workspace => $params->{workspace},
+			input_contigset => $binExt->{assembly_ref_list}->[$j],
+			annotate_proteins_kmer_v2 => 1,
+			kmer_v1_parameters => 1,
+			annotate_proteins_similarity => 1,
+			call_features_CDS_glimmer3 => 1,
+			call_features_CDS_prodigal =>1,
+			scientific_name => 'unknown',
+			domain => 'B',
+			genetic_code => '11',
+			output_genome => $binExt->{assembly_ref_list}->[j]."_RAST"
+
+			});
+		}
+=cut
 	}
 	#Loading metagenome template
 	my $template_trans = Bio::KBase::constants::template_trans();
@@ -2647,7 +2750,7 @@ sub func_build_metagenome_metabolic_model {
 							$rejected->{$rxn} = [0,0];
 						}
 						$rejected->{$rxn}->[0] += $annotations->{$type}->{$annotation}->[0];
-						$rejected->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];	
+						$rejected->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];
 					}
 				}
 			}
@@ -2734,7 +2837,7 @@ sub func_build_metagenome_metabolic_model {
 		}
 	}
 	if ($first == 0) {
-		$htmlreport .= ".";	
+		$htmlreport .= ".";
 	}
 	#Gapfilling model if requested
 	$output = {};
@@ -2801,7 +2904,7 @@ sub func_fit_exometabolite_data {
 	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_ref},$params->{media_workspace}));
 	$handler->util_log("Preparing flux balance analysis problem.");
 	if (defined($params->{source_fbamodel_id}) && !defined($source_model)) {
-		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));	
+		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));
 	}
 	my $gfs = $model->gapfillings();
 	my $currentid = 0;
@@ -2823,7 +2926,7 @@ sub func_fit_exometabolite_data {
 		if ($matrix->{data}->{col_ids}->[$i] eq $params->{metabolite_condition}) {
 			$values = [];
 			for (my $j=0; $j < @{$matrix->{data}->{values}}; $j++) {
-				push(@{$values},$matrix->{data}->{values}->[$j]->[$i]);	
+				push(@{$values},$matrix->{data}->{values}->[$j]->[$i]);
 			}
 			last;
 		}
@@ -2834,7 +2937,7 @@ sub func_fit_exometabolite_data {
 	for (my $i=0; $i < @{$matrix->{data}->{row_ids}}; $i++) {
 		if ($matrix->{data}->{row_ids}->[$i] =~ m/cpd\d+/) {
 			$labels->[$i] = $matrix->{data}->{row_ids}->[$i];
-		}	
+		}
 	}
 	if (@{$labels} == 0) {
 		#Fetching attributes and searching for ModelSEED attribute
@@ -4525,7 +4628,7 @@ sub func_importmodel {
 		if ($compartment =~/^(\w)(\d+)$/) {
 			$compartment = $1;
 			$compartmentIndex = $2;
-		}		
+		}
 		my $input = {
 			reaction => $rxnrow->[0],
 			direction => $rxnrow->[1],
@@ -4579,7 +4682,7 @@ sub func_importmodel {
 		if (@{$rgts} == 1 && ($rgts->[0]->modelcompound()->id() =~ m/_e\d+$/ || $rgts->[0]->modelcompound()->id() =~ m/cpd08636_c0/ || $rgts->[0]->modelcompound()->id() =~ m/cpd15302_c0/ || $rgts->[0]->modelcompound()->id() =~ m/cpd11416_c0/)) {
 			Bio::KBase::utilities::log("Removing reaction:".$rxn->definition(),"debugging");
 			$model->remove("modelreactions",$rxn);
-		}	
+		}
 	}
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		Bio::KBase::utilities::log("Biomass:".$params->{biomass}->[$i],"debugging");
@@ -4670,10 +4773,10 @@ sub func_export {
 			}
 		}
 	} else {
-		return $handler->util_package_for_download({ 
+		return $handler->util_package_for_download({
 			file_path => $export_dir,
 			ws_refs   => [ $params->{input_ref} ]
-		});	
+		});
 	}
 }
 
@@ -4725,7 +4828,7 @@ sub func_bulk_export {
 			}
 		}
 	}
-	
+
 	my $export_dir = Bio::KBase::utilities::conf("fba_tools","scratch")."/model_objects";
 	if (-d $export_dir) {
 		File::Path::rmtree ($export_dir);
@@ -4804,7 +4907,7 @@ sub process_nodes {
 			foreach my $attr ($newnode[$j]->getAttributes()->getValues()) {
 				if ($attr->getName() eq "fbc:geneProduct") {
 					push(@{$genes},$attr->getValue());
-				}	
+				}
 			}
 		}
 		if ($first == 1) {
