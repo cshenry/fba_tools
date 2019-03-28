@@ -5,9 +5,8 @@ name     : Bulk Download Modeling Objects
 
 tooltip  : |
     Bulk download many modeling objects at once
-
 screenshots :
-
+    []
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
