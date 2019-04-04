@@ -263,10 +263,16 @@ sub extend_model_from_features {
 
 sub buildModelFromFunctions {
     my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args(["functions","modelid"],{}, @_);
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["functions","modelid"],{
+		atp_safe_model => 0,
+		gc => 0.5,
+		max_objective_limit => undef,
+		blacklist => []
+	}, @_);
+	my $coremodel;
 	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		id => $args->{modelid},
-		source => Bio::KBase::ObjectAPI::utilities::source(),
+		source => Bio::KBase::utilities::conf("ModelSEED","source"),
 		source_id => $args->{modelid},
 		type => $self->type(),
 		name => $args->{modelid},
@@ -279,6 +285,27 @@ sub buildModelFromFunctions {
 		modelcompounds => [],
 		modelreactions => []
 	});
+	$mdl->parent($self->parent());
+	if ($args->{atp_safe_model} == 1) {
+		my $template_trans = Bio::KBase::constants::template_trans();
+		my $coretemplate = $self->parent()->get_object(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core});
+		my $core_args = {
+			functions => $args->{functions},
+			modelid => $args->{modelid},
+			atp_safe_model => 0
+		};
+		$coremodel = $coretemplate->buildModelFromFunctions($core_args);
+		my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+			workspace => "NULL",
+			fbamodel_id => $args->{modelid},
+			fbamodel_output_id => $args->{modelid}.".core.gf",
+			target_reaction => "bio2",
+			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+			media_id => "RefGlucoseMinimal",
+			atp_production_check => 0,
+			blacklist => $args->{blacklist}
+		},$coremodel);
+	}
 	my $probabilities = {};
 	my $rxns = $self->reactions();
 	my $roleFeatures = {};
@@ -308,13 +335,87 @@ sub buildModelFromFunctions {
 			probabilities => $probabilities
 		});
 	}
+	print "Reactions:".@{$mdl->modelreactions()}."\n";
 	my $bios = $self->biomasses();
 	for (my $i=0; $i < @{$bios}; $i++) {
 		my $bio = $bios->[$i];
 		$bio->addBioToModel({
-			gc => 0.5,
+			gc => $args->{gc},
 			model => $mdl
 		});
+	}
+	$mdl->add("biomasses",Bio::KBase::constants::atp_hydrolysis_biomass());
+	if ($args->{atp_safe_model} == 1) {
+		my $corehash = {};
+		my $rxns = $coremodel->modelreactions();
+		for (my $i=0; $i < @{$rxns}; $i++) {
+			$corehash->{$rxns->[$i]->id()} = 1;
+			my $rxn = $mdl->queryObject("modelreactions",{id => $rxns->[$i]->id()});
+			if (defined($rxn)) {
+				$mdl->remove("modelreactions",$rxn);
+			}
+			$mdl->add("modelreactions",$rxns->[$i]);
+			my $rgts = $rxns->[$i]->modelReactionReagents();
+			for (my $j=0; $j < @{$rgts}; $j++) {
+				if ($rgts->[$j]->modelcompound_ref() =~ m/(cpd\d+.+)/) {
+					my $cpdid = $1;
+					my $cpdobj = $mdl->queryObject("modelcompounds",{id => $cpdid});
+					if (!defined($cpdobj)) {
+						$mdl->add("modelcompounds",$rgts->[$j]->modelcompound());
+					}
+				}
+			}
+		}
+		my $rxnlist = [];
+		$rxns = $mdl->modelreactions();
+		for (my $i=0; $i < @{$rxns}; $i++) {
+			if (!defined($corehash->{$rxns->[$i]->id()})) {
+				push(@{$rxnlist},$rxns->[$i]->id());
+			}
+		}
+		my $datachannel = {
+			fbamodel => $mdl
+		};
+		$mdl->_reference("NULL/".$args->{modelid});
+		Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+			workspace => "NULL",
+			fbamodel_id => $args->{modelid},
+			fba_output_id => $args->{modelid}.".atp.fba",
+			media_id => "RefGlucoseMinimal",
+			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+			target_reaction => "bio2",
+			reaction_addition_study => 1,
+			max_objective_limit => $args->{max_objective_limit},
+			reaction_list => $rxnlist
+		},$datachannel);
+		my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
+		my $first = 1;
+		if (defined($rxn_addition_data)) {
+			for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
+				my $row = [split(/\t/,$rxn_addition_data->[$i])];
+				if ($row->[2] == 0) {
+					if ($row->[1] =~ m/(.)(rxn.+)/) {
+						 my $sign = $1;
+						 my $id = $2;
+						 $first = 0;
+						 my $rxnobj = $mdl->queryObject("modelreactions",{id => $id});
+						 if ($sign eq "+") {
+						 	if ($rxnobj->direction() eq "=") {
+						 		$rxnobj->direction("<");
+						 	} else {
+						 		$mdl->remove("modelreactions",$rxnobj);
+						 	}
+						 } else {
+						 	if ($rxnobj->direction() eq "=") {
+						 		$rxnobj->direction(">");
+						 	} else {
+						 		$mdl->remove("modelreactions",$rxnobj);
+						 	}
+						 }
+					}
+				}
+			}
+		}
 	}
 	return $mdl;
 }

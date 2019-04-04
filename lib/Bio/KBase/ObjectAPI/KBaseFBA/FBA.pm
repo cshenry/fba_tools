@@ -854,7 +854,12 @@ sub createComponentObjectiveReactions {
 		}
 	}
 	#Adding reactions to reaction file list
+	$self->parameters()->{"component objective reactions"} = "";
 	foreach my $cpdid (keys(%{$comprxn})) {
+		if (length($self->parameters()->{"component objective reactions"}) > 0) {
+			$self->parameters()->{"component objective reactions"} .= ";";
+		}
+		$self->parameters()->{"component objective reactions"} .= comprxn->{$cpdid}->{id};
 		push(@{$additionalrxn},$comprxn->{$cpdid}->{id}."\t>\t".$comprxn->{$cpdid}->{id});
 		push(@{$BioRxn},$comprxn->{$cpdid}->{id}."\t".$comprxn->{$cpdid}->{id}."\t0\t0\t".$comprxn->{$cpdid}->{rxn}."\t".$comprxn->{$cpdid}->{id}."\t=>\tOK\t=>");
 	}
@@ -1384,53 +1389,81 @@ sub createJobDirectory {
 		}
 	}
 	if (defined($self->{_expsample})) {
-		my $coef = $self->process_expression_data();
-		foreach my $key (keys(%{$coef->{lowexp}})) {
-			delete $actcoef->{$key};
-			if (defined($coef->{lowexp}->{$key}->{forward})) {
-				$gfcoef->{$key}->{forward} = $coef->{lowexp}->{$key}->{forward};
-			}
-			if (defined($coef->{lowexp}->{$key}->{"reverse"})) {
-				$gfcoef->{$key}->{"reverse"} = $coef->{lowexp}->{$key}->{"reverse"};
-			}
-			$gfcoef->{$key}->{tag} = "MDLRXN";
-		}
-		foreach my $key (keys(%{$coef->{highexp}})) {
-			$actcoef->{$key} = $coef->{highexp}->{$key};
-		}
+		$self->createComponentObjectiveReactions({
+			biorxn => $BioRxn,
+			additionalrxn => $additionalrxn,
+			add_extracellular_compounds => 0
+		});
+		$self->process_expression_data();
+#		foreach my $key (keys(%{$coef->{lowexp}})) {
+#			delete $actcoef->{$key};
+#			if (defined($coef->{lowexp}->{$key}->{forward})) {
+#				$gfcoef->{$key}->{forward} = $coef->{lowexp}->{$key}->{forward};
+#			}
+#			if (defined($coef->{lowexp}->{$key}->{"reverse"})) {
+#				$gfcoef->{$key}->{"reverse"} = $coef->{lowexp}->{$key}->{"reverse"};
+#			}
+#			$gfcoef->{$key}->{tag} = "MDLRXN";
+#		}
+#		foreach my $key (keys(%{$coef->{highexp}})) {
+#			$actcoef->{$key} = $coef->{highexp}->{$key};
+#		}
 	}
 	my $atp_bio;
 	my $atp_rxn = 1;
 	my $atp_match_hash = Bio::KBase::constants::atp_hydrolysis_hash();
+	my $aahash = Bio::KBase::constants::amino_acids();
 	for (my $i=0; $i < @{$biomasses}; $i++) {
 		my $bio = $biomasses->[$i];
 		push(@{$mdlData},$bio->id().";=>;c;UNIVERSAL;;1");
 		my $reactants = "";
 		my $products = "";
-		my $rgts = $bio->biomasscompounds();
+		my $rgts = $bio->biomasscompounds();		
+		my $protein_mass = 0;
+		my $protein_mols = 0;
+		my $protein_rxn = "";
 		for (my $j=0;$j < @{$rgts}; $j++) {
 			my $rgt = $rgts->[$j];
-			if (!defined($atp_match_hash->{$rgt->modelcompound()->id()}) || $atp_match_hash->{$rgt->modelcompound()->id()} != $rgt->coefficient()) {
+			if (defined($self->parameters()->{"steady state protein fba"}) && $slef->parameters()->{"steady state protein fba"} == 1 && $rgt->modelcompound()->id() =~ m/(cpd\d+)/ && defined($aahash->{$1})) {
+				my $cpdid = $1;
+				$protein_mols += -1*$rgt->coefficient();
+				$protein_mass += -1*$rgt->coefficient()*$aahash->{$cpdid}/1000;
 				$atp_rxn = 0;
-			}
-			my $suffix = "";
-			if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
-				$suffix = "[e]";
-			}
-			if ($rgt->coefficient() < 0) {
-				if (length($reactants) > 0) {
-					$reactants .= " + ";
+				if (length($protein_rxn) > 0) {
+					$protein_rxn .= " + ";
 				}
-				$reactants .= "(".(-1*$rgt->coefficient()).") ".$rgt->modelcompound()->id().$suffix;
-			} elsif ($rgt->coefficient() > 0) {
-				if (length($products) > 0) {
-					$products .= " + ";
+				$protein_rxn .= "(".(-1*$rgt->coefficient()).") ".$rgt->modelcompound()->id();
+			} else {
+				if (!defined($atp_match_hash->{$rgt->modelcompound()->id()}) || $atp_match_hash->{$rgt->modelcompound()->id()} != $rgt->coefficient()) {
+					$atp_rxn = 0;
 				}
-				$products .= "(".$rgt->coefficient().") ".$rgt->modelcompound()->id().$suffix;
+				my $suffix = "";
+				if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
+					$suffix = "[e]";
+				}
+				if ($rgt->coefficient() < 0) {
+					if (length($reactants) > 0) {
+						$reactants .= " + ";
+					}
+					$reactants .= "(".(-1*$rgt->coefficient()).") ".$rgt->modelcompound()->id().$suffix;
+				} elsif ($rgt->coefficient() > 0) {
+					my $coef = $rgt->coefficient();
+					if (defined($self->parameters()->{"steady state protein fba"}) && $slef->parameters()->{"steady state protein fba"} == 1 && $rgt->modelcompound()->id() =~ m/cpd00001_/) {
+						$coef += -1*$protein_mols;
+					}
+					if (length($products) > 0) {
+						$products .= " + ";
+					}
+					$products .= "(".$coef.") ".$rgt->modelcompound()->id().$suffix;
+				}
 			}
 		}
 		if ($atp_rxn == 1) {
 			$atp_bio = $bio->id();
+		} elsif (defined($slef->parameters()->{"steady state protein fba"}) && $slef->parameters()->{"steady state protein fba"} == 1) {
+			$protein_mass += -1*0.018*$protein_mols;
+			$self->parameters()->{"protein biomass fraction"} = $protein_mass;
+			push(@{$BioRxn},"ProteinBiomass\tProteinBiomass\t0\t0".$protein_rxn." => (".$protein_mols.") cpd00001_c0");
 		}
 		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$reactants." => ".$products."\tBiomass\t=>\tOK\t=>";
 		push(@{$BioRxn},$rxnline);
@@ -1498,6 +1531,7 @@ sub createJobDirectory {
 	if ($self->fluxUseVariables() == 1 || $self->drainfluxUseVariables() == 1 || $self->findMinimalMedia() || defined $self->{_expsample}) {
 		$solver = "SCIP" if $solver ne "CPLEX";
 	}
+	$solver = "CPLEX";
 	#Setting gene KO
 	my $geneKO = "none";
 	for (my $i=0; $i < @{$self->geneKOs()}; $i++) {
@@ -1946,18 +1980,44 @@ Description:
 
 sub process_expression_data {
 	my ($self) = @_;
-	my $booleanexp = $self->parameters()->{booleanexp};
-	my $sample = $self->{_expsample};
-	my $exphash = $sample;
-	my $exp_scores = {};
-	my $max_exp_score = 0;
-	my $min_exp_score = -1;
+	my $exphash = $self->{_expsample};
+	if ($self->parameters()->{normalization} eq "none") {
+		#Computing the average and stddev
+		my $average = 0;
+		my $count = 0;
+		foreach my $ftr (keys(%{$exphash})) {
+			$count++;
+			$average += $exphash->{$ftr};
+		}
+		$average = $average/$count;
+		my $stddev = 0;
+		foreach my $ftr (keys(%{$exphash})) {
+			$stddev += ($exphash->{$ftr} - $average)*($exphash->{$ftr} - $average);
+		}
+		$stddev = sqrt($stddev/$count);
+		#Finding the highest scores discounting outlying values
+		my $highest = 0;
+		foreach my $ftr (keys(%{$exphash})) {
+			if ($exphash->{$ftr} < ($average+2*$stddev)) {
+				if ($exphash->{$ftr} > $highest) {
+					$highest = $exphash->{$ftr};
+				}
+			}
+		}
+		#Normalizing
+		foreach my $ftr (keys(%{$exphash})) {
+			if ($exphash->{$ftr} >= ($average+2*$stddev)) {
+				$exphash->{$ftr} = 1;
+			} else {
+				$exphash->{$ftr} = $exphash->{$ftr}/$highest;
+			}
+		}
+	}
 	my $mdlrxns = $self->fbamodel()->modelreactions();
-	my $inactiveList = ["bio1"];
 	my $rxnhash = {};
+	my $exp_scores = {};
 	foreach my $mdlrxn (@{$mdlrxns}) {
 		$rxnhash->{$mdlrxn->id()} = $mdlrxn;
-		push(@{$inactiveList},$mdlrxn->id());
 		# Maximal gene expression for a reaction
 		my $rxn_score;
 		foreach my $prot (@{$mdlrxn->modelReactionProteins()}) {
@@ -1973,12 +2033,6 @@ sub process_expression_data {
 					my $ftr_id = $feature->id();
 					if (defined($exphash->{$feature->id()})) {
 						my $ftr_score = $exphash->{$feature->id};
-						if ($ftr_score > $max_exp_score) {
-							$max_exp_score = $ftr_score;
-						}
-						if ($min_exp_score >= 0 && $ftr_score < $min_exp_score) {
-						$min_exp_score = $ftr_score;
-						}
 						if (!defined($subunit_score) || $subunit_score <  $ftr_score) {
 							$subunit_score = $ftr_score;
 						}
@@ -1997,60 +2051,80 @@ sub process_expression_data {
 			}
 		}
 		if (defined($rxn_score)) {
-			$mdlrxn->{raw_exp_score} = $rxn_score;
+			$mdlrxn->{norm_exp_score} = $rxn_score;
 			$exp_scores->{$mdlrxn->id()} = $rxn_score;
 		}
 	}
-	# don't scale probabilities - they are already on a 0 to 1 scale
-	if ($booleanexp eq "absolute") {
-		my $sortedrxns = [keys(%{$exp_scores})];
-		$sortedrxns = [sort { $exp_scores->{$a} <=> $exp_scores->{$b} } @{$sortedrxns}];
-		my $multiple = @{$sortedrxns};
-		if ($multiple > 0) {
-			$multiple = 1/$multiple;
-			for (my $i=0; $i < @{$sortedrxns}; $i++) {
-				$exp_scores->{$sortedrxns->[$i]} = $i*$multiple;
-				$rxnhash->{$sortedrxns->[$i]}->{norm_exp_score} = $exp_scores->{$sortedrxns->[$i]};
+	$self->parameters()->{"reaction flux target"} = "";
+	$self->parameters()->{"fit flux vector"} = 1;
+	if (defined($self->parameters()->{"characteristic flux file"}) && -e $self->parameters()->{"characteristic flux file"}) {
+		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($self->parameters()->{"characteristic flux file"});
+		for (my $i=0; $i < @{$lines}; $i++) {
+			my $array = [split(/\t/,$lines->[$i])];
+			if (defined($exp_scores->{$array->[0]})) {
+				my $fluxarray = [split(/;/,$array->[1])];
+				my $ave = 0;
+				my $count = @{$fluxarray};
+				for (my $j=0; $j < @{$fluxarray}; $j++) {
+					$ave += $fluxarray->[$j];
+				}
+				$ave = $ave/$count;
+				$self->parameters()->{"reaction flux target"} .= $array->[0].":".$exp_scores->{$array->[0]}*$ave;
 			}
 		}
 	}
 	
-	my $coef = {
-		highexp => {},
-		lowexp => {}
-	};
-	my $threshold = $self->parameters()->{expression_threshold_percentile};
-	my $kappa = $self->parameters()->{kappa};
-	my $high_expression_threshold = $threshold+$kappa;
-	my $low_expression_threshold = $threshold-$kappa;
-
-	for (my $i=0; $i < @{$inactiveList}; $i++) {
-		if($inactiveList->[$i] eq "bio1"){
-			$coef->{highexp}->{bio1} = 1;
-		} elsif(exists($exp_scores->{$inactiveList->[$i]})){
-			if($exp_scores->{$inactiveList->[$i]} <= $low_expression_threshold) {
-				$rxnhash->{$inactiveList->[$i]}->{exp_state} = "off";
-				my $penalty = ($threshold-$exp_scores->{$inactiveList->[$i]})/$threshold;
-				if ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq "=") {
-					$coef->{lowexp}->{$inactiveList->[$i]}->{forward} = $penalty;
-					$coef->{lowexp}->{$inactiveList->[$i]}->{"reverse"} = $penalty;
-				} elsif ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq ">") {
-					$coef->{lowexp}->{$inactiveList->[$i]}->{forward} = $penalty;
-				} elsif ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq "<") {
-					$coef->{lowexp}->{$inactiveList->[$i]}->{"reverse"} = $penalty;
-				}
-			} elsif ($exp_scores->{$inactiveList->[$i]} > $high_expression_threshold) {
-				$rxnhash->{$inactiveList->[$i]}->{exp_state} = "on";
-				my $penalty = ($exp_scores->{$inactiveList->[$i]}-$threshold)/$threshold;
-				$coef->{highexp}->{$inactiveList->[$i]} = $penalty;
-			}
-		}
-	}
-	push(@{$self->{outputfiles}->{gapfillrxns}},"Lowexp reactions:".join("|",keys(%{$coef->{lowexp}})));
-	push(@{$self->{outputfiles}->{gapfillrxns}},"Highexp reactions:".join("|",keys(%{$coef->{highexp}})));
-	push(@{$self->{outputfiles}->{gapfillstats}},"Lowexp reactions:".keys(%{$coef->{lowexp}}));
-	push(@{$self->{outputfiles}->{gapfillstats}},"Highexp reactions:".keys(%{$coef->{highexp}}));
-	return $coef;
+	
+	# don't scale probabilities - they are already on a 0 to 1 scale
+#	if ($booleanexp eq "absolute") {
+#		my $sortedrxns = [keys(%{$exp_scores})];
+#		$sortedrxns = [sort { $exp_scores->{$a} <=> $exp_scores->{$b} } @{$sortedrxns}];
+#		my $multiple = @{$sortedrxns};
+#		if ($multiple > 0) {
+#			$multiple = 1/$multiple;
+#			for (my $i=0; $i < @{$sortedrxns}; $i++) {
+#				$exp_scores->{$sortedrxns->[$i]} = $i*$multiple;
+#				$rxnhash->{$sortedrxns->[$i]}->{norm_exp_score} = $exp_scores->{$sortedrxns->[$i]};
+#			}
+#		}
+#	}
+	
+#	my $coef = {
+#		highexp => {},
+#		lowexp => {}
+#	};
+#	my $threshold = $self->parameters()->{expression_threshold_percentile};
+#	my $kappa = $self->parameters()->{kappa};
+#	my $high_expression_threshold = $threshold+$kappa;
+#	my $low_expression_threshold = $threshold-$kappa;
+#
+#	for (my $i=0; $i < @{$inactiveList}; $i++) {
+#		if($inactiveList->[$i] eq "bio1"){
+#			$coef->{highexp}->{bio1} = 1;
+#		} elsif(exists($exp_scores->{$inactiveList->[$i]})){
+#			if($exp_scores->{$inactiveList->[$i]} <= $low_expression_threshold) {
+#				$rxnhash->{$inactiveList->[$i]}->{exp_state} = "off";
+#				my $penalty = ($threshold-$exp_scores->{$inactiveList->[$i]})/$threshold;
+#				if ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq "=") {
+#					$coef->{lowexp}->{$inactiveList->[$i]}->{forward} = $penalty;
+#					$coef->{lowexp}->{$inactiveList->[$i]}->{"reverse"} = $penalty;
+#				} elsif ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq ">") {
+#					$coef->{lowexp}->{$inactiveList->[$i]}->{forward} = $penalty;
+#				} elsif ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq "<") {
+#					$coef->{lowexp}->{$inactiveList->[$i]}->{"reverse"} = $penalty;
+#				}
+#			} elsif ($exp_scores->{$inactiveList->[$i]} > $high_expression_threshold) {
+#				$rxnhash->{$inactiveList->[$i]}->{exp_state} = "on";
+#				my $penalty = ($exp_scores->{$inactiveList->[$i]}-$threshold)/$threshold;
+#				$coef->{highexp}->{$inactiveList->[$i]} = $penalty;
+#			}
+#		}
+#	}
+#	push(@{$self->{outputfiles}->{gapfillrxns}},"Lowexp reactions:".join("|",keys(%{$coef->{lowexp}})));
+#	push(@{$self->{outputfiles}->{gapfillrxns}},"Highexp reactions:".join("|",keys(%{$coef->{highexp}})));
+#	push(@{$self->{outputfiles}->{gapfillstats}},"Lowexp reactions:".keys(%{$coef->{lowexp}}));
+#	push(@{$self->{outputfiles}->{gapfillstats}},"Highexp reactions:".keys(%{$coef->{highexp}}));
+#	return $coef;
 }
 
 =head3 setupFBAExperiments
@@ -2492,6 +2566,7 @@ sub loadMFAToolkitResults {
 	$self->parseReactionAdditionAnalysis();
 	$self->parseSSCommunityFluxAnalysis();
 	$self->parseExometaboiteResults();
+	$self->parseLoopResults();
 }
 
 =head3 parseBiomassRemovals
@@ -2992,6 +3067,22 @@ sub parseSSCommunityFluxAnalysis {
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/MFAOutput/SSCommunityFluxAnalysis.txt") {
 		$self->outputfiles()->{SSCommunityFluxAnalysis} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/SSCommunityFluxAnalysis.txt");
+	}
+}
+
+=head3 parseLoopResults
+Definition:
+	void ModelSEED::MS::Model->parseLoopResults();
+Description:
+	Parses loop results
+
+=cut
+
+sub parseLoopResults {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MFAOutput/FluxLoops.txt") {
+		$self->outputfiles()->{FluxLoops} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/FluxLoops.txt");
 	}
 }
 

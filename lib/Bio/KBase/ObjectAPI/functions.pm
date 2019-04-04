@@ -382,7 +382,7 @@ sub func_build_metabolic_model {
 	}
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
-	#Clearning up annotation source array
+	#Clearing up annotation source array
 	my $anno_sources = [];
 	for (my $i=0; $i < @{$params->{source_ontology_list}};$i++) {
 		if (defined($params->{source_ontology_list}->[$i]->[0])) {
@@ -724,6 +724,43 @@ sub func_gapfill_metabolic_model {
 	return $output;
 }
 
+sub func_catalogue_all_loops_in_model {
+	my ($params,$model) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
+		fbamodel_workspace => $params->{workspace},
+		fbamodel_output_id => $params->{fbamodel_id},
+		save_model => 1,
+		print_report => 1,
+		fba_output_id => $params->{fbamodel_id}.".loopfba"
+	});
+	if (!defined($model)) {
+		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+	}
+	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref("Complete","KBaseMedia"));
+	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+	$fba->parameters()->{"catalogue flux loops"} = 1;
+	$fba->runFBA();
+	my $htmlreport = "";
+	if (defined($fba->outputfiles()->{ExometaboliteOutput})) {
+		my $output_rows = $fba->outputfiles()->{ExometaboliteOutput};
+		my $loops = [];
+		for (my $i=0; $i < @{$output_rows}; $i++) {
+			$loops->[$i] = [split(/;/,$output_rows->[$i])];
+		}
+		$model->loops($loops);
+	}
+	if ($params->{save_model} == 1) {
+		$handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
+	}
+	if ($params->{print_report} == 1) {
+		Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+	}
+	my $output = {
+		new_fbamodel => $model
+	};
+	return $output;
+}
+
 sub func_run_flux_balance_analysis {
 	my ($params,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","fba_output_id"],{
@@ -771,7 +808,10 @@ sub func_run_flux_balance_analysis {
 		reaction_addition_study => 0,
 		max_objective_limit => 1.2,
 		reaction_list => [],
-		predict_community_composition => 0
+		predict_community_composition => 0,
+		compute_characteristic_flux => 0,
+		steady_state_protein_fba => 0,
+		characteristic_flux_file => undef
 	});
 	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
 		if (length($params->{reaction_ko_list}) > 0) {
@@ -786,9 +826,12 @@ sub func_run_flux_balance_analysis {
 	} else {
 		$handler->util_log("Retrieving model.");
 		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+		$handler->util_log("TEST");
 		Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
 	}
+	$handler->util_log("TEST2");
 	if (!defined($params->{media_id})) {
+		$handler->util_log("TEST3");
 		if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
 			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_plant_media");
 		} else {
@@ -796,6 +839,7 @@ sub func_run_flux_balance_analysis {
 			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_microbial_media");
 		}
 		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
+		$handler->util_log("TEST4");
 	}
 
 	$handler->util_log("Retrieving ".$params->{media_id}." media or mediaset.");
@@ -814,6 +858,15 @@ sub func_run_flux_balance_analysis {
 	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
 	if ($params->{predict_community_composition} == 1) {
 		$fba->parameters()->{"steady state community modeling"} = 1;
+	}
+	if ($params->{compute_characteristic_flux} == 1) {
+		$fba->parameters()->{"Compute characteristic fluxes"} = 1;
+	}
+	if (defined($params->{characteristic_flux_file})) {
+		$fba->parameters()->{"characteristic flux file"} = $params->{characteristic_flux_file};
+	}
+	if (defined($params->{steady_state_protein_fba})) {
+		$fba->parameters()->{"steady state protein fba"} = $params->{steady_state_protein_fba};
 	}
 	$fba->parameters()->{"reduce objective"} = $params->{reduce_objective};
 	$fba->parameters()->{"max objective"} = $params->{max_objective};
@@ -847,7 +900,7 @@ sub func_run_flux_balance_analysis {
 		local $SIG{ALRM} = sub { die "FBA timed out! Model likely contains numerical instability!" };
 		alarm 86400;
 		$objective = $fba->runFBA();
-		$fba->toJSON({pp => 1});
+	#$fba->toJSON({pp => 1});
 		alarm 0;
 	#};
 	if (!defined($objective)) {
@@ -2502,6 +2555,7 @@ sub func_build_metagenome_metabolic_model {
 		}
 	} else {
 		#TODO: running binning, extraction, and annotation, then pulling down genomes and pulling out annotations
+		
 	}
 	#Loading metagenome template
 	my $template_trans = Bio::KBase::constants::template_trans();
