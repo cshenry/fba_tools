@@ -1,4 +1,4 @@
- {
+{
    "name" : "Edit Media",
    "ver" : "1.0.0",
    "authors" : ["chenry@mcs.anl.gov"],
@@ -165,17 +165,20 @@
          "allow_multiple" : false
       },
       {
-         "text_options" : {
-		 	"valid_ws_types" : []
-		 },
          "id" : "add_id",
-         "default_values" : [
-            ""
-         ],
+         "default_values" : [""],
          "advanced" : false,
-         "field_type" : "text",
          "optional" : false,
-         "allow_multiple" : false
+         "allow_multiple" : false,
+         "field_type" : "dynamic_dropdown",
+         "dynamic_dropdown_options" : {
+              "data_source": "custom",
+              "service_function": "BiochemistryAPI.search_compounds",
+              "service_version": "dev",
+              "service_params": [{"query":"{{dynamic_dropdown_input}}"}],
+              "selection_id" : "id",
+              "description_template" : "<strong>{{id}}</strong>: {{name}}"
+         }
       },
       {
          "text_options" : {
