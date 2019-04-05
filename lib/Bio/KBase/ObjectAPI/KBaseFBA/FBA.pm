@@ -859,7 +859,7 @@ sub createComponentObjectiveReactions {
 		if (length($self->parameters()->{"component objective reactions"}) > 0) {
 			$self->parameters()->{"component objective reactions"} .= ";";
 		}
-		$self->parameters()->{"component objective reactions"} .= comprxn->{$cpdid}->{id};
+		$self->parameters()->{"component objective reactions"} .= $comprxn->{$cpdid}->{id};
 		push(@{$additionalrxn},$comprxn->{$cpdid}->{id}."\t>\t".$comprxn->{$cpdid}->{id});
 		push(@{$BioRxn},$comprxn->{$cpdid}->{id}."\t".$comprxn->{$cpdid}->{id}."\t0\t0\t".$comprxn->{$cpdid}->{rxn}."\t".$comprxn->{$cpdid}->{id}."\t=>\tOK\t=>");
 	}
@@ -1424,7 +1424,7 @@ sub createJobDirectory {
 		my $protein_rxn = "";
 		for (my $j=0;$j < @{$rgts}; $j++) {
 			my $rgt = $rgts->[$j];
-			if (defined($self->parameters()->{"steady state protein fba"}) && $slef->parameters()->{"steady state protein fba"} == 1 && $rgt->modelcompound()->id() =~ m/(cpd\d+)/ && defined($aahash->{$1})) {
+			if (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1 && $rgt->modelcompound()->id() =~ m/(cpd\d+)/ && defined($aahash->{$1})) {
 				my $cpdid = $1;
 				$protein_mols += -1*$rgt->coefficient();
 				$protein_mass += -1*$rgt->coefficient()*$aahash->{$cpdid}/1000;
@@ -1448,7 +1448,7 @@ sub createJobDirectory {
 					$reactants .= "(".(-1*$rgt->coefficient()).") ".$rgt->modelcompound()->id().$suffix;
 				} elsif ($rgt->coefficient() > 0) {
 					my $coef = $rgt->coefficient();
-					if (defined($self->parameters()->{"steady state protein fba"}) && $slef->parameters()->{"steady state protein fba"} == 1 && $rgt->modelcompound()->id() =~ m/cpd00001_/) {
+					if (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1 && $rgt->modelcompound()->id() =~ m/cpd00001_/) {
 						$coef += -1*$protein_mols;
 					}
 					if (length($products) > 0) {
@@ -1460,7 +1460,7 @@ sub createJobDirectory {
 		}
 		if ($atp_rxn == 1) {
 			$atp_bio = $bio->id();
-		} elsif (defined($slef->parameters()->{"steady state protein fba"}) && $slef->parameters()->{"steady state protein fba"} == 1) {
+		} elsif (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1) {
 			$protein_mass += -1*0.018*$protein_mols;
 			$self->parameters()->{"protein biomass fraction"} = $protein_mass;
 			push(@{$BioRxn},"ProteinBiomass\tProteinBiomass\t0\t0".$protein_rxn." => (".$protein_mols.") cpd00001_c0");
