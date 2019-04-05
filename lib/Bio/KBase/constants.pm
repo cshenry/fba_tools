@@ -332,6 +332,10 @@ sub auxotrophy_thresholds {
 	};
 }
 
+sub amino_acids {
+	return {};	
+}
+
 sub core_reactions {
 	return [
 		['rxn00011','<'],
