@@ -1531,7 +1531,7 @@ sub createJobDirectory {
 	if ($self->fluxUseVariables() == 1 || $self->drainfluxUseVariables() == 1 || $self->findMinimalMedia() || defined $self->{_expsample}) {
 		$solver = "SCIP" if $solver ne "CPLEX";
 	}
-	$solver = "CPLEX";
+	#$solver = "CPLEX";
 	#Setting gene KO
 	my $geneKO = "none";
 	for (my $i=0; $i < @{$self->geneKOs()}; $i++) {
