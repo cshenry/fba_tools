@@ -1,0 +1,160 @@
+#
+# Define basic display information
+#
+name     : Predict metabolite biosynthesis pathway
+
+tooltip  : |
+    Predict metabolite biosynthesis pathway
+    
+screenshots :
+    - run_flux_balance_analysis_input.png
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    fbamodel_id :
+        ui-name : |
+            FBA model
+        short-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        long-hint : |
+            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+        placeholder : |
+            Model for FBA
+
+
+    source_metabolite_list :
+        ui-name : |
+            Additional source compounds
+        short-hint : |
+            Additional source compounds
+        long-hint : |
+            Additional source compounds
+
+
+    feature_ko_list :
+        ui-name : |
+            Gene Knockouts
+        short-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+        long-hint : |
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+
+
+    media_id :
+        ui-name : |
+            Media (defaults to complete media)
+        short-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth. If none is specified complete media is used.
+        long-hint : |
+            Media specifies the set of chemical compounds organism can use for its growth. If none is specified complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run FBA with complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
+        placeholder : |
+            Growth condition for FBA
+
+
+    fba_output_id :
+        ui-name : |
+            Output FBA Result
+        short-hint : |
+            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
+        long-hint : |
+            The fluxes for all reactions in the metabolic model and the predicted growth of the biomass according to the FBA model
+        placeholder : |
+            ID for saving FBA results
+
+
+    exp_threshold_percentile :
+        ui-name : |
+            Expression threshold
+        short-hint : |
+            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+        long-hint : |
+            Reactions with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+
+
+    expression_condition :
+        ui-name : |
+            Expression condition
+        short-hint : |
+            Specific condition in expression matrix to which reaction activity in FBA should be fit
+        long-hint : |
+            Specific condition in expression matrix to which reaction activity in FBA should be fit
+
+
+    target_metabolite_list :
+        ui-name : |
+            Metabolites to find pathways for
+        short-hint : |
+            Metabolites to find pathways for
+        long-hint : |
+            Metabolites to find pathways for
+
+
+    reaction_ko_list :
+        ui-name : |
+            Reaction Knockouts
+        short-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+        long-hint : |
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+
+
+    exp_threshold_margin :
+        ui-name : |
+            Expression uncertainty
+        short-hint : |
+            Range of uncertainty for classification of reaction activity based on expression threshold
+        long-hint : |
+            Range of uncertainty for classification of reaction activity based on expression threshold
+
+
+    expseries_id :
+        ui-name : |
+            Expression data set
+        short-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
+        long-hint : |
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be used to constrain reaction activity in FBA
+
+
+    activation_coefficient :
+        ui-name : |
+            Activation coefficient
+        short-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+        long-hint : |
+            What fraction of the optimal objective value should analyses like FVA, single gene knockout, and transcriptomic FBA be constrained at? Values between 0 and 1.
+
+
+icon: fba-teal.png
+
+description : |
+
+    <p>Method for predicting metabolic pathways</p>
+
+publications :
+    -
+        pmid: 20802497
+        display-text: |
+            Henry CS, DeJongh M, Best AA, Frybarger PM, Linsay B, Stevens RL. High-throughput generation, optimization and analysis of genome-scale metabolic models. Nat Biotechnol. 2010;28: 977–982. doi:10.1038/nbt.1672
+        link: http://www.ncbi.nlm.nih.gov/pubmed/20802497
+    -
+        display-text: |
+             Orth JD, Thiele I, Palsson BØ. What is flux balance analysis? Nature Biotechnology. 2010;28: 245–248. doi:10.1038/nbt.1614
+        link: http://www.nature.com/nbt/journal/v28/n3/abs/nbt.1614.html

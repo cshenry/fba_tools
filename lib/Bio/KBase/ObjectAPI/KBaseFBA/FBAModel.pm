@@ -97,10 +97,9 @@ sub gapfilled_reaction_count {
 	my $count = 0;
 	for (my $i=0; $i < @{$reactions}; $i++) {
 		my $gfhash = $reactions->[$i]->gapfill_data();
-		foreach my $key (keys(%{$gfhash})) {
-			if ($gfhash->{$key} =~ m/added/) {
-				$count++;
-			}
+		my $numkeys = keys(%{$gfhash});
+		if ($numkeys > 0) {
+			$count++;
 		}
 	}
 	return $count;
@@ -414,19 +413,19 @@ Description:
 sub addModelReaction {
     my $self = shift;
     my $args = Bio::KBase::ObjectAPI::utilities::args(["reaction"],{
-    	equation => undef,
-    	direction => undef,
-    	compartment => "c",
-    	compartmentIndex => 0,
-    	gpr => undef,
-    	removeReaction => 0,
-    	addReaction => 0,
-    	compounds => {},
-    	enzyme => undef,
-    	pathway => undef,
-    	name => undef,
-    	reference => undef,
-    	genetranslation => undef
+	    	equation => undef,
+	    	direction => undef,
+	    	compartment => "c",
+	    	compartmentIndex => 0,
+	    	gpr => undef,
+	    	removeReaction => 0,
+	    	addReaction => 0,
+	    	compounds => {},
+	    	enzyme => undef,
+	    	pathway => undef,
+	    	name => undef,
+	    	reference => undef,
+	    	genetranslation => undef
     }, @_);
     my $rootid = $args->{reaction};
 	if ($rootid =~ m/(.+)_([a-zA-Z])(\d+)$/) {
@@ -474,38 +473,36 @@ sub addModelReaction {
 	#Finding reaction reference
 	my $reference = $self->template()->_reference()."/reactions/id/rxn00000_c";
 	my $coefhash = {};
-	if ($rootid =~ m/^rxn\d+$/) {
-		my $rxnobj = $self->template()->searchForReaction($rootid,$cmp->id());
-		if (defined($rxnobj)){
-			$reference = $rxnobj->_reference();
-			my $rgts = $rxnobj->templateReactionReagents();
-			my $cmpchange = 0;
-			for (my $i=0; $i < @{$rgts}; $i++) {
-				if ($rgts->[$i]->templatecompcompound()->templatecompartment()->id() ne "c") {
-					$cmpchange = 1;
-					last;
-				}
+	my $rxnobj = $self->template()->searchForReaction($rootid,$cmp->id());
+	if (defined($rxnobj)){
+		$reference = $rxnobj->_reference();
+		my $rgts = $rxnobj->templateReactionReagents();
+		my $cmpchange = 0;
+		for (my $i=0; $i < @{$rgts}; $i++) {
+			if ($rgts->[$i]->templatecompcompound()->templatecompartment()->id() ne "c") {
+				$cmpchange = 1;
+				last;
 			}
-			for (my $i=0; $i < @{$rgts}; $i++) {
-				my $rgt = $rgts->[$i];
-				my $rgtcmp = $mdlcmp;
-				if ($cmpchange == 1) {
-					if ($rgt->templatecompcompound()->templatecompartment()->id() eq "e") {
-						$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
-					} else {
-						$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => $args->{compartmentIndex}});
-					}
-				}
-				my $coefficient = $rgt->coefficient();
-				my $mdlcpd = $self->addCompoundToModel({
-					compound => $rgt->templatecompcompound()->templatecompound(),
-					modelCompartment => $rgtcmp,
-				});
-				$coefhash->{"~/modelcompounds/id/".$mdlcpd->id()} = $coefficient;
-			}
-		} elsif(!defined($eq)) {
-			Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 		}
+		for (my $i=0; $i < @{$rgts}; $i++) {
+			my $rgt = $rgts->[$i];
+			my $rgtcmp = $mdlcmp;
+			if ($cmpchange == 1) {
+				if ($rgt->templatecompcompound()->templatecompartment()->id() eq "e") {
+					$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
+				} else {
+					$rgtcmp = $self->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => $args->{compartmentIndex}});
+				}
+			}
+			my $coefficient = $rgt->coefficient();
+			my $mdlcpd = $self->addCompoundToModel({
+				compound => $rgt->templatecompcompound()->templatecompound(),
+				modelCompartment => $rgtcmp,
+			});
+			$coefhash->{"~/modelcompounds/id/".$mdlcpd->id()} = $coefficient;
+		}
+	} elsif(!defined($eq)) {
+		Bio::KBase::ObjectAPI::utilities::error("Specified reaction ".$rootid." not found and no equation provided!");
 	}
 	#Adding reaction
 	my $mdlrxn = $self->add("modelreactions",{
@@ -535,11 +532,11 @@ sub addModelReaction {
 	#Adjusting model reaction
 	$self->adjustModelReaction({
 		reaction => $mdlrxn->id(),
-    	gpr => $args->{gpr},
-    	enzyme => $args->{enzyme},
-    	pathway => $args->{pathway},
-    	reference => $args->{reference},
-    	genetranslation => $args->{genetranslation}
+	    	gpr => $args->{gpr},
+	    	enzyme => $args->{enzyme},
+	    	pathway => $args->{pathway},
+	    	reference => $args->{reference},
+	    	genetranslation => $args->{genetranslation}
 	});
 	return $mdlrxn;
 }
@@ -1768,6 +1765,21 @@ sub merge_models {
 		print "Loading model ".$parameters->{models}->[$i]."\n";
 		my $model = $self->getLinkedObject($parameters->{models}->[$i]);
 		my $biomassCpd = $model->getObject("modelcompounds","cpd11416_c0");
+		if (!defined($biomassCpd)) {
+			$biomassCpd = $model->add("modelcompounds",{
+				id => "cpd11416_c0",
+				compound_ref => "~/template/compounds/id/cpd11416",
+				charge => 0,
+				modelcompartment_ref => "~/modelcompartments/id/c0"
+			});
+			my $biomasses = $model->biomasses();
+			for (my $j=0; $j < @{$biomasses}; $j++) {
+				$biomasses->[$j]->add("biomasscompounds",{
+					modelcompound_ref => "~/modelcompounds/id/cpd11416_c0",
+					coefficient => 1
+				});
+			}
+		}
 		#Adding genome, features, and roles to master mapping and annotation
 		my $mdlgenome = $model->genome();
 		my $prior_size = $genomeObj->dna_size();

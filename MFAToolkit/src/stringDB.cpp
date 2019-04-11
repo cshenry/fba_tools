@@ -542,7 +542,9 @@ list<StringDBObject*>* StringDBTable::get_objects(int attribute,string value) {
 			this->add_object(newObject);
 			return (*this->attributeHash[attribute])[value];
 		}
-		this->print_error("no object exists with input value","get_object");
+		string error = "no object exists with input value:";
+		error += this->name + ":" + this->attributes[attribute] + ":" + value;
+		this->print_error(error,"get_object");
 		return NULL;
 	}
 	return (*this->attributeHash[attribute])[value];

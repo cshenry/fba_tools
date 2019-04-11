@@ -1,139 +1,14 @@
 {
+   "ver" : "1.0.0",
    "name" : "run_flux_balance_analysis",
-   "categories" : [
-      "active",
-      "metabolic_modeling"
-   ],
-   "authors" : [
-      "chenry"
-   ],
-   "behavior" : {
-      "service-mapping" : {
-         "url" : "",
-         "input_mapping" : [
-            {
-               "target_property" : "workspace",
-               "narrative_system_variable" : "workspace"
-            },
-            {
-               "input_parameter" : "fbamodel_id",
-               "target_property" : "fbamodel_id",
-               "target_type_transform": "resolved-ref"
-            },
-            {
-               "target_property" : "media_id",
-               "input_parameter" : "media_id",
-               "target_type_transform": "resolved-ref"
-            },
-            {
-               "input_parameter" : "target_reaction",
-               "target_property" : "target_reaction"
-            },
-            {
-               "input_parameter" : "fba_output_id",
-               "target_property" : "fba_output_id"
-            },
-            {
-               "input_parameter" : "fva",
-               "target_property" : "fva"
-            },
-            {
-               "input_parameter" : "minimize_flux",
-               "target_property" : "minimize_flux"
-            },
-            {
-               "input_parameter" : "simulate_ko",
-               "target_property" : "simulate_ko"
-            },
-            {
-               "target_property" : "feature_ko_list",
-               "input_parameter" : "feature_ko_list"
-            },
-            {
-               "target_property" : "reaction_ko_list",
-               "input_parameter" : "reaction_ko_list"
-            },
-            {
-               "target_property" : "custom_bound_list",
-               "input_parameter" : "custom_bound_list"
-            },
-            {
-               "target_property" : "media_supplement_list",
-               "input_parameter" : "media_supplement_list"
-            },
-            {
-               "input_parameter" : "expseries_id",
-               "target_property" : "expseries_id",
-               "target_type_transform": "ref"
-            },
-            {
-               "input_parameter" : "expression_condition",
-               "target_property" : "expression_condition"
-            },
-            {
-               "input_parameter" : "exp_threshold_percentile",
-               "target_property" : "exp_threshold_percentile"
-            },
-            {
-               "target_property" : "exp_threshold_margin",
-               "input_parameter" : "exp_threshold_margin"
-            },
-            {
-               "input_parameter" : "activation_coefficient",
-               "target_property" : "activation_coefficient"
-            },
-            {
-               "target_property" : "max_c_uptake",
-               "input_parameter" : "max_c_uptake"
-            },
-            {
-               "input_parameter" : "max_n_uptake",
-               "target_property" : "max_n_uptake"
-            },
-            {
-               "input_parameter" : "max_p_uptake",
-               "target_property" : "max_p_uptake"
-            },
-            {
-               "input_parameter" : "max_s_uptake",
-               "target_property" : "max_s_uptake"
-            },
-            {
-               "target_property" : "max_o_uptake",
-               "input_parameter" : "max_o_uptake"
-            }
-         ],
-         "method" : "run_flux_balance_analysis",
-         "name" : "fba_tools",
-         "output_mapping" : [
-            {
-				"service_method_output_path": [0, "report_name"],
-				"target_property": "report_name"
-			},
-			{
-				"service_method_output_path": [0, "report_ref"],
-				"target_property": "report_ref"
-			},
-			{
-				"narrative_system_variable": "workspace",
-				"target_property": "workspace_name"
-			},
-            {
-               "narrative_system_variable" : "workspace",
-               "target_property" : "ws"
-            },
-            {
-               "constant_value" : "KBaseFBA.FBA",
-               "target_property" : "type"
-            },
-            {
-               "input_parameter" : "fba_output_id",
-               "target_property" : "obj"
-            }
-         ]
-      }
-   },
+   "authors" : ["chenry"],
+   "contact" : "http://kbase.us/contact-us/",
    "visible" : true,
+   "categories" : ["active","metabolic_modeling"],
+   "widgets" : {
+      "input" : null,
+      "output" : "kbaseTabTable"
+   },
    "parameters" : [
       {
          "text_options" : {
@@ -197,8 +72,7 @@
                "path_to_subdata" : [
                   "modelreactions"
                ],
-               "parameter_id" : "fbamodel_id",
-               "description_template" : "- {{name}}"
+               "parameter_id" : "fbamodel_id"
             }
          }
       },
@@ -270,16 +144,49 @@
          "id" : "simulate_ko"
       },
       {
-         "default_values" : [
-            ""
-         ],
          "advanced" : true,
-         "id" : "feature_ko_list",
-         "field_type" : "text",
-         "allow_multiple" : true,
-         "optional" : true,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
          "text_options" : {
             "valid_ws_types" : []
+         },
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "predict_community_composition"
+      },
+      {
+         "id" : "feature_ko_list",
+         "field_type" : "textsubdata",
+         "allow_multiple" : false,
+         "optional" : true,
+         "advanced" : true,
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : true,
+            "multiselection" : true,
+            "subdata_selection" : {
+               "subdata_included" : [
+                  "features/[*]/id",
+                  "features/[*]/functions",
+                  "genome_ref"
+               ],
+               "selection_description" : [
+                  "functions"
+               ],
+               "selection_id" : "id",
+               "path_to_subdata" : [
+                 "genome_ref",
+                 "<WSREF>",
+                 "features"
+               ],
+               "parameter_id" : "fbamodel_id"
+            }
          }
       },
       {
@@ -299,8 +206,7 @@
                ],
                "selection_description" : [
                   "name"
-               ],
-               "description_template" : "- {{name}}"
+               ]
             }
          },
          "text_options" : {
@@ -355,8 +261,7 @@
                "subdata_included" : [
                   "modelcompounds/[*]/id",
                   "modelcompounds/[*]/name"
-               ],
-               "description_template" : "- {{name}}"
+               ]
             },
             "multiselection" : false
          }
@@ -510,11 +415,135 @@
          }
       }
    ],
-   "contact" : "help@kbase.us",
-   "widgets" : {
-      "input" : null,
-      "output" : "kbaseTabTable"
-   },
    "job_id_output_field" : "docker",
-   "ver" : "1.0.0"
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "name" : "fba_tools",
+         "method" : "run_flux_balance_analysis",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "input_parameter" : "fbamodel_id",
+               "target_property" : "fbamodel_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "target_property" : "media_id",
+               "input_parameter" : "media_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "input_parameter" : "target_reaction",
+               "target_property" : "target_reaction"
+            },
+            {
+               "input_parameter" : "fba_output_id",
+               "target_property" : "fba_output_id"
+            },
+            {
+               "input_parameter" : "fva",
+               "target_property" : "fva"
+            },
+            {
+               "input_parameter" : "minimize_flux",
+               "target_property" : "minimize_flux"
+            },
+            {
+               "input_parameter" : "simulate_ko",
+               "target_property" : "simulate_ko"
+            },
+            {
+               "target_property" : "feature_ko_list",
+               "input_parameter" : "feature_ko_list"
+            },
+            {
+               "target_property" : "reaction_ko_list",
+               "input_parameter" : "reaction_ko_list"
+            },
+            {
+               "target_property" : "custom_bound_list",
+               "input_parameter" : "custom_bound_list"
+            },
+            {
+               "target_property" : "media_supplement_list",
+               "input_parameter" : "media_supplement_list"
+            },
+            {
+               "input_parameter" : "expseries_id",
+               "target_property" : "expseries_id",
+               "target_type_transform": "ref"
+            },
+            {
+               "input_parameter" : "expression_condition",
+               "target_property" : "expression_condition"
+            },
+            {
+               "input_parameter" : "predict_community_composition",
+               "target_property" : "predict_community_composition"
+            },
+            {
+               "input_parameter" : "exp_threshold_percentile",
+               "target_property" : "exp_threshold_percentile"
+            },
+            {
+               "target_property" : "exp_threshold_margin",
+               "input_parameter" : "exp_threshold_margin"
+            },
+            {
+               "input_parameter" : "activation_coefficient",
+               "target_property" : "activation_coefficient"
+            },
+            {
+               "target_property" : "max_c_uptake",
+               "input_parameter" : "max_c_uptake"
+            },
+            {
+               "input_parameter" : "max_n_uptake",
+               "target_property" : "max_n_uptake"
+            },
+            {
+               "input_parameter" : "max_p_uptake",
+               "target_property" : "max_p_uptake"
+            },
+            {
+               "input_parameter" : "max_s_uptake",
+               "target_property" : "max_s_uptake"
+            },
+            {
+               "target_property" : "max_o_uptake",
+               "input_parameter" : "max_o_uptake"
+            }
+         ],
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			},
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBA",
+               "target_property" : "type"
+            },
+            {
+               "input_parameter" : "fba_output_id",
+               "target_property" : "obj"
+            }
+         ]
+      }
+   }
 }

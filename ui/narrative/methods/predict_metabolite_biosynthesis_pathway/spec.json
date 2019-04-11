@@ -1,0 +1,332 @@
+{
+   "ver" : "1.0.0",
+   "name" : "predict_metabolite_biosynthesis_pathway",
+   "authors" : ["chenry"],
+   "contact" : "http://kbase.us/contact-us/",
+   "visible" : true,
+   "categories" : ["active","metabolic_modeling"],
+   "widgets" : {
+      "input" : null,
+      "output" : "no-display"
+   },
+   "parameters" : [
+      {
+         "id" : "fbamodel_id",
+         "optional" : false,
+         "advanced" : false,
+         "allow_multiple" : false,
+         "default_values" : [""],
+         "field_type" : "text",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         } 
+      },
+      {
+         "id" : "media_id",
+         "optional" : true,
+         "advanced" : false,
+         "allow_multiple" : false,
+         "default_values" : [""],
+         "field_type" : "text",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseBiochem.Media",
+               "KBaseBiochem.MediaSet"
+            ]
+         }
+      },
+      {
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : false,
+            "multiselection" : true,
+            "subdata_selection" : {
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ],
+               "subdata_included" : [
+                  "modelcompounds/[*]/id",
+                  "modelcompounds/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "description_template" : "- {{name}}"
+            }
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "id" : "target_metabolite_list",
+         "allow_multiple" : false,
+         "optional" : true,
+         "field_type" : "textsubdata"
+      },
+      {
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : false,
+            "multiselection" : true,
+            "subdata_selection" : {
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ],
+               "subdata_included" : [
+                  "modelcompounds/[*]/id",
+                  "modelcompounds/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "description_template" : "- {{name}}"
+            }
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "id" : "source_metabolite_list",
+         "allow_multiple" : false,
+         "optional" : true,
+         "field_type" : "textsubdata"
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "id" : "fba_output_id",
+         "optional" : false,
+         "allow_multiple" : false,
+         "field_type" : "text",
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBA"
+            ],
+            "is_output_name" : true
+         }
+      },
+      {
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "id" : "feature_ko_list",
+         "field_type" : "text",
+         "allow_multiple" : true,
+         "optional" : true,
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : false,
+            "multiselection" : true,
+            "subdata_selection" : {
+               "selection_id" : "id",
+               "parameter_id" : "fbamodel_id",
+               "path_to_subdata" : [
+                  "modelreactions"
+               ],
+               "subdata_included" : [
+                  "modelreactions/[*]/id",
+                  "modelreactions/[*]/name"
+               ],
+               "selection_description" : [
+                  "name"
+               ],
+               "description_template" : "- {{name}}"
+            }
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "id" : "reaction_ko_list",
+         "allow_multiple" : false,
+         "optional" : true,
+         "field_type" : "textsubdata"
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFeatureValues.ExpressionMatrix"
+            ]
+         },
+         "default_values" : [
+            ""
+         ],
+         "id" : "expseries_id",
+         "advanced" : true,
+         "allow_multiple" : false,
+         "optional" : true,
+         "field_type" : "text"
+      },
+      {
+         "field_type" : "textsubdata",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "expression_condition",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "textsubdata_options" : {
+            "allow_custom" : false,
+            "show_src_obj" : true,
+            "subdata_selection" : {
+               "path_to_subdata" : [
+                  "data",
+                  "col_ids"
+               ],
+               "parameter_id" : "expseries_id",
+               "selection_id" : "id",
+               "subdata_included" : [
+                  "data/col_ids"
+               ]
+            },
+            "multiselection" : false
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false,
+         "default_values" : [
+            "0.5"
+         ],
+         "id" : "exp_threshold_percentile",
+         "advanced" : true,
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "default_values" : [
+            "0.1"
+         ],
+         "advanced" : true,
+         "id" : "exp_threshold_margin",
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      },
+      {
+         "default_values" : [
+            "0.5"
+         ],
+         "id" : "activation_coefficient",
+         "advanced" : true,
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false,
+         "text_options" : {
+            "validate_as" : "float"
+         }
+      }
+   ],
+   "job_id_output_field" : "docker",
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "name" : "fba_tools",
+         "method" : "predict_metabolite_biosynthesis_pathway",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "input_parameter" : "fbamodel_id",
+               "target_property" : "fbamodel_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "target_property" : "media_id",
+               "input_parameter" : "media_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "input_parameter" : "target_metabolite_list",
+               "target_property" : "target_metabolite_list"
+            },
+            {
+               "input_parameter" : "fba_output_id",
+               "target_property" : "fba_output_id"
+            },
+
+            {
+               "target_property" : "feature_ko_list",
+               "input_parameter" : "feature_ko_list"
+            },
+            {
+               "target_property" : "reaction_ko_list",
+               "input_parameter" : "reaction_ko_list"
+            },
+            {
+               "target_property" : "source_metabolite_list",
+               "input_parameter" : "source_metabolite_list"
+            },
+            {
+               "input_parameter" : "expseries_id",
+               "target_property" : "expseries_id",
+               "target_type_transform": "ref"
+            },
+            {
+               "input_parameter" : "expression_condition",
+               "target_property" : "expression_condition"
+            },
+            {
+               "input_parameter" : "exp_threshold_percentile",
+               "target_property" : "exp_threshold_percentile"
+            },
+            {
+               "target_property" : "exp_threshold_margin",
+               "input_parameter" : "exp_threshold_margin"
+            },
+            {
+               "input_parameter" : "activation_coefficient",
+               "target_property" : "activation_coefficient"
+            }
+         ],
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			}
+         ]
+      }
+   }
+}

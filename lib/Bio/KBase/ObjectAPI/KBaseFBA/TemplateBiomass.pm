@@ -256,7 +256,7 @@ sub addBioToModel {
 				modelCompartment => $mdlcmp,
 			});
 			$bio->add("biomasscompounds",{
-				modelcompound_ref => $mdlcpd->_reference(),
+				modelcompound_ref => "~/modelcompounds/id/".$mdlcpd->id(),
 				coefficient => $compoundHash->{$cpd_uuid}
 			});
 		}

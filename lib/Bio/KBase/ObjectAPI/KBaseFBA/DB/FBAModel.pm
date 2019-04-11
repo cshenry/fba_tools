@@ -31,6 +31,8 @@ has ATPSynthaseStoichiometry => (is => 'rw', isa => 'Num', printOrder => '-1', t
 has id => (is => 'rw', isa => 'Str', printOrder => '1', required => 1, type => 'attribute', metaclass => 'Typed');
 has metagenome_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has genome_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has binning_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
+has assembly_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has template_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has source_id => (is => 'rw', isa => 'Str', printOrder => '0', type => 'attribute', metaclass => 'Typed');
 has name => (is => 'rw', isa => 'Str', printOrder => '2', default => '', type => 'attribute', metaclass => 'Typed');
@@ -40,6 +42,7 @@ has rxnprobs_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attr
 has deleted_reactions => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 has model_edits => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has delete_biomasses => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has loops => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
 has biomasses => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(Biomass)', metaclass => 'Typed', reader => '_biomasses', printOrder => '0');
@@ -218,11 +221,18 @@ my $attributes = [
             'default' => 'sub {return {};}',
             'type' => 'HashRef',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'loops',
+            'default' => 'sub {return [];}',
+            'type' => 'ArrayRef',
+            'perm' => 'rw'
           }
-          
         ];
 
-my $attribute_map = {source => 0, template_refs => 1, ATPMaintenance => 2, ATPSynthaseStoichiometry => 3, id => 4, metagenome_ref => 5, genome_ref => 6, template_ref => 7, source_id => 8, name => 9, metagenome_otu_ref => 10, type => 11, rxnprobs_ref => 12,deleted_reactions => 13,model_edits => 14,delete_biomasses => 15};
+my $attribute_map = {source => 0, template_refs => 1, ATPMaintenance => 2, ATPSynthaseStoichiometry => 3, id => 4, metagenome_ref => 5, genome_ref => 6, template_ref => 7, source_id => 8, name => 9, metagenome_otu_ref => 10, type => 11, rxnprobs_ref => 12,deleted_reactions => 13,model_edits => 14,delete_biomasses => 15,loops => 16};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

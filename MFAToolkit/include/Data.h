@@ -130,7 +130,7 @@ public:
 
 	//Analysis functions
 	void PerformAllRequestedTasks();
-	map<Species* , list<Pathway*> , std::less<Species*> >* FindPathways(Species* Source, vector<Species*> Targets, int MaxLength, int TimeInterval, bool AddReverseConnections, int LengthInterval, int &ClockIndex);
+	map<Species* , list<Pathway*> , std::less<Species*> >* FindPathways(Species* Source, vector<Species*> Targets, int MaxLength, int TimeInterval, bool AllReactionsReversible, int LengthInterval, int &ClockIndex, bool UseFlux);
 	void SearchForPathways();
 	void PerformMFA();
 	void PollStructuralCues();
