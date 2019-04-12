@@ -7,8 +7,7 @@ tooltip  : |
     Check the mass balance of all reactions in a metabolic model.
 
 screenshots :
-    - check_model_mass_balance_input.png
-    - check_model_mass_balance_output.png
+
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -16,9 +15,9 @@ screenshots :
 suggestions :
     apps:
         related :
-            []
+            [run_flux_balance_analysis]
         next :
-            []
+            [edit_metabolic_model]
     methods:
         related :
             []
@@ -31,21 +30,26 @@ suggestions :
 parameters :
     fbamodel_id :
         ui-name : |
-            Model ID
+            Metabolic Model
         short-hint : |
-            ID of model to check the mass balance of
-        long-hint : |
-            ID of model to check the mass balance of
+            Metabolic model to check the mass balance of.
 
 
 icon: fba-teal.png
 
 description : |
 
-    <p>This method checks the elemental balance of all reactions in the model. Only compounds with specified molecular formulas are considered.</p>
+    <p>This App is part of a suite of KBase tools for metabolic modeling. An overview of Metabolic Modeling in KBase can be found <a href="https://kbase.us/metabolic-modeling-in-kbase/">here</a>. Many of the tools (although not this App) are demonstrated in this <a href="https://narrative.kbase.us/narrative/ws.18302.obj.61">Tutorial Narrative.</a></p>
+
+    <p>This App checks the elemental balance of all reactions in the model. Only compounds with specified molecular formulas are considered.</p>
+
+    <p><strong>Output</strong><br>The output of this App is a report that tells you whether any mass imbalance is found.  If everything is OK, the report will say "No mass imbalance found."  If not, the report will contain a table showing all unbalanced reactions, with one row per reaction.  The columns of the table show all reactants and products, as well as lists of extra atoms found on both sides of the reaction.</p>
+
+    <p>Mass imbalance is often found in imported models, and some of these are false positives caused by differences in chemical formulas.  After reviewing all unbalanced reactions, you can run "edit metabolic model" to fix any reactions that are incorrect.</p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry, Matt DeJongh. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+    Chris Henry and Matt DeJongh. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
 
 publications :
     -
