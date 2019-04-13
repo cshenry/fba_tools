@@ -6,9 +6,6 @@ tooltip  : |
     Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
 
 screenshots :
-
-    - gapfill_metabolic_model_input.png
-    - gapfill_metabolic_model_output.png
     - Gapfill_eq_1.jpg
     - Gapfill_eq_2.jpg
 
@@ -35,18 +32,14 @@ parameters :
         ui-name : |
             Reaction to maximize
         short-hint : |
-            ID of reaction that must carry flux in the gapfilled model (note - you must manually type bio1 to maximize biomass)
-        long-hint : |
-            ID of reaction that must carry flux in the gapfilled model (note - you must manually type bio1 to maximize biomass)
+            ID of reaction that must carry flux in the gapfilled model (note - you must manually type bio1 to maximize biomass).
 
 
     custom_bound_list :
         ui-name : |
             Custom flux bounds
         short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5).
         placeholder : |
             e.g. 0;rxn00001;5
 
@@ -55,27 +48,21 @@ parameters :
         ui-name : |
             Output model
         short-hint : |
-            Name of the model produced by the gapfill analysis
-        long-hint : |
-            Name of the model produced by the gapfill analysis
+            Name of the model produced by the gapfill analysis.
 
 
     fbamodel_id :
         ui-name : |
             Input model
         short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            The metabolic model consisting of a genome-wide set of stoichiometric reactions, compounds, and weighted components of the biomass needed for flux balance analysis (FBA).
 
 
     media_id :
         ui-name : |
-            Media (defaults to complete media)
+            Media (defaults to Complete media)
         short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used.
-        long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run FBA with complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
+            Media specifies the set of chemical compounds the organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified, Complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run FBA with complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
         placeholder : |
             Growth condition for gapfilling
 
@@ -84,83 +71,76 @@ parameters :
         ui-name : |
             Gene Knockouts
         short-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-        long-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927).
 
 
     minimum_target_flux :
         ui-name : |
             Minimum reaction flux
         short-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-        long-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
+            The minimum flux that the target reaction will have when the gapfilling is performed.
 
 
     source_fbamodel_id :
         ui-name : |
             Source Gapfill Model
         short-hint : |
-            A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
-        long-hint : |
-            A source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database; the default gapfill database will still be utilized but it will be expanded with reactions in the source model
+            The source gapfill model can be used to add additional reactions and compounds in gapfilling that are not found in the default KBase gapfilling database. The default gapfill database will still be utilized, but it will be expanded with reactions in the source model.
 
 
     reaction_ko_list :
         ui-name : |
             Reaction Knockouts
         short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-        long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0).
 
 
     media_supplement_list :
         ui-name : |
             Media supplement
         short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+            Specify additional compounds to add to the media one at a time by using the add (+) button.
 
 
 icon: modelseed-teal.png
 
 description : |
-    <p>Draft metabolic models usually have missing reactions due to incomplete or incorrect functional genome annotations. As a result, these models are unable to generate biomass on media where the organism typically is capable of growing. Gapfilling algorithms can be used to overcome this problem. These algorithms tentatively bridge gaps in metabolic pathways by identifying the minimal number of biochemical reactions to add to the draft metabolic model to enable it to produce biomass in a specified media. Gapfilling is an optimization procedure that can produce multiple solutions.</p>
+    <p>This App allows a user to identify the minimal set of biochemical reactions missing in a draft metabolic model. It then fills in missing reactions in the model based on media stoichiometry to enable the modeled organism to produce biomass in a specified media.</p>
 
-    <p>Starting with a draft metabolic model, generated by the <a href="https://narrative.kbase.us/#appcatalog/app/fba_tools/build_metabolic_model/release"> Build Metabolic Model app </a> or <a href="https://kbase.us/data-upload-download-guide/fba-model/"> imported </a>, we can apply the Gapfill Metabolic Model app to identify and fill all the gaps in the metabolic pathways of our models that might prevent the production of biomass for the organism or community. This is achieved by two alternative ways: (i) relaxing reversibility constraints on the model’s reactions; (ii) adding new reactions to the existing model. In this gapfilling process, the model is augmented to include all the more than 13,000 biochemical reactions contained in the ModelSEED [1] database (available for download from <a href="https://github.com/ModelSEED/ModelSEEDDatabase/blob/master/Biochemistry/reactions.master.tsv"> GitHub</a>). The database of reactions consists of KEGG, MetaCyc, EcoCyc, Plant BioCyc, Plant Metabolic Networks, and Gramene.</p>
+    <p>Draft metabolic models usually have missing reactions due to incomplete or incorrect functional genome annotations. As a result, these models are unable to generate biomass on media where the organism typically is capable of growing. Gapfilling algorithms can be used to overcome this problem. These algorithms tentatively bridge gaps in metabolic pathways by identifying the minimal number of biochemical reactions to add to the draft metabolic model, thereby enabling it to produce biomass in a specified media. Note that gapfilled reactions are assertions based on annotations missed by the standard annotation pipeline, including the missed genes that encode these functions.</p>
 
-    <p>During the gapfilling process, all reactions determined to be thermodynamically reversible [2-4] are adjusted to be reversible in the gapfilled metabolic model. Finally, flux balance analysis (FBA) [5] is performed to generate a flux profile that prioritizes the production of biomass while minimizing the flux through all reactions and reaction directions that were added in the gapfilling process. This method is consistent with previously published algorithms for gapfilling reaction networks [6, 7]. All reactions and reaction directions generated by these algorithms that were not included in the draft model and have a nonzero flux are then added to the gapfilled model. This gapfilling solution subsequently permits growth of the metabolic model in the specified media condition. To see the reactions and reaction directions added by the gapfilling process, click the “Reactions” tab in the output metabolic model, and sort the table by clicking the “Gapfilling” column title.</p>
+    <p>Starting with a draft metabolic model, <a href=”https://kbase.us/data-upload-download-guide/fba-model/”>imported</a> or generated by the <a href=”https://narrative.kbase.us/#appcatalog/app/fba_tools/build_metabolic_model/release”>Build Metabolic Model App</a>, we can apply the Gapfill Metabolic Model App to identify and fill all the gaps in the metabolic pathways of our models that might prevent the production of biomass for the organism or community. This is achieved by one of two ways: (i) relaxing reversibility constraints on the model’s reactions or (ii) adding new reactions to the existing model. In this gapfilling process, the model is augmented to include all (i.e., about 13,000) biochemical reactions contained in the ModelSEED [1] database (available for download from <a href=”https://github.com/ModelSEED/ModelSEEDDatabase/blob/master/Biochemistry/reactions.master.tsv”>GitHub</a>). The database consists of reactions from KEGG, MetaCyc, EcoCyc, plant BioCyc, Plant Metabolic Networks, and Gramene.<p>
 
-    <p>The detailed 2-Step gapfilling algorithm is described below:</p>
+    <p>During the gapfilling process, all reactions determined to be thermodynamically reversible [2-4] are adjusted to be reversible in the gapfilled metabolic model. Finally, flux balance analysis (FBA) [5] is performed to generate a flux profile that prioritizes the production of biomass while minimizing the flux through all reactions and reaction directions that were added in the gapfilling process. This method is consistent with previously published algorithms for gapfilling reaction networks [6,7]. All reactions and reaction directions generated by these algorithms that were not included in the drat model and have a nonzero flux are them added to the gapfilled model. This gapfilling solution subsequently permits growth of the metabolic model in the specified media condition. To see the reactions and reaction directions added by the gapfilling process, click the “Reactions” tab in the output table, and sort it by the “Gapfilling” column title.
 
-    <img src="https://dl.dropboxusercontent.com/u/4175413/Gapfill_eq_1.jpg">
+    <p>The detailed 2-step gapfilling algorithm is illustrated in the first image at the top of this detail page (see above) and described below.</p>
 
-    <p>The objective function (2.1 and 2.4) minimizes the number of reactions, which are not present in the model but should be added for biomass to be produced in those conditions. Since, in this case, there is a false negative prediction, at least one reaction will need to be added.
-    In the formulation, all reactions are treated as reversible, with every reversible reaction being decomposed into two reactions in each direction, one in the forward direction and the other in the backward direction. This allows for the independent addition of each direction in the algorithm. As a result of this, reactions represented in the formulation are the forward and backward components of the reactions in the database. In the objective function, <b><i>r<sub>gapfilling</sub></i></b> represents the total number of reactions in the database; in objective function (2.1), <b><i>v<sub>i</sub></i></b> is the flux through reaction <b><i>i</i></b>; in objective function (2.4) <b><i>Z<sub>i</sub></i></b> is a binary variable equal to zero if the flux through reaction <b><i>i</i></b> is zero and one otherwise; and, <b><i>&lambda;<sub>gapfill,i</sub></i></b> is a constant value stating the energy cost associated of adding reaction  to the model. If reaction <b><i>i</i></b> is already present in the model, <b><i>&lambda;<sub>gapfill,i</sub></i></b> is zero. Otherwise, <b><i>&lambda;<sub>gapfill,i</sub></i></b> is calculated using equation (2.8):<p>
+    <p>The objective function (2.1 and 2.4) minimizes the number of reactions, which are not present in the model but should be added for biomass to be produced in those conditions. Since, in this case, there is a false negative prediction, at least one reaction will need to be added.</p>
 
-    <img src="https://dl.dropboxusercontent.com/u/4175413/Gapfill_eq_2.jpg">
+    <p>In the formulation, all reactions are treated as reversible, with every reversible reaction being decomposed into two reactions in each direction, one in the forward direction and the other in the backward direction. This allows for the independent addition of each direction in the algorithm. As a result of this, reactions represented in the formulation are the forward and backward components of the reactions in the database. In the objective function, <strong><i>r<sub>gapfilling</sub></i></strong> represents the total number of reactions in the database; in objective function (2.1), <strong><i>v<sub>i</sub></i></strong> is the flux through reaction <strong><i>i</i></strong>; in objective function (2.4) <strong><i>Z<sub>i</sub></i></stong> is a binary variable equal to zero if the flux through reaction <strong><i>i</i></strong> is zero and one otherwise; and, <strong><i>&lambda;<sub>gapfill,i</sub></i></strong> is a constant value stating the energy cost associated of adding reaction  to the model. If reaction <strong><i>i</i></strong> is already present in the model, <strong><i>&lambda;<sub>gapfill,i</sub></i></strong> is zero. Otherwise, <strong><i>&lambda;<sub>gapfill,i</sub></i></strong> is calculated using equation (2.8). This equation is illustrated in the second image at the top of this detail page (see above) and described below.<p>
 
     <p>Each of the <i>P</i> variables in equation (2.8) is binary, representing a penalty applied when adding different types of reactions to the model: they are equal to one if the penalty applies to the type of the particular reaction and equal to zero otherwise.</p>
-
     <ul>
-        <li><i>P<sub>KEGG,i</sub></i> is related to reactions not in KEGG.</li>
-        <li><i>P<sub>structure,i</sub></i> to the addition of reactions involving metabolites with unknown structure.</li>
-        <li><i>P<sub>known-&Delta;G,i</sub></i> to reactions for which cannot be calculated.</li>
-        <li><i>P<sub>unfavorable,i</sub></i>  to reactions operating in an unfavorable direction.</li>
+      <li><i>P<sub>KEGG,i</sub></i> is related to reactions not in KEGG.</li>
+      <li><i>P<sub>structure,i</sub></i> to the addition of reactions involving metabolites with unknown structure.</li>
+      <li><i>P<sub>known-&Delta;G,i</sub></i> to reactions for which cannot be calculated.</li>
+      <li><i>P<sub>unfavorable,i</sub></i>  to reactions operating in an unfavorable direction.</li>
     </ul>
+    </p>
 
-    <p>Equation (2.2 and 2.5) implements the mass balance constraints related to the steady-state assumption of FBA. Here, <b><i>N<sub>reactionDB</sub></i></b> is the stoichiometric matrix, and <b><i>v</i></b> flux vector through reaction database.</p>
+    <p>Equation (2.2 and 2.5) implements the mass balance constraints related to the steady-state assumption of FBA. Here, <strong><i>N<sub>reactionDB</sub></i></strong> is the stoichiometric matrix, and <strong><i>v</i></strong> flux vector through reaction database.</p>
 
-    <p>Equation (2.6) enforces the bounds on reaction fluxes (<b><i>v<sub>i</sub></i></b>), and the values of the reaction use variables (<b><i>Z<sub>i</sub></i></b>). This equation ensures that each reaction flux, <b><i>v<sub>i</sub></i></b>, is zero unless <b><i>Z<sub>i</sub></i></b> is one. The  <b><i>v<sub>max,i</sub></i></b> term in equation (2.6) is the core to the simulation using FBA. If <b><i>v<sub>max,i</sub></i></b> corresponds to a reaction associated with a knocked-out gene, <b><i>v<sub>max,i</sub></i></b> is set to zero. If <b><i>v<sub>max,i</sub></i></b> corresponds to the uptake of a nutrient not in the medium, <b><i>v<sub>max,i</sub></i></b> is also set to zero.</p>
+    <p>Equation (2.6) enforces the bounds on reaction fluxes (<strong><i>v<sub>i</sub></i></strong>), and the values of the reaction use variables (<strong><i>Z<sub>i</sub></i></strong>). This equation ensures that each reaction flux, <strong><i>v<sub>i</sub></i></strong>, is zero unless <strong><i>Z<sub>i</sub></i></strong> is one. The <strong><i>v<sub>max,i</sub></i></strong> term in equation (2.6) is the core to the simulation using FBA. If <strong><i>v<sub>max,i</sub></i></strong> corresponds to a reaction associated with a knocked-out gene, <strong><i>v<sub>max,i</sub></i></strong> is set to zero. If <strong><i>v<sub>max,i</sub></i></strong> corresponds to the uptake of a nutrient not in the medium, <strong><i>v<sub>max,i</sub></i></strong> is also set to zero.</p>
 
-    <p>Equation (2.3 and 2.7) constrains the biomass flux, <b><i>v<sub>bio</sub></i></b>, to a nonzero value, to ensure growth.
-    The result of the gapfilling optimization includes a list of irreversible reactions from the model that should be made reversible, and a set of reactions not in the model that should be added to fix a false negative prediction.</p>
+    <p>Equation (2.3 and 2.7) constrains the biomass flux, <strong><i>v<sub>bio</sub></i></strong>, to a nonzero value, to ensure growth.</p>
+
+    <p>The result of the gapfilling optimization includes a list of irreversible reactions from the model that should be made reversible and a set of reactions not in the model that should be added to fix a false negative prediction.</p>
+
+    <p>This App has been created as part of a suite of tools and data that support the reconstruction, prediction, and design of metabolic networks in KBase. For more help with metabolic modeling, please view the <a href=”http://kbase.us/metabolic-modeling-in-kbase/”>Metabolic Modeling FAQ</a>.</p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry, Janaka Edirisinghe, Sam Seaver, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
+    Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
 
 publications :
     -

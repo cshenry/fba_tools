@@ -4,10 +4,10 @@
 name     : Simulate Growth on Phenotype Data
 
 tooltip  : |
-    Use flux balance analysis to simulate multiple growth phenotypes.
+    Use flux balance analysis (FBA) to simulate multiple growth phenotypes.
 
 screenshots :
-    - simulate_growth_on_a_phenotype_data_input.png
+
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -33,36 +33,28 @@ parameters :
         ui-name : |
             Phenotype Simulation Result
         short-hint : |
-            Name the Phenotype Simulation Result data
-        long-hint : |
-            Name the Phenotype Simulation Result data
+            Name the Phenotype Simulation Result data.
 
 
     reaction_ko_list :
         ui-name : |
             Reaction Knockouts
         short-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
-        long-hint : |
-            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0)
+            User may add reaction knockout information one at a time using “add another reaction knockout” button. Reaction IDs should be in the same format that appears in your metabolic model (e.g rxn00002_c0).
 
 
     media_supplement_list :
         ui-name : |
             Media supplement
         short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+            Specify additional compounds to add to the media one at a time by using “add another media supplement” button.
 
 
     custom_bound_list :
         ui-name : |
             Custom flux bounds
         short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5).
         placeholder : |
             e.g. 0;rxn00001;5
 
@@ -71,101 +63,86 @@ parameters :
         ui-name : |
             Add all transporters?
         short-hint : |
-            Add transporters for primary nutrients associated with all phenotype conditions
-        long-hint : |
-            Add transporters for primary nutrients associated with all phenotype conditions
+            Add transporters for primary nutrients associated with all phenotype conditions.
 
 
     phenotypeset_id :
         ui-name : |
             Phenotype Set
         short-hint : |
-            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model
-        long-hint : |
-            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model
+            A dataset contains mode-predicted phenotypes and the experimental phenotypes side by side to compare and evaluate the accuracy of the model.
 
 
     add_positive_transporters :
         ui-name : |
             Add growth transporters?
         short-hint : |
-            Add transporters for primary nutrients associated with all conditions with growth
-        long-hint : |
-            Add transporters for primary nutrients associated with all conditions with growth
+            Add transporters for primary nutrients associated with all conditions with growth.
 
 
     target_reaction :
         ui-name : |
             Reaction to maximize
         short-hint : |
-            ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
-        long-hint : |
-            ID of reaction flux to maximize in flux balance analysis (note - you must manually type bio1 to maximize biomass)
+            ID of reaction flux to maximize in FBA. Note that you must manually type bio1 to maximize biomass.
 
 
     fbamodel_id :
         ui-name : |
             FBA Model
         short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            The metabolic model consisting of a genome-wide set of stoichiometric reactions, compounds, and weighted components of the biomass on which you wish to carry out FBA.
 
 
     feature_ko_list :
         ui-name : |
             Gene Knockouts
         short-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
-        long-hint : |
-            User may add gene knockout information one at a time using “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927)
+            User may add gene knockout information one at a time using the “add another gene knockout” button. Gene IDs should be in the same format that appears in your metabolic model (e.g., kb|g.220339.CDS.2927).
+
 
     gapfill_phenotypes :
         ui-name : |
             Gapfill if zero growth?
         short-hint : |
             Automatically gapfill model on any condition where it fails to grow, and report gapfilled reactions in results. Results currently appear in the console log.
-        long-hint : |
-            Automatically gapfill model on any condition where it fails to grow, and report gapfilled reactions in results. Results currently appear in the console log.
+
 
     fit_phenotype_data :
         ui-name : |
             Gapfill to fit data?
         short-hint : |
             Automatically gapfill model on any condition where it fails to grow and the cell is observed to grow, and integrate all gapfilled reactions into the model. Results currently appear in the console log.
-        long-hint : |
-            Automatically gapfill model on any condition where it fails to grow and the cell is observed to grow, and integrate all gapfilled reactions into the model. Results currently appear in the console log.
+
 
     save_fluxes :
         ui-name : |
             Save flux values?
         short-hint : |
-            Saves flux values for all phenotype simulations with nonzero growth in phenotype simulation set object output
-        long-hint : |
-            Saves flux values for all phenotype simulations with nonzero growth in phenotype simulation set object output
+            Saves flux values for all phenotype simulations with nonzero growth in the phenotype simulation set object output.
 
 
 icon: fba-teal.png
 
 description : |
-    <p>This method uses an input metabolic model to simulate growth in a set of media conditions, with a specified set of gene knockouts, and with specified media supplements. A metabolic model can be curated using phenotypic data such as Biolog growth data or gene essentiality data generated on a specific set of media conditions. The method reports differences between growth predictions and experimentally measured growth rates. This method can be applied to test the accuracy of a model in replicating experimental observations, as well as exploring the set of metabolites that an organism can utilize as nutrient sources.  The Simulate Growth on Phenotype Data  method carries out flux balance analysis (FBA) for each medium and knockout in the phenotype dataset and displays the output (growth/no growth) as a side-by-side comparison of model predictions and experimental results. To begin, the user uploads a table of phenotype data (e.g., Biolog or gene essentiality data) into the app. The user also either uploads a metabolic model or selects a model already present in KBase. KBase uses the selected model to simulate the uploaded phenotypes, presenting simulation results in a detailed exportable report. This method also conducts some reconciliation of models with phenotype data.</p>
+    <p>This App uses an input metabolic model to simulate growth in a set of media conditions, with a specified set of gene knockouts, and with specified media supplements. A metabolic model can be curated using phenotypic data such as Biolog growth data or gene essentiality data generated on a specific set of media conditions. The App reports differences between growth predictions and experimentally measured growth rates and can be applied to test the accuracy of a model in replicating experimental observations, as well as exploring the set of metabolites that an organism can utilize as nutrient sources.  The Simulate Growth on Phenotype Data App carries out flux balance analysis (FBA) for each medium and knockout in the phenotype dataset and displays the output (growth/no growth) as a side-by-side comparison of model predictions and experimental results. To begin, the user uploads a table of phenotype data (e.g., Biolog or gene essentiality data) into the App. The user also either uploads a metabolic model or selects a model already present in KBase. KBase uses the selected model to simulate the uploaded phenotypes, presenting simulation results in a detailed exportable report. It also conducts some reconciliation of models with phenotype data.</p>
 
+    <p>For information about how to upload your own phenotype data, see the <a href="https://kbase.us/data-upload-download-guide/phenotype-set/">Data Upload and Download Guide.</a></p>
 
-    <p>For information about how to upload your own phenotype data, see the <a href="http://kbase.us/data-upload-download-guide/phenotype-set/">Data Upload and Download Guide.</a></p>
-
-    <p>The columns in the phenotype files are as follows:</p>
+    <p>The columns in the phenotype files are as follows:
     <ul>
-    <li>media — ID of the media condition loaded in KBase where the phenotype was observed.</li>
-    <li>mediaws — Workspace where the media for the phenotype data was loaded into KBase.</li>
-    <li>growth — Indication of whether or not the organism grew in the specified media with the specified knockouts. “1” means growth; “0” means no growth.</li>
-    <li>geneko — List of genes knocked out in the phenotype; use “none” for wild-type phenotypes.</li>
-    <li>addtlCpd — Additional media components added along with the primary media formulation.</li>
+      <li><u>Media:</u> lists the ID of the media condition loaded in KBase where the phenotype was observed.</li>
+      <li><u>Mediaws:</u> lists the workspace where the media for the phenotype data was loaded into KBase.</li>
+      <li><u>Growth:</u> indicates whether or not the organism grew in the specified media with the specified knockouts. “1” means growth; “0” means no growth.</li>
+      <li><u>Geneko:</u> list the genes knocked out in the phenotype; use “none” for wild-type phenotypes.</li>
+      <li><u>AddtlCpd:</u> lists additional media components added along with the primary media formulation.</li>
     </ul>
     </p>
 
-    <p><a href="http://kbase.us/simulate-growth-on-phenotype-data-method/" target="_blank">Tutorial for Simulate Growth on Phenotype Data Method</a></p>
+    <p>For more information about growth simulation see the <a href="https://kbase.us/simulate-growth-on-phenotype-data-method/" target="_blank">Tutorial for Simulate Growth on Phenotype Data Method</a>.</p>
 
-    <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, <a href=”http://kbase.us/contact-us/”>contact us</a>.</p>
+
 
 publications :
     -

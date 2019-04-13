@@ -7,8 +7,7 @@ tooltip  : |
     Translate the metabolic model of one organism to another, using a mapping of similar proteins between their genomes.
 
 screenshots :
-    - propagate_model_to_new_genome_input.png
-    - propagate_model_to_new_genome_output.png
+
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -16,14 +15,13 @@ screenshots :
 suggestions :
     apps:
         related :
-            []
+            [Build Metabolic Model]
+            [Build Multiple Metabolic Models]
+            [Build Fungal Model]
         next :
-            []
-    methods:
-        related :
-            []
-        next :
-            [compare_two_metabolic_models_generic, gapfill_a_metabolic_model]
+            [Compare Models]
+            [Gapfill Model]
+            [Run Flux Balance Analysis]
 
 
 #
@@ -34,9 +32,7 @@ parameters :
         ui-name : |
             Media supplement
         short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button.
         placeholder : |
             Additional compounds to add to media
 
@@ -45,18 +41,14 @@ parameters :
         ui-name : |
             Translation policy
         short-hint : |
-            Translation only means the starting model will only be translated to the new genome; add unique genes means reactions associated with any unique genes will be added; and reconcile means the Kbase pipeline will be applied to all genes that are not directly translated from the starting model.
-        long-hint : |
-            Translation only means the starting model will only be translated to the new genome; add unique genes means reactions associated with any unique genes will be added; and reconcile means the Kbase pipeline will be applied to all genes that are not directly translated from the starting model.
+            Translation only means the starting model will only be translated to the new genome; add unique genes means reactions associated with any unique genes will be added; and reconcile means the KBase pipeline will be applied to all genes that are not directly translated from the starting model.
 
 
     minimum_target_flux :
         ui-name : |
             Minimum reaction flux
         short-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-        long-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
+            The minimum flux that the target reaction will have when the gapfilling is performed.
 
 
     keep_nogene_rxn :
@@ -64,17 +56,13 @@ parameters :
             Keep reactions with no genes
         short-hint : |
             In the translated model certain reactions may be left without a gene assigned to them; entering "yes" in this field removes those reactions from the model.
-        long-hint : |
-            In the translated model certain reactions may be left without a gene assigned to them; entering "yes" in this field removes those reactions from the model.
 
 
     media_id :
         ui-name : |
-            Gapfilling Media (defaults to complete media)
+            Gapfilling Media (defaults to Complete media)
         short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used.
-        long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run FBA with complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
+            Media specifies the set of chemical compounds an organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified then complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run flux balance analysis (FBA)  with Complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
         placeholder : |
             Growth condition for gapfilling
 
@@ -83,9 +71,7 @@ parameters :
         ui-name : |
             Input model
         short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
-        long-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            The metabolic model consisting of a genome-wide set of stoichiometric reactions, compounds, and weighted components of the biomass on which you wish to carry out FBA.
         placeholder : |
             ID of starting model
 
@@ -95,17 +81,13 @@ parameters :
             Gapfill model?
         short-hint : |
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
-        long-hint : |
-            Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
 
 
     proteincomparison_id :
         ui-name : |
             Proteome Comparison
         short-hint : |
-            Comparative analysis of two genomes identifying orthologous genes as bidirectional best hits, generated by the Compare Two Proteomes method
-        long-hint : |
-            Comparative analysis of two genomes identifying orthologous genes as bidirectional best hits, generated by the Compare Two Proteomes method
+            Comparative analysis of two genomes identifying orthologous genes as bidirectional best hits, generated by the Compare Two Proteomes App.
         placeholder : |
             Translation table of proteins
 
@@ -114,9 +96,7 @@ parameters :
         ui-name : |
             Output model
         short-hint : |
-            Name of the model produced by the gapfill analysis
-        long-hint : |
-            Name of the model produced by the gapfill analysis
+            Name of the model produced by the gapfill analysis.
         placeholder : |
             Output metabolic model name
 
@@ -125,9 +105,7 @@ parameters :
         ui-name : |
             Custom flux bounds
         short-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5)
+            Custom bounds on reaction or exchange flux (e.g. 0;rxn00001;5, 0;cpd00001_e0;5).
         placeholder : |
             e.g. 0;rxn00001;5
 
@@ -135,17 +113,43 @@ parameters :
 icon: fba-teal.png
 
 description : |
-    <p>Accurate metabolic models are based on well-curated genome annotations which are labor intensive and thus highly valuable. This method permits users to construct a metabolic model of a new organism based on a previously published model in another organism rather than constructing and curating it from scratch. The proteome comparison map between the source and the target organism generated by the <a data-method-id="compare_two_proteomes_generic">Compare Two Proteomes</a> method method is used to identify genes encoding potentially orthologous proteins in the two organisms. The method works best when the two organisms are closely related since that allows a large fraction of annotations to be accurately transferred to the target genome. Additionally, the transferred model may suggest missing annotations in the target genome thus improving the quality of its annotation.</p>
+    <p>Accurate metabolic models are based on well-curated genome annotations which are labor intensive and thus highly valuable. This App permits users to construct a metabolic model of a new organism based on either a previously published or user-curated model in another organism, rather than constructing and curating it <i>ab initio</i>.</p>
+
+    <p>The quality of the propagated  model will depend on how closely related the target and source genomes are because gene-to-gene function connections between the two are inferred from sequence homology. Therefore the App has two required inputs: <strong>(i)</strong> a source model to be propagated and <strong>(ii)</strong> a proteome comparison map between the source and the target organism.</p>
+
+    <p><strong>(i)</strong> The input source model can be either one previously created externally and then imported into KBase or one  generated within the system with the <a href="https://narrative.kbase.us/#catalog/apps/fba_tools/build_metabolic_model/release">Build Metabolic Model</a> App. <a href="https://kbase.us/data-upload-download-guide/fba-model/”>   (A description of how to import a model into KBase can be found here)</a>. An imported model <i>must</i> be associated with the appropriate KBase genome after loading it in order to use it as the source for this App so that a protein comparison map can be generated. If the appropriate genome is not already available in KBase, one can be added. <a href="https://kbase.us/data-upload-download-guide/genome/">(See here for instructions on import a genome into KBase)</a>.</p>
+
+    <p>If creating a new model in KBase using this App, we recommend first performing a literature search for available published model(s) for organisms closely related to the target organism. To aid in this process the <a href="https://narrative.kbase.us/#catalog/apps/SpeciesTreeBuilder/insert_set_of_genomes_into_species_tree/release">Insert Genome Into Species Tree</a> App can be used to find closely related organisms to look for when searching the literature.</p>
+
+    <p>Since the purpose of this App is to take advantage of the additional information provided by a curated model that our automated generated models may be missing,<u>we do not recommend</u> using a model generated via the Build Metabolic Model App as a source, <u>unless curation is introduced. Curation can be performed  in KBase using the <a href="https://narrative.kbase.us/#catalog/apps/fba_tools/edit_metabolic_model/release">Edit Metabolic Model App</a>.</p>
+
+    <p><strong>(ii)</strong> Generating  the necessary protein comparison requires the use of the  <a data-method-id="compare_two_proteomes_generic">Compare Two Proteomes</a> App  to identify genes encoding potentially orthologous proteins in the two organisms. Best results are obtained when the source and target genomes are closely related, as higher-confidence functional inferences may be drawn from the higher homology of protein pairs between the two organisms. Additionally, the transferred model may suggest missing annotations in the target genome, thus improving the quality of its annotation.</p>
 
     <p>The method applies the following rules in order to decide whether to propagate a reaction or not:
     <ol>
-    <li>If the reaction has one or more genes in the original model, but <i>none</i> of those genes has an ortholog in the new genome, the reaction is always deleted (or should be at least).</li>
-    <li>If the reaction has <i>no</i> genes in the original model, then what happens depends on whether the "Keep reactions with no genes" is checked. If checked, the reaction is retained, otherwise it is removed. If checked, the user is making the assumption that both species have the same gaps in the enzymatic annotation of their genomes.</li>
-    <li>If the reaction has one or more genes in the original model and at least one has a homolog in the new genome, then the reaction is retained, and all genes with homologs are translated and retained.</li>
+      <li>If the reaction associates with one or more genes in the original (source) model, but <i>none</i> of those genes has an ortholog in the new genome, the reaction is deleted.</li>
+      <li>If the reaction associates with  <i>no</i> genes in the original model, then the action taken  depends on whether or not the "Keep reactions with no genes" option is checked (the reaction is retained if checked, otherwise it is removed). By checking the box, the user is making the assumption that both species have the same gaps in the enzymatic annotation of their genomes.</li>
+      <li>If the reaction has one or more genes in the original model and at least one has a homolog in the new genome, then the reaction is retained, and all genes with homologs are translated and retained.</li>
     </ol>
     </p>
 
-    <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
+    <p><b>App Output</b><br>There are eight separate tabs for browsing the data in the model:
+    <ul>
+    <li><u>Overview:</u> this tab shows a summary of key information about the model, including the associated genome, number of reactions, and number of compounds.</li>
+    <li><u>Reactions:</u> this tab shows detailed reaction information including reaction ID, name, biochemical equation, the associated gene IDs, and whether or not the reaction was added by the gapfilling stage.</li>
+    <li><u>Compounds:</u> this tab shows information about compounds in the model, including chemical formula and charge.</li>
+    <li><u>Genes:</u> this tab shows gene IDs and associated reaction IDs.</li>
+    <li><u>Compartments:</u> this tab shows the subcellular localization of the compounds and enzymes. Typically, there are three types of compartments in microbes: Cytosol (c), Periplasm (p), and Extracellular (e). Reactions and compounds belonging to each compartment are identified using compartment notation (e.g., rxn00001[c0], cpd00001[c0]). The integer associated with the compartment (e.g., the 0 in c0) represents the index number of the model. For a single-species model, this number will always be zero, but if individual models are merged into a community model, each sub-model will then be assigned a distinct index.</li>
+    <li><u>Biomass:</u> This tab shows the biomass composition of the model. Typically, biomass is represented in the model as an equation where biomass compounds and ATP would make 1 gram of biomass. After clicking on the Biomass tab, the coefficients of each biomass component are listed in the Coefficient column. Negative coefficients represent the compounds on the left side of the biomass equation, and positive coefficients represent the compounds on the right side of the equation.</li>
+    <li><u>Gapfilling:</u> This tab shows the reactions that were added to fill metabolic gaps resulting from missing or inconsistent annotations. During the gapfilling process, an optimization algorithm adds a minimal number of reactions and compounds to make the biochemical network generate biomass. Currently, this tab does not show anything because gapfilling indication was moved to the <b>Reactions</b> tab.</li>
+    <li><u>Pathways:</u> this tab shows the KEGG maps that represent the metabolic network of the model. Click on the name of a map (e.g., TCA cycle) to see the presence or absence of the reactions (blue).</li>
+    </ul>
+    </p>
+
+    <p>For additional information about metabolic modeling, visit the <a href="https://kbase.us/metabolic-modeling-faq/">Metabolic Modeling in KBase FAQ</a>.<p>
+
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong> Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
 
 publications :
     -
