@@ -5,7 +5,7 @@ name: Compare Models
 tooltip: |
     This App compares Flux Balance Analysis (FBA) models based on reactions, compounds, biomass, and protein families.
 
-screenshots:
+screenshots: []
 
 icon: fba-teal.png
 
@@ -15,18 +15,18 @@ icon: fba-teal.png
 suggestions:
     apps:
         related:
-            [Build Metabolic Model]
-            [Build Multiple Metabolic Moddels]
-            [Propagate Model to New Genome]
-            [Build Fungal Model]
-            [Gapfill Metabolic Model]
+            - Build Metabolic Model
+            - Build Multiple Metabolic Models
+            - Propagate Model to New Genome
+            - Build Fungal Model
+            - Gapfill Metabolic Model
         next:
             []
     methods:
         related:
             []
         next:
-            [build_metabolic_model]
+            - build_metabolic_model
 
 #
 # Configure the display and description of parameters

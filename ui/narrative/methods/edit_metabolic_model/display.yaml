@@ -5,8 +5,7 @@ name     : Edit Metabolic Model
 
 tooltip  : |
     Edit a metabolic model by adding, removing, or altering compounds, reactions, or biomass formulations.
-screenshots :
-
+screenshots : []
 
 icon: fba-teal.png
 

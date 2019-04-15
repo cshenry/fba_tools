@@ -6,7 +6,7 @@ name     : Check Model Mass Balance
 tooltip  : |
     Check the mass balance of all reactions in a metabolic model.
 
-screenshots :
+screenshots : []
 
 
 #

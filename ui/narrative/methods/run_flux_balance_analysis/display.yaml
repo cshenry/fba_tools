@@ -6,7 +6,7 @@ name     : Run Flux Balance Analysis
 tooltip  : |
     Predict metabolite fluxes in a metabolic model of an organism grown on a given media using flux balance analysis (FBA).
 
-screenshots :
+screenshots : []
 
 #
 # Define the set of other narrative methods that should be suggested to the user.

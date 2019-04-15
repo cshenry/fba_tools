@@ -6,8 +6,7 @@ name     : Compare Flux with Expression
 tooltip  : |
     Compare reaction fluxes with gene expression values to identify metabolic pathways where expression and flux data agree or conflict.
 
-screenshots :
-
+screenshots : []
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
