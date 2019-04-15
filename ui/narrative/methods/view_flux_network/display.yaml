@@ -7,7 +7,7 @@ tooltip  : |
     Visualize a network of flux through all reactions in a flux balance analysis (FBA) solution.
 
 screenshots :
-    [metabolic_network.png]
+    - metabolic_network.png
 
 #
 # Define the set of other narrative methods that should be suggested to the user.

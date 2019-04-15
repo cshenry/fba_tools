@@ -6,7 +6,7 @@ name     : Compare FBA Solutions
 tooltip  : |
     For each flux balance analysis (FBA) solution, compare objective values, reaction fluxes, and metabolite uptake and excretion.
 
-screenshots :
+screenshots : []
 
 
 #
@@ -49,9 +49,7 @@ description : |
 
     <p>KBase permits the use of flux balance analysis (FBA) to predict how an organism will behave metabolically in a wide range of growth conditions. With this capability, it quickly becomes important to be able to compare the flux profiles predicted by FBAs side-by-side, so as to understand how an organism's behavior changes from one condition to the next, or how the behavior of two different organisms varies within a single condition. The Compare FBA Solutions App enables this comparison. FBA solutions are compared on three levels: (i) the objective value; (ii) the flux through each reaction; and (iii) the uptake and excretion of metabolites. In this comparison, reaction fluxes are categorized into four possible states: not in model; no flux; forward flux; and reverse flux. Metabolite fluxes are categorized into similar states: not in model; no flux; uptake; and excretion. FBA solutions are compared based on these states, and solutions with similar states are compared based on the magnitude of flux. Further information about microbial metabolic modeling and analyses within KBase can be found within this <a href="https://narrative.kbase.us/narrative/ws.18302.obj.61">Tutorial Narrative.</a></p>
 
-
-
- <p><strong>Compare FBA Solutions Output</strong><br>
+    <p><strong>Compare FBA Solutions Output</strong><br>
     The Compare FBA Solutions output report currently consists of five tabs.
     <ul>
       <li><u>Overview:</u> this tab provides basic information on the FBA comparison job.</li>

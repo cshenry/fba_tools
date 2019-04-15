@@ -6,8 +6,7 @@ name     : Propagate Model to New Genome
 tooltip  : |
     Translate the metabolic model of one organism to another, using a mapping of similar proteins between their genomes.
 
-screenshots :
-
+screenshots : []
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -15,14 +14,13 @@ screenshots :
 suggestions :
     apps:
         related :
-            [Build Metabolic Model]
-            [Build Multiple Metabolic Models]
-            [Build Fungal Model]
+            - Build Metabolic Model
+            - Build Multiple Metabolic Models
+            - Build Fungal Model
         next :
-            [Compare Models]
-            [Gapfill Model]
-            [Run Flux Balance Analysis]
-
+            - Compare Models
+            - Gapfill Model
+            - Run Flux Balance Analysis
 
 #
 # Configure the display and description of the parameters

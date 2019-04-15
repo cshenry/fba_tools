@@ -5,7 +5,7 @@ name     : Bulk Download Modeling Objects
 
 tooltip  : |
     Bulk download many modeling objects as one file.
-screenshots :
+screenshots : []
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -96,14 +96,13 @@ parameters :
 icon: fba-teal.png
 
 description : |
-
     <p>This App enables the bulk download of any model-related objects in the current narrative of KBase. Users can select which object type(s) to download (e.g., just models or models plus media, etc.). Under the ‘show advanced’ parameters link, users can specify a file format for each type of object using the available dropdown. </p>
 
-   <p>When the App is finished running, a link will appear under the heading “Files” and the link will be called “model_objects.tgz”. Click on the link to begin the download. Systems will vary on how to uncompress a file that has been tar’d and gzipped. On linux systems, from the command line, the command ‘tar -xzf model_objects.tgz’ can be used. Mac OS X will unpack a .tar.gz, .tar, or .zip file automatically when you double-click on its icon. If you are using windows and haven’t encountered gzip, check out the help <a href=”https://www.simplehelp.net/2015/08/11/how-to-open-tar-gz-files-in-windows-10/”>here</a>.</p>
+    <p>When the App is finished running, a link will appear under the heading “Files” and the link will be called “model_objects.tgz”. Click on the link to begin the download. Systems will vary on how to uncompress a file that has been tar’d and gzipped. On linux systems, from the command line, the command ‘tar -xzf model_objects.tgz’ can be used. Mac OS X will unpack a .tar.gz, .tar, or .zip file automatically when you double-click on its icon. If you are using windows and haven’t encountered gzip, check out the help <a href=”https://www.simplehelp.net/2015/08/11/how-to-open-tar-gz-files-in-windows-10/”>here</a>.</p>
 
-   <p>If you are having trouble locating your downloaded data, the model_objects.tgz will have a current timestamp (time it was downloaded) but the uncompressed data files will have a timestamp that corresponds to the data and time they were created in KBase.</p>
+    <p>If you are having trouble locating your downloaded data, the model_objects.tgz will have a current timestamp (time it was downloaded) but the uncompressed data files will have a timestamp that corresponds to the data and time they were created in KBase.</p>
 
-   <p>For additional information about metabolic modeling, visit the <a href="https://kbase.us/metabolic-modeling-faq/">Metabolic Modeling in KBase FAQ</a>.<p>
+    <p>For additional information about metabolic modeling, visit the <a href="https://kbase.us/metabolic-modeling-faq/">Metabolic Modeling in KBase FAQ</a>.<p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Christopher Henry. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
