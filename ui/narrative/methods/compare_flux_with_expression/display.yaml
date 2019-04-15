@@ -88,7 +88,7 @@ description : |
     <ul>
       <li>Active gap-filled reactions</li>
       <li>GAR active flux but no expression</li>
-      <li>GAR no flux but active expression<li>
+      <li>GAR no flux but active expression</li>
       <li>GAR no flux or expression</li>
       <li>GAR active flux and expression</li>
     </ul>
