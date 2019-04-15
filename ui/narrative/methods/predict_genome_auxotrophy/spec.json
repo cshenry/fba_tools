@@ -36,11 +36,11 @@
          "allow_multiple" : true,
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseGenomes.Genome","KBaseGenomeAnnotations.GenomeAnnotation"
+               "KBaseGenomes.Genome"
             ]
          }
       }
-   ], 
+   ],
    "behavior" : {
       "service-mapping" : {
          "url" : "",

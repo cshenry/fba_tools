@@ -91,7 +91,8 @@ description : |
       <li>GAR no flux but active expression<li>
       <li>GAR no flux or expression</li>
       <li>GAR active flux and expression</li>
-    <ul>
+    </ul>
+
     <p><i>Note that GAR stands for Gene Associated Reactions.</i><p>
 
     <p>“Active expression” is defined by log2(fold_change) > expression fold-change threshold (input parameter).</p>

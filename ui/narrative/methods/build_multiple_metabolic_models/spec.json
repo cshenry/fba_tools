@@ -36,7 +36,7 @@
          "allow_multiple" : true,
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseGenomes.Genome","KBaseGenomeAnnotations.GenomeAnnotation"
+               "KBaseGenomes.Genome"
             ]
          }
       },
@@ -178,7 +178,7 @@
          "id" : "minimum_target_flux",
          "advanced" : true
       }
-   ], 
+   ],
    "behavior" : {
       "service-mapping" : {
          "url" : "",
