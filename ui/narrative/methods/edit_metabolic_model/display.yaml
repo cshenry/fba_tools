@@ -2,12 +2,10 @@
 # Define basic display information
 #
 name     : Edit Metabolic Model
-subtitle : |
-    Edit a metabolic model by adding, removing, or altering compounds, reactions, or biomass
+
 tooltip  : |
-    Edit a metabolic model by adding, removing, or altering compounds, reactions, or biomass
-screenshots :
-    []
+    Edit a metabolic model by adding, removing, or altering compounds, reactions, or biomass formulations.
+screenshots : []
 
 icon: fba-teal.png
 
@@ -35,219 +33,243 @@ parameters :
         ui-name : |
             FBA model to edit
         short-hint : |
-            The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
+            Select the name of the existing FBA model to be edited using this App.
     fbamodel_output_id :
         ui-name : |
             Output FBA model ID
         short-hint : |
-            Name under which the edited model should be saved
+            Name under which the edited model should be saved.
     add_compound_id :
         ui-name : |
-            New compound to add
+            ID of new compound to add
         short-hint : |
-            New compound to add to model: do not use cpd##### IDs for custom compounds; only use alphanumeric characters; compartment suffix will be added automatically
+            ID of new compound to add to the model. Do not use cpd##### IDs unless the compound is from the ModelSEED (modelseed.org), and only use alphanumeric characters (no spaces). The compartment suffix will be added automatically, so don’t include this in the ID.
     add_compartment_id :
         ui-name : |
             Compartment of new compound
         short-hint : |
-            Select the model compartment to which the new compound should be added
+            Select the model compartment to which the new compound should be added. When the same compound appears in multiple compartments in the model, it is treated as a separate compound in the model and must be added separately.
     add_compound_name :
         ui-name : |
             Name of new compound
         short-hint : |
-            Name of new compound (leave blank to use existing name for a ModelSEED compound)
+            Provide a human readable name (e.g. pyruvate) for the compound to be added. When adding a ModelSEED compound (modelseed.org), if no name is provided, the primary name for the compound in ModelSEED will be used.
     add_compound_charge :
         ui-name : |
             Charge of new compound
         short-hint : |
-            Charge of new compound (leave blank to use existing charge for a ModelSEED compound)
+            Primary charged form of the new compound to be added. When adding a ModelSEED compound (modelseed.org), if no charge is provided, the charge for the compound in ModelSEED will be used.
     add_compound_formula :
         ui-name : |
             Formula of new compound
         short-hint : |
-            Formula of new compound (leave blank to use existing formula for a ModelSEED compound)
+            Molecular formula of the charged form of the new compound. When adding a ModelSEED compound (modelseed.org), if no formula is provided, the formula for the compound in ModelSEED will be used.
     compound_id :
         ui-name : |
             Compound to change
         short-hint : |
-            Existing compound in model to edit (cannot change compartment of existing compound)
+            ID of an existing compound in the model to edit. Note, you cannot change the compartment of an existing compound. To move a compound to a new compartment, remove the compound first, then add a new compound in the new compartment.
     compound_name :
         ui-name : |
             New name for compound
         short-hint : |
-            Edit this field to set a new name for the selected compound (leave empty to retain the current name)
+            Edit this field to set a new human readable name for the selected compound (leave empty to retain the current name).
     compound_charge :
         ui-name : |
             New charge for compound
         short-hint : |
-            Edit this field to set a new molecular charge for the selected compound (leave empty to retain the current charge)
+            Edit this field to set a new molecular charge for the selected compound (leave empty to retain the current charge). Note, when changing charge, you likely need to change proton count in the formula as well.
     compound_formula :
         ui-name : |
             New formula for compound
         short-hint : |
-            Edit this field to set a new molecular formula for the selected compound (leave empty to retain the current formula)
+            Edit this field to set a new molecular formula for the selected compound (leave empty to retain the current formula).
     biomass_name :
         ui-name : |
             New biomass name
         short-hint : |
-            Name to use for new biomass reaction being added to the model (biomass ID is automatically generated)
+            Human readable name to use for a new biomass reaction being added to the model (biomass ID is always automatically generated).
     biomass_dna :
         ui-name : |
             DNA fraction of biomass
         short-hint : |
-            Fraction of biomass devoted to DNA (set to 0 to leave DNA nucleotides out of biomass)
+            Fraction of the biomass devoted to DNA (set to 0 to leave DNA nucleotides out of biomass).
     biomass_rna :
         ui-name : |
             RNA fraction of biomass
         short-hint : |
-            Fraction of biomass devoted to RNA (set to 0 to leave RNA nucleotides out of biomass)
+            Fraction of the biomass devoted to RNA (set to 0 to leave RNA nucleotides out of biomass).
     biomass_protein :
         ui-name : |
             Protein fraction of biomass
         short-hint : |
-            Fraction of biomass devoted to protein (set to 0 to leave amino acids out of biomass)
+            Fraction of the biomass devoted to protein (set to 0 to leave amino acids out of biomass).
     biomass_cellwall :
         ui-name : |
             Cell wall fraction of biomass
         short-hint : |
-            Fraction of biomass devoted to cell wall (set to 0 to leave cell wall components out of biomass)
+            Fraction of the biomass devoted to cell wall (set to 0 to leave cell wall components out of biomass).
     biomass_lipid :
         ui-name : |
             Lipid fraction of biomass
         short-hint : |
-            Fraction of biomass devoted to lipids (set to 0 to leave lipids out of biomass)
+            Fraction of the biomass devoted to lipids (set to 0 to leave lipids out of biomass).
     biomass_cofactor :
         ui-name : |
             Cofactor fraction of biomass
         short-hint : |
-            Fraction of biomass devoted to cofactors (set to 0 to leave cofactors out of biomass)
+            Fraction of the biomass devoted to cofactors (set to 0 to leave cofactors out of biomass).
     biomass_energy :
         ui-name : |
             Growth associated energy
         short-hint : |
-            mmol of ATP hydrolyzed to make one gram of biomass in processes not included in model
+            mmol of ATP hydrolyzed to make one gram of biomass in processes not included in the model (e.g. growth associated maintenance energy).
     biomass_id :
         ui-name : |
             Biomass reaction to alter
         short-hint : |
-            ID of biomass reaction to be altered
+            ID of the biomass reaction to be altered.
     biomass_compound_id :
         ui-name : |
             Biomass compound to alter
         short-hint : |
-            ID of biomass compound to be altered
+            ID of the biomass compound to be altered (e.g. cpd00008_c0).
     biomass_coefficient :
         ui-name : |
             New biomas compound coefficient
         short-hint : |
-            Coefficient for specified compound in specified biomass (set to zero to remove compound from biomass, negative values for consumption, positive values for production)
+            Coefficient for specified compound in specified biomass (set to zero to remove compound from biomass, negative values for consumption, positive values for production).
     reactions_to_remove :
         ui-name : |
             Reactions to remove
         short-hint : |
-            ID of existing model reactions to remove
+            ID of existing model reactions to remove.
     change_reaction_id :
         ui-name : |
             Reaction to change
         short-hint : |
-            ID of existing model reaction to change
+            ID of existing model reaction to change.
     change_reaction_name :
         ui-name : |
             New reaction name
         short-hint : |
-            New name for the specified reaction (leave blank to leave name unaltered)
+            New name for the specified reaction (leave blank to leave name unaltered).
     change_reaction_direction :
         ui-name : |
             New reaction direction
         short-hint : |
-            New direction for the specified reaction (leave blank to leave direction unaltered)
+            New direction for the specified reaction (leave blank to leave direction unaltered).
     change_reaction_gpr :
         ui-name : |
             New reaction GPR
         short-hint : |
-            New gene-protein-reaction (GPR) association for the specified reaction (leave blank to leave GPR unaltered)
+            New gene-protein-reaction (GPR) association for the specified reaction (leave blank to leave GPR unaltered). Specify GPR as a string with boolean conditions (e.g. “(b0001 and b0002) or b1010”).
     add_reaction_id :
         ui-name : |
             New reaction ID
         short-hint : |
-            New reaction to add to model: do not use rxn##### IDs for custom reactions; only use alphanumeric characters; compartment suffix will be added automatically
+            ID of new reaction to add to the model. Do not use rxn##### IDs unless the reaction is from the ModelSEED (modelseed.org), and only use alphanumeric characters (no spaces). The compartment suffix will be added automatically, so do not include this in the ID.
     reaction_compartment_id :
         ui-name : |
             New reaction compartment
         short-hint : |
-            Primary cellular compartment for specified reaction (two distinct reactions cannot have same compartment and ID)
+            Select the primary cellular compartment for the reaction being added. When the same reaction appears in multiple compartments in the model, they are treated as separate reactions in the model. If the reaction is a transporter, select the inner-most compartment as the the primary compartment for the reaction (e.g. cytosol for extracellalar transporter, mitochondria for any transporter interacting with that organelle).
     add_reaction_name :
         ui-name : |
             New reaction name
         short-hint : |
-            New name for the specified reaction (leave blank to use default name for ModelSEED reactions)
+            New name for the specified reaction (leave blank to use default name for ModelSEED reactions).
     add_reaction_direction :
         ui-name : |
             New reaction direction
         short-hint : |
-            New direction for the specified reaction (leave blank to use directionality predicted from thermodynamics)
+            New direction for the specified reaction (leave blank to use directionality predicted from thermodynamics). "=>" means forward only; "<=>" means reversible; and "<=" means reverse only.
     add_reaction_gpr :
         ui-name : |
             New reaction GPR
         short-hint : |
-            New gene-protein-reaction (GPR) association for the specified reaction (leave blank for a reaction with no known gene associations)
+            New gene-protein-reaction (GPR) association for the specified reaction (leave blank for a reaction with no known gene associations). Specify GPR as a string with boolean conditions (e.g. "(b0001 and b0002) or b1010").
     stoich_reaction_id :
         ui-name : |
             Reaction to alter
         short-hint : |
-            Existing or new model reaction to adjust stoichiometry for (new reactions IDs must be specified in interface above)
+            Existing or new model reaction to adjust stoichiometry for. Any new reaction must first be added to the model using this editor prior to specifying the stoichiometry of the reaction.
     stoich_compound_id :
         ui-name : |
             Compound to alter
         short-hint : |
-            Existing or new model compound to adjust stoichiometry for (new compound IDs must be specified in interface above)
+            Existing or new model compound to adjust stoichiometry for. Any new compound must first be added to the model in the appropriate compartment using this editor prior to including the compound in any reaction stoichiometry.
     stoich_coefficient :
         ui-name : |
             New stoichiometic coefficient
         short-hint : |
-            Coefficient for specified compound in specified reaction (set to zero to remove compound from reaction, negative values for reactants, positive values for products)
+            Coefficient for specified compound in specified reaction (set to 0 to remove compound from reaction, negative values for reactants, positive values for products).
 parameter-groups:
   compounds_to_add:
     ui-name: |
       Compounds to add to model
     short-hint: |
-      Use this interface to add any new compounds to the model if you are adding the compound to a biomass or reaction below
+      Use this interface to add any new compounds to the model.
   compounds_to_change:
     ui-name: |
-      Alter existing compounds in model
+      Ust this interface to alter existing compounds in model.
     short-hint: |
-      Use this interface to adjust the name, formula, or charge of compounds already present in the model
+      Use this interface to adjust the name, formula, or charge of compounds already present in the model.
   biomasses_to_add:
     ui-name: |
-      Biomass objectives to add to model
+      Use this interface to add biomass objective functions to the model.
     short-hint: |
-      Use this interface to add a new objective function to the model - a biomass reaction is automatically generated based on input parameters
+      Use this interface to add a new objective function to the model. A biomass reaction is automatically generated based on the input parameters.
   biomass_compounds_to_change:
     ui-name: |
-      Biomass objective compounds to change
+      Use this interface to adjust biomass stoichiometry in the model.
     short-hint: |
-      Use this interface to adjust the coefficient for a single compound in a single biomass objective function - can be used to add or remove a compound from a biomass
+      Use this interface to adjust the coefficient for a single compound in a single biomass objective function - can be used to add or remove a compound from a biomass.
   reactions_to_change:
     ui-name: |
-      Alter existing reactions in model
+      Use this interface to alter existing reactions in the model.
     short-hint: |
-      Use this interface to alter an existing reaction in the model
+      Use this interface to alter an existing reaction in the model.
   reactions_to_add:
     ui-name: |
-      Add new reaction to model
+      Use this interface to add a new reaction to the model.
     short-hint: |
-      Use this interface to add a new reaction to the model
+      Use this interface to add a new reaction to the model.
   edit_compound_stoichiometry:
     ui-name: |
-      Alter the stoichiometry of reactions
+      Use this interace to alter the stoichiometry of reactions in the model.
     short-hint: |
-      Use this interface to alter the stoichiometry of new or existing reactions in the model (note model compounds include compartmentalization)
+      Use this interface to alter the stoichiometry of new or existing reactions in the model (note that model compounds include compartmentalization).
 
 description : |
-    <p>Modify a metabolic model by adding or removing reactions, or changing directionality.</p>
+    <p>This App is used to make changes to a metabolic model in the KBase platform. Using the menus in this App, you can: (i) add a new biomass objective function; (ii) change the stoichiometry of an existing biomass objective function in the model; (iii) add a new compounds to the model; (iv) change an existing compounds in the model; (v) add a new reaction to the model; and (vi) change an existing reaction in the model. We will describe each of these capabilities in a little more detail here.</p>
+
+    <p><b><u>Adding new biomass objective functions to the model</u></b><br>This App enables you to add new biomass objective functions to your model. The control panel for doing this enables you to specify the biomass name and its content. The name is meant to be a recognizable human readable name describing the meaning of the biomass objective function. The biomass ID is automatically assigned, with IDs number consecutively with a “bio” prefix (e.g. bio1, bio2 etc). When adding a biomass reaction, this tool will automatically populate the reaction with compounds based on the specified values for the DNA, RNA, protein, cell wall, lipid, cofactor, and energy components. For example, if the DNA fraction specified is greater than zero, the tool will automatically add all deoxynucleotides to the biomass reaction. All DNA, RNA, protein, cell wall, lipid, and cofactor parameters  should be specified in grams, and the values should add up to a total of 1 gram. The energy parameter should be specified in mmol, and there is no limit on the value of this parameter. If you want to create an empty biomass reaction and populate the reaction compounds manually yourself, simply set all the component values to zero. Note, you cannot create a biomass equation and edit the stoichiometry of that new biomass equation at the same time. You have to run the App once to make the biomass equation, then run it again to edit the equation.</p>
+
+    <p><b><u>Changing biomass stoichiometry in the model</u></b><br>Now, regarding the change biomass stoichiometry feature, this capability allows you to alter or even remove a compound from an existing biomass reaction. Note, you cannot change a biomass reaction that does not exist yet, and you cannot add a compound to a biomass if the compound is not in the model. To add a new compound to a biomass reaction, you must first add the compound to the model using this App, then run the App again to change the stoichiometry of the compound in the specified biomass. The stoichiomety can be negative (for compounds consumed during growth) or positive (for compounds produced during growth). If you set the stoichiometry to zero, it will remove the compound from the biomass reaction.</p>
+
+    <p><b><u>Adding new compounds to the model</u></b><br>You can use this App to add any new compound to the model. It does not need to be a ModelSEED compound. However, it is recommended to first check if a compound is present in the ModelSEED (by searching for the compounds on modelseed.org). If the compound is in the ModelSEED, then use the cpd##### ID for the compound when adding it to the model. This spares you from needing to specify a formula, charge, or name of the compound, as this information will be pulled from the ModelSEED. If your compound is not in the ModelSEED, you can specify your own ID, but note that the ID cannot contain spaces and must be unique. When specifying your own compound, be sure to specify an accurate human readable name, formula, and charge for the compound. The formula and charge in particular will be used by tools in KBase to check the mass and charge balance of reactions in your model. Note, you must add a compound to your model before you can use the compound in any reaction or biomass function in the model.</p>
+
+    <p><b><u>Changing compounds in the model</u></b><br>If you decide you want to change a compound’s name, or think the charge or formula of a compound is incorrect, you can use these controls to alter these attributes of the compound in the model.</p>
+
+    <p><b><u>Adding reactions to a model</u></b><br>This App also permits you to add new reactions to your metabolic model. Here, you specify the reaction ID. Note that this ID must be unique within each compartment in the model (the same reaction *can* occur in multiple compartments), and it cannot contain spaces. Generally try and avoid “_” in IDs, as the “_” is used internally as a delimiter between reaction IDs and compartment IDs. The new reaction being added does not need to be a ModelSEED reaction, but if a reaction is in the ModelSEED (which you can determine by searching in the modelseed.org for the reaction), we strongly recommend using the ModelSEED ID for the reaction as the reaction ID. If you do specify a ModelSEED reaction ID, all data about the reaction, including stoichiometry, will be ported from the ModelSEED database. It will not be necessary to separately specify the stoichiometry of the reaction. If you don’t specify a ModelSEED reaction, you will need to add your new reaction first, then run this App a second time to specify the stoichiometry of the compounds in the reaction. This is because you cannot specify the stoichiometry of a reaction that is not yet in the model in this App. In addition to the ID, you can also specify the directionality, human readable name, compartment, and GPR (gene-protein-reaction) association of the reaction. Directionality indicates the direction in which the reaction is able to proceed when simulating flux balance analysis (FBA) with the model. “=>” means forward only; “<=” means reverse only; and “<=>” means reversible. The compartment indicates the cellular location where the reaction takes place. For non-transport reactions, all compounds in the reaction should also occur in the same primary compartment as the reaction. For transport reactions, always choose the inner-most compartment as the compartment for the reaction. Finally, the GPR indicates how the reaction activity depends on gene activity in the cell. This is represented as a string containing gene IDs and boolean condition statements (e.g. "(b0001 or b0002) and b0003").<p>
+
+    <p><b><u>Adding and adjusting compound stoichiometry in a reaction</u></b><br>Finally, we will discuss the ability to adjust the stoichiometry of a particular compound in the reactions in your model. In this portion of the App, you can select from a pre-existing reaction and compound in the model, then specify the stoichiometric coefficient of the selected compound in the selected reaction. A negative coefficient means the compound is a reactant in the reaction, while a positive coefficient means the compound is a product. The coefficient can be set to 0 to remove the compound from the reaction.</p>
+
+
+
+
+
+
+
 
 publications :
     -
         display-text: |
             Arkin AP, Cottingham RW, Henry CS, Harris NL, Stevens RL, Maslov S, et al. KBase: The United States Department of Energy Systems Biology Knowledgebase. Nature Biotechnology. 2018;36: 566. doi: 10.1038/nbt.4163
         link: https://www.nature.com/articles/nbt.4163
+
+    -
+        display-text: |
+            Henry CS, DeJongh M, Best AA, Frybarger PM, Linsay B, Stevens RL. High-throughput generation, optimization and analysis of genome-scale metabolic models. Nat Biotechnol. 2010;28: 977–982. doi:10.1038/nbt.1672
+        link: https://www.ncbi.nlm.nih.gov/pubmed/20802497

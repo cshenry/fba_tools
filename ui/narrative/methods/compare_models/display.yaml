@@ -3,7 +3,8 @@
 #
 name: Compare Models
 tooltip: |
-    Compare FBA Models based on reactions, compounds, biomass and proteins
+    This App compares Flux Balance Analysis (FBA) models based on reactions, compounds, biomass, and protein families.
+
 screenshots: []
 
 icon: fba-teal.png
@@ -14,14 +15,18 @@ icon: fba-teal.png
 suggestions:
     apps:
         related:
-            []
+            - Build Metabolic Model
+            - Build Multiple Metabolic Models
+            - Propagate Model to New Genome
+            - Build Fungal Model
+            - Gapfill Metabolic Model
         next:
             []
     methods:
         related:
             []
         next:
-            [build_metabolic_model]
+            - build_metabolic_model
 
 #
 # Configure the display and description of parameters
@@ -31,19 +36,35 @@ parameters :
         ui-name : |
             Model Comparison
         short-hint : |
-            Name for Model Comparison to be created
+            Name for the Model Comparison to be created.
+
     model_ref :
         ui-name : |
             FBA Model
         short-hint : |
-            An FBA Model to compare
+            FBA Models to compare.
+
     pangenome_ref :
         ui-name : |
             Pangenome
         short-hint : |
-            A Pangenome to use in comparing reaction-associated proteins among two or more models
+            A Pangenome to use in comparing reaction-associated proteins among two or more models.
+            
 description : |
-    <p>This app compares FBA Models based on reactions, compounds, biomass and proteins.</p>
+    <p>This App enables users to compare various features of FBA models such as compounds, reactions, and biomass compounds. Optionally, reaction-associated proteins can also be compared, but this requires the computation of a pangenome. The pangenome must contain all the genomes that are associated with the FBA models to be compared. To compute a pangenome the <a href="https://narrative.kbase.us/#catalog/apps/PangenomeOrthomcl/build_pangenome_with_orthomcl/release">Build Pangenome with OrthoMCL</a> and <a href="https://narrative.kbase.us/#catalog/apps/GenomeComparisonSDK/build_pangenome/release">Compute Pangenome</a> Apps can be used. The output report lists the presence or absence of the compounds, reactions, biomass compounds, and reaction-associated proteins across the models being compared.</p>
+
+    <p><strong>Compare Models Output</strong><br> The 5 tabs in the Compare Models output report are as follows:
+    <ul>
+      <li><u>Statistics:</u> this tab gives an overview of the statistics and reports the numbers of reactions, compounds, biomass compounds, and protein families conserved across all models being compared.</li>
+      <li><u>Reactions:</u> this tab lists the Reaction ID and equation description followed by the number of models the reaction is present in and whether or not the reaction is conserved. One column per model is shown reporting the presence or absence of each reaction.</li>
+      <li><u>Compounds:</u> this tab lists the Compound ID and name followed by the number of models the compound is present in and whether or not the compound is conserved. One column per model is shown reporting the presence or absence of each compound.</li>
+      <li><u>Biomass compounds:</u> this tab lists the Compound ID and name followed by the number of models the compound is present in and whether or not the compound is conserved. One column per model is shown reporting the presence or absence of each compound.</li>
+      <li><u>Families:</u> this tab lists the family name and function description followed by the number of models the family is present in and whether or not the family is conserved. One column per model is shown reporting the presence or absence of each family.</li>
+    </ul>
+    </p>
+
+    <p>For additional information about metabolic modeling, visit the <a href="https://kbase.us/metabolic-modeling-faq/">Metabolic Modeling in KBase FAQ</a>. For help with microbial metabolic modeling, see this <a href=”https://narrative.kbase.us/narrative/ws.18302.obj.61”>Narrative Tutorial</a>. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
 
 publications :
     -
