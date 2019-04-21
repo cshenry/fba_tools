@@ -630,7 +630,8 @@ sub func_gapfill_metabolic_model {
 		minimum_target_flux => 0.1,
 		number_of_solutions => 1,
 		gapfill_output_id => undef,
-		atp_production_check => 1
+		atp_production_check => 1,
+		metabolomics_peak_data => undef
 	});
 	my $printreport = 1;
 	my $htmlreport = "";
@@ -679,6 +680,9 @@ sub func_gapfill_metabolic_model {
 	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fbamodel_output_id}.".".$gfid,1,1,$source_model,1);
 	if ($params->{atp_production_check} == 1) {
 		$fba->parameters()->{"ATP check gapfilling solutions"} = 1;
+	}
+	if (defined($params->{metabolomics_peak_data})) {
+		$fba->parameters()->{"Peak data"} = $params->{metabolomics_peak_data};
 	}
 	$handler->util_log("Running flux balance analysis problem.");
 	$fba->runFBA();
