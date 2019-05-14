@@ -3,6 +3,10 @@ use strict;
 use warnings;
 use Bio::KBase::utilities;
 use Workspace::WorkspaceClient;
+#use kb_maxbin::kb_maxbinClient;
+#use MetagenomeUtils::MetagenomeUtilsClient;
+#use RAST_SDK::RAST_SDKClient;
+#use ProkkaAnnotation::ProkkaAnnotationClient;
 
 our $ws_client = undef;
 our $ga_client = undef;

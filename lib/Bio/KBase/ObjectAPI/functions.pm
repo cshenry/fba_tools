@@ -250,6 +250,16 @@ sub util_build_fba {
 		}
 		$fbaobj->PrepareForGapfilling($input);
 	}
+	if (defined($params->{dynamic_fba}) && $params->{dynamic_fba} == 1) {
+		$fbaobj->parameters()->{"run dynamic FBA"} = 1;
+		$fbaobj->parameters()->{"Protein limit"} = $params->{protein_limit};
+		$fbaobj->parameters()->{"Protein prod limit"} = $params->{protein_prod_limit};
+		$fbaobj->parameters()->{"Time step"} = $params->{time_step};
+		$fbaobj->parameters()->{"Stop time"} = $params->{stop_time};
+		$fbaobj->parameters()->{"Initial biomass"} = $params->{initial_biomass};
+		$fbaobj->parameters()->{"Volume"} = $params->{volume};
+		$fbaobj->parameters()->{"protein formulation"} = $params->{protein_formulation};
+	}
 	if (defined($params->{save_fluxes})) {
 		$fbaobj->parameters()->{"save phenotype simulation fluxes"} = 1;
 	}
@@ -907,6 +917,187 @@ sub func_run_flux_balance_analysis {
 	#$fba->toJSON({pp => 1});
 		alarm 0;
 	#};
+	if (!defined($objective)) {
+		Bio::KBase::utilities::error("FBA failed with no solution returned!");
+	}
+	if ($params->{predict_community_composition} == 1) {
+		Bio::KBase::utilities::print_report_message({message => "<p>Predict community compositions with varied flux coefficient</p><p>".join("<br>",@{$fba->outputfiles()->{SSCommunityFluxAnalysis}})."</p>",append => 1,html => 1});
+	}
+	$handler->util_log("Saving FBA results.");
+	$fba->id($params->{fba_output_id});
+	my $wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{fba_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
+	$datachannel->{fba} = $fba;
+	return {
+		new_fba_ref => util_get_ref($wsmeta),
+		objective => $objective
+	};
+}
+
+sub func_run_dynamic_fba {
+	my ($params,$datachannel) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","fba_output_id"],{
+		fbamodel_workspace => $params->{workspace},
+		mediaset_id => undef,
+		mediaset_workspace => $params->{workspace},
+		media_id_list => undef,
+		media_id => undef,
+		media_workspace => $params->{workspace},
+		target_reaction => "bio1",
+		thermodynamic_constraints => 0,
+		fva => 0,
+		minimize_flux => 0,
+		simulate_ko => 0,
+		find_min_media => 0,
+		all_reversible => 0,
+		feature_ko_list => [],
+		reaction_ko_list => [],
+		custom_bound_list => [],
+		objective_fraction => 0.1,
+		max_c_uptake => undef,
+		max_n_uptake => undef,
+		max_p_uptake => undef,
+		max_s_uptake => undef,
+		max_o_uptake => undef,
+		default_max_uptake => 0,
+		protein_limit => 500,
+		protein_prod_limit => 500,
+		time_step => 1,
+		stop_time => 86400,
+		initial_biomass => 0.001,
+		volume => 1,
+		protein_formulation => 1,
+		concentrations => {},
+		turnovers => {},
+		kprimes => {},
+		kmvalues => {},
+		fraction_metabolism => 0.5,
+		default_turnover => 0.034537,
+		default_kprime => 5,
+		default_km => 0.0001,
+		default_protein_sequence => "MSSMTTTDNKAFLNELARLVGSSHLLTDPAKTARYRKGFRSGQGDALAVVFPGSLLELWRVLKACVTADKIILMQAANTGLTEGSTPNGNDYDRDVVIISTLRLDKLHVLGKGEQVLAYPGTTLYSLEKALKPLGREPHSVIGSSCIGASVIGGICNNSGGSLVQRGPAYTEMSLFARINEDGKLTLVNHLGIDLGETPEQILSKLDDDRIKDDDVRHDGRHAHDYDYVHRVRDIEADTPARYNADPDRLFESSGCAGKLAVFAVRLDTFEAEKNQQVFYIGTNQPEVLTEIRRHILANFENLPVAGEYMHRDIYDIAEKYGKDTFLMIDKLGTDKMPFFFNLKGRTDAMLEKVKFFRPHFTDRAMQKFGHLFPSHLPPRMKNWRDKYEHHLLLKMAGDGVGEAKSWLVDYFKQAEGDFFVCTPEEGSKAFLHRFAAAGAAIRYQAVHSDEVEDILALDIALRRNDTEWYEHLPPEIDSQLVHKLYYGHFMCYVFHQDYIVKKGVDVHALKEQMLELLQQRGAQYPAEHNVGHLYKAPETLQKFYRENDPTNSMNPGIGKTSKRKNWQEVE",
+		input_gene_parameter_file => undef,
+		input_reaction_parameter_file => undef,
+	});
+	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
+		if (length($params->{reaction_ko_list}) > 0) {
+			$params->{reaction_ko_list} = [split(/,/,$params->{reaction_ko_list})];
+		} else {
+			 $params->{reaction_ko_list} = [];
+		}
+	}
+	my $model;
+	if (!defined($datachannel->{fbamodel})) {
+		$handler->util_log("Retrieving model.");
+		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+		Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
+	} else {
+		$model = $datachannel->{fbamodel};
+	}
+	my $genenum = $model->gene_count();
+	if (!defined($params->{media_id})) {
+		if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
+			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_plant_media");
+		} else {
+			$params->{default_max_uptake} = 100;
+			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_microbial_media");
+		}
+		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
+	}
+	
+	$handler->util_log("Retrieving ".$params->{media_id}." media or mediaset.");
+	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
+	if ($media->_wstype() eq "KBaseBiochem.MediaSet") {
+		$params->{mediaset_id} = $params->{media_id};
+		$params->{mediaset_workspace} = $params->{media_workspace};
+		my $firstmedia = $media->{elements}->[0]->{"ref"};
+		shift(@{$media->{elements}});
+		my $array = [split(/\//,$firstmedia)];
+		$params->{media_id} = pop(@{$array});
+		$media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
+	}
+	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
+	$handler->util_log("Preparing flux balance analysis problem.");
+	$params->{dynamic_fba} = 1;
+	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
+	$fba->parameters()->{default_concentration} = $params->{fraction_metabolism}*$params->{protein_limit}/$genenum;
+	$fba->parameters()->{default_kprime} = $params->{default_kprime};
+	$fba->parameters()->{default_turnover} = $params->{default_turnover};
+	$fba->parameters()->{default_km} = $params->{default_km};
+	$fba->parameters()->{default_protein_sequence} = $params->{default_protein_sequence};
+	if (defined($params->{input_gene_parameter_file})) {
+		my $file = Bio::KBase::ObjectAPI::utilities::LOADFILE($params->{input_gene_parameter_file});
+		my $headers = [split(/\t/,$file->[0])];
+		$fba->parameters()->{genes_kprime} = "";
+		$fba->parameters()->{genes_kmcpd} = "";
+		$fba->parameters()->{genes_concentration} = "";
+		$fba->parameters()->{genes_turnover} = "";
+		$fba->parameters()->{genes_target_fraction} = "";
+		for (my $i=1; $i < @{$file}; $i++) {
+			my $array = [split(/\t/,$file->[$i])];
+			for (my $j=1; $j < @{$headers}; $j++) {
+				if ($headers->[$j] eq "kprime") {
+					$fba->parameters()->{genes_kprime} .= $array->[0].":".$array->[$j].";";
+				} elsif ($headers->[$j] eq "kmcpd") {
+					$fba->parameters()->{genes_kmcpd} .= $array->[0].":".$array->[$j].";";
+				} elsif ($headers->[$j] eq "concentration") {
+					$fba->parameters()->{genes_concentration} .= $array->[0].":".$array->[$j].";";
+				} elsif ($headers->[$j] eq "turnover") {
+					$fba->parameters()->{genes_turnover} .= $array->[0].":".$array->[$j].";";
+				} elsif ($headers->[$j] eq "target_fraction") {
+					$fba->parameters()->{genes_target_fraction} .= $array->[0].":".$array->[$j].";";
+				}
+			}
+		}
+	}
+	if (defined($params->{input_reaction_parameter_file})) {
+		my $file = Bio::KBase::ObjectAPI::utilities::LOADFILE($params->{input_reaction_parameter_file});
+		my $headers = [split(/\t/,$file->[0])];
+		$fba->parameters()->{reactions_kprime} = "";
+		$fba->parameters()->{reactions_kmcpd} = "";
+		$fba->parameters()->{reactions_concentration} = "";
+		$fba->parameters()->{reactions_turnover} = "";
+		$fba->parameters()->{reactions_target_kprime} = "";
+		for (my $i=1; $i < @{$file}; $i++) {
+			my $array = [split(/\t/,$file->[$i])];
+			for (my $j=1; $j < @{$headers}; $j++) {
+				if ($headers->[$j] eq "kprime") {
+					$fba->parameters()->{reactions_kprime} .= $array->[0].":".$array->[$j].";";
+				} elsif ($headers->[$j] eq "kmcpd") {
+					$fba->parameters()->{reactions_kmcpd} .= $array->[0].":".$array->[$j].";";
+				} elsif ($headers->[$j] eq "concentration") {
+					$fba->parameters()->{reactions_concentration} .= $array->[0].":".$array->[$j].";";
+				} elsif ($headers->[$j] eq "turnover") {
+					$fba->parameters()->{reactions_turnover} .= $array->[0].":".$array->[$j].";";
+				} elsif ($headers->[$j] eq "target_kprime") {
+					$fba->parameters()->{reactions_target_kprime} .= $array->[0].":".$array->[$j].";";
+				}
+			}
+		}
+	}
+	if (defined($params->{mediaset_id})) {
+		$fba->mediaset_ref($params->{mediaset_workspace}."/".$params->{mediaset_id});
+	}
+	if (defined($params->{media_id_list})) {
+		if (ref($params->{media_id_list}) ne 'ARRAY') {
+			$params->{media_id_list} = [split(/[\n;\|]+/,$params->{media_id_list})];
+		}
+		for (my $i=0; $i < @{$params->{media_id_list}}; $i++) {
+			my $currref = $params->{media_id_list}->[$i];
+			if ($currref !~ m/\//) {
+				$currref = $params->{media_workspace}."/".$currref;
+			}
+			push(@{$fba->media_list_refs()},$currref);
+		}
+	}
+	#Running FBA
+	$handler->util_log("Running flux balance analysis problem.");
+	my $objective;
+	local $SIG{ALRM} = sub { die "FBA timed out! Model likely contains numerical instability!" };
+	alarm 86400;
+	$objective = $fba->runFBA();
+	$fba->toJSON({pp => 1});
+	alarm 0;
+	
 	if (!defined($objective)) {
 		Bio::KBase::utilities::error("FBA failed with no solution returned!");
 	}

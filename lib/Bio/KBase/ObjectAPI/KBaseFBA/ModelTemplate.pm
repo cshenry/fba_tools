@@ -171,6 +171,7 @@ sub buildModel {
 		$genes = $cds;
 	}
 	$self->extend_model_from_features({
+		fulldb => $args->{fulldb},
 		model => $mdl,
 		features => $genes
 	});
