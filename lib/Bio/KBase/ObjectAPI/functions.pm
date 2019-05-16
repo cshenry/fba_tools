@@ -1679,7 +1679,7 @@ sub func_simulate_growth_on_phenotype_data {
 }
 
 sub func_merge_metabolic_models_into_community_model {
-	my ($params) = @_;
+	my ($params,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id_list","fbamodel_output_id"],{
 		fbamodel_workspace => $params->{workspace},
 		mixed_bag_model => 0
@@ -1705,6 +1705,7 @@ sub func_merge_metabolic_models_into_community_model {
 		gapfillings => [],
 	});
 	$commdl->parent($handler->util_store());
+	$datachannel->{fbamodel} = $commdl;
 	$handler->util_log("Merging models.");
 	my $genomeObj = $commdl->merge_models({
 		models => $params->{fbamodel_id_list},
