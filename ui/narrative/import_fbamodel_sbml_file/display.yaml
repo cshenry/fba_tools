@@ -1,0 +1,41 @@
+name     : Import model SBML from web
+subtitle : none
+tooltip  : Downloads and imports and SBML file as a model from a web ULR
+
+screenshots :
+    []
+
+method-suggestions :
+    related :
+        []
+    next :
+        []
+
+parameters :
+    sbml_url :
+        ui-name : SBML URL
+        short-hint : URL with model in SBML format
+        long-hint  : URL with model in SBML format
+
+    model_name :
+        ui-name : Name of FBA model
+        short-hint : Provide the name for the Flux Balance Analysis Model object that will be created by this upload
+        long-hint  : Provide the name for the Flux Balance Analysis Model object that will be created by this upload
+
+    biomass :
+        ui-name : Biomass
+        short-hint : Provide the biomass reaction identifier in SBML file
+        long-hint  : Provide the biomass reaction identifier in SBML file
+
+    automatically_integrate :
+        ui-name : Automatically integrate
+        short-hint : Automatically run integration after import model in raw form
+        long-hint  : Automatically run integration after import model in raw form
+
+description : none
+
+description : |
+    <p>Please see <a href="http://kbase.us/data-upload-download-guide/fba-model/" target="_blank">http://kbase.us/data-upload-download-guide/fba-model/</a>
+    for more information about how to format your FBA model input file.</p>
+    
+technical-description : none

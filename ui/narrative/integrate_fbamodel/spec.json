@@ -1,0 +1,131 @@
+{
+  "ver" : "1.0.0",
+  "authors" : [ ],
+  "contact" : "help@kbase.us",
+  "visble" : true,
+  "categories" : [ "active","metabolic_modeling","importers" ],
+  "widgets" : {
+    "output" : "kbaseTabTable",
+    "input" : null
+  },
+  "parameters" : [ {
+    "id" : "model_id",
+    "optional" : false,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseFBA.FBAModel" ]
+    }
+  }, {
+    "id" : "genome_id",
+    "optional" : true,
+    "advanced" : false,
+    "allow_multiple" : false,
+    "default_values" : [ "" ],
+    "field_type" : "text",
+    "text_options" : {
+      "valid_ws_types" : [ "KBaseGenomes.Genome" ]
+    }
+ }, {
+	"allow_multiple" : false,
+	"optional" : true,
+	"field_type" : "textsubdata",
+	"id" : "biomass",
+	"advanced" : false,
+	"default_values" : [""],
+	"text_options" : {
+		"valid_ws_types" : []
+	},
+	"textsubdata_options" : {
+		"allow_custom" : false,
+		"show_src_obj" : false,
+		"subdata_selection" : {
+			"parameter_id" : "fbamodel_id",
+			"path_to_subdata" : [
+				"modelreactions"
+			],
+			"selection_id" : "id",
+			"selection_description" : [
+				"name"
+			],
+			"subdata_included" : [
+				"modelreactions/[*]/id",
+				"modelreactions/[*]/name"
+			],
+			"description_template" : "- {{name}}"
+		},
+		"multiselection" : true
+	}
+  }, {
+         "default_values" : [
+            "1"
+         ],
+         "advanced" : false,
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "allow_multiple" : false,
+         "optional" : false,
+         "field_type" : "checkbox",
+         "id" : "automatically_integrate"
+  } ],
+  "behavior" : {
+    "service-mapping" : {
+      "url" : "",
+      "name" : "filipe_importer",
+      "method" : "import_sbml",
+      "input_mapping" : [
+          {
+              "narrative_system_variable": "workspace",
+              "target_property": "workspace_name"
+          },
+          {
+              "input_parameter": "sbml_url",
+              "target_property": "sbml_url"
+          },
+          {
+              "input_parameter": "biomass",
+              "target_property": "biomass"
+          },
+          {
+              "input_parameter": "model_name",
+              "target_property": "model_name"
+          },
+          {
+              "input_parameter": "automatically_integrate",
+              "target_property": "automatically_integrate"
+          }
+      ],
+      "output_mapping" : [
+      		{
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			},
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
+            },
+            {
+               "target_property" : "obj",
+               "service_method_output_path": [0, "fbamodel_id"],
+            }
+      ]
+    }
+  },
+  "job_id_output_field": "docker"
+}

@@ -1090,6 +1090,20 @@ int ConvertVariableType(string TypeName) {
 		return POSITIVE_DELTAG;
 	} else if (TypeName.compare("NEGATIVE_DELTAG") == 0) {
 		return NEGATIVE_DELTAG;
+	} else if (TypeName.compare("PROTEIN_CONC") == 0) {
+		return PROTEIN_CONC;
+	} else if (TypeName.compare("METABOLITE_SLACK") == 0) {
+		return METABOLITE_SLACK;
+	} else if (TypeName.compare("FORWARD_CAPACITY_SLACK") == 0) {
+		return FORWARD_CAPACITY_SLACK;
+	} else if (TypeName.compare("REVERSE_CAPACITY_SLACK") == 0) {
+		return REVERSE_CAPACITY_SLACK;
+	} else if (TypeName.compare("KPRIME") == 0) {
+		return KPRIME;
+	} else if (TypeName.compare("POS_KPRIME_ERR") == 0) {
+		return POS_KPRIME_ERR;
+	} else if (TypeName.compare("NEG_KPRIME_ERR") == 0) {
+		return NEG_KPRIME_ERR;
 	}
 
 	FErrorFile() << "Unrecognized MFA variable type: " << TypeName << endl;
@@ -1179,6 +1193,20 @@ string ConvertVariableType(int Type) {
 		TypeName.assign("POSITIVE_DELTAG");
 	} else if (Type == NEGATIVE_DELTAG) {
 		TypeName.assign("NEGATIVE_DELTAG");
+	} else if (Type == PROTEIN_CONC) {
+		TypeName.assign("PROTEIN_CONC");
+	} else if (Type == METABOLITE_SLACK) {
+		TypeName.assign("METABOLITE_SLACK");
+	} else if (Type == FORWARD_CAPACITY_SLACK) {
+		TypeName.assign("FORWARD_CAPACITY_SLACK");
+	} else if (Type == REVERSE_CAPACITY_SLACK) {
+		TypeName.assign("REVERSE_CAPACITY_SLACK");
+	} else if (Type == KPRIME) {
+		TypeName.assign("KPRIME");
+	} else if (Type == POS_KPRIME_ERR) {
+		TypeName.assign("POS_KPRIME_ERR");
+	} else if (Type == NEG_KPRIME_ERR) {
+		TypeName.assign("NEG_KPRIME_ERR");
 	} else {
 		FErrorFile() << "Unrecognized MFA variable type number: " << Type << endl;
 		FlushErrorFile();
@@ -1279,6 +1307,7 @@ OptimizationParameter* ReadParameters() {
 	NewParameters->ReduceObjective = (GetParameter("reduce objective").compare("1") == 0);
 	NewParameters->ReactionAdditionStudy = (GetParameter("reaction addition study").compare("1") == 0);
 	NewParameters->SteadyStateCommunityModeling = (GetParameter("steady state community modeling").compare("1") == 0);
+	NewParameters->CatalogueFluxLoops = (GetParameter("catalogue flux loops").compare("1") == 0);
 
 	//Variable use parameters
 	NewParameters->ReactionsUse = (GetParameter("Reactions use variables").compare("1") == 0);
@@ -1291,6 +1320,7 @@ OptimizationParameter* ReadParameters() {
 	NewParameters->DecomposeReversible = (GetParameter("Decompose reversible reactions").compare("1") == 0);
 	NewParameters->BinaryReactionSlackVariable = false;
 	NewParameters->ReactionSlackVariable = false;
+	NewParameters->ExcludeSimultaneousReversibleFlux = false;
 	NewParameters->ReactionErrorUseVariables = (GetParameter("include error use variables").compare("1") == 0);
 
 	//Constraint use parameters
@@ -1668,8 +1698,11 @@ void RectifyOptimizationParameters(OptimizationParameter* InParameters){
 		// Use the value specified by user.
 		//SetParameter("Minimum flux for use variable positive constraint",GetParameter("Solver tolerance").data());
 	}
-	if (InParameters->SteadyStateCommunityModeling || InParameters->ReactionAdditionStudy || InParameters->PROM || InParameters->DoMinimizeFlux || InParameters->ReactionsUse || InParameters->GapFilling || InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || GetParameter("Perform auxotrophy analysis").compare("1") == 0) {
+	if (GetParameter("Peak data").length() > 0 || InParameters->CatalogueFluxLoops || InParameters->SteadyStateCommunityModeling || InParameters->ReactionAdditionStudy || InParameters->PROM || InParameters->DoMinimizeFlux || InParameters->ReactionsUse || InParameters->GapFilling || InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || GetParameter("Perform auxotrophy analysis").compare("1") == 0) {
 		InParameters->DecomposeReversible = true;
+	}
+	if (InParameters->ReactionSlackVariable || InParameters->BinaryReactionSlackVariable || GetParameter("Peak data").length() > 0) {
+		InParameters->ExcludeSimultaneousReversibleFlux = true;
 	}
 }
 

@@ -129,10 +129,8 @@ public:
 	MFAVariable* ProteinProd;
 	MFAVariable* ProteinDeg;
 	vector<LinEquation*> ComplexFluxConstraints;
-	vector<vector<LinEquation*>* > ForFluxConstraints;
-	vector<vector<LinEquation*>* > RevFluxConstraints;
-	LinEquation* PrimaryForFluxConstraint;
-	LinEquation* PrimaryRevFluxConstraint;
+	vector<vector<LinEquation*>* > FluxConstraints;
+	LinEquation* PrimaryFluxConstraint;
 	int FType();
 	Data* FMainData();
 	bool IsReactantCofactor(int InIndex);
@@ -217,6 +215,7 @@ public:
 	double ComputePROMActivity();
 	void CreateReactionDrainFluxes();
 	void DecomposeToPiecewiseFluxBounds(double threshold,int minimum,MFAProblem* InProblem);
+	MFAVariable* CreateMFAVariable(MFAProblem* InProblem,int Type,double UB,double LB);
 	void CreateMFAVariables(OptimizationParameter* InParameters);
 	void CreateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem);
 	void UpdateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem);

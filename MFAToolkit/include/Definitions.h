@@ -172,6 +172,12 @@
 #define NEGATIVE_DELTAG 39
 #define PROTEIN_CONC 40
 #define METABOLITE_SLACK 41
+#define FORWARD_CAPACITY_SLACK 42
+#define REVERSE_CAPACITY_SLACK 43
+#define KPRIME 44
+#define POS_KPRIME_ERR 45
+#define NEG_KPRIME_ERR 46
+#define PEAK_USE 47
 
 //Logic types
 #define AND 0

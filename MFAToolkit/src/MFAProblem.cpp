@@ -2561,6 +2561,153 @@ int MFAProblem::FindTightBounds(Data* InData,OptimizationParameter*& InParameter
 	return Status;
 }
 
+int MFAProblem::CatalogueFluxLoops(Data* InData,OptimizationParameter*& InParameters) {
+	cout << "computing loops" << endl;
+	//Maximizing each flux and once maximized, fixing and minimizing active reactions, adding binary variables and elimination variable
+	int StartState = this->SaveState();
+	//Turning off all uptake
+	for (int i=0; i < int(Variables.size()); i++) {
+		if (Variables[i]->Type == DRAIN_FLUX || Variables[i]->Type == FORWARD_DRAIN_FLUX) {
+			Variables[i]->UpperBound = 0;
+		}
+	}
+	//this->SetSolver("GLPK");
+	LinEquation* SingleFluxObjective = InitializeLinEquation();
+	SingleFluxObjective->Coefficient.push_back(1);
+	SingleFluxObjective->Variables.push_back(NULL);
+	LinEquation* SumObjective = InitializeLinEquation();
+	ObjFunct = NULL;
+	this->AddSumObjective(FLUX,false,false,1,false);
+	this->AddSumObjective(REVERSE_FLUX,false,true,1,false);
+	this->AddSumObjective(FORWARD_FLUX,false,true,1,false);
+	SumObjective = ObjFunct;
+	LinEquation* UseSumObjective = InitializeLinEquation();
+	ResetSolver();
+	LoadSolver();
+	vector<LinEquation*> AllLoopContraints;
+	for (int i=0; i < int(Variables.size()); i++) {
+		if (Variables[i]->Type == FLUX || Variables[i]->Type == FORWARD_FLUX || Variables[i]->Type == REVERSE_FLUX) {
+			string rsign = "+";
+			if (Variables[i]->Type == REVERSE_FLUX) {
+				rsign.assign("-");
+			}
+			SingleFluxObjective->Variables[0] = Variables[i];
+			if (Variables[i]->UpperBound > 0) {
+				//Optimizing single flux
+				this->ObjFunct = SingleFluxObjective;
+				this->SetMax();
+				this->LoadObjective();
+				OptSolutionData* NewSolution = RunSolver(false,false,false);
+				//If flux is nonzero, the reaction is part of a loop to remove
+				while (NewSolution->Objective > MFA_ZERO_TOLERANCE) {
+					cout << "Running " << rsign << Variables[i]->AssociatedReaction->GetData("DATABASE",STRING) << endl;
+					double original_lowerbound = Variables[i]->LowerBound;
+					Variables[i]->LowerBound = 0.8 * NewSolution->Objective;
+					this->LoadVariable(Variables[i]->Index);
+					this->ObjFunct = SumObjective;
+					this->SetMin();
+					this->LoadObjective();
+					NewSolution = RunSolver(false,false,false);
+					vector<int> indecies;
+					vector<double> old_upper_bound;
+					for (int j=0; j < int(Variables.size()); j++) {
+						if (Variables[j]->Type == FLUX || Variables[j]->Type == FORWARD_FLUX || Variables[j]->Type == REVERSE_FLUX) {
+							if (NewSolution->SolutionData[Variables[j]->Index] > 0) {
+								int vartype = REACTION_USE;
+								string sign = "+";
+								if (Variables[j]->Type == REVERSE_FLUX || Variables[j]->Type == REVERSE_USE) {
+									sign.assign("-");
+									vartype = REVERSE_USE;
+								} else if (Variables[j]->Type == FORWARD_FLUX) {
+									vartype = FORWARD_USE;
+								}
+								MFAVariable* NewVariable;
+								if (Variables[j]->AssociatedReaction->MFAVariables[vartype] == NULL) {
+									NewVariable = InitializeMFAVariable();
+									NewVariable->AssociatedReaction = ObjFunct->Variables[i]->AssociatedReaction;
+									NewVariable->Name.assign(sign);
+									NewVariable->Name.assign(NewVariable->AssociatedReaction->GetData("DATABASE",STRING));
+									NewVariable->Type = vartype;
+									NewVariable->UpperBound = 1;
+									NewVariable->LowerBound = 0;
+									NewVariable->Binary = true;
+									UseSumObjective->Variables.push_back(NewVariable);
+									UseSumObjective->Coefficient.push_back(1);
+									this->AddVariable(NewVariable);
+									this->LoadVariable(NewVariable->Index);
+									Variables[j]->AssociatedReaction->MFAVariables[vartype] = NewVariable;
+									LinEquation* newconstraint = InitializeLinEquation("Use constraints",0,LESS);
+									newconstraint->Variables.push_back(Variables[j]);
+									newconstraint->Variables.push_back(NewVariable);
+									newconstraint->Coefficient.push_back(1);
+									newconstraint->Coefficient.push_back(-1*Variables[j]->UpperBound);
+									this->AddConstraint(newconstraint);
+									this->LoadConstToSolver(newconstraint->Index);
+								} else {
+									NewVariable = Variables[j]->AssociatedReaction->MFAVariables[vartype];
+								}
+							} else {
+								indecies.push_back(j);
+								old_upper_bound.push_back(Variables[j]->UpperBound);
+								Variables[j]->UpperBound = 0;
+								this->LoadVariable(Variables[j]->Index);
+							}
+						}
+					}
+					//Running solver with binary variables to gaurantee a minimal solution
+					this->ObjFunct = UseSumObjective;
+					this->LoadObjective();
+					NewSolution = RunSolver(false,false,false);
+					//Adding all active use ables in current solution into a new loop elimination constraint
+					LinEquation* newconstraint = InitializeLinEquation("Loop elimination constraints",-1,LESS);
+					for (int j=0; j < int(Variables.size()); j++) {
+						if (Variables[j]->Type == REACTION_USE || Variables[j]->Type == REVERSE_USE || Variables[j]->Type == FORWARD_USE) {
+							if (NewSolution->SolutionData[Variables[j]->Index] > 0) {
+								newconstraint->Variables.push_back(Variables[j]);
+								newconstraint->Coefficient.push_back(1);
+								newconstraint->RightHandSide++;
+							}
+						}
+					}
+					this->AddConstraint(newconstraint);
+					this->LoadConstToSolver(newconstraint->Index);
+					AllLoopContraints.push_back(newconstraint);
+					//Restoring upper bound on all flux variables
+					for (int j=0; j < indecies.size(); j++) {
+						Variables[indecies[j]]->UpperBound = old_upper_bound[j];
+						this->LoadVariable(Variables[indecies[j]]->Index);
+					}
+					//Rerunning original reaction flux optimization
+					this->ObjFunct = SingleFluxObjective;
+					this->SetMax();
+					this->LoadObjective();
+					NewSolution = RunSolver(false,false,false);
+				}
+			}
+		}
+	}
+	cout << "test2" << endl;
+	//Printing all loop constraints
+	ofstream Output;
+	OpenOutput(Output,FOutputFilepath()+"MFAOutput/FluxLoops.txt");
+	for (int j=0; j < AllLoopContraints.size(); j++) {
+		for (int i=0; i < AllLoopContraints[j]->Variables.size(); i++) {
+			if (AllLoopContraints[j]->Variables[i]->Type == FORWARD_USE || AllLoopContraints[j]->Variables[i]->Type == REACTION_USE) {
+				Output << "+" << AllLoopContraints[j]->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING) << ";";
+			} else {
+				Output << "-" << AllLoopContraints[j]->Variables[i]->AssociatedReaction->GetData("DATABASE",STRING) << ";";
+			}
+		}
+		Output << endl;
+	}
+	Output.close();
+	cout << "test3" << endl;
+	//Restoring problem state
+	this->LoadState(StartState,true,false,false,false,false);
+	ResetSolver();
+	return SUCCESS;
+}
+
 int MFAProblem::CalculateFluxSensitivity(Data* InData,vector<MFAVariable*> variables,double objective) {
 	//Checking that the FBA problem has been loaded into the FBA datastructure
 	if (this->FNumVariables() == 0) {
@@ -3662,12 +3809,21 @@ int MFAProblem::FitFluxVector(Data* InData, OptimizationParameter* InParameters,
 	if (this->Solver != CPLEX) {
 		this->Solver = GLPK;
 	}
+	if (GetParameter("Peak data").length() > 0) {
+		this->CreateMetabolomicsVariablesConstraints(InData);
+		//Turning off binary variables preventing simultaneous flux through both components of reversible reaction
+		for (int i=0; i < this->FNumVariables(); i++) {
+			if (this->GetVariable(i)->Type == FORWARD_REACTION) {
+				this->GetVariable(i)->Binary = false;
+			}
+		}
+	}
 	//Create objective equation
 	LinEquation* PrimaryObjective = InitializeLinEquation("objective",0,GREATER);
 	PrimaryObjective->Variables.push_back(NULL);
 	PrimaryObjective->Coefficient.push_back(1);
 	this->ObjFunct = PrimaryObjective;
-	//Checking feasibility of each objective variables
+	//Checking feasibility of each objective variable
 	LinEquation* ObjectiveModConstraint = InitializeLinEquation("objective modification constraint",0,EQUAL);
 	this->AddConstraint(ObjectiveModConstraint);
 	vector<string>* ObjectiveReactions = StringToStrings(GetParameter("component objective reactions"),";");
@@ -3736,64 +3892,190 @@ int MFAProblem::FitFluxVector(Data* InData, OptimizationParameter* InParameters,
 		ObjectiveVarConstraint->Variables.push_back(PosObjModVar);
 		ObjectiveVarConstraint->Coefficient.push_back(1);
 	}
-	//Computing flux targets from expression data if expresison data is given
+	//Computing flux targets from expression data if expression data is given
 	vector<Reaction*> reactions;
 	vector<double> fluxes;
-	if (GetParameter("reaction flux target").compare("none") == 0 && GetParameter("reaction expression target").compare("none") != 0) {
-		this->LoadSolver();
-		OptSolutionData* NewSolution = RunSolver(true,false,true);
-		LinEquation* ObjConst = this->MakeObjectiveConstraint(0,GREATER);
-		ObjConst->RightHandSide = 0.70*NewSolution->Objective;
-		this->AddConstraint(ObjConst);
-		this->LoadSolver();
-		ObjFunct = NULL;
-		this->FindTightBounds(InData,InParameters,false,true);
-		//Setting reaction bounds to tight bounds
-		for (int i=0; i < this->Variables.size(); i++) {
-			if (this->Variables[i]->Type == FLUX || this->Variables[i]->Type == REVERSE_FLUX || this->Variables[i]->Type == FORWARD_FLUX) {
-				this->Variables[i]->UpperBound = 1.1*this->Variables[i]->Max;
-			}
-		}
-		//Getting target flux values and creating deviation variables
-		vector<string>* ReactionExpressionLevels = StringToStrings(GetParameter("reaction expression target"),";");
-		for (int i=0; i < ReactionExpressionLevels->size(); i++) {
-			vector<string>* ReactionData = StringToStrings((*ReactionExpressionLevels)[i],":");
-			Reaction* CurrentReaction = InData->FindReaction("NAME;DATABASE;ENTRY",(*ReactionData)[0].data());
-			reactions.push_back(CurrentReaction);
-			double MaxFlux = 0;
-			MFAVariable* NewVariable = CurrentReaction->GetMFAVar(FLUX);
-			if (NewVariable != NULL) {
-				MaxFlux = NewVariable->Max;
-				if (abs(NewVariable->Min) < MaxFlux) {
-					MaxFlux = abs(NewVariable->Min);
-				}
-			}
-			NewVariable = CurrentReaction->GetMFAVar(FORWARD_FLUX);
-			if (NewVariable != NULL) {
-				MaxFlux = NewVariable->Max;
-			}
-			NewVariable = CurrentReaction->GetMFAVar(REVERSE_FLUX);
-			if (NewVariable != NULL) {
-				if (NewVariable->Max > MaxFlux) {
-					MaxFlux = NewVariable->Max;
-				}
-			}
-			if (MaxFlux == 0) {
-				MaxFlux = 10;
-			}
-			fluxes.push_back(atof((*ReactionData)[1].data())*MaxFlux);
-		}
-	} else {
-		//Just fit the fluxes directly
-		vector<string>* ReactionFluxLevels = StringToStrings(GetParameter("reaction flux target"),";");
-		for (int i=0; i < ReactionFluxLevels->size(); i++) {
-			vector<string>* ReactionData = StringToStrings((*ReactionFluxLevels)[i],":");
-			Reaction* CurrentReaction = InData->FindReaction("NAME;DATABASE;ENTRY",(*ReactionData)[0].data());
-			reactions.push_back(CurrentReaction);
-			fluxes.push_back(atof((*ReactionData)[1].data()));
-		}
+	vector<string>* ReactionFluxLevels = StringToStrings(GetParameter("reaction flux target"),";");
+	for (int i=0; i < ReactionFluxLevels->size(); i++) {
+		vector<string>* ReactionData = StringToStrings((*ReactionFluxLevels)[i],":");
+		Reaction* CurrentReaction = InData->FindReaction("NAME;DATABASE;ENTRY",(*ReactionData)[0].data());
+		reactions.push_back(CurrentReaction);
+		fluxes.push_back(atof((*ReactionData)[1].data()));
 	}
 	this->MinimizeFluxDeviation(reactions,fluxes,CurrentSolution);
+}
+
+int MFAProblem::PerturbMinSolution(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution,map<MFAVariable*,vector<double>,std::less<MFAVariable*> >* CharacteristicFluxes,bool Subsample) {
+	//Knocking out every active reaction in minimized solution and rerunning optimization
+	for (int i=0; i < this->Variables.size(); i++) {
+		if (this->Variables[i]->Type == FLUX || this->Variables[i]->Type == FORWARD_FLUX || this->Variables[i]->Type == REVERSE_FLUX) {
+			if (fabs(CurrentSolution->SolutionData[this->Variables[i]->Index]) > MFA_ZERO_TOLERANCE) {
+				bool exists = false;
+				for (int j=0; j < (*CharacteristicFluxes)[this->Variables[i]].size(); j++) {
+					double value = (*CharacteristicFluxes)[this->Variables[i]][j];
+					if (fabs((CurrentSolution->SolutionData[this->Variables[i]->Index] - value)/value) < 0.05) {
+						exists = true;
+					}
+				}
+				if (!exists) {
+					(*CharacteristicFluxes)[this->Variables[i]].push_back(fabs(CurrentSolution->SolutionData[this->Variables[i]->Index]));
+				}
+				if (Subsample) {
+					double oldupper = this->Variables[i]->UpperBound;
+					double oldlower = this->Variables[i]->LowerBound;
+					this->Variables[i]->UpperBound = 0;
+					this->Variables[i]->LowerBound = 0;
+					this->LoadVariable(this->Variables[i]->Index);
+					OptSolutionData* NewSolution = RunSolver(true,false,true);
+					if (NewSolution->Status == SUCCESS && NewSolution->Objective > 0) {
+						for (int k=0; k < this->Variables.size(); k++) {
+							if (CurrentSolution->SolutionData[this->Variables[k]->Index] == 0 && fabs(NewSolution->SolutionData[this->Variables[k]->Index]) > MFA_ZERO_TOLERANCE) {
+								if (this->Variables[k]->Type == FLUX || this->Variables[k]->Type == FORWARD_FLUX || this->Variables[k]->Type == REVERSE_FLUX) {
+									bool exists = false;
+									for (int j=0; j < (*CharacteristicFluxes)[this->Variables[k]].size(); j++) {
+										double value = (*CharacteristicFluxes)[this->Variables[k]][j];
+										if (fabs((NewSolution->SolutionData[this->Variables[k]->Index] - value)/value) < 0.05) {
+											exists = true;
+										}
+									}
+									if (!exists) {
+										(*CharacteristicFluxes)[this->Variables[k]].push_back(fabs(NewSolution->SolutionData[this->Variables[k]->Index]));
+									}
+								}
+							}
+						}
+					}
+					this->Variables[i]->UpperBound = oldupper;
+					this->Variables[i]->LowerBound = oldlower;
+					this->LoadVariable(this->Variables[i]->Index);
+				}
+			}
+		}
+	}
+	return SUCCESS;
+}
+
+int MFAProblem::CalculateCharacteristicFlux(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution) {
+	int StartState = this->SaveState();
+	if (this->Solver != CPLEX) {
+		this->Solver = GLPK;
+	}
+	//First analyzing the input biomass optimization solution
+	cout << "Growth perturbation" << endl;
+	map<MFAVariable*,vector<double>,std::less<MFAVariable*> >* CharacteristicFluxes = new map<MFAVariable*,vector<double>,std::less<MFAVariable*> >();
+	this->PerturbMinSolution(InData,InParameters,CurrentSolution,CharacteristicFluxes,true);
+	cout << "Size:" << CharacteristicFluxes->size() << endl;
+	//Creating a reversible drain for every carbon compound in the model
+	vector<MFAVariable*> CarbonSourceVariables;
+	for (int i=0; i < InData->FNumSpecies(); i++) {
+		if (InData->GetSpecies(i)->CountAtomType("C") > 0) {
+			for (int j=0; j < InData->GetSpecies(i)->FNumCompartments(); j++) {
+				if (InData->GetSpecies(i)->GetSpeciesCompartment(j)->Compartment->Abbreviation.compare("e") != 0) {
+					MFAVariable* speciesvar = this->CreateOrGetDrainVariable(InData->GetSpecies(i),InData->GetSpecies(i)->GetSpeciesCompartment(j)->Compartment->Index);
+					speciesvar->UpperBound = 0;
+					speciesvar->LowerBound = 0;
+					CarbonSourceVariables.push_back(speciesvar);
+				}
+			}
+		}
+	}
+	//Optimizing production of each individual compound, minimizing, perturbing, and saving characteristic flux
+	LinEquation* SingleObjective = InitializeLinEquation("single variable objective",0,EQUAL);
+	SingleObjective->Variables.push_back(NULL);
+	SingleObjective->Coefficient.push_back(1);
+	LinEquation* SumObjective = this->ObjFunct;
+	LinEquation* NewObjConst = NULL;
+	//Relaxing growth constraint
+	LinEquation* GrowthObjectiveConstraint = this->ObjectiveConstraint;
+	this->ObjectiveConstraint->RightHandSide = 0;
+	this->LoadSolver();
+	cout << "Objective perturbation" << endl;
+	for (int i=0; i < CarbonSourceVariables.size(); i++) {
+		CarbonSourceVariables[i]->LowerBound = -60/CarbonSourceVariables[i]->AssociatedSpecies->CountAtomType("C");
+		this->LoadVariable(CarbonSourceVariables[i]->Index);
+		this->ObjFunct = SingleObjective;
+		SingleObjective->Variables[0] = CarbonSourceVariables[i];
+		this->LoadObjective();
+		OptSolutionData* NewSolution = RunSolver(true,false,true);
+		if (NewSolution->Objective < -1*MFA_ZERO_TOLERANCE) {
+			if (NewObjConst == NULL) {
+				NewObjConst = this->MakeObjectiveConstraint(LESS,0);
+			} else {
+				NewObjConst->Variables[0] = CarbonSourceVariables[i];
+			}
+			NewObjConst->RightHandSide = 0.99*NewSolution->Objective;
+			this->LoadConstToSolver(NewObjConst->Index);
+			this->ObjFunct = SumObjective;
+			this->LoadObjective();
+			OptSolutionData* NewSolution = RunSolver(true,false,true);
+			this->PerturbMinSolution(InData,InParameters,NewSolution,CharacteristicFluxes,false);
+			NewObjConst->RightHandSide = 0;
+			this->LoadConstToSolver(NewObjConst->Index);
+		}
+		CarbonSourceVariables[i]->LowerBound = 0;
+		this->LoadVariable(CarbonSourceVariables[i]->Index);
+	}
+	//Maximizing production of biomass from all carbon compounds
+	GrowthObjectiveConstraint->RightHandSide = 0;
+	//Turning off current uptake fluxes
+	for (int i=0; i < this->Variables.size(); i++) {
+		if (Variables[i]->Type == DRAIN_FLUX || Variables[i]->Type == FORWARD_DRAIN_FLUX) {
+			Variables[i]->UpperBound = 0;
+		}
+	}
+	this->LoadSolver();
+	cout << "Size2:" << CharacteristicFluxes->size() << endl;
+	cout << "Nutrient perturbation" << endl;
+	for (int i=0; i < CarbonSourceVariables.size(); i++) {
+		CarbonSourceVariables[i]->UpperBound = 60/CarbonSourceVariables[i]->AssociatedSpecies->CountAtomType("C");
+		this->LoadVariable(CarbonSourceVariables[i]->Index);
+		this->ObjFunct = SingleObjective;
+		SingleObjective->Variables[0] = CarbonSourceVariables[i];
+		this->SetMax();
+		this->LoadObjective();
+		OptSolutionData* NewSolution = RunSolver(true,false,true);
+		if (NewSolution->Objective > MFA_ZERO_TOLERANCE) {
+			if (NewObjConst == NULL) {
+				NewObjConst = this->MakeObjectiveConstraint(LESS,0);
+			} else {
+				NewObjConst->Variables[0] = CarbonSourceVariables[i];
+			}
+			NewObjConst->RightHandSide = 0.99*NewSolution->Objective;
+			this->LoadConstToSolver(NewObjConst->Index);
+			this->ObjFunct = SumObjective;
+			this->SetMin();
+			this->LoadObjective();
+			OptSolutionData* NewSolution = RunSolver(true,false,true);
+			this->PerturbMinSolution(InData,InParameters,NewSolution,CharacteristicFluxes,false);
+			NewObjConst->RightHandSide = 0;
+			this->LoadConstToSolver(NewObjConst->Index);
+		}
+		CarbonSourceVariables[i]->LowerBound = 0;
+		this->LoadVariable(CarbonSourceVariables[i]->Index);
+	}
+	cout << "Size3:" << CharacteristicFluxes->size() << endl;
+	ofstream Output;
+	OpenOutput(Output,FOutputFilepath()+"MFAOutput/CharacteristicFluxes.txt");
+	Output << "Reaction\tAll fluxes\tMaxflux" << endl;
+	for (map<MFAVariable*,vector<double>,std::less<MFAVariable*> >::iterator MapIT = CharacteristicFluxes->begin(); MapIT != CharacteristicFluxes->end(); MapIT++) {
+		Output << MapIT->first->AssociatedReaction->GetData("DATABASE",STRING) << "\t";
+		double max = 0;
+		for (int i=0; i < int(MapIT->second.size()); i++) {
+			if (i > 0) {
+				Output << ";";
+			}
+			Output << MapIT->second[i];
+			if (MapIT->second[i] > max) {
+				max = MapIT->second[i];
+			}
+		}
+		Output << "\t" << max << endl;
+	}
+	Output.close();
+	LoadState(StartState,true,true,true,false,true);
+	this->ResetSolver();
+	this->LoadSolver();
+	return SUCCESS;
 }
 
 int MFAProblem::ComputeOptimalDeadends(Data* InData) {
@@ -4228,6 +4510,15 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 			}
 		}
 	}
+	//Turning off any activated PEAK_USE variables
+	vector<MFAVariable*> activated_peaks;
+	for (int i=0; i < this->Variables.size(); i++) {
+		if (this->GetVariable(i)->Type == PEAK_USE && this->GetVariable(i)->UpperBound == 1) {
+			activated_peaks.push_back(this->GetVariable(i));
+			this->GetVariable(i)->UpperBound = 0;
+			this->GetVariable(i)->LowerBound = 0;
+		}
+	}
 	//Turning off reactions from input list
 	vector<double> original_upper_bound;
 	vector<double> original_lower_bound;
@@ -4289,6 +4580,11 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 			this->Variables[media_bound_index[i]]->LowerBound = original_media_bound[i];
 			this->LoadVariable(media_bound_index[i]);
 		}
+	}
+	//Restoring activated PEAK_USE variables
+	for (int i=0; i < activated_peaks.size(); i++) {
+		activated_peaks[i]->UpperBound = 1;
+		activated_peaks[i]->LowerBound = 1;
 	}
 	if (PrintResults) {
 		Output.close();
@@ -5193,7 +5489,7 @@ int MFAProblem::BuildCoreProblem(Data* InData,OptimizationParameter*& InParamete
 	if (InParameters->ThermoConstraints && !InParameters->SimpleThermoConstraints) {
 		for (int i=0; i < InData->FNumStructuralCues(); i++) {
 			if (InData->GetStructuralCue(i)->FEstDeltaG() == -10000) {
-				AddVariable(InData->GetStructuralCue(i)->CreateMFAVariable(DELTAGG_ENERGY,-1,-1000,1000));
+				//AddVariable(InData->GetStructuralCue(i)->CreateMFAVariable(DELTAGG_ENERGY,-1,-1000,1000));
 			}
 		}
 	}
@@ -5613,6 +5909,11 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 		this->Solver = SOLVER_SCIP;
 	}
 	this->LoadSolver(false);
+	//If cataloguing flux loops, we do this first before everything else
+	if (InParameters->CatalogueFluxLoops) {
+		this->CatalogueFluxLoops(InData,InParameters);
+		return SUCCESS;
+	}
 	bool rerun = false;
 	OptSolutionData* CurrentSolution = RunSolver(true,true,true);
 	if (CurrentSolution == NULL || CurrentSolution->Status != SUCCESS) {
@@ -5671,7 +5972,7 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 	if (InParameters->FluxVariabilityAnalysis) {
 		//We will never really want to run FVA with integer vairables - it will just be too slow
 		CurrentObjective = ObjFunct;
-		this->RelaxIntegerVariables = true;
+		//this->RelaxIntegerVariables = true;
 		ObjectiveConstraint->RightHandSide = 0.1*CurrentOptimum;
 		if (this->Solver != CPLEX) {
 			this->Solver = GLPK;
@@ -5679,7 +5980,7 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 		this->LoadSolver();
 		ObjFunct = NULL;
 		this->FindTightBounds(InData,InParameters,false,true);
-		this->RelaxIntegerVariables = false;
+		//this->RelaxIntegerVariables = false;
 		ObjFunct = CurrentObjective;
 		this->LoadSolver();
 	}
@@ -5765,6 +6066,9 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 		}
 		this->LoadSolver();
 		CurrentSolution = RunSolver(true,true,true);
+		if (GetParameter("Compute characteristic fluxes").compare("1") == 0) {
+			CalculateCharacteristicFlux(InData,InParameters,CurrentSolution);
+		}
 		CurrentSolution->Objective = CurrentOptimum;
  		ObjFunct = CurrentObjective;
  		if (sense == GREATER) {
@@ -5797,6 +6101,10 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 	} else if (InParameters->DoFluxCouplingAnalysis) {
 		string note;
 		this->FluxCouplingAnalysis(InData,InParameters,false,note,false);//TODO
+	} else if (GetParameter("fit flux vector").compare("1") == 0) {
+		this->FitFluxVector(InData,InParameters,CurrentSolution);
+	} else if (GetParameter("steady state protein fba").compare("1") == 0) {
+		this->SteadyStateProteinFBA(InData,InParameters);
 	} else if (InParameters->ReduceObjective) {
 		ReduceObjective(InData,InParameters,CurrentSolution);
 	} else if (InParameters->ReactionAdditionStudy) {
@@ -5825,6 +6133,122 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 		this->DynamicFBA(InData,InParameters);
 	}
 	//PrintSolutions(-1,-1);//working
+}
+
+int MFAProblem::SteadyStateProteinFBA(Data* InData, OptimizationParameter* InParameters) {
+	if (ObjectiveConstraint != NULL) {
+		ObjectiveConstraint->RightHandSide = 0;
+	}
+	if (this->Solver != CPLEX) {
+		this->Solver = GLPK;
+	}
+	//Assume intial biomass is 1 gram
+	double biomass = 1;
+	double new_vbio = 0.1;
+	MFAVariable* proteinconc = InitializeMFAVariable();
+	//Creating biomass protein constraint
+	LinEquation* BiomassProteinConstraint = InitializeLinEquation("Biomass protein constraint",0,EQUAL);
+	//Finding the biomass flux variable
+	MFAVariable* biomassvar = NULL;
+	for (int i=0; i < this->Variables.size(); i++) {
+		if (Variables[i]->Type == FLUX || Variables[i]->Type == FORWARD_FLUX || Variables[i]->Type == REVERSE_FLUX) {
+			if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).compare(GetParameter("biomass variable")) == 0) {
+				biomassvar = Variables[i];
+				BiomassProteinConstraint->Coefficient.push_back(-1*atof(GetParameter("protein biomass fraction").data()));
+				BiomassProteinConstraint->Variables.push_back(biomassvar);
+			} else if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).compare("ProteinBiomass") == 0) {
+				BiomassProteinConstraint->Coefficient.push_back(atof(GetParameter("protein biomass fraction").data()));
+				BiomassProteinConstraint->Variables.push_back(Variables[i]);
+			}
+		}
+	}
+	for (int i=0; i < this->Variables.size(); i++) {
+		if (Variables[i]->Type == FLUX || Variables[i]->Type == FORWARD_FLUX || Variables[i]->Type == REVERSE_FLUX) {
+			if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).length() > 5 && Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(0,5).compare("PSYN_") == 0) {
+				BiomassProteinConstraint->Variables.push_back(Variables[i]);
+				BiomassProteinConstraint->Coefficient.push_back(1);
+			} else if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).length() > 5 && Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(0,5).compare("PDEG_") == 0) {
+				BiomassProteinConstraint->Variables.push_back(Variables[i]);
+				BiomassProteinConstraint->Coefficient.push_back(-1);
+			}
+		}
+	}
+	this->AddConstraint(BiomassProteinConstraint);
+	//Need to create gene constraints
+	for (int i=0; i < InData->FNumGenes(); i++) {
+		Gene* current = InData->GetGene(i);
+		if (current->FNumReactions() > 0 && current->GetData("DATABASE",STRING).compare("Unknown") != 0) {
+			if (current->MassBalanceConstraint == NULL) {
+				//Create protein mass balanced constraint:  -Pi,syn*(B0+vb/2) + Pi,deg*(B0+vb/2) = -vb * Pi
+				current->MassBalanceConstraint = InitializeLinEquation("Protein mass balance constraint",-1*current->turnover*current->concentration,EQUAL);
+				current->MassBalanceConstraint->Variables.push_back(biomassvar);
+				current->MassBalanceConstraint->Coefficient.push_back(current->concentration + 0.5*current->turnover*current->concentration);
+				current->MassBalanceConstraint->Variables.push_back(NULL);
+				current->MassBalanceConstraint->Coefficient.push_back(1+0.5*new_vbio);
+				//Note - we still need to add synthesis and degradation variables which we will do later
+				//Each round of simulation, we will need to update these coefficients as the value of last_v_bio will keep changing
+				this->AddConstraint(current->MassBalanceConstraint);
+			}
+		}
+	}
+	//Iterating over all variables to find protein synthesis and degradation fluxes and add to mass balance constraints
+	for (int i=0; i < this->Variables.size(); i++) {
+		if (Variables[i]->Type == FLUX || Variables[i]->Type == FORWARD_FLUX || Variables[i]->Type == REVERSE_FLUX) {
+			if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).length() > 5 && Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(0,5).compare("PSYN_") == 0) {
+				Gene* geneobj = InData->FindGene("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
+				if (geneobj != NULL) {
+					geneobj->MassBalanceConstraint->Variables[1] = Variables[i];
+				}
+			} else if (Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).length() > 5 && Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(0,5).compare("PDEG_") == 0) {
+				//Adding a constraint that sets the degradation value: Pdeg,i = kdeg * Pi
+				Gene* geneobj = InData->FindGene("DATABASE",Variables[i]->AssociatedReaction->GetData("DATABASE",STRING).substr(5).data());
+				if (geneobj != NULL) {
+					Variables[i]->UpperBound = geneobj->turnover*geneobj->concentration;
+					Variables[i]->LowerBound = geneobj->turnover*geneobj->concentration;
+				}
+			}
+		}
+	}
+	//Creating reaction flux constraints and creating min KPrime error objective
+	LinEquation* MinKPrimeErrObj = InitializeLinEquation("Min KPrime error objective",0,EQUAL);
+	this->ObjFunct = MinKPrimeErrObj;
+	this->SetMin();
+	LinEquation* MinCapacitySlackConstraint = InitializeLinEquation("Min capacity slack constraint",0,LESS);
+	this->AddConstraint(MinCapacitySlackConstraint);
+	for (int i=0; i < InData->FNumReactions(); i++) {
+		InData->GetReaction(i)->CreateReactionFluxConstraints(InParameters,this);
+		if (InData->GetReaction(i)->GetMFAVar(POS_KPRIME_ERR) != NULL) {
+			MinKPrimeErrObj->Variables.push_back(InData->GetReaction(i)->GetMFAVar(POS_KPRIME_ERR));
+			MinKPrimeErrObj->Coefficient.push_back(1);
+			MinKPrimeErrObj->Variables.push_back(InData->GetReaction(i)->GetMFAVar(NEG_KPRIME_ERR));
+			MinKPrimeErrObj->Coefficient.push_back(1);
+			MinCapacitySlackConstraint->Variables.push_back(InData->GetReaction(i)->GetMFAVar(FORWARD_CAPACITY_SLACK));
+			MinCapacitySlackConstraint->Coefficient.push_back(1);
+			MinCapacitySlackConstraint->Variables.push_back(InData->GetReaction(i)->GetMFAVar(REVERSE_CAPACITY_SLACK));
+			MinCapacitySlackConstraint->Coefficient.push_back(1);
+		}
+	}
+	this->ResetSolver();
+	this->LoadSolver();
+	//Here I am gradually ramping up the allowed slack between flux and capacity and repeating the k optimization each time
+	for (int i=0; i < 100; i++) {
+		MinCapacitySlackConstraint->RightHandSide = i;
+		this->LoadConstToSolver(MinCapacitySlackConstraint->Index);
+		OptSolutionData* CurrentSolution = RunSolver(true,true,false);
+		while (abs(CurrentSolution->SolutionData[biomassvar->Index] - new_vbio) > 0.05) {
+			new_vbio = CurrentSolution->SolutionData[biomassvar->Index];
+			for (int i=0; i < InData->FNumGenes(); i++) {
+				Gene* current = InData->GetGene(i);
+				if (current->MassBalanceConstraint == NULL) {
+					//Create protein mass balanced constraint:  -Pi,syn*(B0+vb/2) + Pi,deg*(B0+vb/2) = -vb * Pi
+					current->MassBalanceConstraint->Coefficient[1] = 1+0.5*new_vbio;
+					this->LoadConstToSolver(current->MassBalanceConstraint->Index);
+				}
+			}
+			CurrentSolution = RunSolver(true,true,false);
+		}
+	}
+	return SUCCESS;
 }
 
 int MFAProblem::DynamicFBA(Data* InData, OptimizationParameter* InParameters) {
@@ -9268,6 +9692,100 @@ int MFAProblem::CalculateGapfillCoefficients(Data* InData,OptimizationParameter*
 	return SUCCESS;
 }	
 
+int MFAProblem::CreateMetabolomicsVariablesConstraints(Data* InData) {
+	if (GetParameter("Peak data").length() > 0) {
+		//First, activate as many metabolites as possible
+		LinEquation* MetaboliteObjective = InitializeLinEquation("Metabolite objective",0,GREATER);
+		LinEquation* NewDrainFluxObjective =  InitializeLinEquation("Metabolite drain objective",0,GREATER);
+		LinEquation* OldObjective = this->ObjFunct;
+		this->ObjFunct = MetaboliteObjective;
+		//Scanning through all metabolites and capturing every unique peak
+		vector<string>* peaks = StringToStrings(GetParameter("Peak data"),";");
+		vector<MFAVariable*> drainlist;
+		this->SetMax();
+		for (int i=0; i < peaks->size(); i++) {
+			//Creating a binary variable for each peak
+			MFAVariable* peak_use = InitializeMFAVariable();
+			peak_use->Binary = true;
+			peak_use->UpperBound = 1;
+			peak_use->LowerBound = 0;
+			peak_use->Type = PEAK_USE;
+			this->AddVariable(peak_use);
+			LinEquation* newconstraint = InitializeLinEquation("peak_constraint",0,LESS);
+			newconstraint->Variables.push_back(peak_use);
+			newconstraint->Coefficient.push_back(1);
+			this->AddConstraint(newconstraint);
+			MetaboliteObjective->Variables.push_back(peak_use);
+			MetaboliteObjective->Coefficient.push_back(1);
+			vector<string>* metabolites = StringToStrings((*peaks)[i],":");
+			this->LoadSolver();
+			for (int j=1; j < metabolites->size(); j++) {
+				//If the metabolite isn't already transported, add a drain flux
+				Species* current_species = InData->FindSpecies("DATABASE",((*metabolites)[j]).data());
+				if (current_species != NULL) {
+					MFAVariable* drainvar = this->CreateOrGetDrainVariable(current_species,GetCompartment("c")->Index,false,FORWARD_DRAIN_FLUX);
+					NewDrainFluxObjective->Variables.push_back(drainvar);
+					NewDrainFluxObjective->Coefficient.push_back(1);
+				}
+				//Creating a binary variable for each compound matching each peak
+				peak_use = InitializeMFAVariable();
+				peak_use->Binary = true;
+				peak_use->UpperBound = 1;
+				peak_use->LowerBound = 0;
+				peak_use->Type = PEAK_USE;
+				peak_use->AssociatedSpecies = current_species;
+				this->AddVariable(peak_use);
+				newconstraint->Variables.push_back(peak_use);
+				newconstraint->Coefficient.push_back(-1);
+				LinEquation* metpeakconst = InitializeLinEquation("metabolite_peak_constraint",0,LESS);
+				metpeakconst->Variables.push_back(peak_use);
+				metpeakconst->Coefficient.push_back(1);
+				this->AddConstraint(metpeakconst);
+				//Adding every flux in the mass balance constraint for this species
+				for (int k=0; k < FNumConstraints(); k++) {
+					if (GetConstraint(k)->ConstraintMeaning.substr(2,GetConstraint(j)->ConstraintMeaning.length()-2).compare("mass_balance") == 0 && GetConstraint(k)->AssociatedSpecies == current_species) {
+						for (int m=0; m < GetConstraint(k)->Variables.size(); m++) {
+							metpeakconst->Variables.push_back(GetConstraint(k)->Variables[m]);
+							metpeakconst->Coefficient.push_back(-50);
+						}
+						break;
+					}
+				}
+			}
+		}
+		//Maximizing active peaks
+		this->ResetSolver();
+		this->LoadSolver();
+		//Now we run the solver
+		OptSolutionData* NewSolution = RunSolver(true,false,true);
+		//Fixing active peaks at optimal value
+		for (int i=0; i < this->Variables.size(); i++) {
+			if (this->GetVariable(i)->Type == PEAK_USE) {
+				this->GetVariable(i)->UpperBound = NewSolution->SolutionData[this->GetVariable(i)->Index];
+				this->GetVariable(i)->LowerBound = NewSolution->SolutionData[this->GetVariable(i)->Index];
+				this->GetVariable(i)->Binary = false;
+			}
+		}
+		//Now we minimize the active drains
+		this->ObjFunct = NewDrainFluxObjective;
+		this->SetMin();
+		this->LoadSolver();
+		NewSolution = RunSolver(true,false,true);
+		for (int i=0; i < NewDrainFluxObjective->Variables.size(); i++) {
+			if (NewSolution->SolutionData[NewDrainFluxObjective->Variables[i]->Index] <= MFA_ZERO_TOLERANCE) {
+				//Turning this drain off as it's not needed to activate maximum peaks
+				NewDrainFluxObjective->Variables[i]->UpperBound = 0;
+				NewDrainFluxObjective->Variables[i]->LowerBound = 0;
+			}
+		}
+		//Now the problem is poised to maximize the active peaks with minimal drain fluxes
+		//Restoring original objective
+		this->SetMax();
+		this->ObjFunct = OldObjective;
+	}
+	return SUCCESS;
+}
+
 int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution) {
 	//Saving the old objective
 	SavedBounds* bounds = this->saveBounds();
@@ -9275,6 +9793,15 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 	bool originalsense = this->FMax();
 	//Setting the old objective to be greater than its minimum value
 	this->ObjectiveConstraint->RightHandSide = InParameters->MinimumTargetFlux;
+	if (GetParameter("Peak data").length() > 0) {
+		this->CreateMetabolomicsVariablesConstraints(InData);
+		//Turning off binary variables preventing simultaneous flux through both components of reversible reaction
+		for (int i=0; i < this->FNumVariables(); i++) {
+			if (this->GetVariable(i)->Type == FORWARD_REACTION) {
+				this->GetVariable(i)->Binary = false;
+			}
+		}
+	}
 	//If provided with exometabolite data, we maximize the consistency with this data
 	LinEquation* ExometaboliteObjective = NULL;
 	vector<string> exometabolites;

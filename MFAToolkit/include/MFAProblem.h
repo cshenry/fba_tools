@@ -132,12 +132,15 @@ public:
 	map<int , vector<double> , std::less<int> >* CalcConcMeanIonicStrength();
 	void ProcessSolution(OptSolutionData* InSolution);
 	int FindTightBounds(Data* InData,OptimizationParameter*& InParameters, bool SaveSolution, bool UseSpecifiedSearchTypes = false);
+	int CatalogueFluxLoops(Data* InData,OptimizationParameter*& InParameters);
 	int FindTightBounds(Data* InData,OptimizationParameter*& InParameters,string Note);
 	int AlternativeSolutionExploration(OptimizationParameter* InParameters,string Filename,OptSolutionData* InitialSolution = NULL,bool clearmarks = true);
 	int RecursiveMILP(Data* InData,OptimizationParameter*& InParameters, vector<int> VariableTypes,bool PrintSolutions);
 	vector<OptSolutionData*> RecursiveMILP(OptimizationParameter* InParameters, string ProblemNote,bool ForeignOnly,vector<int> VariableTypes,double MinSolution,int ClockIndex,LinEquation* OriginalObjective);
 	MFAVariable* CreateOrGetDrainVariable(Species* CurrentSpecies, int compartment,bool reversed = false,int type = DRAIN_FLUX);
 	vector<MFAVariable*>* CreateMetaboliteVariables(Data* InData, string InMetaboliteList);
+	int PerturbMinSolution(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution,map<MFAVariable*,vector<double>,std::less<MFAVariable*> >* CharacteristicFluxes,bool Subsample);
+	int CalculateCharacteristicFlux(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
 	int ComputeOptimalDeadends(Data* InData);
 	int CheckIndividualMetaboliteProduction(Data* InData, OptimizationParameter* InParameters, string InMetaboliteList, bool DoFindTightBounds, bool MinimizeForeignReactions, string Note, bool SubProblem);
 	vector<vector<MFAVariable*>*>* RecursiveObjectiveReduction(MFAVariable* InVariable,double MinObjective,double MaxObjective,LinEquation* MinDeviationObjective,OptSolutionData* PreviousSolution,int depth,vector<bool> blacklist);
@@ -163,6 +166,7 @@ public:
 	int IdentifyReactionLoops(Data* InData, OptimizationParameter* InParameters);
 	int LoadBiomassDrainReactions(Data* InData, OptimizationParameter* InParameters);
 	int LoadGapFillingReactions(Data* InData, OptimizationParameter* InParameters);
+	int CreateMetabolomicsVariablesConstraints(Data* InData);
 	int GapFilling(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
 	vector<MFAVariable*> BiomassSensitivityAnalysis(OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
 	int ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
@@ -181,6 +185,7 @@ public:
 	void AddVariableToRegulationConstraint(LinEquation* InEquation,double Coefficient,string VariableName,Data* InData,OptimizationParameter* InParameters);
 	int CalculateFluxSensitivity(Data* InData,vector<MFAVariable*> variables,double objective);
 	double optimizeVariable(MFAVariable* currentVariable,bool maximize);
+	int SteadyStateProteinFBA(Data* InData, OptimizationParameter* InParameters);
 	int DynamicFBA(Data* InData, OptimizationParameter* InParameters);
 	
 	int AddPROMConstraints(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
