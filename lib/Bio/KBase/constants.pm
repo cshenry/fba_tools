@@ -652,24 +652,6 @@ sub core_reactions {
 
 sub cofactors {
 	return [qw(
-		cpd00047
-		cpd15560
-		cpd12370
-		cpd00001
-		cpd00009
-		cpd00010
-		cpd00011
-		cpd00012
-		cpd00013
-		cpd00015
-		cpd11609
-		cpd11610
-		cpd00067
-		cpd00099
-		cpd12713
-		cpd00242
-		cpd00007
-		cpd00025
 		cpd00062
 		cpd00014
 		cpd00091
@@ -705,7 +687,42 @@ sub cofactors {
 		cpd00003
 		cpd00004
 		cpd00005
-		cpd00006	
+		cpd00006
+		cpd00074
+		cpd03422
+		cpd01997
+		cpd12370
+		cpd15666
+		cpd11574
+		cpd10516
+		cpd10515
+		cpd00971
+		cpd00254
+		cpd00244
+		cpd00205
+		cpd00149
+		cpd00063
+		cpd00058
+		cpd00048
+		cpd00034
+		cpd00030
+		cpd00047
+		cpd15560
+		cpd00001
+		cpd00009
+		cpd00010
+		cpd00011
+		cpd00012
+		cpd00013
+		cpd00015
+		cpd11609
+		cpd11610
+		cpd00067
+		cpd00099
+		cpd12713
+		cpd00242
+		cpd00007
+		cpd00025	
 	)];
 }
 

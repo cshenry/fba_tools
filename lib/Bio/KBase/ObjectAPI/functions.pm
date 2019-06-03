@@ -366,7 +366,7 @@ sub func_build_metabolic_model {
 		anaerobe => 0,
 		use_annotated_functions => 1,
         merge_all_annotations => 0,
-        source_ontology_list => []#[], []]
+        source_ontology_list => []
 	});
 	#Getting genome
 	$handler->util_log("Retrieving genome.");
@@ -393,6 +393,9 @@ sub func_build_metabolic_model {
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
 	#Clearing up annotation source array
+	if ($params->{source_ontology_list} eq "") {
+		$params->{source_ontology_list} = [];
+	}
 	my $anno_sources = [];
 	for (my $i=0; $i < @{$params->{source_ontology_list}};$i++) {
 		if (defined($params->{source_ontology_list}->[$i]->[0])) {
@@ -840,12 +843,9 @@ sub func_run_flux_balance_analysis {
 	} else {
 		$handler->util_log("Retrieving model.");
 		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
-		$handler->util_log("TEST");
 		Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
 	}
-	$handler->util_log("TEST2");
 	if (!defined($params->{media_id})) {
-		$handler->util_log("TEST3");
 		if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
 			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_plant_media");
 		} else {
@@ -853,7 +853,6 @@ sub func_run_flux_balance_analysis {
 			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_microbial_media");
 		}
 		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
-		$handler->util_log("TEST4");
 	}
 
 	$handler->util_log("Retrieving ".$params->{media_id}." media or mediaset.");
