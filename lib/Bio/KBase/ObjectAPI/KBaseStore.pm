@@ -199,6 +199,17 @@ sub process_object {
 			});
 			$data = $gaoutput->{genomes}->[0]->{data};
 			$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
+		} elsif ($type eq "Genome") {
+			if (defined($data->{cdss})) {
+				for (my $i = 0; $i < @{$data->{cdss}}; $i++) {
+					push(@{$data->{features}},$data->{cdss}->[$i]);
+				}
+			}
+			if (defined($data->{non_coding_features})) {
+				for (my $i = 0; $i < @{$data->{non_coding_features}}; $i++) {
+					push(@{$data->{features}},$data->{non_coding_features}->[$i]);
+				}
+			}
 		}
 		if ($type eq "AttributeMapping" || $type eq "MetaboliteMatrix" || $type eq "BinnedContigs" || $type eq "Assembly" || $type eq "MediaSet" || $type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
 			$self->cache()->{$ref} = $data;

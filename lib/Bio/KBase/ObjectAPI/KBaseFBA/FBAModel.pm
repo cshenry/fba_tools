@@ -47,7 +47,7 @@ sub _buildfeatures {
 	my $ftrhash = {};
 	for (my $i=0; $i < @{$rxns};$i++) {
 		my $rxn = $rxns->[$i];
-		my $ftrs = $rxn->featureUUIDs();
+		my $ftrs = $rxn->featureIDs();
 		foreach my $ftr (@{$ftrs}) {
 			$ftrhash->{$ftr} = 1;
 		}

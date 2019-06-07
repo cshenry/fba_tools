@@ -828,7 +828,9 @@ sub func_run_flux_balance_analysis {
 		predict_community_composition => 0,
 		compute_characteristic_flux => 0,
 		steady_state_protein_fba => 0,
-		characteristic_flux_file => undef
+		characteristic_flux_file => undef,
+		kcat_hash => undef,
+		proteomics_hash => undef
 	});
 	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
 		if (length($params->{reaction_ko_list}) > 0) {
@@ -880,6 +882,24 @@ sub func_run_flux_balance_analysis {
 	}
 	if (defined($params->{steady_state_protein_fba})) {
 		$fba->parameters()->{"steady state protein fba"} = $params->{steady_state_protein_fba};
+	}
+	if (defined($params->{kcat_hash})) {
+		$fba->parameters()->{kcat_hash} = "";
+		foreach my $id (keys(%{$params->{kcat_hash}})) {
+			if (length($fba->parameters()->{kcat_hash}) > 0) {
+				$fba->parameters()->{kcat_hash} .= ";";
+			}
+			$fba->parameters()->{kcat_hash} .= $id.":".$params->{kcat_hash}->{$id};
+		}
+	}
+	if (defined($params->{proteomics_hash})) {
+		$fba->parameters()->{proteomics_hash} = "";
+		foreach my $id (keys(%{$params->{proteomics_hash}})) {
+			if (length($fba->parameters()->{proteomics_hash}) > 0) {
+				$fba->parameters()->{proteomics_hash} .= ";";
+			}
+			$fba->parameters()->{proteomics_hash} .= $id.":".$params->{proteomics_hash}->{$id};
+		}
 	}
 	$fba->parameters()->{"reduce objective"} = $params->{reduce_objective};
 	$fba->parameters()->{"max objective"} = $params->{max_objective};

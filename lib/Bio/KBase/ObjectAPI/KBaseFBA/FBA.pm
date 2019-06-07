@@ -1098,7 +1098,7 @@ sub createJobDirectory {
  	my $genelist = [];
 	my $cpddbhash = Bio::KBase::utilities::compound_hash();
 	my $proteinvar;
-	if (defined($self->parameters()->{"run dynamic FBA"}) && $self->parameters()->{"run dynamic FBA"} == 1) {
+	if ((defined($self->parameters()->{"run dynamic FBA"}) && $self->parameters()->{"run dynamic FBA"} == 1) || (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1)) {
 		$proteinvar = {};
 		my $aa_trans = Bio::KBase::constants::aa_abbrev();
 		for (my $i=0; $i < @{$mdlrxn}; $i++) {
@@ -1205,7 +1205,7 @@ sub createJobDirectory {
 					}
 				}
 			}
-			if (@{$prots} == 0) {
+			if (@{$prots} == 0 && defined($self->parameters()->{"run dynamic FBA"}) && $self->parameters()->{"run dynamic FBA"} == 1) {
 				my $conc = $self->parameters()->{default_concentration};
 				my $kprime = $self->parameters()->{default_kprime};
 				my $kmcpd = "none";
