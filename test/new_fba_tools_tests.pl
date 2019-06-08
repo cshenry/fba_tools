@@ -12,11 +12,12 @@ use fba_tools::fba_toolsImpl;
 local $| = 1;
 my $token = $ENV{'KB_AUTH_TOKEN'};
 my $config_file = $ENV{'KB_DEPLOYMENT_CONFIG'};
+print "Config file:".$ENV{'KB_DEPLOYMENT_CONFIG'}."\n"
 my $config = new Config::Simple($config_file)->get_block('fba_tools');
 my $ws_url = $config->{"workspace-url"};
+print "Workspace URL:".$ws_url."\n"
 my $ws_name = undef;
 my $test_ws = "fba_tools_unittests_ws";
-#my $ws_client = new Bio::KBase::workspace::Client($ws_url,token => $token);
 my $ws_client = Workspace::WorkspaceClient->new($ws_url,token => $token);
 my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
 my $ctx = LocalCallContext->new($token, $auth_token->user_id);
