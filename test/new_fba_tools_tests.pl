@@ -47,7 +47,7 @@ lives_ok{
     $impl->build_plant_metabolic_model({
 	genome_id => "Alyrata_v1.0",
 	genome_workspace => "PlantSEED_v2",
-	fbamodel_output_id =>  "test_model",
+	fbamodel_output_id =>  "test_model_2",
 	workspace => get_ws_name()})
 } "build_plant_metabolic_model";
 
