@@ -14,7 +14,7 @@ my $token = $ENV{'KB_AUTH_TOKEN'};
 my $config_file = $ENV{'KB_DEPLOYMENT_CONFIG'};
 my $config = new Config::Simple($config_file)->get_block('fba_tools');
 my $ws_url = $config->{"workspace-url"};
-my $ws_name = undef;
+my $ws_name = "fba_tools_unittests_ws";
 my $test_ws = "fba_tools_unittests_ws";
 my $ws_client = Workspace::WorkspaceClient->new($ws_url,token => $token);
 my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
