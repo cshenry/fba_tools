@@ -150,7 +150,7 @@ sub write_object_to_file_cache {
 
 #This function writes data to file cache if it's been flagged for local file caching
 sub read_object_from_file_cache {
-	my ($self,$ref,$options) = @_;
+	my ($self,$ref,$options,$original_ref) = @_;
 	my $cache_dir = Bio::KBase::utilities::conf("ModelSEED","kbase_file_cache");
 	if ($self->is_a_cache_target($ref) == 1) {
 		#Get WS metadata
@@ -167,7 +167,7 @@ sub read_object_from_file_cache {
 			my $meta = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
 			$filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/data");
 			my $data = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
-			$self->process_object($meta,$data,$ref,$options);
+			$self->process_object($meta,$data,$original_ref,$options);
 			return 1;
 		}
 	}
@@ -218,6 +218,7 @@ sub process_object {
 			$self->cache()->{$ref}->{_ref_chain} = $origref;
 		} else {
 			$self->cache()->{$ref} = $class->new($data);
+			print "Setting reference chain:".$origref."\n";
 			$self->cache()->{$ref}->ref_chain($origref);
 			$self->cache()->{$ref}->parent($self);
 			$self->cache()->{$ref}->_wsobjid($info->[0]);
@@ -336,7 +337,7 @@ sub get_objects {
 			$refs->[$i] = $options->{parent}->{_ref_chain}.";".$refs->[$i];
 		}
 		if (!defined($self->cache()->{$finalref}) || $options->{refreshcache} == 1) {
-			if ($self->read_object_from_file_cache($finalref,$options) == 0) {
+			if ($self->read_object_from_file_cache($finalref,$options,$refs->[$i]) == 0) {
 				push(@{$newrefs},$refs->[$i]);
 			}
 		}
@@ -374,6 +375,7 @@ sub get_objects {
 
 sub get_object {
 	my ($self,$ref,$options) = @_;
+	print "Get object:".$ref."\n";
 	return $self->get_objects([$ref],$options)->[0];
 }
 
