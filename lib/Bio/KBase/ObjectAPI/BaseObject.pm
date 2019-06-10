@@ -689,8 +689,6 @@ sub getLinkedObject {
     my ($self, $ref) = @_;
 	my $debug = 0;
 	my $refchain = $self->ref_chain();
-	print("ref: $ref\n");# if $debug;
-	print("refchain: $refchain\n");# if $debug;
 	if (length($refchain) > 0) {
 		$refchain .= ";";
 	}

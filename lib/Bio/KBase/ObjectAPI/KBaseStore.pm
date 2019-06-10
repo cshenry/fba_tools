@@ -218,7 +218,6 @@ sub process_object {
 			$self->cache()->{$ref}->{_ref_chain} = $origref;
 		} else {
 			$self->cache()->{$ref} = $class->new($data);
-			print "Setting reference chain:".$origref."\n";
 			$self->cache()->{$ref}->ref_chain($origref);
 			$self->cache()->{$ref}->parent($self);
 			$self->cache()->{$ref}->_wsobjid($info->[0]);
@@ -375,7 +374,6 @@ sub get_objects {
 
 sub get_object {
 	my ($self,$ref,$options) = @_;
-	print "Get object:".$ref."\n";
 	return $self->get_objects([$ref],$options)->[0];
 }
 
