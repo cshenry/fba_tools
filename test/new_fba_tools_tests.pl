@@ -51,15 +51,6 @@ lives_ok{
 	workspace => get_ws_name()})
 } "build_plant_metabolic_model";
 
-# merge_metabolic_models_into_community_model
-lives_ok{
-    $impl->merge_metabolic_models_into_community_model({
-	fbamodel_id_list => [ $test_ws."/test_model", $test_ws."/test_model_2" ],
-	fbamodel_output_id => "Community_model",
-	workspace => get_ws_name(),
-	mixed_bag_model => 1})
-} "merge_metabolic_models_into_community_model";
-
 # gapfill_metabolic_model
 lives_ok{
     $impl->gapfill_metabolic_model({
@@ -113,6 +104,15 @@ lives_ok{
 	translation_policy          => "add_reactions_for_unique_genes"})
 } "propagate_model_to_new_genome";
 
+# merge_metabolic_models_into_community_model
+lives_ok{
+    $impl->merge_metabolic_models_into_community_model({
+	fbamodel_id_list => [ $test_ws."/test_model", $test_ws."/test_propagated_model" ],
+	fbamodel_output_id => "Community_model",
+	workspace => get_ws_name(),
+	mixed_bag_model => 1})
+} "merge_metabolic_models_into_community_model";
+
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
@@ -130,15 +130,15 @@ lives_ok{
 lives_ok{
     $impl->compare_models({
 	mc_name    => "model_comparison_test",
-	model_refs    => [ $test_ws."/test_model", $test_ws."/test_model_2" ],
+	model_refs    => [ $test_ws."/test_model", $test_ws."/test_propagated_model" ],
 	workspace  => get_ws_name()})
 } 'Compare Models';
 
 lives_ok{
     $impl->compare_models({
 	mc_name       => "model_comparison",
-	model_refs    => [ $test_ws."/test_model", $test_ws."/test_model_2" ],
-	pangenome_ref => $test_ws."/test_pangenome",
+	model_refs    => [ $test_ws."/test_model", $test_ws."/test_propagated_model" ],
+	pangenome_ref => $test_ws."/Ecoli_vs_Paeruginosa",
 	workspace     => get_ws_name()})
 } 'Compare Models w/ pangenome';
 
@@ -280,6 +280,8 @@ lives_ok{
 	genome         => $test_ws."/Escherichia_coli",
 	biomass        => [ "R_BIOMASS_Ecoli_core_w_GAM" ]})
 } 'SBML import: test "R_" prefix';
+
+
 
 lives_ok{
     $impl->sbml_file_to_model({
