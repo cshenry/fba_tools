@@ -14,8 +14,8 @@ my $token = $ENV{'KB_AUTH_TOKEN'};
 my $config_file = $ENV{'KB_DEPLOYMENT_CONFIG'};
 my $config = new Config::Simple($config_file)->get_block('fba_tools');
 my $ws_url = $config->{"workspace-url"};
-my $ws_name = "fba_tools_unittests_ws";
-my $test_ws = "fba_tools_unittests_ws";
+my $ws_name = "fba_tools_unittests";
+my $test_ws = "fba_tools_unittests";
 my $ws_client = Workspace::WorkspaceClient->new($ws_url,token => $token);
 my $auth_token = Bio::KBase::AuthToken->new(token => $token, ignore_authrc => 1);
 my $ctx = LocalCallContext->new($token, $auth_token->user_id);
@@ -47,7 +47,7 @@ lives_ok{
     $impl->build_plant_metabolic_model({
 	genome_id => "Alyrata_v1.0",
 	genome_workspace => "PlantSEED_v2",
-	fbamodel_output_id =>  "test_model_2",
+	fbamodel_output_id =>  "plant_model",
 	workspace => get_ws_name()})
 } "build_plant_metabolic_model";
 
@@ -55,26 +55,37 @@ lives_ok{
 lives_ok{
     $impl->gapfill_metabolic_model({
 	fbamodel_id => $test_ws."/test_model",
-	media_id => $test_ws."/Carbon-D-Glucose",
+	media_id => "KBaseMedia/Carbon-D-Glucose",
 	fbamodel_output_id =>  "test_model_minimal",
 	workspace => get_ws_name(),
 	target_reaction => "bio1"})
 } "gapfill_metabolic_model";
 
 lives_ok{
-        $impl->gapfill_metabolic_model({
-            fbamodel_id => $test_ws."/test_model",
-	    media_id => $test_ws."/nocarbon_media",
-	    fbamodel_output_id =>  "test_model_nocarbon",
-	    workspace => get_ws_name(),
-	    target_reaction => "bio1"})
+    $impl->gapfill_metabolic_model({
+    fbamodel_id => $test_ws."/test_model",
+	media_id => $test_ws."/No-carbon",
+	fbamodel_output_id =>  "test_model_nocarbon",
+	workspace => get_ws_name(),
+	target_reaction => "bio1"})
 } "gapfill_metabolic_model_fails";
 
 lives_ok{
     $impl->run_flux_balance_analysis({
-	fbamodel_id => $test_ws."/test_model",
-	media_id => $test_ws."/Carbon-D-Glucose",
+	fbamodel_id => $test_ws."/test_model_minimal",
+	media_id => "KBaseMedia/Carbon-D-Glucose",
 	fba_output_id =>  "test_minimal_fba",
+	workspace => get_ws_name(),
+	target_reaction => "bio1",
+	fva => 1,
+	minimize_flux => 1})
+} "run_flux_balance_analysis";
+
+lives_ok{
+    $impl->run_flux_balance_analysis({
+	fbamodel_id => $test_ws."/test_model_minimal",
+	media_id => "KBaseMedia/Carbon-Glycine",
+	fba_output_id =>  "test_glycine_fba",
 	workspace => get_ws_name(),
 	target_reaction => "bio1",
 	fva => 1,
@@ -84,7 +95,7 @@ lives_ok{
 # check_model_mass_balance
 lives_ok{
     $impl->check_model_mass_balance({
-	fbamodel_id => $test_ws."/test_model",
+	fbamodel_id => $test_ws."/test_model_minimal",
 	workspace   => get_ws_name()})
 } "check_model_mass_balance";
 
@@ -92,15 +103,12 @@ lives_ok{
 lives_ok{
     $impl->propagate_model_to_new_genome({
 	fbamodel_id => $test_ws."/test_model",
-	media_id => $test_ws."/Carbon-D-Glucose",
-	proteincomparison_id        => $test_ws."/Ecoli_vs_Paeruginosa",
+	media_id => "KBaseMedia/Carbon-D-Glucose",
+	proteincomparison_id        => $test_ws."/Escherichia_coli_to_Shewanella_SB2B",
 	fbamodel_output_id          => "test_propagated_model",
 	workspace                   => get_ws_name(),
 	keep_nogene_rxn             => 1,
 	gapfill_model               => 1,
-	custom_bound_list           => [],
-	media_supplement_list       => "",
-	minimum_target_flux         => 0.1,
 	translation_policy          => "add_reactions_for_unique_genes"})
 } "propagate_model_to_new_genome";
 
@@ -113,10 +121,19 @@ lives_ok{
 	mixed_bag_model => 1})
 } "merge_metabolic_models_into_community_model";
 
+# merge_metabolic_models_into_community_model
+lives_ok{
+    $impl->merge_metabolic_models_into_community_model({
+	fbamodel_id_list => [ $test_ws."/test_model", $test_ws."/test_propagated_model" ],
+	fbamodel_output_id => "Compartmentalized_community_model",
+	workspace => get_ws_name(),
+	mixed_bag_model => 0})
+} "merge_metabolic_models_into_community_model";
+
 # simulate_growth_on_phenotype_data
 lives_ok{
         $impl->simulate_growth_on_phenotype_data({
-	    fbamodel_id            => $test_ws."/test_model",
+	    fbamodel_id            => $test_ws."/test_model_minimal",
             phenotypeset_id        => $test_ws."/SB2B_biolog_data",
             phenotypesim_output_id => "test_phenotype_simset",
             workspace              => get_ws_name(),
@@ -130,7 +147,7 @@ lives_ok{
 lives_ok{
     $impl->compare_models({
 	mc_name    => "model_comparison_test",
-	model_refs    => [ $test_ws."/test_model", $test_ws."/test_propagated_model" ],
+	model_refs    => [ $test_ws."/test_model_minimal", $test_ws."/test_propagated_model" ],
 	workspace  => get_ws_name()})
 } 'Compare Models';
 
@@ -138,20 +155,18 @@ lives_ok{
     $impl->compare_models({
 	mc_name       => "model_comparison",
 	model_refs    => [ $test_ws."/test_model", $test_ws."/test_propagated_model" ],
-	pangenome_ref => $test_ws."/Ecoli_vs_Paeruginosa",
+	pangenome_ref => $test_ws."/Ecoli_vs_SB2B",
 	workspace     => get_ws_name()})
 } 'Compare Models w/ pangenome';
 
 # build_multiple_metabolic_models
 lives_ok{
     $impl->build_multiple_metabolic_models({
-	"genome_text"           => $test_ws."/Rhodobacter_sphaeroides",
+	"genome_text"           => $test_ws."/Shewanella_amazonensis_SB2B.RAST",
 	"genome_ids"            => [ $test_ws."/Escherichia_coli" ],
 	"media_id"              => undef,
 	"template_id"           => "auto",
 	"gapfill_model"         => 1,
-	"custom_bound_list"     => [],
-	"media_supplement_list" => [],
 	"minimum_target_flux"   => 0.1,
 	"workspace"             => get_ws_name()})
 } "build_multiple_metabolic_models";
@@ -159,7 +174,7 @@ lives_ok{
 # compare_fba_solutions
 lives_ok{
     $impl->compare_fba_solutions({
-	fba_id_list => [ $test_ws."/test_model_gf_fba", $test_ws."/test_model_2_gf_fba" ],
+	fba_id_list => [ $test_ws."/test_minimal_fba", $test_ws."/test_glycine_fba" ],
 	fbacomparison_output_id => "fba_comparison",
 	workspace => get_ws_name()})
 } "compare_fba_solutions";
@@ -167,7 +182,7 @@ lives_ok{
 # view_flux_network
 lives_ok{
     $impl->view_flux_network({
-	fba_id => $test_ws."/test_model_gf_fba",
+	fba_id => $test_ws."/test_minimal_fba",
 	workspace => get_ws_name()})
 } "view_flux_network";
 
@@ -177,7 +192,7 @@ lives_ok{
 	estimate_threshold => 0,
 	maximize_agreement => 0,
 	expression_condition => "22c.5h_r1[sodium_chloride:0 mM,culture_temperature:22 Celsius,casamino_acids:0.3 mg/mL]",
-	fba_id => $test_ws."/test_model_gf_fba",
+	fba_id => $test_ws."/test_minimal_fba",
 	fbapathwayanalysis_output_id => "test",
 	exp_threshold_percentile => 0.5,
 	expseries_id => $test_ws."/expression_matrix_test",
@@ -249,7 +264,7 @@ lives_ok{
     $impl->edit_media({
 	workspace => get_ws_name(),
 	media_output_id => "edited_media",
-	media_id => $test_ws."/Carbon-D-Glucose",
+	media_id => "KBaseMedia/Carbon-D-Glucose",
 	compounds_to_remove => "cpd00027",
 	compounds_to_change => [{change_id => "cpd00001",change_concentration => 0.1,change_minflux => -100,change_maxflux => 1}],
 	compounds_to_add => [{add_id => "Acetate",add_concentration => 0.1,add_minflux => -100,add_maxflux => 1}],
@@ -280,8 +295,6 @@ lives_ok{
 	genome         => $test_ws."/Escherichia_coli",
 	biomass        => [ "R_BIOMASS_Ecoli_core_w_GAM" ]})
 } 'SBML import: test "R_" prefix';
-
-
 
 lives_ok{
     $impl->sbml_file_to_model({
@@ -380,13 +393,13 @@ lives_ok{
 # fba_to_excel_file
 lives_ok{
     $impl->fba_to_excel_file({
-	input_ref => $test_ws."/test_model_gf_fba"})
+	input_ref => $test_ws."/test_minimal_fba"})
 } 'export fba as excel';
 
 # fba_to_tsv_file
 lives_ok{
     $impl->fba_to_tsv_file({
-	input_ref => $test_ws."/test_model_gf_fba"})
+	input_ref => $test_ws."/test_minimal_fba"})
 } 'export fba as tsv';
 
 
@@ -430,13 +443,13 @@ lives_ok{
 # media_to_tsv_file
 lives_ok{
     $impl->media_to_tsv_file({
-	input_ref => $test_ws."/Carbon-D-Glucose"})
+	input_ref => "KBaseMedia/Carbon-D-Glucose"})
 } 'media to tsv file';
 
 # media_to_excel_file
 lives_ok{
     $impl->media_to_excel_file({
-	input_ref => $test_ws."/Carbon-D-Glucose"})
+	input_ref => "KBaseMedia/Carbon-D-Glucose"})
 } 'media to excel file';
 
 # tsv_file_to_phenotype_set
@@ -486,7 +499,7 @@ lives_ok{
 # bulk_export_objects
 lives_ok{
     $impl->bulk_export_objects({
-	refs => [ $test_ws."/test_model", $test_ws."/test_model_2" ],
+	refs => [ $test_ws."/test_model", $test_ws."/test_propagated_model" ],
 	workspace => $test_ws,
 	report_workspace => get_ws_name(),
 	all_media => 1,
@@ -515,25 +528,25 @@ lives_ok{
 # export_fba_as_excel_file
 lives_ok{
     $impl->export_fba_as_excel_file({
-	input_ref => $test_ws."/test_model_gf_fba"})
+	input_ref => $test_ws."/test_minimal_fba"})
 } 'export fba as excel';
 
 # export_fba_as_tsv_file
 lives_ok{
     $impl->export_fba_as_tsv_file({
-	input_ref => $test_ws."/test_model_gf_fba"})
+	input_ref => $test_ws."/test_minimal_fba"})
 } 'export fba as tsv';
 
 # export_media_as_excel_file
 lives_ok{
     $impl->export_media_as_excel_file({
-	input_ref => $test_ws."/Carbon-D-Glucose"})
+	input_ref => "KBaseMedia/Carbon-D-Glucose"})
 } 'export media as excel';
 
 # export_media_as_tsv_file
 lives_ok{
     $impl->export_media_as_tsv_file({
-	input_ref => $test_ws."/Carbon-D-Glucose"})
+	input_ref => "KBaseMedia/Carbon-D-Glucose"})
 } 'export media as tsv';
 
 # export_phenotype_set_as_tsv_file
@@ -551,15 +564,11 @@ lives_ok{
 # export_phenotype_simulation_set_as_tsv_file
 lives_ok{
     $impl->export_phenotype_set_as_tsv_file({
-	input_ref => $test_ws."/test_phenotype_set"})
+	input_ref => $test_ws."/test_phenotype_simset"})
 } 'export phenotype sim set as tsv';
 
 done_testing();
 
-if (defined($ws_name)) {
-        $ws_client->delete_workspace({workspace => $ws_name});
-        print("Test workspace was deleted\n");
-    }
 {
     package LocalCallContext;
     use strict;
