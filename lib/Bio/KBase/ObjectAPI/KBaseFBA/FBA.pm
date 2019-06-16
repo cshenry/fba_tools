@@ -1927,6 +1927,9 @@ sub createJobDirectory {
 		}
 		my $newLine = $media->name()."\t".$media->name()."\t";
 		if (defined($dataArrays->{var}) && @{$dataArrays->{var}} > 0) {
+			if (!defined($dataArrays->{conc})) {
+				$dataArrays->{conc} = 0.001;
+			}
 			$newLine .= 
 				join("|",@{$dataArrays->{var}})."\t".
 				join("|",@{$dataArrays->{type}})."\t".
@@ -3263,7 +3266,120 @@ sub parseMetaboliteInteraction {
 	my ($self) = @_;
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/MFAOutput/MetaboliteProductionResults.txt") {
-		$self->outputfiles()->{MetaboliteProductionResults} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/MetaboliteProductionResults.txt");
+		my $outputhash = {};
+		my $cpddatahash = Bio::KBase::utilities::compound_hash();
+		my $filedata = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/MetaboliteProductionResults.txt");
+		my $cofactors = Bio::KBase::constants::cofactors();
+		my $cofactor_hash = {};
+		for (my $k=0; $k < @{$cofactors}; $k++) {
+			$cofactor_hash->{$cofactors->[$k]} = 1;
+		}
+		for (my $k=1; $k < @{$filedata}; $k++) {
+			my $array = [split(/\t/,$filedata->[$k])];
+			my $cpd = $array->[1];
+			$cpd =~ s/_c0//;
+			if ($array->[2] ne "none") {
+				$outputhash->{$cpd} = {
+					totalrxn => 0,
+					gfrxn => 0,
+					rxns => {},
+					auxotrophic => 0,
+					cofactor_reactants => [],
+					main_reactants => [],
+					cofactor_products => [],
+					main_products => [],
+					name => $cpddatahash->{$cpd}->{name}
+				};
+				my $rxnhash;
+				my $rxns = $self->fbamodel()->modelreactions();
+				for (my $i=0; $i < @{$rxns}; $i++) {
+					$rxnhash->{$rxns->[$i]->id()} = $rxns->[$i];
+				}
+				$rxns = [split(/;/,$array->[2])];
+				my $rxncpdhash = {};
+				for (my $m=0; $m < @{$rxns}; $m++) {
+					if ($rxns->[$m] =~ m/(.)(.+)(_[a-zA-Z]\d):(.+)/) {
+						my $rxnid = $2;
+						my $comp = $3;
+						$outputhash->{$cpd}->{rxns}->{$rxnid} = {
+							gpr => $rxnhash->{$rxnid.$comp}->gprString(),
+							flux => $4,
+							cofactor_reactants => [],
+							main_reactants => [],
+							cofactor_products => [],
+							main_products => [],
+							gfrxn => 0
+						};
+						my $multiplier = 1;
+						if ($outputhash->{$cpd}->{rxns}->{$rxnid}->{flux} < 0) {
+							$multiplier = -1;
+						}
+						$outputhash->{$cpd}->{totalrxn}++;
+						if ($rxnhash->{$rxnid.$comp}->gprString() eq "Unknown") {
+							$outputhash->{$cpd}->{gfrxn}++;
+							$outputhash->{$cpd}->{rxns}->{$rxnid}->{gfrxn} = 1;
+						}
+						my $rgts = $rxnhash->{$rxnid.$comp}->modelReactionReagents();
+						#Populating data for reaction stoichiometry
+						for (my $n=0; $n < @{$rgts}; $n++) {
+							my $coreid = $rgts->[$n]->modelcompound()->id();
+							$coreid =~ s/_[a-zA-Z]\d+//;
+							if (!defined($rxncpdhash->{$rgts->[$n]->modelcompound()->id()})) {
+								$rxncpdhash->{$rgts->[$n]->modelcompound()->id()} = 0;
+							}
+							$rxncpdhash->{$rgts->[$n]->modelcompound()->id()} += $rgts->[$n]->coefficient()*$outputhash->{$cpd}->{rxns}->{$rxnid}->{flux};
+							if (defined($cofactor_hash->{$coreid})) {
+								if ($rgts->[$n]->coefficient()*$multiplier < 0) {
+									push(@{$outputhash->{$cpd}->{rxns}->{$rxnid}->{cofactor_reactants}},[$rgts->[$n]->coefficient()*$multiplier,$rgts->[$n]->modelcompound()->id(),$cpddatahash->{$coreid}->{name}]);
+								} else {
+									push(@{$outputhash->{$cpd}->{rxns}->{$rxnid}->{cofactor_products}},[$rgts->[$n]->coefficient()*$multiplier,$rgts->[$n]->modelcompound()->id(),$cpddatahash->{$coreid}->{name}]);
+								}
+							} else {
+								if ($rgts->[$n]->coefficient()*$multiplier < 0) {
+									push(@{$outputhash->{$cpd}->{rxns}->{$rxnid}->{main_reactants}},[$rgts->[$n]->coefficient()*$multiplier,$rgts->[$n]->modelcompound()->id(),$cpddatahash->{$coreid}->{name}]);
+								} else {
+									push(@{$outputhash->{$cpd}->{rxns}->{$rxnid}->{main_products}},[$rgts->[$n]->coefficient()*$multiplier,$rgts->[$n]->modelcompound()->id(),$cpddatahash->{$coreid}->{name}]);
+								}
+							}
+						}
+					}
+				}
+				#Populating data for overall reaction for metabolite
+				my $finalflux = 0;
+				foreach my $overcpd (keys(%{$rxncpdhash})) {
+					my $coreid = $overcpd;
+					$coreid =~ s/_[a-zA-Z]\d+//;
+					if ($coreid eq $cpd) {
+						$finalflux += $rxncpdhash->{$overcpd};
+					}
+					if (defined($cofactor_hash->{$coreid})) {
+						if ($rxncpdhash->{$overcpd} < -0.0000001) {
+							push(@{$outputhash->{$cpd}->{cofactor_reactants}},[$rxncpdhash->{$overcpd},$overcpd,$cpddatahash->{$coreid}->{name}]);
+						} elsif ($rxncpdhash->{$overcpd} > 0.0000001) {
+							push(@{$outputhash->{$cpd}->{cofactor_products}},[$rxncpdhash->{$overcpd},$overcpd,$cpddatahash->{$coreid}->{name}]);
+						}
+					} else {
+						if ($rxncpdhash->{$overcpd} < -0.0000001) {
+							push(@{$outputhash->{$cpd}->{main_reactants}},[$rxncpdhash->{$overcpd},$overcpd,$cpddatahash->{$coreid}->{name}]);
+						} elsif ($rxncpdhash->{$overcpd} > 0.0000001) {
+							push(@{$outputhash->{$cpd}->{main_products}},[$rxncpdhash->{$overcpd},$overcpd,$cpddatahash->{$coreid}->{name}]);
+						}
+					}
+				}
+				if ($finalflux != 0) {
+					my $list = [qw(cofactor_reactants cofactor_products main_reactants main_products)];
+					for (my $m=0; $m < @{$list}; $m++) {
+						for (my $n=0; $n < @{$outputhash->{$cpd}->{$list->[$m]}}; $n++) {
+							$outputhash->{$cpd}->{$list->[$m]}->[$n]->[0] = $outputhash->{$cpd}->{$list->[$m]}->[$n]->[0]/$finalflux;
+						}
+					}
+					foreach my $rxnid (keys(%{$outputhash->{$cpd}->{rxns}})) {
+						$outputhash->{$cpd}->{rxns}->{$rxnid}->{flux} = $outputhash->{$cpd}->{rxns}->{$rxnid}->{flux}/$finalflux;
+					}
+				}
+			}
+		}
+		$self->outputfiles()->{MetaboliteProductionResults} = [Bio::KBase::utilities::to_json($outputhash,1)];
 	}
 }
 
