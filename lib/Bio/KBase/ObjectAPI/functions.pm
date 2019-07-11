@@ -2655,8 +2655,8 @@ sub func_build_metagenome_metabolic_model {
                                                             )
                                                  );
 		my $ra = new RAST_SDK::RAST_SDKClient( $self->{'callbackURL'},
-                                                            ( 'service_version' => 'beta',
-                                                              'async_version' => 'beta',
+                                                            ( 'service_version' => 'dev',
+                                                              'async_version' => 'dev,
                                                             )
                                                  );
 		my $pa = new ProkkaAnnotation::ProkkaAnnotationClient( $self->{'callbackURL'},
