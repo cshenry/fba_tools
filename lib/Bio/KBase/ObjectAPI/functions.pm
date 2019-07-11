@@ -2482,11 +2482,11 @@ sub func_metagenome_annotation_based_on_binned_contigs {
 
 sub func_metagenome_annotation_based_on_metagenome {
 
-	my ($genome_object,$ra,$params) = @_;
+	my ($ra,$params) = @_;
 	my $output_genome_rast =  $genome_object->{info}->[1].".RAST";
     my $rastAnno = $ra->annotate_genome({
 
-        input_genome => $params->{genome_ref},#$genome_object->{info}->[6]."/".$genome_object->{info}->[0]."/".$genome_object->{info}->[4],
+        input_genome => $params->{genome_ref},,
         output_genome => $output_genome_rast,
         workspace_name => $params->{workspace},
         workspace => $params->{workspace},
@@ -2509,6 +2509,8 @@ sub func_metagenome_annotation_based_on_metagenome {
 
     });
 
+    my $new_genome_ref = $rastAnno->{info}->[6]."/".$rastAnno->{info}->[0]."/".$rastAnno->{info}->[4];
+    my $genome_object = Bio::KBase::kbaseenv::ws_client()->get_objects2({objects => [{ref => $new_genome_ref}]})->{data}->[0];
     my $cdss = $genome_object->{data}->{cdss};
     my $role_hash = {};
     my $role_hash_count = {};
@@ -2669,7 +2671,7 @@ sub func_build_metagenome_metabolic_model {
 		my $genome_object = Bio::KBase::kbaseenv::ws_client()->get_objects2({objects => [{ref => $params->{genome_ref}}]})->{data}->[0];
 
 		# Annotations and gene counts
-		my $annotation_genecounts = func_metagenome_annotation_based_on_metagenome($genome_object,$ra,$params);
+		my $annotation_genecounts = func_metagenome_annotation_based_on_metagenome($ra,$params);
 		print &Dumper ($annotation_genecounts);
 		die;
 
