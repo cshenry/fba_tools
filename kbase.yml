@@ -1,5 +1,5 @@
 module-name:
-    je_tools
+    fba_tools
 
 module-description:
     This module includes implementation of official KBase functions that comprise the metabolic modeling pipeline of KBase.
