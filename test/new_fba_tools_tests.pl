@@ -23,6 +23,15 @@ my $ctx = LocalCallContext->new($token, $auth_token->user_id);
 $fba_tools::fba_toolsServer::CallContext = $ctx;
 my $impl = new fba_tools::fba_toolsImpl();
 
+
+$impl->build_metagenome_metabolic_model({
+	input_ref => '41764/2/3',
+	genome_ref => '41764/22/1',
+	workspace =>'janakakbase:narrative_1552942723190',
+
+});
+
+=head
 sub get_ws_name {
     if (!defined($ws_name)) {
         my $suffix = int(time * 1000);
@@ -554,7 +563,7 @@ lives_ok{
 } 'export phenotype sim set as tsv';
 
 done_testing();
-
+=cut
 if (defined($ws_name)) {
         $ws_client->delete_workspace({workspace => $ws_name});
         print("Test workspace was deleted\n");
