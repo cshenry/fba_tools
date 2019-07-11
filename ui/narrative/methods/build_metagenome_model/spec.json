@@ -2,7 +2,7 @@
    "name" : "build_metagenome_metabolic_model",
    "ver" : "0.0.1",
    "authors" : [
-      "chenry"
+      "chenry,janaka"
    ],
    "contact" : "http://kbase.us/contact-us/",
    "visible" : true,
@@ -16,7 +16,7 @@
    },
    "parameters" : [
       {
-         "id" : "input_ref",
+         "id" : "genome_ref",
          "default_values" : [
             ""
          ],
@@ -26,7 +26,7 @@
          "allow_multiple" : false,
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseGenomeAnnotations.Assembly","KBaseMetagenomes.BinnedContigs"
+               "KBaseGenomes.Genome"
             ]
          }
       },
@@ -89,7 +89,7 @@
             "valid_ws_types" : []
          }
       }
-   ], 
+   ],
    "behavior" : {
       "service-mapping" : {
          "url" : "",
@@ -101,8 +101,8 @@
                "narrative_system_variable" : "workspace"
             },
             {
-               "input_parameter" : "input_ref",
-               "target_property" : "input_ref",
+               "input_parameter" : "genome_ref",
+               "target_property" : "genome_ref",
                "target_type_transform": "resolved-ref"
             },
             {

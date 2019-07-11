@@ -11,7 +11,6 @@ use MetagenomeUtils::MetagenomeUtilsClient;
 use RAST_SDK::RAST_SDKClient;
 use ProkkaAnnotation::ProkkaAnnotationClient;
 
-
 our $handler;#Needs: log(string),save_object,get_object
 
 sub set_handler {
@@ -254,16 +253,6 @@ sub util_build_fba {
 			$input->{source_model} = $source_model;
 		}
 		$fbaobj->PrepareForGapfilling($input);
-	}
-	if (defined($params->{dynamic_fba}) && $params->{dynamic_fba} == 1) {
-		$fbaobj->parameters()->{"run dynamic FBA"} = 1;
-		$fbaobj->parameters()->{"Protein limit"} = $params->{protein_limit};
-		$fbaobj->parameters()->{"Protein prod limit"} = $params->{protein_prod_limit};
-		$fbaobj->parameters()->{"Time step"} = $params->{time_step};
-		$fbaobj->parameters()->{"Stop time"} = $params->{stop_time};
-		$fbaobj->parameters()->{"Initial biomass"} = $params->{initial_biomass};
-		$fbaobj->parameters()->{"Volume"} = $params->{volume};
-		$fbaobj->parameters()->{"protein formulation"} = $params->{protein_formulation};
 	}
 	if (defined($params->{save_fluxes})) {
 		$fbaobj->parameters()->{"save phenotype simulation fluxes"} = 1;
@@ -879,79 +868,6 @@ sub func_run_flux_balance_analysis {
 		new_fba_ref => util_get_ref($wsmeta),
 		objective => $objective
 	};
-}
-
-sub func_simulate_metabolite_production_consumption {
-#	my ($params,$model) = @_;
-#	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id","fba_output_id"],{
-#		fbamodel_workspace => $params->{workspace},
-#		media_id => undef,
-#		media_workspace => $params->{workspace},
-#		target_reaction => "bio1",
-#		thermodynamic_constraints => 0,
-#		fva => 0,
-#		minimize_flux => 0,
-#		simulate_ko => 0,
-#		find_min_media => 0,
-#		all_reversible => 0,
-#		feature_ko_list => [],
-#		reaction_ko_list => [],
-#		custom_bound_list => [],
-#		media_supplement_list => [],
-#		max_c_uptake => undef,
-#		max_n_uptake => undef,
-#		max_p_uptake => undef,
-#		max_s_uptake => undef,
-#		max_o_uptake => undef,
-#		target_metabolite_list => [],
-#	});
-#	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
-#		if (length($params->{reaction_ko_list}) > 0) {
-#			$params->{reaction_ko_list} = [split(/,/,$params->{reaction_ko_list})];
-#		} else {
-#			 $params->{reaction_ko_list} = [];
-#		}
-#	}
-#	if (!defined($model)) {
-#		$model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
-#		Bio::KBase::utilities::print_report_message({message => "A flux balance analysis (FBA) was performed on the metabolic model ".$params->{fbamodel_id}." growing in ",append => 0,html => 0});
-#	}
-#	if (!defined($params->{media_id})) {
-#		if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
-#			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_plant_media");
-#		} else {
-#			$params->{default_max_uptake} = 100;
-#			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_microbial_media");
-#		}
-#		$params->{media_workspace} = Bio::KBase::utilities::conf("ModelSEED","default_media_workspace");
-#	}
-#	my $media = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{media_id},$params->{media_workspace}));
-#	Bio::KBase::utilities::print_report_message({message => $params->{media_id}." media.",append => 1,html => 0});
-#	#Simulating metabolite consumption
-#	my $fba = util_build_fba($params,$model,$media,$params->{fba_output_id},0,0,undef);
-#	$fba->parameters()->{"Target metabolite list"} = join(";",@{$params->{target_metabolite_list}});
-#	$fba->parameters()->{"Target metabolite list"} = join(";",@{$params->{target_metabolite_list}});
-#	local $SIG{ALRM} = sub { die "FBA timed out! Model likely contains numerical instability!" };
-#	alarm 86400;
-#	$objective = $fba->runFBA();
-#	$fba->toJSON({pp => 1});
-#	alarm 0;
-#	#Simulating metabolite production
-#
-#
-#
-#
-#
-#
-#	if (!defined($objective)) {
-#		Bio::KBase::utilities::error("FBA failed with no solution returned!");
-#	}
-#	$fba->id($params->{fba_output_id});
-#	my $wsmeta = $handler->util_save_object($fba,Bio::KBase::utilities::buildref($params->{fba_output_id},$params->{workspace}),{type => "KBaseFBA.FBA"});
-#	return {
-#		new_fba_ref => util_get_ref($wsmeta),
-#		objective => $objective
-#	};
 }
 
 sub func_compare_fba_solutions {
@@ -2500,8 +2416,137 @@ sub func_predict_metabolite_biosynthesis_pathway {
 	return {}
 }
 
+sub func_metagenome_annotation_based_on_binned_contigs {
+
+	my ($mgap,$maxb, $be,$pa,$params, $assembly_ref) = @_;
+	print "\n$assembly_ref";
+		#Reads ref is not in assembly object, accqurie from assembly object provenance data
+		my $readsProvRef;
+		for (my $j=0; $j< @{$mgap->{provenance}}; $j++){
+			my $readsProvList = $mgap->{provenance}->[$j]->{method_params};
+			for (my $k=0; $k< @{$readsProvList}; $k++){
+				if (defined $readsProvList->[$k]->{read_libraries}){
+					$readsProvRef = $readsProvList->[$k]->{read_libraries}->[0];
+					print &Dumper ($readsProvRef);
+				}
+			}
+		}
+
+		my $maxbinOut = $maxb->run_max_bin ({
+			assembly_ref => $assembly_ref,
+			workspace_name => $params->{workspace},
+			reads_list => [$readsProvRef],
+			binned_contig_name => 'binnedOut',
+			prob_threshold => 0.8,
+			markerset => '107',
+			min_contig_length => 1000,
+			plotmarker => 0
+
+		});
+
+		my $bContigs = $handler->util_get_object(Bio::KBase::utilities::buildref($maxbinOut->{binned_contig_obj_ref},$params->{workspace}));
+
+		print "Following bins will be extracted\n";
+		for (my $i =0; $i< @{$bContigs->{bins}}; $i++){
+
+			print $bContigs->{bins}->[$i]->{bid}."\n";
+		}
+
+		my $binExt = $be->extract_binned_contigs_as_assembly({
+			binned_contig_obj_ref => $maxbinOut->{binned_contig_obj_ref},
+			extracted_assemblies => '',
+			assembly_suffix => "_assembly",
+			workspace_name => $params->{workspace},
+			assembly_set_name => 'extracted_bins.AssemblySet'
+		});
+
+
+		#Annoate with Prokka
+		my $genomes_array = [];
+		for (my $j=0; $j < @{$binExt->{assembly_ref_list}}; $j++){
+
+		 	my $ProkAnno = $pa->annotate({
+			output_workspace => $params->{workspace},
+			object_ref => $binExt->{assembly_ref_list}->[$j],
+			output_genome_name => $binExt->{assembly_ref_list}->[$j]."_Prokka"
+
+			});
+
+		 	push (@{$genomes_array}, $ProkAnno);
+		}
+
+		return $genomes_array;
+
+
+}
+
+sub func_metagenome_annotation_based_on_metagenome {
+
+	my ($genome_object,$ra,$params) = @_;
+	my $output_genome_rast =  $genome_object->{info}->[1].".RAST";
+    my $rastAnno = $ra->annotate_genome({
+
+        input_genome => $params->{genome_ref},#$genome_object->{info}->[6]."/".$genome_object->{info}->[0]."/".$genome_object->{info}->[4],
+        output_genome => $output_genome_rast,
+        workspace_name => $params->{workspace},
+        workspace => $params->{workspace},
+        call_features_rRNA_SEED => 0,
+        call_features_tRNA_trnascan => 0,
+        call_selenoproteins => 0,
+        call_pyrrolysoproteins => 0,
+        call_features_repeat_region_SEED => 0,
+        call_features_strep_suis_repeat => 0,
+        call_features_strep_pneumo_repeat => 0,
+        call_features_crispr => 0,
+        call_features_CDS_glimmer3 => 0,
+        call_features_CDS_prodigal => 0,
+        annotate_proteins_kmer_v2 => 1,
+        kmer_v1_parameters => 1,
+        annotate_proteins_similarity => 1,
+        retain_old_anno_for_hypotheticals => 0,
+        resolve_overlapping_features => 0,
+        call_features_prophage_phispy => 0
+
+    });
+
+    my $cdss = $genome_object->{data}->{cdss};
+    my $role_hash = {};
+    my $role_hash_count = {};
+    for(my $i=0; $i<@{$cdss}; $i++ ){
+
+    	if (defined $cdss->[$i]->{functions}){
+	    	for(my $j=0; $j< @{$cdss->[$i]->{functions}}; $j++){
+
+	    		if (defined $cdss->[$i]->{functions}->[$j]){
+		    		my $role = $cdss->[$i]->{functions}->[$j];
+		    		push (@{$role_hash->{$role}}, $cdss->[$i]->{id});
+		    		$role_hash_count->{$role}++;
+		    	}
+	    	}
+	    }
+
+    }
+
+	#print &Dumper ($role_hash);
+	my $role_gene_count_list = [];
+    foreach my $r (keys $role_hash){
+    	my $arr_len = @{$role_hash->{$r}};
+	    my $role_gene_count = {
+	    	functional_role => $r,
+	    	gene_count => $arr_len,
+	    	net_coverage => 1
+	    };
+	    push (@{$role_gene_count_list}, $role_gene_count);
+	 }
+	#print &Dumper ($role_gene_count_list);
+	return $role_gene_count_list;
+
+
+}
+
+
 sub func_build_metagenome_metabolic_model {
-	my ($params,$datachannel) = @_;
+	my ($params,$self,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","input_ref"],{
 		input_workspace => $params->{workspace},
 		fbamodel_output_id => undef,
@@ -2510,6 +2555,9 @@ sub func_build_metagenome_metabolic_model {
 		gapfill_model => 1,
 		gff_file => undef
 	});
+
+
+
 	my $RoleHash;
 	my $bin_ref;
 	my $assembly_ref;
@@ -2589,10 +2637,12 @@ sub func_build_metagenome_metabolic_model {
 			}
 		}
 	} else {
+
 		#TODO: running binning, extraction, and annotation, then pulling down genomes and pulling out annotations
 
 		# Instantiating SDK callbacks should change into the setup you already have. I used the following for local testing.#
-		my $maxb = new kb_maxbin::kb_maxbinClient( $self->{'callbackURL'},
+
+		my $maxb = new kb_maxbin::kb_maxbinClient($self->{'callbackURL'},
                                                             ( 'service_version' => 'release',
                                                               'async_version' => 'release',
                                                             )
@@ -2603,8 +2653,8 @@ sub func_build_metagenome_metabolic_model {
                                                             )
                                                  );
 		my $ra = new RAST_SDK::RAST_SDKClient( $self->{'callbackURL'},
-                                                            ( 'service_version' => 'release',
-                                                              'async_version' => 'release',
+                                                            ( 'service_version' => 'beta',
+                                                              'async_version' => 'beta',
                                                             )
                                                  );
 		my $pa = new ProkkaAnnotation::ProkkaAnnotationClient( $self->{'callbackURL'},
@@ -2613,81 +2663,16 @@ sub func_build_metagenome_metabolic_model {
                                                             )
                                                  );
 
+		print &Dumper ($params);
+
 		my $mgap = Bio::KBase::kbaseenv::ws_client()->get_objects2({objects => [{ref => $assembly_ref}]})->{data}->[0];
+		my $genome_object = Bio::KBase::kbaseenv::ws_client()->get_objects2({objects => [{ref => $params->{genome_ref}}]})->{data}->[0];
 
-		#Reads ref is not in assembly object, accqurie from assembly object provenance data
-		my $readsProvRef;
-		for (my $j=0; $j< @{$mgap->{provenance}}; $j++){
-			my $readsProvList = $mgap->{provenance}->[$j]->{method_params};
-			for (my $k=0; $k< @{$readsProvList}; $k++){
-				if (defined $readsProvList->[$k]->{read_libraries}){
-					$readsProvRef = $readsProvList->[$k]->{read_libraries}->[0];
-					print &Dumper ($readsProvRef);
-				}
-			}
-		}
+		# Annotations and gene counts
+		my $annotation_genecounts = func_metagenome_annotation_based_on_metagenome($genome_object,$ra,$params);
+		print &Dumper ($annotation_genecounts);
+		die;
 
-		my $maxbinOut = $maxb->run_max_bin ({
-			assembly_ref => $assembly_ref,
-			workspace_name => $params->{workspace},
-			reads_list => [$readsProvRef],
-			binned_contig_name => 'binnedOut',
-			prob_threshold => 0.8,
-			markerset => '107',
-			min_contig_length => 1000,
-			plotmarker => 0
-
-		});
-		my $bContigs = $handler->util_get_object(Bio::KBase::utilities::buildref($maxbinOut->{binned_contig_obj_ref},$params->{workspace}));
-
-		print "Following bins will be extracted\n";
-		for (my $i =0; $i< @{$bContigs->{bins}}; $i++){
-
-			print $bContigs->{bins}->[$i]->{bid}."\n";
-		}
-
-		my $binExt = $be->extract_binned_contigs_as_assembly({
-			binned_contig_obj_ref => $maxbinOut->{binned_contig_obj_ref},
-			extracted_assemblies => '',
-			assembly_suffix => "_assembly",
-			workspace_name => $params->{workspace},
-			assembly_set_name => 'extracted_bins.AssemblySet'
-		});
-
-
-		#Annoate with Prokka
-		for (my $j=0; $j < @{$binExt->{assembly_ref_list}}; $j++){
-
-		 	my $ProkAnno = $pa->annotate({
-			output_workspace => $params->{workspace},
-			object_ref => $binExt->{assembly_ref_list}->[$j],
-			output_genome_name => $binExt->{assembly_ref_list}->[$j]."_Prokka"
-
-			});
-
-		}
-
-
-		#Annoate with RAST
-		#The API call is here, but I could not work test locally as it cannot copy the kmer ref data file through sdk call back.
-=head
-		for (my $j=0; $j < @{$binExt->{assembly_ref_list}}; $j++){
-			my $rastAnno = $ra->annotate_genome({
-			workspace => $params->{workspace},
-			input_contigset => $binExt->{assembly_ref_list}->[$j],
-			annotate_proteins_kmer_v2 => 1,
-			kmer_v1_parameters => 1,
-			annotate_proteins_similarity => 1,
-			call_features_CDS_glimmer3 => 1,
-			call_features_CDS_prodigal =>1,
-			scientific_name => 'unknown',
-			domain => 'B',
-			genetic_code => '11',
-			output_genome => $binExt->{assembly_ref_list}->[j]."_RAST"
-
-			});
-		}
-=cut
 	}
 	#Loading metagenome template
 	my $template_trans = Bio::KBase::constants::template_trans();

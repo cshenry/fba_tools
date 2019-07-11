@@ -69,13 +69,13 @@ parameters :
             A GFF file containing externally generated metagenome annotations
 
 
-    input_ref :
+    genome_ref :
         ui-name : |
-            Input assembly or bins
+            Input Metagenome
         short-hint : |
-            A metagenome assembly, or a binned metagenome assembly to construct a model from
+            A metagenome to construct a model from
         long-hint : |
-            A metagenome assembly, or a binned metagenome assembly to construct a model from
+            A metagenome to construct a model from
         placeholder : |
             Assembly or bins for modeling
 
@@ -84,9 +84,8 @@ icon: modelseed-teal.png
 
 description : |
 
-    <p>This tool applies the ModelSEED approach to build a model from a metagenome assembly. 
-    If a GFF file of annotations is not supplied, the assembly is binned and annotated with RAST.
-    If a GFF file is supplied, the annotations in that file are applied to determine the reactions in the model.
+    <p>This tool applies the ModelSEED approach to build a model from a metagenome.
+    If a GFF file is supplied (optional), the annotations in that file are applied to determine the reactions in the model.
     Gene associations are not included in metagenome models. Instead, wherever possible, reactions are associated with the list
     of species predicted to contain them. Also, reactions include total coverage and total hit count.</p>
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
