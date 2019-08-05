@@ -272,15 +272,34 @@ sub get_ontology_hash {
 		my $list = Bio::KBase::utilities::conf("ModelSEED","ontology_map_list");
 		$list = [split(/;/,$list)];
 		for (my $i=0; $i < @{$list}; $i++) {
-			my $output = Bio::KBase::kbaseenv::get_object(Bio::KBase::utilities::conf("ModelSEED","ontology_map_workspace"),$list->[$i]);
+			my $subarray = [split(/:/,$list->[$i])];
+			my $output = Bio::KBase::kbaseenv::get_object(Bio::KBase::utilities::conf("ModelSEED","ontology_map_workspace"),$subarray->[1]);
 			foreach my $term (keys(%{$output->{translation}})) {
 				foreach my $otherterm (@{$output->{translation}->{$term}->{equiv_terms}}) {
-					$ontology_hash->{$list->[$i]}->{$term}->{$otherterm->{equiv_term}} = 1;
+					if (defined($otherterm->{equiv_term})) {
+						$ontology_hash->{$term}->{$otherterm->{equiv_term}} = $subarray->[0];
+					}
 				}
 			}
 		}
 	}
 	return $ontology_hash;
+}
+
+sub get_sso_hash {
+	my $output = $ws_client->get_objects([{
+		workspace => "KBaseOntology",
+		name => "seed_subsystem_ontology"
+	}]);
+	my $funchash = {};
+	foreach my $term (keys(%{$output->[0]->{data}->{term_hash}})) {
+		my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($output->[0]->{data}->{term_hash}->{$term}->{name});
+		$output->[0]->{data}->{term_hash}->{$term}->{searchname} = $searchrole;
+		$funchash->{$searchrole} = $output->[0]->{data}->{term_hash}->{$term};
+		$funchash->{$term} = $output->[0]->{data}->{term_hash}->{$term};
+		$funchash->{$output->[0]->{data}->{term_hash}->{$term}->{id}} = $output->[0]->{data}->{term_hash}->{$term};
+	}
+	return $funchash;
 }
 
 1;

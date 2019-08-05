@@ -76,6 +76,40 @@ sub _buildfeatureHash {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub load_metabolite_hashes {
+	my ($self,$id_hash,$name_hash,$structure_hash,$formula_hash,$priority,$cmp) = @_;
+	my $cpds = $self->modelcompounds();
+	for (my $i=0; $i < @{$cpds}; $i++) {
+		if ($cpds->[$i]->modelcompartment()->compartment()->id() eq $cmp) {
+			if ($cpds->[$i]->id() =~ m/(cpd\d+)/) {
+				my $msid = $1;
+				my $cpdhash = Bio::KBase::utilities::compound_hash();
+				if (defined($cpdhash->{$msid}->{names})) {
+					for (my $j=0; $j < @{$cpdhash->{$msid}->{names}}; $j++) {
+						$name_hash->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$msid}->{names}->[$j])}->{$cpds->[$i]->id()} = $priority;
+					}
+				}
+				$id_hash->{$msid}->{$cpds->[$i]->id()} = $priority;
+			} elsif ($cpds->[$i]->id() =~ m/(^.+)_[a-z]\d+/) {
+				$id_hash->{$1}->{$cpds->[$i]->id()} = $priority;
+			}
+			if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
+				$structure_hash->{$cpds->[$i]->inchikey()}->{$cpds->[$i]->id()} = $priority;
+			}
+			if (defined($cpds->[$i]->smiles()) && length($cpds->[$i]->smiles()) > 0) {
+				$structure_hash->{$cpds->[$i]->smiles()}->{$cpds->[$i]->id()} = $priority;
+			}
+			if (defined($cpds->[$i]->formula()) && length($cpds->[$i]->formula()) > 0) {
+				$formula_hash->{$cpds->[$i]->neutral_formula()}->{$cpds->[$i]->id()} = $priority;
+			}
+			if (defined($cpds->[$i]->name()) && length($cpds->[$i]->name()) > 0) {
+				$name_hash->{Bio::KBase::utilities::nameToSearchname($cpds->[$i]->name())}->{$cpds->[$i]->id()} = $priority;
+			}
+			
+		}
+	}
+}
+
 sub gene_count {
 	my $self = shift;
 	my $ftrhash = {};
@@ -1927,6 +1961,54 @@ sub merge_models {
 	}
 	print "Merge complete!";
 	return $genomeObj;
+}
+
+sub merge_in_reaction {
+	my ($self,$rxn) = @_;
+	my $newrxn = $self->getObject("modelreactions",$rxn->id());
+	if (!defined($newrxn)) {
+		#Adding missing compounds from reagent list
+		my $rgts = $rxn->modelReactionReagents();
+		for (my $i=0; $i < @{$rgts}; $i++) {
+			my $newcpd = $self->getObject("modelcompounds",$rgts->[$i]->modelcompound()->id());
+			if (!defined($newcpd)) {
+				#Adding missing compartments from reagent list
+				my $newcmp = $rgts->[$i]->modelcompound()->modelcompartment();
+				$newcmp = $self->getObject("modelcompartments",$newcmp->id());
+				if (!defined($newcmp)) {
+					$newcmp = $newcmp->cloneObject();
+					$newcmp->parent($self);
+					$self->add("modelcompartments",$newcmp);
+				}
+				$newcpd = $rgts->[$i]->modelcompound()->cloneObject();
+				$newcpd->parent($self);
+				$self->add("modelcompounds",$newcpd);
+			}
+		}
+		#Adding the reaction itself
+		my $clonedrxn = $rxn->cloneObject();
+		$clonedrxn->parent($self);
+		return $self->add("modelreactions",$clonedrxn);
+	}
+	#Reaction already exists - just syncing associated gene list
+	my $genehash = $newrxn->gene_hash();
+	my $prots = $rxn->modelReactionProteins();
+	for (my $i=0; $i < @{$prots}; $i++) {
+		my $match = 1;
+		my $sus = $prots->[$i]->modelReactionProteinSubunits();
+		for (my $j=0; $j < @{$sus}; $j++) {
+			my $genes = $sus->[$j]->features();
+			for (my $k=0; $k < @{$genes}; $k++) {
+				if (!defined($genehash->{$genes->[$k]->id()})) {
+					$match = 0;
+				}
+			}
+		}
+		if ($match == 0) {
+			$newrxn->add("modelReactionProteins",$prots->[$i]->cloneObject());
+			$genehash = $newrxn->gene_hash();
+		}
+	}
 }
 
 =head3 edit_metabolic_model

@@ -37,7 +37,7 @@ has protein_translation_length => (is => 'rw', isa => 'Int', printOrder => '-1',
 has aliases => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has type => (is => 'rw', isa => 'Str', printOrder => '1', default => 'peg', type => 'attribute', metaclass => 'Typed');
 has md5 => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
-
+has ontology_terms => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
 has protein_families => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(ProteinFamily)', metaclass => 'Typed', reader => '_protein_families', printOrder => '-1');
@@ -199,10 +199,19 @@ my $attributes = [
             'type' => 'Str',
             'description' => undef,
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => 1,
+            'name' => 'ontology_terms',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'description' => undef,
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {function => 0, md5 => 1, atomic_regulons => 2, coexpressed_fids => 3, dna_sequence => 4, protein_translation => 5, co_occurring_fids => 6, regulon_data => 7, publications => 8, id => 9, location => 10, subsystem_data => 11, annotations => 12, dna_sequence_length => 13, orthologs => 14, protein_translation_length => 15, aliases => 16, type => 17};
+my $attribute_map = {function => 0, md5 => 1, atomic_regulons => 2, coexpressed_fids => 3, dna_sequence => 4, protein_translation => 5, co_occurring_fids => 6, regulon_data => 7, publications => 8, id => 9, location => 10, subsystem_data => 11, annotations => 12, dna_sequence_length => 13, orthologs => 14, protein_translation_length => 15, aliases => 16, type => 17,ontology_terms => 18};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

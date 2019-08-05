@@ -367,7 +367,8 @@ sub addRxnToModel {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["role_features","model"],{
 		fulldb => 0,
-		probabilities => {}
+		probabilities => {},
+		reaction_hash => {}
 	}, @_);
 	my $mdl = $args->{model};
 	#Gathering roles from annotation
@@ -397,15 +398,15 @@ sub addRxnToModel {
 						}
 					}
 				    if($role_cpt_present == 1){
-					$subunits->{$cpxrole->templaterole()->name()}->{triggering} = $cpxrole->triggering();
-					$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
-					if (!defined($roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0]) || $roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0] eq "Role-based-annotation") {
-						$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
-					} else {
-						foreach my $feature (@{$roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}}) {
-							$subunits->{$cpxrole->templaterole()->name()}->{genes}->{"~/genome/features/id/".$feature->id()} = $feature;	
+						$subunits->{$cpxrole->templaterole()->name()}->{triggering} = $cpxrole->triggering();
+						$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
+						if (!defined($roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0]) || $roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0] eq "Role-based-annotation") {
+							$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
+						} else {
+							foreach my $feature (@{$roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}}) {
+								$subunits->{$cpxrole->templaterole()->name()}->{genes}->{"~/genome/features/id/".$feature->id()} = $feature;	
+							}
 						}
-					}
 				    }
 				}
 			}
@@ -420,6 +421,49 @@ sub addRxnToModel {
 				}
 			}
 			push(@{$proteins},{subunits => $subunits,cpx => $cpx});
+		}
+	}
+	#Checking reaction hash for additional gene associations to add
+	if (defined($args->{reaction_hash}->{$self->msid()})) {
+		my $anno_source_hash = {};
+		foreach my $geneid (keys(%{$args->{reaction_hash}->{$self->msid()}})) {
+			if (!defined($anno_source_hash->{join(";",keys(%{$args->{reaction_hash}->{$self->msid()}->{$geneid}}))}->{$geneid})) {
+				#Checking if gene is already included in an existing complex
+				my $found = 0;
+				for (my $i=0; $i < @{$proteins}; $i++) {
+					foreach my $name (keys($proteins->[$i]->{subunits})) {
+						foreach my $gene (keys(%{$proteins->[$i]->{subunits}->{$name}->{genes}})) {
+							if ($proteins->[$i]->{subunits}->{$name}->{genes}->{$gene}->id() eq $geneid) {
+								$found = 1;
+							}	
+						}
+					}
+				}
+				if ($found == 0) {
+					$anno_source_hash->{join(";",keys(%{$args->{reaction_hash}->{$self->msid()}->{$geneid}}))}->{$geneid} = 1;
+				}
+			}
+		}
+		foreach my $anno_name (keys(%{$anno_source_hash})) {
+			my $genehash = {};
+			my $all_anno_sources = {};
+			foreach my $gene (keys(%{$anno_source_hash->{$anno_name}})) {
+				my $ftr = $args->{model}->genome()->getObject("features",$gene);
+				if (defined($ftr)) {
+					$genehash->{"~/genome/features/id/".$ftr->id()} = $ftr;
+				}
+			}
+			push(@{$proteins},{
+				subunits => {
+					$anno_name => {
+						triggering => 1,
+						optionalSubunit => 1,
+						genes => $genehash
+					}
+				},
+				cpx => undef,
+				note => ""
+			});
 		}
 	}
 	#Adding reaction
@@ -455,10 +499,17 @@ sub addRxnToModel {
     }
     if (@{$proteins} > 0 && scalar(@{$mdlrxn->modelReactionProteins()})==0) {
 		foreach my $protein (@{$proteins}) {
-	    	$mdlrxn->addModelReactionProtein({
-				proteinDataTree => $protein,
-				complex_ref => "~/template/complexes/id/".$protein->{cpx}->id()
-			});
+	    		if (defined($protein->{cpx})) {
+		    		$mdlrxn->addModelReactionProtein({
+					proteinDataTree => $protein,
+					complex_ref => "~/template/complexes/id/".$protein->{cpx}->id()
+				});
+	    		} else {
+	    			$mdlrxn->addModelReactionProtein({
+					proteinDataTree => $protein,
+					complex_ref => "~/template/complexes/id/cpx00000"
+				});
+	    		}
 		}
     } elsif (scalar(@{$mdlrxn->modelReactionProteins()})==0) {
 		$mdlrxn->addModelReactionProtein({

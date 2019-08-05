@@ -921,6 +921,7 @@ sub createJobDirectory {
 		}
 	}
 	#We add all gapfill candidates to an input file
+	my $ATPFactor = 8;
 	my $actcoef = {};
 	my $gfcoef = {};
 	my $additionalrxn = ["id\tdirection\ttag"];
@@ -1194,7 +1195,7 @@ sub createJobDirectory {
 									concentration => $geneobj->{concentration}
 								};
 								push(@{$genelist},$geneobj);
-								my $syn_eq = $aacost." + (".$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$en/$mw.") cpd00008_c0 + (".$en/$mw.") cpd00009_c0 + (".$en/$mw.") cpd00067_c0 + ".$id;
+								my $syn_eq = $aacost." + (".$ATPFactor*$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$ATPFactor*$en/$mw.") cpd00008_c0 + (".$ATPFactor*$en/$mw.") cpd00009_c0 + (".$ATPFactor*$en/$mw.") cpd00067_c0 + ".$id;
 								my $deg_eq = $id." => ".$aacost;
 								push(@{$BioRxn},"PSYN_".$gpr."\t"."PSYN_".$gpr."\t0\t0\t".$syn_eq."\tPSYN_".$gpr."\t=>\tOK\t=>");
 								push(@{$BioRxn},"PDEG_".$gpr."\t"."PDEG_".$gpr."\t0\t0\t".$deg_eq."\tPDEG_".$gpr."\t=>\tOK\t=>");
@@ -1261,7 +1262,7 @@ sub createJobDirectory {
 					max => 100,
 					concentration => $conc
 				};
-				my $syn_eq = $aacost." (".$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$en/$mw.") cpd00008_c0 + (".$en/$mw.") cpd00009_c0 + (".$en/$mw.") cpd00067_c0 + ".$id;
+				my $syn_eq = $aacost." (".$ATPFactor*$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$ATPFactor*$en/$mw.") cpd00008_c0 + (".$ATPFactor*$en/$mw.") cpd00009_c0 + (".$ATPFactor*$en/$mw.") cpd00067_c0 + ".$id;
 				my $deg_eq = $id." => ".$aacost;
 				push(@{$BioRxn},"PSYN_".$rxn->id()."\t"."PSYN_".$rxn->id()."\t0\t0\t".$syn_eq."\tPSYN_".$rxn->id()."\t=>\tOK\t=>");
 				push(@{$BioRxn},"PDEG_".$rxn->id()."\t"."PDEG_".$rxn->id()."\t0\t0\t".$deg_eq."\tPDEG_".$rxn->id()."\t=>\tOK\t=>");
@@ -1547,6 +1548,7 @@ sub createJobDirectory {
 	my $atp_rxn = 1;
 	my $atp_match_hash = Bio::KBase::constants::atp_hydrolysis_hash();
 	my $aahash = Bio::KBase::constants::amino_acids();
+	my $first = 1;
 	for (my $i=0; $i < @{$biomasses}; $i++) {
 		my $bio = $biomasses->[$i];
 		push(@{$mdlData},$bio->id().";=>;c;UNIVERSAL;;1");
@@ -1597,10 +1599,32 @@ sub createJobDirectory {
 		} elsif (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1) {
 			$protein_mass += -1*0.018*$protein_mols;
 			$self->parameters()->{"protein biomass fraction"} = $protein_mass;
-			push(@{$BioRxn},"ProteinBiomass\tProteinBiomass\t0\t0".$protein_rxn." => (".$protein_mols.") cpd00001_c0");
+			if ($first == 1) {
+				push(@{$BioRxn},"ProteinBiomass\tProteinBiomass\t0\t0".$protein_rxn." + (".($ATPFactor-1)*$protein_mols.") cpd00001_c0 + (".$ATPFactor*$protein_mols.") cpd00002_c0 => (".$ATPFactor*$protein_mols.") cpd00067_c0 + (".$ATPFactor*$protein_mols.") cpd00008_c0 + (".$ATPFactor*$protein_mols.") cpd00009_c0");
+				push(@{$mdlData},"ProteinBiomass;=>;c;UNIVERSAL;;1");
+			}
+			my $list = ["cpd00002","cpd00001"];
+			for (my $j=0; $j < @{$list}; $j++) {
+				my $cpdid = $list->[$j];
+				if ($reactants =~ m/\((\d+\.*\d+)\)\s$cpdid/) {
+					my $newcoef = $1-$ATPFactor*$protein_mols;
+					my $newvalue = "(".$newcoef.") ".$cpdid;
+					$reactants =~ s/\(\d+\.*\d+\)\s$cpdid/$newvalue/;
+				}
+			}
+			$list = ["cpd00008","cpd00009","cpd00067"];
+			for (my $j=0; $j < @{$list}; $j++) {
+				my $cpdid = $list->[$j];
+				if ($products =~ m/\((\d+\.*\d+)\)\s$cpdid/) {
+					my $newcoef = $1-$ATPFactor*$protein_mols;
+					my $newvalue = "(".$newcoef.") ".$cpdid;
+					$products =~ s/\(\d+\.*\d+\)\s$cpdid/$newvalue/;
+				}
+			}
 		}
 		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$reactants." => ".$products."\tBiomass\t=>\tOK\t=>";
 		push(@{$BioRxn},$rxnline);
+		$first = 0;
 	}
 	if (!defined($atp_bio)) {
 		$atp_bio = @{$biomasses};
@@ -2279,6 +2303,207 @@ sub process_expression_data {
 #	return $coef;
 }
 
+=head3 process_metabolomic_data
+
+Definition:
+	process_metabolomic_data());
+Description:
+	Function for processing metabolomics data
+
+=cut
+
+sub process_metabolomic_data {
+	my ($self,$args) = @_;
+	$args = Bio::KBase::ObjectAPI::utilities::args(["object","condition"],{
+		type => "logp"
+	}, $args);
+	#Retrieving metabolite matrix
+	my $matrix = $args->{object};
+	#Attempting to find specified condition column
+	my $values;
+	my $highest;
+	my $lowest;
+	for (my $i=0; $i < @{$matrix->{data}->{col_ids}}; $i++) {
+		if ($matrix->{data}->{col_ids}->[$i] eq $args->{condition}) {
+			$values = [];
+			for (my $j=0; $j < @{$matrix->{data}->{values}}; $j++) {
+				if (!defined($highest) || $highest < abs($matrix->{data}->{values}->[$j]->[$i])) {
+					$highest = $matrix->{data}->{values}->[$j]->[$i];
+				}
+				if (!defined($lowest) || $lowest > abs($matrix->{data}->{values}->[$j]->[$i])) {
+					$lowest = $matrix->{data}->{values}->[$j]->[$i];
+				}
+				push(@{$values},$matrix->{data}->{values}->[$j]->[$i]);	
+			}
+			last;
+		}
+	}
+	#Normalizing values if the type is "abundance"
+	if ($args->{type} eq "abundance" && $highest > 0) {
+		print "Normalizing values by dividing by highest value:".$highest.". Lowest value was ".$lowest."\n";
+		for (my $i=0; $i < @{$values}; $i++) {
+			$values->[$i] = $values->[$i]/$highest;
+		}
+	}
+	if (!defined($values)) {
+		Bio::KBase::ObjectAPI::utilities::error("Specified condition ".$args->{condition}." not found in metabolite matrix!");
+	}
+	#Now attempting to map the rows to entities in the model
+	my $peak_hash = {};
+	my $peak_string = "";
+	#Retrieving data hashes for all compounds in model, database, and source model
+	my $id_hash = {};
+	my $name_hash = {};
+	my $structure_hash = {};
+	my $formula_hash = {};
+	if ($args->{type} eq "exo") {
+		$self->fbamodel()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,1,"e");
+		$self->fbamodel()->template()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,2,"e","0");
+		if (defined($self->{_source_model})) {
+			$self->{_source_model}->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,3,"e");
+		}
+		$self->fbamodel()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,4,"c");
+		$self->fbamodel()->template()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,5,"c","0");
+		if (defined($self->{_source_model})) {
+			$self->{_source_model}->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,6,"c");
+		}
+		Bio::KBase::utilities::metabolite_hash($id_hash,$name_hash,$structure_hash,$formula_hash,7,"c0");
+	} else {
+		$self->fbamodel()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,1,"c");
+		$self->fbamodel()->template()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,2,"c","0");
+		if (defined($self->{_source_model})) {
+			$self->{_source_model}->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,3,"c");
+		}
+		$self->fbamodel()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,4,"e");
+		$self->fbamodel()->template()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,5,"e","0");
+		if (defined($self->{_source_model})) {
+			$self->{_source_model}->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,6,"e");
+		}
+		Bio::KBase::utilities::metabolite_hash($id_hash,$name_hash,$structure_hash,$formula_hash,7,"c0");
+	}
+	#Getting the mapping
+	my $mapping;
+	if (defined($matrix->{row_attributemapping_ref}) && length($matrix->{row_attributemapping_ref}) > 0) {
+		$mapping = $self->getLinkedObject($matrix->{row_attributemapping_ref});
+	}
+	#Scanning all peak IDs and metadata for matches
+	my $matchtype_count = {
+		id => [0,0],
+		name => [0,0],
+		structure => [0,0],
+		formula => [0,0]
+	};
+	my $idhash;
+	for (my $j=0; $j < @{$matrix->{data}->{row_ids}}; $j++) {
+		my $match = 0;
+		#First checking ID and all attributes for SEED ID match
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$id_hash,$matrix->{data}->{row_ids}->[$j],$matrix->{data}->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
+			if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$id_hash,$matrix->{data}->{row_ids}->[$j],$mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m]);
+			}
+		}
+		if ($match > 0) {
+			$matchtype_count->{id}->[0]++;
+			$matchtype_count->{id}->[1] += $match;
+			$match = 0;
+		}
+		#Now checking ID and all attributes for structure match
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$structure_hash,$matrix->{data}->{row_ids}->[$j],$matrix->{data}->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
+			if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$structure_hash,$matrix->{data}->{row_ids}->[$j],$mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m]);
+			}
+		}
+		if ($match > 0) {
+			$matchtype_count->{structure}->[0]++;
+			$matchtype_count->{structure}->[1] += $match;
+			$match = 0;
+		}
+		#Now checking ID and all attributes for name match
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$name_hash,$matrix->{data}->{row_ids}->[$j],$matrix->{data}->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
+			if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$name_hash,$matrix->{data}->{row_ids}->[$j],$mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m]);
+			}
+		}
+		if ($match > 0) {
+			$matchtype_count->{name}->[0]++;
+			$matchtype_count->{name}->[1] += $match;
+			$match = 0;
+		}
+		#Now checking ID and all attributes for formula match
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$formula_hash,$matrix->{data}->{row_ids}->[$j],$matrix->{data}->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
+			if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$formula_hash,$matrix->{data}->{row_ids}->[$j],$mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m]);
+			}
+		}
+		if ($match > 0) {
+			$matchtype_count->{formula}->[0]++;
+			$matchtype_count->{formula}->[1] += $match;
+			$match = 0;
+		}
+		#Adding peak data to peak string
+		if (defined($peak_hash->{$matrix->{data}->{row_ids}->[$j]})) {
+			if (defined($values->[$j]) && $values->[$j] != 0) {
+				if (length($peak_string) > 0) {
+					$peak_string .= ";";
+				}
+				$peak_string .= "peak.".$j.":".$values->[$j];
+				#Making sure we only have one compartment for each compound
+				my $cpds = [keys(%{$peak_hash->{$matrix->{data}->{row_ids}->[$j]}})];
+				my $deletehash = {};
+				for (my $i=0; $i < @{$cpds}; $i++) {
+					for (my $j=$i+1; $j < @{$cpds}; $j++) {
+						my $idone = $cpds->[$i];
+						$idone =~ s/_([a-z])\d+//;
+						my $compone = $1;
+						my $idtwo = $cpds->[$j];
+						$idtwo =~ s/_([a-z])\d+//;
+						my $comptwo = $1;
+						if ($idone eq $idtwo) {
+							if ($args->{type} eq "exo") {
+								if ($compone eq "e") {
+									$deletehash->{$cpds->[$j]} = 1;
+								} elsif ($comptwo eq "e") {
+									$deletehash->{$cpds->[$i]} = 1;
+								}
+							} else {
+								if ($compone eq "e") {
+									$deletehash->{$cpds->[$i]} = 1;
+								} elsif ($comptwo eq "e") {
+									$deletehash->{$cpds->[$j]} = 1;
+								}
+							}
+						}
+					}
+				}
+				foreach my $cpdid (keys(%{$deletehash})) {
+					delete $peak_hash->{$matrix->{data}->{row_ids}->[$j]}->{$cpdid};
+				}
+				foreach my $cpdid (keys(%{$peak_hash->{$matrix->{data}->{row_ids}->[$j]}})) {
+					$peak_string .= ":".$cpdid;
+				}
+			}
+		}
+	}
+	foreach my $type (keys(%{$matchtype_count})) {
+		print $type." used to match ".$matchtype_count->{$type}->[0]." peaks with ".$matchtype_count->{$type}->[1]." compounds.\n";
+	}
+	if (length($peak_string) == 0) {
+		Bio::KBase::ObjectAPI::utilities::error("Failed to match any peaks to the model or biochemistry database or source model!");
+	}
+	if ($args->{type} eq "exo") {
+		$self->parameters()->{"Exometabolite peak data"} = $peak_string;
+		print "Exo:".$peak_string."\n";
+	} else {
+		$self->parameters()->{"Intrametabolite peak data"} = $peak_string;
+		print "Met".$peak_string."\n";
+	}
+	$self->{_metabolite_matrix_obj} = $matrix;
+}
+
 =head3 setupFBAExperiments
 
 Definition:
@@ -2717,7 +2942,7 @@ sub loadMFAToolkitResults {
 	$self->parseMetaboliteInteraction();
 	$self->parseReactionAdditionAnalysis();
 	$self->parseSSCommunityFluxAnalysis();
-	$self->parseExometaboiteResults();
+	$self->parseMetabolomicsFittingResults();
 	$self->parseLoopResults();
 }
 
@@ -3009,6 +3234,9 @@ sub parseFluxFiles {
 			}
 		}
 	}
+	if (-e $directory."/MFAOutput/RawData/RawSolutions.txt") {
+		$self->outputfiles()->{raw_solutions} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/RawData/RawSolutions.txt");
+	}
 }
 
 =head3 parseFBAPhenotypeOutput
@@ -3238,19 +3466,71 @@ sub parseLoopResults {
 	}
 }
 
-=head3 parseExometaboiteResults
+=head3 parseMetabolomicsFittingResults
 Definition:
-	void ModelSEED::MS::Model->parseExometaboiteResults();
+	void ModelSEED::MS::Model->parseMetabolomicsFittingResults();
 Description:
-	Parsing exometabolite analysis output
+	Parsing exometabolite and intrametabolite analysis output
 	
 =cut
 
-sub parseExometaboiteResults {
+sub parseMetabolomicsFittingResults {
 	my ($self) = @_;
 	my $directory = $self->jobDirectory();
-	if (-e $directory."/ExometaboliteOutput.txt") {
-		$self->outputfiles()->{ExometaboliteOutput} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/ExometaboliteOutput.txt");
+	if (-e $directory."/MetabolomicsDependencyOutput.txt") {
+		my $data = {};
+		my $rxnhash = {};
+		my $gfrxnhash = {};
+		my $biopeaks = {};
+		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MetabolomicsDependencyOutput.txt");
+		for (my $i=1; $i < @{$lines}; $i++) {
+			my $array = [split(/\t/,$lines->[$i])];
+			$data->{$array->[0]}->{$array->[1]} = {
+				metabolite => [split(/;/,$array->[2])],
+				gapfillrxn => [split(/;/,$array->[3])],
+				rxn => [split(/;/,$array->[4])]
+			};
+			for (my $j=0; $j < @{$data->{$array->[0]}->{$array->[1]}->{rxn}}; $j++) {
+				if ($data->{$array->[0]}->{$array->[1]}->{rxn}->[$j] eq "+bio1") {
+					$biopeaks->{$array->[0]}->{$array->[1]} = 1;
+					for (my $k=0; $k < @{$data->{$array->[0]}->{$array->[1]}->{rxn}}; $k++) {
+						if (!defined($rxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{rxn}->[$k]})) {
+							$rxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{rxn}->[$k]} = 0;
+						}
+						$rxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{rxn}->[$k]}++;
+					}
+					for (my $k=0; $k < @{$data->{$array->[0]}->{$array->[1]}->{gapfillrxn}}; $k++) {
+						if (!defined($gfrxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{gapfillrxn}->[$k]})) {
+							$gfrxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{gapfillrxn}->[$k]} = 0;
+						}
+						$gfrxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{gapfillrxn}->[$k]}++;
+					}
+				}
+			}
+		}
+		#Cleaning up universal reactions
+		foreach my $type (keys(%{$data})) {
+			foreach my $peak (keys(%{$data->{$type}})) {
+				if (defined($biopeaks->{$type}->{$peak})) {
+					my $newlist = [];
+					for (my $k=0; $k < @{$data->{$type}->{$peak}->{rxn}}; $k++) {
+						if ($rxnhash->{$type}->{$data->{$type}->{$peak}->{rxn}->[$k]} < $rxnhash->{$type}->{"+bio1"}) {
+							push(@{$newlist},$data->{$type}->{$peak}->{rxn}->[$k]);
+						}
+					}
+					$data->{$type}->{$peak}->{rxn} = $newlist;
+					$newlist = [];
+					for (my $k=0; $k < @{$data->{$type}->{$peak}->{gapfillrxn}}; $k++) {
+						if ($gfrxnhash->{$type}->{$data->{$type}->{$peak}->{gapfillrxn}->[$k]} < $rxnhash->{$type}->{"+bio1"}) {
+							push(@{$newlist},$data->{$type}->{$peak}->{gapfillrxn}->[$k]);
+						}
+					}
+					$data->{$type}->{$peak}->{gapfillrxn} = $newlist;
+				}
+			}
+		}
+		$self->outputfiles()->{MetabolomicsFittingResults} = [Bio::KBase::utilities::to_json($data,1)];
+		print $self->outputfiles()->{MetabolomicsFittingResults}->[0];
 	}
 }
 

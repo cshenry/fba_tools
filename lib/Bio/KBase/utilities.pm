@@ -44,15 +44,101 @@ sub reaction_hash {
 	return $reaction_hash;
 };
 
+sub metabolite_hash {
+	my ($id_hash,$name_hash,$structure_hash,$formula_hash,$priority,$cmp) = @_;
+	my $cpdhash = Bio::KBase::utilities::compound_hash();
+	foreach my $cpdid (keys(%{$cpdhash})) {
+		my $data = $cpdhash->{$cpdid};
+		if ($cpdid =~ m/(cpd\d+)/) {
+			$id_hash->{$1}->{$cpdid."_".$cmp} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{inchikey})) {
+			$structure_hash->{$cpdhash->{$cpdid}->{inchikey}}->{$cpdid."_".$cmp} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{smiles})) {
+			$structure_hash->{$cpdhash->{$cpdid}->{smiles}}->{$cpdid."_".$cmp} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{formula})) {
+			$formula_hash->{$cpdhash->{$cpdid}->{formula}}->{$cpdid."_".$cmp} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{name})) {
+			$name_hash->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$cpdid}->{name})}->{$cpdid."_".$cmp} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{abbreviation})) {
+			$name_hash->{$cpdhash->{$cpdid}->{abbreviation}}->{$cpdid."_".$cmp} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{names})) {
+			foreach my $name (@{$cpdhash->{$cpdid}->{names}}) {
+				$name_hash->{$name}->{$cpdid."_".$cmp} = $priority;
+			}
+		}
+	}
+}
+
+sub find_matching_metabolite {
+	my ($peak_hash,$search_hash,$id,$query) = @_;
+	my $matches = 0;
+	if (!defined($peak_hash->{$id})) {
+		my $querylist = [split(/;/,$query)];
+		for (my $j=0; $j < @{$querylist}; $j++) {
+			#for (my $i=1; $i < 10; $i++) {
+				#if (!defined($peak_hash->{$id}) && defined($search_hash->{$querylist->[$j]})) {
+					foreach my $cpdid (keys(%{$search_hash->{$querylist->[$j]}})) {
+						#if ($search_hash->{$querylist->[$j]}->{$cpdid} == $i) {
+							$matches++;
+							$peak_hash->{$id}->{$cpdid} = $search_hash->{$querylist->[$j]};
+						#}
+					}
+				#}
+			#}
+		}
+	}
+	return $matches;
+}
+
 sub compound_hash {
-	if (!defined($reaction_hash)) {
+	if (!defined($compound_hash)) {
 		my $cpddata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","compounds_json"))}));
 		for (my $i=0; $i < @{$cpddata}; $i++) {
 			$compound_hash->{$cpddata->[$i]->{id}} = $cpddata->[$i];
+			if (defined($cpddata->[$i]->{formula}) && defined($cpddata->[$i]->{charge})) {
+				$compound_hash->{$cpddata->[$i]->{id}}->{neutral_formula} = Bio::KBase::utilities::compute_neutral_formula($cpddata->[$i]->{formula},$cpddata->[$i]->{charge},$cpddata->[$i]->{id});
+			}
 		}
 	}
 	return $compound_hash;
-};
+}
+
+sub compute_neutral_formula {
+	my ($formula,$charge,$id) = @_;
+	my $diff = 0-$charge;
+	if ($id eq "cpd00006" || $id eq "cpd00003") {
+		$diff++;
+	}
+	if ($diff == 0) {
+		return $formula;
+	}
+	if ($formula =~ m/H(\d+)/) {
+		my $count = $1;
+		$count += $diff;
+		$formula =~ s/H(\d+)/H$count/;
+	} elsif ($formula =~ m/.H$/) {
+		if ($diff < 0) {
+			$formula =~ s/H$//;
+		} else {
+			$diff++;
+			$formula .= $diff;
+		}
+	} elsif ($formula =~ m/H[A-Z]/) {
+		if ($diff < 0) {
+			$formula =~ s/H([A-Z])/$1/;
+		} else {
+			$diff++;
+			$formula =~ s/H([A-Z])/H$diff$1/;
+		}
+	}
+	return $formula;
+}
 
 sub style {
 	return "	<style>
@@ -502,6 +588,35 @@ sub timestamp {
         my($self,$msg) = @_;
         print STDERR $msg."\n";
     }
+}
+
+sub nameToSearchname {
+	my ($InName) = @_;
+	my $OriginalName = $InName;
+	my $ending = "";
+	if ($InName =~ m/-$/) {
+		$ending = "-";
+	}
+	$InName = lc($InName);
+	$InName =~ s/\s//g;
+	$InName =~ s/,//g;
+	$InName =~ s/-//g;
+	$InName =~ s/_//g;
+	$InName =~ s/\(//g;
+	$InName =~ s/\)//g;
+	$InName =~ s/\{//g;
+	$InName =~ s/\}//g;
+	$InName =~ s/\[//g;
+	$InName =~ s/\]//g;
+	$InName =~ s/\://g;
+	$InName =~ s/�//g;
+	$InName =~ s/'//g;
+	$InName .= $ending;
+	$InName =~ s/icacid/ate/g;
+	if($OriginalName =~ /^an? /){
+		$InName =~ s/^an?(.*)$/$1/;
+	}
+	return $InName;
 }
 
 1;

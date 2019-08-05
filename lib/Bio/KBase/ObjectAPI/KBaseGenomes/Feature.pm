@@ -20,6 +20,7 @@ has compartments => ( is => 'rw',printOrder => -1, isa => 'ArrayRef', type => 'm
 has comment => ( is => 'rw',printOrder => 2, isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcomment' );
 has delimiter => ( is => 'rw',printOrder => 2, isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_builddelimiter' );
 has roles  => ( is => 'rw', isa => 'ArrayRef',printOrder => -1, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildroles' );
+has functions => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has start  => ( is => 'rw', isa => 'Str',printOrder => 3, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstart' );
 has stop  => ( is => 'rw', isa => 'Str',printOrder => 4, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstop' );
 has direction  => ( is => 'rw', isa => 'Str',printOrder => 5, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_builddirection' );
@@ -117,11 +118,15 @@ sub _functionparse {
 	    unknown => "u"
 	};
 	if (!defined($self->function()) || length($self->function()) eq 0) {
-		$self->roles([]);
-		$self->compartments([]);
-		$self->delimiter(";");
-		$self->comment("No annotated function");
-		return;
+		if (defined($self->functions()->[0])) {
+			$self->function(join(" @ ",@{$self->functions()}));
+		} else {
+			$self->roles([]);
+			$self->compartments(["u"]);
+			$self->delimiter(";");
+			$self->comment("No annotated function");
+			return;
+		}
 	}
 	my $function = $self->function();
 	my $array = [split(/\#/,$function)];
@@ -138,6 +143,7 @@ sub _functionparse {
 	}
 	if (keys(%{$compHash}) > 0) {
 		$self->compartments([keys(%{$compHash})]);
+		print "TEST2:".$self->compartments()->[0]."\n";	
 	}
 	if ($function =~ /\s*;\s/) {
 		$self->delimiter(";");

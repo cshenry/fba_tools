@@ -825,5 +825,22 @@ sub loadGPRFromString {
 	}
 }
 
+sub gene_hash {
+	my $self = shift;
+	my $hash = {};
+	my $prots = $self->modelReactionProteins();
+	for (my $i=0; $i < @{$prots}; $i++) {
+		my $match = 1;
+		my $sus = $prots->[$i]->modelReactionProteinSubunits();
+		for (my $j=0; $j < @{$sus}; $j++) {
+			my $genes = $sus->[$j]->features();
+			for (my $k=0; $k < @{$genes}; $k++) {
+				$hash->{$genes->[$k]->id()} = 1;
+			}
+		}
+	}
+	return $hash;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
