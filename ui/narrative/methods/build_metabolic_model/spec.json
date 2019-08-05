@@ -190,12 +190,13 @@
             "show_src_obj" : true,
             "subdata_selection" : {
                "path_to_subdata" : [
-                  "ontologies_present"
+                  "ontology_events"
                ],
                "parameter_id" : "genome_id",
                "selection_id" : "id",
                "subdata_included" : [
-                  "ontologies_present/[*]"
+                  "ontology_events/[*]/id",
+                  "ontology_events/[*]/description"
                ]
             },
             "multiselection" : false
