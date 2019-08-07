@@ -178,10 +178,12 @@
       },
       {
          "field_type" : "textsubdata",
-         "allow_multiple" : false,
+         "allow_multiple" : true,
          "optional" : true,
          "id" : "source_ontology_list",
-         "default_values" : [],
+         "default_values" : [ 
+         	""
+         ],
          "advanced" : true,
          "textsubdata_options" : {
             "allow_custom" : false,
