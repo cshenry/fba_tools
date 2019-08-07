@@ -178,12 +178,10 @@
       },
       {
          "field_type" : "textsubdata",
-         "allow_multiple" : true,
+         "allow_multiple" : false,
          "optional" : true,
          "id" : "source_ontology_list",
-         "default_values" : [
-            ""
-         ],
+         "default_values" : [],
          "advanced" : true,
          "textsubdata_options" : {
             "allow_custom" : false,
@@ -199,7 +197,7 @@
                   "ontology_events/[*]/description"
                ]
             },
-            "multiselection" : false
+            "multiselection" : true
          },
          "text_options" : {
             "valid_ws_types" : []

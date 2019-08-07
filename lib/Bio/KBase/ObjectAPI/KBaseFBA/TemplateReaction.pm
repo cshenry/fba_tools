@@ -420,7 +420,9 @@ sub addRxnToModel {
 					$subunits->{$cpxrole->templaterole()->name()}->{note} = "Complex-based-gapfilling";
 				}
 			}
-			push(@{$proteins},{subunits => $subunits,cpx => $cpx});
+			if (defined($subunits)) {
+				push(@{$proteins},{subunits => $subunits,cpx => $cpx});
+			}
 		}
 	}
 	#Checking reaction hash for additional gene associations to add

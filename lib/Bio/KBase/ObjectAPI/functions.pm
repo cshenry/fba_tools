@@ -538,6 +538,14 @@ sub func_build_metabolic_model {
         merge_all_annotations => 0,
         source_ontology_list => []
 	});
+	#Making sure reaction KO list is an array
+	if (defined($params->{source_ontology_list}) && ref($params->{source_ontology_list}) ne "ARRAY") {
+		if (length($params->{source_ontology_list}) > 0) {
+			$params->{source_ontology_list} = [split(/,/,$params->{source_ontology_list})];
+		} else {
+			 $params->{source_ontology_list} = [];
+		}
+	}
 	#Getting genome
 	$handler->util_log("Retrieving genome.");
 	my $genome = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{genome_id},$params->{genome_workspace}));
@@ -591,9 +599,9 @@ sub func_build_metabolic_model {
 			template_refs => [$template->_reference()],
 			genome_ref => $genome->_reference()
 		});
+		$fullmodel->parent($handler->util_store());
 	}
 	if (@{$anno_sources} > 0) {
-		print "test\n";
 		$template->add_reactions_from_ontology_events({
 			annotation_sources => $anno_sources,
 			fbamodel => $fullmodel,
@@ -601,137 +609,13 @@ sub func_build_metabolic_model {
 			mdl_id => $params->{fbamodel_output_id}
 		});
 	}
-	#If this is a "new" mode model, we build a core model first and run FBA to see ATP production
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
-	if ($params->{mode} eq "new" && $params->{template_id} ne $template_trans->{plant} && $params->{template_id} ne $template_trans->{core}) {
-		my $template = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core});
-		my $coremodel;
-		if ($params->{use_annotated_functions} == 1) {
-			$coremodel = $template->buildModel({
-				genome => $genome,
-				modelid => "tempcore",
-				fulldb => 0
-			});
-		} else {
-			$coremodel = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
-				id => $params->{fbamodel_output_id},
-				source => Bio::KBase::utilities::conf("ModelSEED","source"),
-				source_id => $params->{fbamodel_output_id},
-				type => $template->type(),
-				name => $params->{fbamodel_output_id},
-				template_ref => $template->_reference(),
-				template_refs => [$template->_reference()],
-				genome_ref => $genome->_reference()
-			});
-		}
-		if (@{$anno_sources} > 0) {
-			$template->add_reactions_from_ontology_events({
-				annotation_sources => $anno_sources,
-				fbamodel => $coremodel,
-				genome => $genome,
-				mdl_id => $params->{fbamodel_output_id}
-			});
-		}
-		my $blacklist = [];
-		if ($params->{anaerobe} == 1) {
-			my $mdlrxn = $coremodel->getObject("modelreactions","rxn14419_c0");
-			if (defined($mdlrxn)) {
-				$coremodel->remove("modelreactions",$mdlrxn);
-			}
-			$mdlrxn = $coremodel->getObject("modelreactions","rxn14422_c0");
-			if (defined($mdlrxn)) {
-				$coremodel->remove("modelreactions",$mdlrxn);
-			}
-			$blacklist = ["rxn14426","rxn14419","rxn14422"];
-		}
-		$datachannel->{fbamodel} = $coremodel;
-		my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
-			workspace => "NULL",
-			fbamodel_id => "tempcore",
-			fbamodel_output_id => "tempcore.gf",
-			target_reaction => "bio2",
-			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
-			media_id => "RefGlucoseMinimal",
-			atp_production_check => 0,
-			blacklist => $blacklist
-		},$coremodel);
-		my $corehash = {};
-		my $rxns = $coremodel->modelreactions();
-		for (my $i=0; $i < @{$rxns}; $i++) {
-			$corehash->{$rxns->[$i]->id()} = 1;
-			my $rxn = $fullmodel->queryObject("modelreactions",{id => $rxns->[$i]->id()});
-			if (defined($rxn)) {
-				$fullmodel->remove("modelreactions",$rxn);
-			}
-			$fullmodel->add("modelreactions",$rxns->[$i]);
-			my $rgts = $rxns->[$i]->modelReactionReagents();
-			for (my $j=0; $j < @{$rgts}; $j++) {
-				if ($rgts->[$j]->modelcompound_ref() =~ m/(cpd\d+.+)/) {
-					my $cpdid = $1;
-					my $cpdobj = $fullmodel->queryObject("modelcompounds",{id => $cpdid});
-					if (!defined($cpdobj)) {
-						$fullmodel->add("modelcompounds",$rgts->[$j]->modelcompound());
-					}
-				}
-			}
-		}
-		my $rxnlist = [];
-		$rxns = $fullmodel->modelreactions();
-		for (my $i=0; $i < @{$rxns}; $i++) {
-			if (!defined($corehash->{$rxns->[$i]->id()})) {
-				push(@{$rxnlist},$rxns->[$i]->id());
-			}
-		}
-		$fullmodel->add("biomasses",Bio::KBase::constants::atp_hydrolysis_biomass());
-		$datachannel->{fbamodel} = $fullmodel;
-		Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
-			workspace => "NULL",
-			fbamodel_id => $params->{fbamodel_output_id},
-			fba_output_id => $params->{fbamodel_output_id}.".atp.fba",
-			media_id => "RefGlucoseMinimal",
-			media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
-			target_reaction => "bio2",
-			reaction_addition_study => 1,
-			max_objective_limit => $params->{max_objective_limit},
-			reaction_list => $rxnlist
-		},$datachannel);
-		my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
-		my $first = 1;
-		if (defined($rxn_addition_data)) {
-			for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
-				my $row = [split(/\t/,$rxn_addition_data->[$i])];
-				if ($row->[2] == 0) {
-					if ($row->[1] =~ m/(.)(rxn.+)/) {
-						 my $sign = $1;
-						 my $id = $2;
-						 if ($first == 1) {
-						 	$htmlreport .= " Rejected the following reactions due to ATP overproduction: ";
-						 } else {
-						 	$htmlreport .= ", ";
-						 }
-						 $first = 0;
-						 $htmlreport .= $sign.$id;
-						 my $rxnobj = $fullmodel->queryObject("modelreactions",{id => $id});
-						 if ($sign eq "+") {
-						 	if ($rxnobj->direction() eq "=") {
-						 		$rxnobj->direction("<");
-						 	} else {
-						 		$fullmodel->remove("modelreactions",$rxnobj);
-						 	}
-						 } else {
-						 	if ($rxnobj->direction() eq "=") {
-						 		$rxnobj->direction(">");
-						 	} else {
-						 		$fullmodel->remove("modelreactions",$rxnobj);
-						 	}
-						 }
-					}
-				}
-			}
-		}
-		if ($first == 0) {
-			$htmlreport .= ".";	
-		}
+	if ($params->{mode} eq "new") {
+#		$template->EnsureProperATPProduction({
+#			fbamodel => $fullmodel,
+#			anaerobe => $params->{anaerobe},
+#			max_objective_limit => $params->{max_objective_limit}
+#		});
 		#Predicting auxotrophy
 		if ($params->{predict_auxotrophy} == 1) {
 			$datachannel->{fbamodel} = $fullmodel->cloneObject();
@@ -776,6 +660,7 @@ sub func_build_metabolic_model {
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
 		$output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
+		#print "\n\n".$fullmodel->toJSON()."\n\n";
 		my $wsmeta = $handler->util_save_object($fullmodel,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
 		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$fullmodel->modelreactions()}." reactions, ".@{$fullmodel->modelcompounds()}." compounds, and ".$fullmodel->gene_count()." genes.</p></div>"
 	}

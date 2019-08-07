@@ -1976,7 +1976,7 @@ sub merge_in_reaction {
 				my $newcmp = $rgts->[$i]->modelcompound()->modelcompartment();
 				$newcmp = $self->getObject("modelcompartments",$newcmp->id());
 				if (!defined($newcmp)) {
-					$newcmp = $newcmp->cloneObject();
+					$newcmp = $rgts->[$i]->modelcompound()->modelcompartment()->cloneObject();
 					$newcmp->parent($self);
 					$self->add("modelcompartments",$newcmp);
 				}
