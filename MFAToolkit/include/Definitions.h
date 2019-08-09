@@ -178,6 +178,7 @@
 #define POS_KPRIME_ERR 45
 #define NEG_KPRIME_ERR 46
 #define PEAK_USE 47
+#define EXO_PEAK_USE 48
 
 //Logic types
 #define AND 0

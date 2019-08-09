@@ -3160,9 +3160,11 @@ MFAVariable* Reaction::CreateMFAVariable(MFAProblem* InProblem,int Type,double U
 	NewVariable->AssociatedReaction = this;
 	NewVariable->UpperBound = UB;
 	NewVariable->LowerBound = LB;
+	return NewVariable;
 }
 
 void Reaction::CreateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem) {
+	double constant = 1000;
 	if (GetData("DATABASE",STRING).length() > 5 && (GetData("DATABASE",STRING).substr(0,5).compare("PSYN_") == 0 || GetData("DATABASE",STRING).substr(0,5).compare("PDEG_") == 0)) {
 		return;
 	}
@@ -3191,48 +3193,52 @@ void Reaction::CreateReactionFluxConstraints(OptimizationParameter* InParameters
 
 	//Instantiating flux constraint
 	this->PrimaryFluxConstraint = InitializeLinEquation("Flux limit constraint",0,EQUAL);
+	InProblem->AddConstraint(this->PrimaryFluxConstraint);
 	if (ForFluxVar != NULL) {
-		this->PrimaryFluxConstraint->Coefficient.push_back(1);
+		this->PrimaryFluxConstraint->Coefficient.push_back(-1);
 		this->PrimaryFluxConstraint->Variables.push_back(ForFluxVar);
 	}
 	if (RevFluxVar != NULL) {
-		this->PrimaryFluxConstraint->Coefficient.push_back(1);
+		this->PrimaryFluxConstraint->Coefficient.push_back(-1);
 		this->PrimaryFluxConstraint->Variables.push_back(RevFluxVar);
 	}
 	MFAVariable* ForCapSlack = this->CreateMFAVariable(InProblem,FORWARD_CAPACITY_SLACK,InParameters->MaxFlux,0);
 	MFAVariable* RevCapSlack = this->CreateMFAVariable(InProblem,REVERSE_CAPACITY_SLACK,InParameters->MaxFlux,0);
-	if (InParameters->SteadyStateProteinFBA) {
-		double UB = this->GetDoubleData("KCAT");
-		if (UB == FLAG) {
-			UB = 10;
-		}
-		MFAVariable* KPrime = this->CreateMFAVariable(InProblem,KPRIME,UB,0);
-		this->PrimaryFluxConstraint = InitializeLinEquation("KPrime fit constraint",UB/2,EQUAL);
-		this->PrimaryFluxConstraint->Variables.push_back(KPrime);
-		this->PrimaryFluxConstraint->Coefficient.push_back(1);
-		this->PrimaryFluxConstraint->Variables.push_back(this->CreateMFAVariable(InProblem,POS_KPRIME_ERR,UB/2,0));
-		this->PrimaryFluxConstraint->Variables.push_back(this->CreateMFAVariable(InProblem,NEG_KPRIME_ERR,UB/2,0));
-		this->PrimaryFluxConstraint->Coefficient.push_back(-1);
-		this->PrimaryFluxConstraint->Coefficient.push_back(1);
-	}
 	this->PrimaryFluxConstraint->Coefficient.push_back(1);
 	this->PrimaryFluxConstraint->Variables.push_back(ForCapSlack);
 	this->PrimaryFluxConstraint->Coefficient.push_back(-1);
 	this->PrimaryFluxConstraint->Variables.push_back(RevCapSlack);
-	InProblem->AddConstraint(this->PrimaryFluxConstraint);
+
+	MFAVariable* KPrime = NULL;
+	if (InParameters->SteadyStateProteinFBA) {
+		KPrime = this->CreateMFAVariable(InProblem,KPRIME,1e12/constant,0);
+		double kcat = this->GetDoubleData("KCAT");
+		if (kcat != FLAG) {
+			LinEquation* kcat_const = InitializeLinEquation("KPrime fit constraint",kcat/(2*constant),EQUAL);
+			kcat_const->Variables.push_back(KPrime);
+			kcat_const->Coefficient.push_back(1);
+			kcat_const->Variables.push_back(this->CreateMFAVariable(InProblem,POS_KPRIME_ERR,1e12/constant,0));
+			kcat_const->Variables.push_back(this->CreateMFAVariable(InProblem,NEG_KPRIME_ERR,1e12/constant,0));
+			kcat_const->Coefficient.push_back(-1);
+			kcat_const->Coefficient.push_back(1);
+			InProblem->AddConstraint(kcat_const);
+		}
+	}
 	if (this->gprdata.size() == 0 || gprdata[0][0][0]->GetData("DATABASE",STRING).compare("Unknown") == 0) {
 		//Instantiating psuedoprotein constraints when a reaction has no genes associated
+		//If we're doing SS protein FBA, the code never comes here
 		this->PrimaryFluxConstraint->RightHandSide += 0.5*this->kprime*this->concentration;
 		this->PrimaryFluxConstraint->Variables.push_back(this->MassBalanceConstraint->Variables[0]);
 		this->PrimaryFluxConstraint->Coefficient.push_back(-0.5*this->kprime);
 	} else {
+		double OverallSSProtCoefficient = 0;
 		for (int i=0; i < int(this->gprdata.size()); i++) {
 			vector<LinEquation*>* newvect = new vector<LinEquation*>;
 			this->FluxConstraints.push_back(newvect);
 			MFAVariable* NewComplexVariable = NULL;
 			LinEquation* NewComplexConstraint = NULL;
 			if (this->gprdata[i].size() > 1) {
-				NewComplexVariable = this->CreateMFAVariable(InProblem,COMPLEX_EXP,InParameters->MaxFlux,0);;
+				NewComplexVariable = this->CreateMFAVariable(InProblem,COMPLEX_EXP,InParameters->MaxFlux,0);
 				this->PrimaryFluxConstraint->Coefficient.push_back(-1);
 				this->PrimaryFluxConstraint->Variables.push_back(NewComplexVariable);
 			}
@@ -3247,19 +3253,35 @@ void Reaction::CreateReactionFluxConstraints(OptimizationParameter* InParameters
 					NewComplexConstraint = this->PrimaryFluxConstraint;
 					this->FluxConstraints[i]->push_back(this->PrimaryFluxConstraint);
 				}
+				double SSProtCoefficient = 0;
 				for (int k=0; k < int(this->gprdata[i][j].size()); k++) {
 					if (InParameters->SteadyStateProteinFBA) {
-						NewComplexConstraint->Variables.push_back(this->GetMFAVar(KPRIME));
-						NewComplexConstraint->Coefficient.push_back(this->gprdata[i][j][k]->concentration);
+						SSProtCoefficient += this->gprdata[i][j][k]->concentration;
 					} else {
 						NewComplexConstraint->RightHandSide += 0.5*this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
 						NewComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->MassBalanceConstraint->Variables[0]);
 						NewComplexConstraint->Coefficient.push_back(-0.5*this->gprdata[i][j][k]->kprime);
 					}
 				}
+				if (SSProtCoefficient > 0) {
+					if (NewComplexConstraint == this->PrimaryFluxConstraint) {
+						OverallSSProtCoefficient += SSProtCoefficient;
+					} else {
+						NewComplexConstraint->Variables.push_back(KPrime);
+						NewComplexConstraint->Coefficient.push_back(constant*SSProtCoefficient);
+					}
+				}
 			}
 		}
+		if (OverallSSProtCoefficient > 0) {
+			this->PrimaryFluxConstraint->Variables.push_back(KPrime);
+			this->PrimaryFluxConstraint->Coefficient.push_back(constant*OverallSSProtCoefficient);
+		}
 	}
+	//cout << "Numvar:" << this->PrimaryFluxConstraint->Variables.size() << endl;
+	//for (int i=0; i < this->PrimaryFluxConstraint->Variables.size(); i++) {
+	//	cout << GetData("DATABASE",STRING) << " " << this->PrimaryFluxConstraint->Coefficient[i] << " " << this->PrimaryFluxConstraint->Variables[i]->Name << " " << this->PrimaryFluxConstraint->Variables[i]->Type << endl;
+	//}
 }
 
 void Reaction::UpdateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem) {

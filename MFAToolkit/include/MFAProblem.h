@@ -53,6 +53,8 @@ private:
 	double CurrentOptimum;
 	LinEquation* MinFluxConstraint;
 	LinEquation* ObjectiveConstraint;
+	LinEquation* ExometaboliteObjective;
+	LinEquation* MetaboliteObjective;
 public:
 	MFAProblem();
 	~MFAProblem();
@@ -166,7 +168,8 @@ public:
 	int IdentifyReactionLoops(Data* InData, OptimizationParameter* InParameters);
 	int LoadBiomassDrainReactions(Data* InData, OptimizationParameter* InParameters);
 	int LoadGapFillingReactions(Data* InData, OptimizationParameter* InParameters);
-	int CreateMetabolomicsVariablesConstraints(Data* InData);
+	int MetabolomicsSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution);
+	int CreateMetabolomicsVariablesConstraints(Data* InData, string PeakData, bool ExometabolomicData);
 	int GapFilling(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
 	vector<MFAVariable*> BiomassSensitivityAnalysis(OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
 	int ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
@@ -185,6 +188,7 @@ public:
 	void AddVariableToRegulationConstraint(LinEquation* InEquation,double Coefficient,string VariableName,Data* InData,OptimizationParameter* InParameters);
 	int CalculateFluxSensitivity(Data* InData,vector<MFAVariable*> variables,double objective);
 	double optimizeVariable(MFAVariable* currentVariable,bool maximize);
+	int PrepProteinEnabledFBAFormulation(Data* InData, OptimizationParameter* InParameters);
 	int SteadyStateProteinFBA(Data* InData, OptimizationParameter* InParameters);
 	int DynamicFBA(Data* InData, OptimizationParameter* InParameters);
 	

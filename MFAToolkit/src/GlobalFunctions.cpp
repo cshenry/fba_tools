@@ -1104,6 +1104,10 @@ int ConvertVariableType(string TypeName) {
 		return POS_KPRIME_ERR;
 	} else if (TypeName.compare("NEG_KPRIME_ERR") == 0) {
 		return NEG_KPRIME_ERR;
+	} else if (TypeName.compare("PEAK_USE") == 0) {
+		return PEAK_USE;
+	} else if (TypeName.compare("EXO_PEAK_USE") == 0) {
+		return EXO_PEAK_USE;
 	}
 
 	FErrorFile() << "Unrecognized MFA variable type: " << TypeName << endl;
@@ -1207,6 +1211,10 @@ string ConvertVariableType(int Type) {
 		TypeName.assign("POS_KPRIME_ERR");
 	} else if (Type == NEG_KPRIME_ERR) {
 		TypeName.assign("NEG_KPRIME_ERR");
+	} else if (Type == PEAK_USE) {
+		TypeName.assign("PEAK_USE");
+	} else if (Type == EXO_PEAK_USE) {
+		TypeName.assign("EXO_PEAK_USE");
 	} else {
 		FErrorFile() << "Unrecognized MFA variable type number: " << Type << endl;
 		FlushErrorFile();
@@ -1698,7 +1706,7 @@ void RectifyOptimizationParameters(OptimizationParameter* InParameters){
 		// Use the value specified by user.
 		//SetParameter("Minimum flux for use variable positive constraint",GetParameter("Solver tolerance").data());
 	}
-	if (GetParameter("Peak data").length() > 0 || InParameters->CatalogueFluxLoops || InParameters->SteadyStateCommunityModeling || InParameters->ReactionAdditionStudy || InParameters->PROM || InParameters->DoMinimizeFlux || InParameters->ReactionsUse || InParameters->GapFilling || InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || GetParameter("Perform auxotrophy analysis").compare("1") == 0) {
+	if (GetParameter("steady state protein fba").compare("1") == 0 || GetParameter("Peak data").length() > 0 || InParameters->CatalogueFluxLoops || InParameters->SteadyStateCommunityModeling || InParameters->ReactionAdditionStudy || InParameters->PROM || InParameters->DoMinimizeFlux || InParameters->ReactionsUse || InParameters->GapFilling || InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || GetParameter("Perform auxotrophy analysis").compare("1") == 0) {
 		InParameters->DecomposeReversible = true;
 	}
 	if (InParameters->ReactionSlackVariable || InParameters->BinaryReactionSlackVariable || GetParameter("Peak data").length() > 0) {
@@ -2351,6 +2359,10 @@ string GetMFAVariableName(MFAVariable* InVariable,bool fullname) {
 		TypeName.assign("PDG");
 	} else if (InType == NEGATIVE_DELTAG) {
 		TypeName.assign("NDG");
+	} else if (InType == PEAK_USE) {
+		TypeName.assign("PU");
+	} else if (InType == EXO_PEAK_USE) {
+		TypeName.assign("EPU");
 	} else {
 		FErrorFile() << "Unrecognized MFA variable type number: " << InType << endl;
 		FlushErrorFile();

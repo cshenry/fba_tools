@@ -21,6 +21,7 @@
 #include "MFAToolkit.h"
 
 Gene::Gene(string InFilename, Data* InData) {
+	this->turnover = 0.03465;
 	MainData = InData;
 	MassBalanceConstraint = NULL;
 	if (InFilename.length() > 0) {
