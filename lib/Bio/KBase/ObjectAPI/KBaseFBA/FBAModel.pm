@@ -110,6 +110,122 @@ sub load_metabolite_hashes {
 	}
 }
 
+sub EnsureProperATPProduction {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([],{
+		anaerobe => 0,
+		max_objective_limit => 1.4
+	}, @_);
+	my $oldtemplate = $self->template();
+	my $template_trans = Bio::KBase::constants::template_trans();
+	$self->template($self->getLinkedObject(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core}));
+	#Retrieving and hashing core reactions
+	my $rxnhash = {};
+	my $corerxns = $self->template()->reactions();
+	for (my $i=0; $i < @{$corerxns}; $i++) {
+		$rxnhash->{$corerxns->[$i]->msid()} = $corerxns->[$i]->direction();
+	}
+	#Removing noncore reactions temporarily
+	my $mdlrxns = $self->modelreactions();
+	my $removedrxn = [];
+	for (my $i=0; $i < @{$mdlrxns}; $i++) {
+		my $id = $mdlrxns->[$i]->id();
+		if ($mdlrxns->[$i]->id() =~ m/(rxn\d+)/) {
+			$id = $1;
+		}
+		if (!defined($rxnhash->{$id})) {
+			push(@{$removedrxn},$mdlrxns->[$i]);
+			$self->remove("modelreactions",$mdlrxns->[$i]);
+		} elsif (defined($rxnhash->{$id})) {
+			$mdlrxns->[$i]->direction($rxnhash->{$1});
+		}
+	}
+	#Removing and blacklisting aerobic reactions if model is anaerobic
+	my $blacklist = [];
+	if ($args->{anaerobe} == 1) {
+		my $mdlrxn = $self->getObject("modelreactions","rxn14419_c0");
+		if (defined($mdlrxn)) {
+			$self->remove("modelreactions",$mdlrxn);
+		}
+		$mdlrxn = $self->getObject("modelreactions","rxn14422_c0");
+		if (defined($mdlrxn)) {
+			$self->remove("modelreactions",$mdlrxn);
+		}
+		$blacklist = ["rxn14426","rxn14419","rxn14422"];
+	}
+	#Gapfilling to ensure the core model can make ATP
+	my $object = Bio::KBase::constants::atp_hydrolysis_biomass();
+	my $count = @{$self->biomasses()};
+	$object->{id} = "bio".($count+1);
+	my $biorxn = $self->add("biomasses",$object);
+	$self->_reference("NULL/".$self->id());
+	my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+		workspace => "NULL",
+		fbamodel_id => $self->id(),
+		fbamodel_output_id => $self->id().".coregf",
+		target_reaction => $biorxn->id(),
+		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+		media_id => "RefGlucoseMinimal",
+		atp_production_check => 0,
+		#base_atp_production => 260,
+		blacklist => $blacklist
+	},$self);
+	#Restoring the template
+	$self->template($oldtemplate);
+	#Adding noncore reactions back into the model
+	my $removerxnid = [];
+	for (my $i=0; $i < @{$removedrxn}; $i++) {
+		$self->add("modelreactions",$removedrxn->[$i]);
+		push(@{$removerxnid},$removedrxn->[$i]->id());
+	}
+	#Removing any noncore reactions that cause overproduction of ATP
+	my $datachannel = {
+		fbamodel => $self
+	};
+	Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+		workspace => "NULL",
+		fbamodel_id => $self->id(),
+		fba_output_id => $self->id().".atp.fba",
+		media_id => "RefGlucoseMinimal",
+		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
+		target_reaction => $biorxn->id(),
+		reaction_addition_study => 1,
+		max_objective_limit => $args->{max_objective_limit},
+		reaction_list => $removerxnid
+	},$datachannel);
+	my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
+	my $first = 1;
+	if (defined($rxn_addition_data)) {
+		for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
+			my $row = [split(/\t/,$rxn_addition_data->[$i])];
+			if ($row->[2] == 0) {
+				if ($row->[1] =~ m/(.)(rxn.+)/) {
+					 print "Removing:".$row->[1]."\n";
+					 my $sign = $1;
+					 my $id = $2;
+					 $first = 0;
+					 my $rxnobj = $self->queryObject("modelreactions",{id => $id});
+					 if ($sign eq "+") {
+					 	if ($rxnobj->direction() eq "=") {
+					 		$rxnobj->direction("<");
+					 	} else {
+					 		$self->remove("modelreactions",$rxnobj);
+					 	}
+					 } else {
+					 	if ($rxnobj->direction() eq "=") {
+					 		$rxnobj->direction(">");
+					 	} else {
+					 		$self->remove("modelreactions",$rxnobj);
+					 	}
+					 }
+				}
+			}
+		}
+	}
+	#Removing ATP biomass again
+	$self->remove("biomasses",$biorxn);
+}
+
 sub gene_count {
 	my $self = shift;
 	my $ftrhash = {};

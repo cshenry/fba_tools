@@ -599,6 +599,13 @@ sub func_build_metabolic_model {
 			template_refs => [$template->_reference()],
 			genome_ref => $genome->_reference()
 		});
+		my $bios = $template->biomasses();
+		for (my $i=0; $i < @{$bios}; $i++) {
+	 		$bios->[$i]->addBioToModel({
+				gc => $genome->gc_content(),
+				model => $fullmodel
+			});
+		}
 		$fullmodel->parent($handler->util_store());
 	}
 	if (@{$anno_sources} > 0) {
@@ -611,11 +618,10 @@ sub func_build_metabolic_model {
 	}
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
 	if ($params->{mode} eq "new") {
-#		$template->EnsureProperATPProduction({
-#			fbamodel => $fullmodel,
-#			anaerobe => $params->{anaerobe},
-#			max_objective_limit => $params->{max_objective_limit}
-#		});
+		$fullmodel->EnsureProperATPProduction({
+			anaerobe => $params->{anaerobe},
+			max_objective_limit => $params->{max_objective_limit}
+		});
 		#Predicting auxotrophy
 		if ($params->{predict_auxotrophy} == 1) {
 			$datachannel->{fbamodel} = $fullmodel->cloneObject();
