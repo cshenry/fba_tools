@@ -284,7 +284,7 @@ sub add_reactions_from_ontology_events {
 						$matched = 1;
 						foreach my $rid (keys(%{$ontology_hash->{$oid}})) {
 							if (defined($ontterms->{$args->{annotation_sources}->[$j]}->{$oid})) {
-								$rxnhash->{$rid}->{$ftrs->[$i]->id()}->{$args->{annotation_sources}->[$j]} = $ontterms->{$args->{annotation_sources}->[$j]}->{$oid}->[0];
+								$rxnhash->{$rid}->{$ftrs->[$i]->id()}->{$args->{annotation_sources}->[$j]} = 1;#$ontterms->{$args->{annotation_sources}->[$j]}->{$oid}->[0];
 							}
 						}
 					}
