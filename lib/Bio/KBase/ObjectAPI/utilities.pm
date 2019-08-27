@@ -1073,6 +1073,35 @@ sub rest_download {
 	Bio::KBase::ObjectAPI::utilities::error("REST download failed at URL:".$args->{url});
 }
 
+sub query_pubchem {
+	my ($args) = @_;
+	my $output = {};
+	$args = Bio::KBase::ObjectAPI::utilities::ARGS($args,[],{
+		inchikey => undef
+	});
+	if (defined($args->{inchikey})) {
+		my $query = "";
+		for (my $j=0; $j < @{$args->{inchikey}}; $j++) {
+			if (length($query) > 0) {
+				$query .= ",";
+			}
+			$query .= $args->{inchikey}->[$j];
+			if (($j+1) % 10 == 0) {
+				my $restout = Bio::KBase::ObjectAPI::utilities::rest_download({
+					url => "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/".$query."/property/MolecularFormula,MolecularWeight,InChIKey/JSON"
+				});
+				if (defined($restout->{PropertyTable}->{Properties})) {
+					for (my $i=0; $i < @{$restout->{PropertyTable}->{Properties}}; $i++) {
+						$output->{$restout->{PropertyTable}->{Properties}->[$i]->{InChIKey}} = $restout->{PropertyTable}->{Properties}->[$i];
+					}
+				}
+				$query = "";
+			}
+		}	
+	}
+	return $output;
+}
+
 sub kblogin {
 	my $params = shift;
 	my $url = "https://kbase.us/services/authorization/Sessions/Login";

@@ -2496,10 +2496,10 @@ sub process_metabolomic_data {
 	}
 	if ($args->{type} eq "exo") {
 		$self->parameters()->{"Exometabolite peak data"} = $peak_string;
-		print "Exo:".$peak_string."\n";
+		#print "Exo:".$peak_string."\n";
 	} else {
 		$self->parameters()->{"Intrametabolite peak data"} = $peak_string;
-		print "Met".$peak_string."\n";
+		#print "Met".$peak_string."\n";
 	}
 	$self->{_metabolite_matrix_obj} = $matrix;
 }

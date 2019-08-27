@@ -712,7 +712,8 @@ sub func_gapfill_metabolic_model {
 		minimum_target_flux => 0.1,
 		number_of_solutions => 1,
 		gapfill_output_id => undef,
-		atp_production_check => 1
+		atp_production_check => 1,
+		add_external_reactions => 1
 	});
 	my $printreport = 1;
 	my $htmlreport = "<html>";
@@ -766,7 +767,6 @@ sub func_gapfill_metabolic_model {
 	$params->{source_model} = $source_model;
 	$params->{fba_output_id} = $params->{fbamodel_output_id}.".".$gfid;
 	$params->{gapfilling} = 1;
-	$params->{add_external_reactions} = 1;
 	my $fba = Bio::KBase::ObjectAPI::functions::util_build_fba($params);
 	$handler->util_log("Running flux balance analysis problem.");
 	$fba->runFBA();

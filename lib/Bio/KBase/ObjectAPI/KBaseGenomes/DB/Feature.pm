@@ -6,9 +6,6 @@
 ########################################################################
 package Bio::KBase::ObjectAPI::KBaseGenomes::DB::Feature;
 use Bio::KBase::ObjectAPI::BaseObject;
-use Bio::KBase::ObjectAPI::KBaseGenomes::ProteinFamily;
-use Bio::KBase::ObjectAPI::KBaseGenomes::Analysis_event;
-use Bio::KBase::ObjectAPI::KBaseGenomes::Feature_quality_measure;
 use Moose;
 use namespace::autoclean;
 extends 'Bio::KBase::ObjectAPI::BaseObject';
@@ -38,12 +35,6 @@ has aliases => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => su
 has type => (is => 'rw', isa => 'Str', printOrder => '1', default => 'peg', type => 'attribute', metaclass => 'Typed');
 has md5 => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has ontology_terms => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
-
-# SUBOBJECTS:
-has protein_families => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(ProteinFamily)', metaclass => 'Typed', reader => '_protein_families', printOrder => '-1');
-has feature_creation_event => (is => 'rw', singleton => 1, isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(Analysis_event)', metaclass => 'Typed', reader => '_feature_creation_event', printOrder => '-1');
-has quality => (is => 'rw', singleton => 1, isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(Feature_quality_measure)', metaclass => 'Typed', reader => '_quality', printOrder => '-1');
-
 
 # LINKS:
 
@@ -243,33 +234,9 @@ sub _links {
 	 }
 }
 
-my $subobjects = [
-          {
-            'printOrder' => -1,
-            'name' => 'protein_families',
-            'type' => 'child',
-            'class' => 'ProteinFamily',
-            'module' => 'KBaseGenomes'
-          },
-          {
-            'printOrder' => -1,
-            'name' => 'feature_creation_event',
-            'type' => 'child',
-            'class' => 'Analysis_event',
-            'singleton' => 1,
-            'module' => 'KBaseGenomes'
-          },
-          {
-            'printOrder' => -1,
-            'name' => 'quality',
-            'type' => 'child',
-            'class' => 'Feature_quality_measure',
-            'singleton' => 1,
-            'module' => 'KBaseGenomes'
-          }
-        ];
+my $subobjects = [];
 
-my $subobject_map = {protein_families => 0, feature_creation_event => 1, quality => 2};
+my $subobject_map = {};
 sub _subobjects {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {
@@ -283,20 +250,6 @@ sub _subobjects {
 	 	 return $subobjects;
 	 }
 }
-# SUBOBJECT READERS:
-around 'protein_families' => sub {
-	 my ($orig, $self) = @_;
-	 return $self->_build_all_objects('protein_families');
-};
-around 'feature_creation_event' => sub {
-	 my ($orig, $self) = @_;
-	 return $self->_build_all_objects('feature_creation_event');
-};
-around 'quality' => sub {
-	 my ($orig, $self) = @_;
-	 return $self->_build_all_objects('quality');
-};
-
 
 __PACKAGE__->meta->make_immutable;
 1;
