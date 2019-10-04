@@ -221,10 +221,28 @@ my $attributes = [
             'default' => 'sub {return {};}',
             'type' => 'HashRef',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => 8,
+            'name' => 'gene_count',
+            'default' => 0,
+            'type' => 'Num',
+            'description' => undef,
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => 8,
+            'name' => 'coverage',
+            'default' => 1,
+            'type' => 'Num',
+            'description' => undef,
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {protons => 0, reaction_ref => 1, direction => 2, modelcompartment_ref => 3, maxforflux => 4, reference => 5, id => 6, maxrevflux => 7, name => 8, probability => 9, pathway => 10, aliases => 11,gapfill_data => 12,edits => 13,displayID => 14,imported_gpr => 15,dblinks => 16,string_attributes => 17,numerical_attributes => 18};
+my $attribute_map = {protons => 0, reaction_ref => 1, direction => 2, modelcompartment_ref => 3, maxforflux => 4, reference => 5, id => 6, maxrevflux => 7, name => 8, probability => 9, pathway => 10, aliases => 11,gapfill_data => 12,edits => 13,displayID => 14,imported_gpr => 15,dblinks => 16,string_attributes => 17,numerical_attributes => 18,gene_count => 19,coverage => 20};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

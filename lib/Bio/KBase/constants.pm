@@ -168,6 +168,20 @@ our $compartment_trans = {
 	"Extracellular" => "e",
 	"Extra_organism" => "e",
 	"Cytosol" => "c",
+	extracellular => "e",
+    cellwall => "w",
+    periplasm => "p",
+    cytosol => "c",
+    golgi => "g",
+    endoplasm => "r",
+    lysosome => "l",
+    nucleus => "n",
+    chloroplast => "h",
+    mitochondria => "m",
+    peroxisome => "x",
+    vacuole => "v",
+    plastid => "d",
+    unknown => "u"
 };
 
 sub compartment_trans {

@@ -202,6 +202,7 @@ sub process_object {
 		} elsif ($type eq "Genome") {
 			if (defined($data->{cdss})) {
 				for (my $i = 0; $i < @{$data->{cdss}}; $i++) {
+					$data->{cdss}->[$i]->{type} = "CDS";
 					push(@{$data->{features}},$data->{cdss}->[$i]);
 				}
 			}

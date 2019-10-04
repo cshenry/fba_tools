@@ -4,6 +4,7 @@ use warnings;
 use Carp qw(cluck);
 use Config::Simple;
 use DateTime;
+use Bio::KBase::ObjectAPI::KBaseGenomes::Feature;
 
 our $reaction_hash;
 our $compound_hash;
@@ -138,6 +139,53 @@ sub compute_neutral_formula {
 		}
 	}
 	return $formula;
+}
+
+sub compute_proteins_from_fasta_gene_data {
+	my ($filename,$genes) = @_;
+	my $proteins = [];
+	my $contigs = [];
+	open (my $fh, "<", $filename);
+	my $id;
+	my $curseq = "";
+	while (my $line = <$fh>) {
+    		$line =~ s/\r//;
+        chomp($line);
+        if ($line =~ m/\>([^\s]+)/) {
+	        	my $newid = $1;
+	        	if (defined($id) && length($curseq) > 0) {
+	        		if (defined($genes->{$id})) {
+	        			for (my $j=0; $j < @{$genes->{$id}}; $j++) {
+	        				my $dna = substr($curseq,$genes->{$id}->[$j]->[0]-1,$genes->{$id}->[$j]->[1]-$genes->{$id}->[$j]->[0]);
+	        				if ($genes->{$id}->[$j]->[0] == -1) {
+	        					$dna = scalar reverse $dna;
+	        					$dna =~ s/A/M/g;
+							$dna =~ s/a/m/g;
+							$dna =~ s/T/A/g;
+							$dna =~ s/t/a/g;
+							$dna =~ s/M/T/g;
+							$dna =~ s/m/t/g;
+							$dna =~ s/G/M/g;
+							$dna =~ s/g/m/g;
+							$dna =~ s/C/G/g;
+							$dna =~ s/c/g/g;
+							$dna =~ s/M/C/g;
+							$dna =~ s/m/c/g;
+	        				}
+	        				my $prot = Bio::KBase::ObjectAPI::KBaseGenomes::Feature::translate_seq({},$dna);
+	        				push(@{$proteins},$prot);
+	        				push(@{$contigs},$id);
+	        			}
+	        		}
+	        	}
+        		$curseq = "";
+        		$id = $newid;
+        	} else {
+        		$curseq .= $line;
+        	}
+	}
+	close($fh);
+	return ($proteins,$contigs);
 }
 
 sub style {

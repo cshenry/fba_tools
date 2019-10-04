@@ -638,11 +638,11 @@ sub addModelReactionProtein {
     my $self = shift;
     my $args = Bio::KBase::ObjectAPI::utilities::args(["proteinDataTree"], {complex_ref => ""}, @_);
 	my $prots = $self->modelReactionProteins();
-	for (my $i=0; $i < @{$prots}; $i++) {
-		if ($prots->[$i]->complex_ref() eq $args->{complex_ref}) {
-			return $prots->[$i];
-		}
-	}
+#	for (my $i=0; $i < @{$prots}; $i++) {
+#		if ($prots->[$i]->complex_ref() eq $args->{complex_ref}) {
+#			return $prots->[$i];
+#		}
+#	}
 	my $protdata = {complex_ref => $args->{complex_ref},modelReactionProteinSubunits => []};
 	if (defined($args->{proteinDataTree}->{note})) {
 		$protdata->{note} = $args->{proteinDataTree}->{note};

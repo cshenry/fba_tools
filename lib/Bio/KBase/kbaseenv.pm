@@ -12,10 +12,12 @@ our $ws_client = undef;
 our $ga_client = undef;
 our $ac_client = undef;
 our $rast_client = undef;
+our $rastsdk_client = undef;
 our $handle_client = undef;
 our $data_file_client = undef;
 our $objects_created = [];
 our $ontology_hash = undef;
+our $sso_hash = undef;
 
 sub log {
 	my ($msg,$tag) = @_;
@@ -126,6 +128,18 @@ sub ga_client {
 		$ga_client = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ga_client;
+}
+
+sub sdkrast_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($rastsdk_client)) {
+		require "RAST_SDK/RAST_SDKClient.pm";
+		$rastsdk_client = new RAST_SDK::RAST_SDKClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+	}
+	return $rastsdk_client;
 }
 
 sub rast_client {
@@ -287,19 +301,21 @@ sub get_ontology_hash {
 }
 
 sub get_sso_hash {
-	my $output = $ws_client->get_objects([{
-		workspace => "KBaseOntology",
-		name => "seed_subsystem_ontology"
-	}]);
-	my $funchash = {};
-	foreach my $term (keys(%{$output->[0]->{data}->{term_hash}})) {
-		my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($output->[0]->{data}->{term_hash}->{$term}->{name});
-		$output->[0]->{data}->{term_hash}->{$term}->{searchname} = $searchrole;
-		$funchash->{$searchrole} = $output->[0]->{data}->{term_hash}->{$term};
-		$funchash->{$term} = $output->[0]->{data}->{term_hash}->{$term};
-		$funchash->{$output->[0]->{data}->{term_hash}->{$term}->{id}} = $output->[0]->{data}->{term_hash}->{$term};
+	if (!defined($sso_hash)) {
+		my $output = $ws_client->get_objects([{
+			workspace => "KBaseOntology",
+			name => "seed_subsystem_ontology"
+		}]);
+		$sso_hash = {};
+		foreach my $term (keys(%{$output->[0]->{data}->{term_hash}})) {
+			my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($output->[0]->{data}->{term_hash}->{$term}->{name});
+			$output->[0]->{data}->{term_hash}->{$term}->{searchname} = $searchrole;
+			$sso_hash->{$searchrole} = $output->[0]->{data}->{term_hash}->{$term};
+			$sso_hash->{$term} = $output->[0]->{data}->{term_hash}->{$term};
+			$sso_hash->{$output->[0]->{data}->{term_hash}->{$term}->{id}} = $output->[0]->{data}->{term_hash}->{$term};
+		}
 	}
-	return $funchash;
+	return $sso_hash;
 }
 
 1;

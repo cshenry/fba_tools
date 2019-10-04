@@ -570,61 +570,44 @@ sub func_build_metabolic_model {
 	}
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
-	#Clearing up annotation source array
+	#Organizing annotation source array
 	if ($params->{source_ontology_list} eq "") {
 		$params->{source_ontology_list} = [];
 	}
 	my $anno_sources = [];
-	for (my $i=0; $i < @{$params->{source_ontology_list}};$i++) {
-		#if (defined($params->{source_ontology_list}->[$i])) {
-			push(@{$anno_sources},$params->{source_ontology_list}->[$i]);
-		#}
-	}
-	#Building model with classic template
-	my $fullmodel;
 	if ($params->{use_annotated_functions} == 1) {
-		$fullmodel = $template->buildModel({
-			genome => $genome,
-			modelid => $params->{fbamodel_output_id},
-			fulldb => 0
-		});
-	} else {
-		$fullmodel = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
-			id => $params->{fbamodel_output_id},
-			source => Bio::KBase::utilities::conf("ModelSEED","source"),
-			source_id => $params->{fbamodel_output_id},
-			type => $template->type(),
-			name => $params->{fbamodel_output_id},
-			template_ref => $template->_reference(),
-			template_refs => [$template->_reference()],
-			genome_ref => $genome->_reference()
-		});
-		my $bios = $template->biomasses();
-		for (my $i=0; $i < @{$bios}; $i++) {
-	 		$bios->[$i]->addBioToModel({
-				gc => $genome->gc_content(),
-				model => $fullmodel
-			});
-		}
-		$fullmodel->parent($handler->util_store());
+		$anno_sources = ["_FUNCTION_"];
 	}
-	if (@{$anno_sources} > 0) {
-		$template->add_reactions_from_ontology_events({
-			annotation_sources => $anno_sources,
-			fbamodel => $fullmodel,
-			genome => $genome,
-			mdl_id => $params->{fbamodel_output_id}
-		});
+	if (@{$params->{source_ontology_list}} == 0) {
+		push(@{$anno_sources},"_SEED_");
 	}
+	for (my $i=0; $i < @{$params->{source_ontology_list}};$i++) {
+		push(@{$anno_sources},$params->{source_ontology_list}->[$i]);
+	}
+	#Pulling annotation hashes from genome
+	my $annotation_hash = $genome->build_annotation_hashes({
+		template => $template,
+		annotation_sources => $anno_sources,
+		merge => $params->{merge_all_annotations}
+	});
+	#Building model with classic template
+	my $mdl = $template->NewBuildModel({
+		modelid => $params->{fbamodel_output_id},
+		function_hash => $annotation_hash->{function_hash},
+		reaction_hash => $annotation_hash->{reaction_hash},
+		no_features => 0,
+		genome => $genome
+	});
+	#Creating HTML report
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
 	if ($params->{mode} eq "new") {
-		$fullmodel->EnsureProperATPProduction({
+		$mdl->EnsureProperATPProduction({
 			anaerobe => $params->{anaerobe},
 			max_objective_limit => $params->{max_objective_limit}
 		});
 		#Predicting auxotrophy
 		if ($params->{predict_auxotrophy} == 1) {
-			$datachannel->{fbamodel} = $fullmodel->cloneObject();
+			$datachannel->{fbamodel} = $mdl->cloneObject();
 			Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy_from_model({
 				workspace => "NULL",
 				fbamodel_id => $params->{fbamodel_output_id}
@@ -659,18 +642,18 @@ sub func_build_metabolic_model {
 			media_workspace => $params->{media_workspace},
 			media_id => $params->{media_id},
 			atp_production_check => 1
-		},$fullmodel);
-		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$fullmodel->modelreactions()}." reactions, ".@{$fullmodel->modelcompounds()}." compounds, and ".$fullmodel->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
+		},$mdl);
+		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
 	} else {
 		#If not gapfilling, then we just save the model directly
 		$output->{number_gapfilled_reactions} = 0;
 		$output->{number_removed_biomass_compounds} = 0;
 		$output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
 		#print "\n\n".$fullmodel->toJSON()."\n\n";
-		my $wsmeta = $handler->util_save_object($fullmodel,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
-		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$fullmodel->modelreactions()}." reactions, ".@{$fullmodel->modelcompounds()}." compounds, and ".$fullmodel->gene_count()." genes.</p></div>"
+		my $wsmeta = $handler->util_save_object($mdl,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
+		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p></div>"
 	}
-	$datachannel->{fbamodel} = $fullmodel;
+	$datachannel->{fbamodel} = $mdl;
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	return $output;
 }
@@ -2628,7 +2611,11 @@ sub func_build_metagenome_metabolic_model {
 		media_id => undef,
 		media_workspace => $params->{workspace},
 		gapfill_model => 1,
-		gff_file => undef
+		gff_file => undef,
+		max_objective_limit => 1.4,
+		minimum_target_flux => undef,
+		rast_probability => 1,
+		other_anno_probability => 0.5
 	});
 	my $RoleHash;
 	my $bin_ref;
@@ -2640,19 +2627,21 @@ sub func_build_metagenome_metabolic_model {
 	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 	if ($object->{_type} eq "Assembly") {
 		$assembly_ref = $object->{_reference};
+		my $hc = Bio::KBase::kbaseenv::handle_client();
+#		$hc->download(
+#			$object->{fasta_handle_info}->{handle},
+#			Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta"
+#		);
 		foreach my $contig (keys(%{$object->{contigs}})) {
 			$contig_coverages->{$contig} = 1;
 		}
-	} elsif ($object->{_type} eq "BinnedContigs") {
-		$bin_ref = $object->{_reference};
-		$assembly_ref = $object->{assembly_ref};
-		for (my $i=0; $i < @{$object->{bins}}; $i++) {
-			my $coverage = $object->{bins}->[$i]->{cov};
-			foreach my $contig (keys(%{$object->{bins}->[$i]->{contigs}})) {
-				$contig_coverages->{$contig} = $coverage;
-			}
-		}
 	}
+	#This array will be populated with proteins depending on what input object was provided 
+	my $function_hash = {};
+	my $reaction_hash = {};
+	my $gene_loci = {};
+	my $ontology_hash = Bio::KBase::kbaseenv::get_ontology_hash();
+	my $sso_hash = Bio::KBase::kbaseenv::get_sso_hash();
 	#Reading in GFF file if provided
 	if (defined($params->{gff_file})) {
 		my $gff_path = $params->{gff_file};
@@ -2675,195 +2664,108 @@ sub func_build_metagenome_metabolic_model {
 			my $coverage = 0;
 			if (defined($contig_coverages->{$contig})) {
 				$coverage = $contig_coverages->{$contig};
+				if ($array->[2] ne "region") {
+					push(@{$gene_loci->{$contig}},[$array->[3],$array->[4],$array->[6]]);
+				}
 				if (defined($array->[8])) {
 					my $subarray = [split(/;/,$array->[8])];
 					for (my $j=0; $j < @{$subarray}; $j++) {
 						my $type;
 						my $term;
 						if ($subarray->[$j] =~ m/KEGG[:=](K\w+)/) {
-							$type = "KEGG_KO.ModelSEED";
+							$type = "KEGG_KO";
 							$term = $1;
 						} elsif ($subarray->[$j] =~ m/KEGG[:=](R\d+)/) {
-							$type = "KEGG_RXN.ModelSEED";
+							$type = "KEGG_RXN";
 							$term = $1;
 						} elsif ($subarray->[$j] =~ m/eggNOG[:=](\w+)/) {
-							$type = "EGGNOG.ModelSEED";
+							$type = "EGGNOG";
 							$term = $1;
 						} elsif ($subarray->[$j] =~ m/eC_number[:=](\w+)/) {
-							$type = "EBI_EC.ModelSEED";
+							$type = "EC";
 							$term = $1;
 						} elsif ($subarray->[$j] =~ m/note[:\=]coverage:(\d+\.*\d*)/) {
 							$contig_coverages->{$contig} = $1;
 						}
-						if (defined($type)) {
-							if (!defined($annotations->{$type}->{$term})) {
-								$annotations->{$type}->{$term} = [0,0];
+						if (defined($term) && defined($ontology_hash->{$term})) {
+							foreach my $rid (keys(%{$ontology_hash->{$term}})) {
+								if (!defined($reaction_hash->{$rid}->{u})) {
+									$reaction_hash->{$rid}->{u} = {
+										hit_count => 0,
+    										non_gene_probability => 0,
+    										non_gene_coverage => 0,
+    										sources => {}
+									};
+								}
+								$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}*$reaction_hash->{$rid}->{u}->{hit_count}+$params->{other_anno_probability};
+								$reaction_hash->{$rid}->{u}->{hit_count}++;
+								$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}/$reaction_hash->{$rid}->{u}->{hit_count};
+								$reaction_hash->{$rid}->{u}->{non_gene_coverage} += $contig_coverages->{$contig};
+								if (!defined($reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term})) {
+									$reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term} = 0;
+								}
+								$reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term}++;
 							}
-							$annotations->{$type}->{$term}->[0] += $coverage;
-							$annotations->{$type}->{$term}->[1]++;
 						}
 					}
 				}
-			} else {
-				#TODO - need to parse out contig coverage data
 			}
 		}
 	} else {
-		#TODO: running binning, extraction, and annotation, then pulling down genomes and pulling out annotations
-		
+		Bio::KBase::utilities::error("For now a gff file must be provided with gene call information. This will change with future updates.");
 	}
 	#Loading metagenome template
 	my $template_trans = Bio::KBase::constants::template_trans();
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($template_trans->{metagenome},Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")));
-	my $coretemplate = $handler->util_get_object(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core});
-	my $corereactions = $coretemplate->reactions();
-	my $ontology_hash = Bio::KBase::kbaseenv::get_ontology_hash();
-	#Creating model
-	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
-		id => $params->{fbamodel_output_id},
-		source => Bio::KBase::utilities::conf("ModelSEED","source"),
-		source_id => $params->{fbamodel_output_id},
-		type => "Metagenome",
-		name => $params->{fbamodel_output_id},
-		template_ref => $coretemplate->_reference(),
-		template_refs => [$coretemplate->_reference()],
-		gapfillings => [],
-		gapgens => [],
-		biomasses => [],
-		modelcompartments => [],
-		modelcompounds => [],
-		modelreactions => []
-	});
-	$mdl->parent($handler->util_store());
-	if (defined($bin_ref)) {
-		$mdl->binning_ref($bin_ref);
-		$mdl->assembly_ref($assembly_ref);
-	} else {
-		$mdl->assembly_ref($assembly_ref);
-	}
-	my $bios = $template->biomasses();
-	for (my $i=0; $i < @{$bios}; $i++) {
- 		$bios->[$i]->addBioToModel({
-			gc => 0.5,
-			model => $mdl
-		});
-	}
-	#Start by building core model
-	my $core_rxn_hash = {};
-	my $remaining_rxn_hash = {};
-	my $rejected = {};
-	foreach my $type (keys(%{$annotations})) {
-		foreach my $annotation (keys(%{$annotations->{$type}})) {
-			if (defined($ontology_hash->{$type}->{$annotation})) {
-				foreach my $rxn (keys(%{$ontology_hash->{$type}->{$annotation}})) {
-					if (defined($coretemplate->getObject("reactions",$rxn."_c"))) {
-						if (!defined($core_rxn_hash->{$rxn})) {
-							$core_rxn_hash->{$rxn} = [0,0];
+	#Parsing protein sequences from metagenome assembly file
+	(my $proteins,my $contig_list) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
+	#Annotating proteins with RAST	
+	#my $rast_client = Bio::KBase::kbaseenv::sdkrast_client();
+	my $output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
+	my $function_list = $output->{functions};
+	#my $function_list = $rast_client->annotate_proteins({proteins => $proteins});
+	for (my $i=0; $i < @{$function_list}; $i++) {
+		for (my $j=0; $j < @{$function_list->[$i]}; $j++) {
+			my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$i]->[$j]);
+			if (defined($template->roleSearchNameHash()->{$searchrole})) {
+				foreach my $roleid (keys(%{$template->roleSearchNameHash()->{$searchrole}})) {
+					if ($template->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+						if (!defined($function_hash->{$roleid}->{u})) {
+							$function_hash->{$roleid}->{u} = {
+								hit_count => 0,
+								non_gene_probability => 0,
+								non_gene_coverage => 0,
+								sources => {},
+							};
 						}
-						$core_rxn_hash->{$rxn}->[0] += $annotations->{$type}->{$annotation}->[0];
-						$core_rxn_hash->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];
-					} elsif (defined($template->getObject("reactions",$rxn."_c"))) {
-						if (!defined($remaining_rxn_hash->{$rxn})) {
-							$remaining_rxn_hash->{$rxn} = [0,0];
+						$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}*$function_hash->{$roleid}->{u}->{hit_count}+$params->{rast_probability};
+						$function_hash->{$roleid}->{u}->{hit_count}++;
+						$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}/$function_hash->{$roleid}->{u}->{hit_count};
+						$function_hash->{$roleid}->{u}->{non_gene_coverage} += $contig_coverages->{$contig_list->[$i]};
+						if (!defined($function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]->[$j]})) {
+							$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]->[$j]} = 0;
 						}
-						$remaining_rxn_hash->{$rxn}->[0] += $annotations->{$type}->{$annotation}->[0];
-						$remaining_rxn_hash->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];
-					} else {
-						if (!defined($rejected->{$rxn})) {
-							$rejected->{$rxn} = [0,0];
-						}
-						$rejected->{$rxn}->[0] += $annotations->{$type}->{$annotation}->[0];
-						$rejected->{$rxn}->[1] += $annotations->{$type}->{$annotation}->[1];	
+						$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]->[$j]}++;
 					}
 				}
 			}
 		}
 	}
-	foreach my $rxn (keys(%{$core_rxn_hash})) {
-		my $trxn = $coretemplate->getObject("reactions",$rxn."_c");
-		my $reaction = $mdl->addModelReaction({
-			reaction => $rxn."_c0",
-			direction => $trxn->direction(),
-			addReaction => 1
-		});
-		$reaction->probability($core_rxn_hash->{$rxn}->[0]);
-		$reaction->gene_count($core_rxn_hash->{$rxn}->[1]);
+	if (-d Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta") {
+		#unlink(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta");
 	}
-	$datachannel->{fbamodel} = $mdl;
-	$mdl->add("biomasses",Bio::KBase::constants::atp_hydrolysis_biomass());
-	my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
-		workspace => "NULL",
-		fbamodel_id => "tempcore",
-		fbamodel_output_id => "tempcore.gf",
-		target_reaction => "bio2",
-		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
-		media_id => "RefGlucoseMinimal",
-		atp_production_check => 0,
-	},$mdl);
-	$mdl->template_ref($template->_reference());
-	$mdl->template_refs([$template->_reference()]);
-	$mdl->template($template);
-	foreach my $rxn (keys(%{$remaining_rxn_hash})) {
-		my $trxn = $template->getObject("reactions",$rxn."_c");
-		my $reaction = $mdl->addModelReaction({
-			reaction => $rxn."_c0",
-			direction => $trxn->direction(),
-			addReaction => 1
-		});
-		$reaction->probability($remaining_rxn_hash->{$rxn}->[0]);
-		$reaction->gene_count($remaining_rxn_hash->{$rxn}->[1]);
-	}
-	my $rxnlist = [keys(%{$remaining_rxn_hash})];
-	Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
-		workspace => "NULL",
-		fbamodel_id => $params->{fbamodel_output_id},
-		fba_output_id => $params->{fbamodel_output_id}.".atp.fba",
-		media_id => "RefGlucoseMinimal",
-		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
-		target_reaction => "bio2",
-		reaction_addition_study => 1,
-		max_objective_limit => $params->{max_objective_limit},
-		reaction_list => $rxnlist
-	},$datachannel);
-	my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
-	my $first = 1;
-	if (defined($rxn_addition_data)) {
-		for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
-			my $row = [split(/\t/,$rxn_addition_data->[$i])];
-			if ($row->[2] == 0) {
-				if ($row->[1] =~ m/(.)(rxn.+)/) {
-					 my $sign = $1;
-					 my $id = $2;
-					 if ($first == 1) {
-					 	$htmlreport .= " Rejected the following reactions due to ATP overproduction: ";
-					 } else {
-					 	$htmlreport .= ", ";
-					 }
-					 $first = 0;
-					 $htmlreport .= $sign.$id;
-					 my $rxnobj = $mdl->queryObject("modelreactions",{id => $id});
-					 if ($sign eq "+") {
-					 	if ($rxnobj->direction() eq "=") {
-					 		$rxnobj->direction("<");
-					 	} else {
-					 		$mdl->remove("modelreactions",$rxnobj);
-					 	}
-					 } else {
-					 	if ($rxnobj->direction() eq "=") {
-					 		$rxnobj->direction(">");
-					 	} else {
-					 		$mdl->remove("modelreactions",$rxnobj);
-					 	}
-					 }
-				}
-			}
-		}
-	}
-	if ($first == 0) {
-		$htmlreport .= ".";	
-	}
+	#Building model from functions
+	my $mdl = $template->NewBuildModel({
+		function_hash => $function_hash,
+		reaction_hash => $reaction_hash,
+		modelid => $params->{fbamodel_output_id}
+	});
+	$mdl->EnsureProperATPProduction({
+		anaerobe => 0,
+		max_objective_limit => $params->{max_objective_limit}
+	});
 	#Gapfilling model if requested
-	$output = {};
+	my $output = {};
 	if ($params->{gapfill_model} == 1) {
 		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			target_reaction => "bio1",
@@ -4719,6 +4621,36 @@ sub process_nodes {
 		}
 		$data->{gpr} .= join(" ".$current." ",@{$genes});
 	}
+}
+
+sub annotate_proteins {
+	my ($params) = @_;
+	$params = Bio::KBase::utilities::args($params,["proteins"],{});
+    my $inputgenome = {
+    		features => []
+    };
+    for (my $i=1; $i <= @{$params->{proteins}}; $i++) {
+    		push(@{$inputgenome->{features}},{
+    			id => "peg.".$i,
+    			protein_translation => $params->{proteins}->[$i]
+    		});
+    }
+    my $rast_client = Bio::KBase::kbaseenv::rast_client();
+    my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
+		{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
+		#{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
+		{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } }
+	]});
+	my $ftrs = $genome->{features};
+	my $return = {};
+	$return->{functions} = [];
+	for (my $i=0; $i < @{$genome->{features}}; $i++) {
+		$return->{functions}->[$i] = [];
+		if (defined($genome->{features}->[$i]->{function})) {
+			$return->{functions}->[$i] = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$i]->{function})];
+		}
+	}
+	return $return
 }
 
 1;
