@@ -733,7 +733,7 @@ sub func_gapfill_metabolic_model {
 	$handler->util_log("Preparing flux balance analysis problem.");
 	if (defined($params->{source_fbamodel_id}) && !defined($source_model)) {
 		$htmlreport .= " During the gapfilling, the source biochemistry database was augmented with all the reactions contained in the existing ".$params->{source_fbamodel_id}." model.";
-		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));	
+		$source_model = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{source_fbamodel_id},$params->{source_fbamodel_workspace}));
 	}
 	my $gfs = $model->gapfillings();
 	my $currentid = 0;
@@ -1464,54 +1464,54 @@ sub func_view_flux_network {
 			if ($extcpdhash->{$mdlcpd}->{species_flux}->{$species} > 0.0000001) {
 				push(@{$network->{nodes}},{
 					data => {
-						reaction =>  $mdlcpd."_".$species, 
-		                direction => "=", 
-		                features => [], 
+						reaction =>  $mdlcpd."_".$species,
+		                direction => "=",
+		                features => [],
 		                definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0]",
 		                products => [{
-							compartment => "e0", 
-							id => $extcpdhash->{$mdlcpd}->{node}->{id}, 
-							stoich => "1", 
+							compartment => "e0",
+							id => $extcpdhash->{$mdlcpd}->{node}->{id},
+							stoich => "1",
 							compound => $extcpdhash->{$mdlcpd}->{node}->{id}
-						}], 
-		                flux => $extcpdhash->{$mdlcpd}->{species_flux}->{$species}, 
-		                node_type => "reaction", 
+						}],
+		                flux => $extcpdhash->{$mdlcpd}->{species_flux}->{$species},
+		                node_type => "reaction",
 		                reactants => [{
-							compartment => $species, 
-							id => $species, 
-							stoich => "1", 
+							compartment => $species,
+							id => $species,
+							stoich => "1",
 							compound => $species
-		                }], 
-		                gapfilled => 0, 
-		                compartment => $species, 
-		                id => $mdlcpd."_".$species, 
+		                }],
+		                gapfilled => 0,
+		                compartment => $species,
+		                id => $mdlcpd."_".$species,
 		                name => $mdlcpd."_".$species
 					}
 				});
 			} elsif ($extcpdhash->{$mdlcpd}->{species_flux}->{$species} < -0.0000001) {
 				push(@{$network->{nodes}},{
 					data => {
-						reaction =>  $mdlcpd."_".$species, 
-		                direction => "=", 
-		                features => [], 
+						reaction =>  $mdlcpd."_".$species,
+		                direction => "=",
+		                features => [],
 		                definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."]",
 		                reactants => [{
-							compartment => "e0", 
-							id => $extcpdhash->{$mdlcpd}->{node}->{id}, 
-							stoich => "1", 
+							compartment => "e0",
+							id => $extcpdhash->{$mdlcpd}->{node}->{id},
+							stoich => "1",
 							compound => $extcpdhash->{$mdlcpd}->{node}->{id}
-						}], 
-		                flux => abs($extcpdhash->{$mdlcpd}->{species_flux}->{$species}), 
-		                node_type => "reaction", 
+						}],
+		                flux => abs($extcpdhash->{$mdlcpd}->{species_flux}->{$species}),
+		                node_type => "reaction",
 		                products => [{
-							compartment => $species, 
-							id => $species, 
-							stoich => "1", 
+							compartment => $species,
+							id => $species,
+							stoich => "1",
 							compound => $species
-		                }], 
-		                gapfilled => 0, 
-		                compartment => $species, 
-		                id => $mdlcpd."_".$species, 
+		                }],
+		                gapfilled => 0,
+		                compartment => $species,
+		                id => $mdlcpd."_".$species,
 		                name => $mdlcpd."_".$species
 					}
 				});
@@ -2442,7 +2442,7 @@ sub func_predict_auxotrophy {
 		}
 		print "\n";
 	}
-	
+
 	my $htmlreport = "<html><head><script type='text/javascript' src='https://www.google.com/jsapi'></script><script type='text/javascript'>google.load('visualization', '1', {packages:['controls'], callback: drawDashboard});google.setOnLoadCallback(drawDashboard);";
 	$htmlreport .= "function drawDashboard() {var data = new google.visualization.DataTable();";
 	$htmlreport .= "data.addColumn('string','Class');";
@@ -2457,7 +2457,7 @@ sub func_predict_auxotrophy {
 		for (my $j=0; $j < @{$genomes}; $j++) {
 			if (defined($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]})) {
 				if ($auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{auxotrophic} == 1) {
-					push(@{$row},'{v:1,f:"Gapfilling: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}.'<br>Reactions: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}.'<br>Auxotrophic"}');	
+					push(@{$row},'{v:1,f:"Gapfilling: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}.'<br>Reactions: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}.'<br>Auxotrophic"}');
 				} else {
 					push(@{$row},'{v:0,f:"Gapfilling: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{gfrxn}.'<br>Reactions: '.$auxotrophy_hash->{$cpddata->[$i]->{id}}->{$genomes->[$j]}->{rxn}.'"}');
 				}
@@ -2907,8 +2907,8 @@ sub func_create_or_edit_media {
 		if ($found == 0) {
 			my $newmediacpd = {
 				concentration => $params->{compounds_to_add}->[$i]->{add_concentration},
-				maxFlux => $params->{compounds_to_add}->[$i]->{add_minflux},
-				minFlux => $params->{compounds_to_add}->[$i]->{add_maxflux}
+				minFlux => $params->{compounds_to_add}->[$i]->{add_minflux},
+				maxFlux => $params->{compounds_to_add}->[$i]->{add_maxflux}
 			};
 			if (defined($cpd)) {
 				$newmediacpd->{id} = $cpd->id();
@@ -4334,7 +4334,7 @@ sub func_importmodel {
 		if ($compartment =~/^(\w)(\d+)$/) {
 			$compartment = $1;
 			$compartmentIndex = $2;
-		}		
+		}
 		my $input = {
 			reaction => $rxnrow->[0],
 			direction => $rxnrow->[1],
@@ -4388,7 +4388,7 @@ sub func_importmodel {
 		if (@{$rgts} == 1 && ($rgts->[0]->modelcompound()->id() =~ m/_e\d+$/ || $rgts->[0]->modelcompound()->id() =~ m/cpd08636_c0/ || $rgts->[0]->modelcompound()->id() =~ m/cpd15302_c0/ || $rgts->[0]->modelcompound()->id() =~ m/cpd11416_c0/)) {
 			Bio::KBase::utilities::log("Removing reaction:".$rxn->definition(),"debugging");
 			$model->remove("modelreactions",$rxn);
-		}	
+		}
 	}
 	for (my $i=0; $i < @{$params->{biomass}}; $i++) {
 		Bio::KBase::utilities::log("Biomass:".$params->{biomass}->[$i],"debugging");
@@ -4479,10 +4479,10 @@ sub func_export {
 			}
 		}
 	} else {
-		return $handler->util_package_for_download({ 
+		return $handler->util_package_for_download({
 			file_path => $export_dir,
 			ws_refs   => [ $params->{input_ref} ]
-		});	
+		});
 	}
 }
 
@@ -4534,7 +4534,7 @@ sub func_bulk_export {
 			}
 		}
 	}
-	
+
 	my $export_dir = Bio::KBase::utilities::conf("fba_tools","scratch")."/model_objects";
 	if (-d $export_dir) {
 		File::Path::rmtree ($export_dir);
@@ -4613,7 +4613,7 @@ sub process_nodes {
 			foreach my $attr ($newnode[$j]->getAttributes()->getValues()) {
 				if ($attr->getName() eq "fbc:geneProduct") {
 					push(@{$genes},$attr->getValue());
-				}	
+				}
 			}
 		}
 		if ($first == 1) {
