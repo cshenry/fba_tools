@@ -2628,10 +2628,10 @@ sub func_build_metagenome_metabolic_model {
 	if ($object->{_type} eq "Assembly") {
 		$assembly_ref = $object->{_reference};
 		my $hc = Bio::KBase::kbaseenv::handle_client();
-#		$hc->download(
-#			$object->{fasta_handle_info}->{handle},
-#			Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta"
-#		);
+		$hc->download(
+			$object->{fasta_handle_info}->{handle},
+			Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta"
+		);
 		foreach my $contig (keys(%{$object->{contigs}})) {
 			$contig_coverages->{$contig} = 1;
 		}
@@ -2752,7 +2752,7 @@ sub func_build_metagenome_metabolic_model {
 		}
 	}
 	if (-d Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta") {
-		#unlink(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta");
+		unlink(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta");
 	}
 	#Building model from functions
 	my $mdl = $template->NewBuildModel({
