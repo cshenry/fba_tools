@@ -708,44 +708,44 @@ sub getLinkedObject {
 	    	my $obj = $self->store()->get_object($refchain.$objpath);
 	    	if (length($internalref) == 0) {
 	    		return $obj;
-	    	} elsif ($internalref =~ m/^\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+	    	} elsif ($internalref =~ m/^\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 	    		return $obj->queryObject($1,{$2 => $3});
 	    	}
-	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 3\n") if $debug;
 		my $linkedobject = $1;
 		my $otherlinkedobject = $2;
 		my $field = $3;
     		my $query = {$4 => $5};
 		return $self->topparent()->$linkedobject()->$otherlinkedobject()->queryObject($field,$query);
-	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 4\n") if $debug;
 		my $linkedobject = $1;
 		my $field = $2;
     		my $query = {$3 => $4};
 		return $self->topparent()->$linkedobject()->queryObject($field,$query);
-	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 5\n") if $debug;
 		return $self->topparent()->queryObject($1,{$2 => $3});
 	} elsif ($ref =~ m/^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$/) {
 		print("Branch 6\n") if $debug;
 		return $self->store()->getObjectByUUID($ref);
-	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-]+)$/) {
+	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 7\n") if $debug;
 		Bio::KBase::ObjectAPI::utilities::error("FAILED!");
-	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-]+$/) {
+	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-:\%]+$/) {
 		print("Branch 8\n") if $debug;
     		return $self->store()->get_object($refchain.$ref);
-    } elsif ($ref =~ m/^([:\w]+\/\w+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+    } elsif ($ref =~ m/^([:\w]+\/\w+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 9\n") if $debug;
 	    	my $field = $2;
 	    	my $query = {$3 => $4};
 	    	my $object = $self->store()->get_object($refchain.$1);
 	    	return $object->queryObject($field,$query);
-    } elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+$/) {
+    } elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-:\%]+$/) {
 		print("Branch 0\n") if $debug;
     		return $self->store()->get_object($refchain.$ref);
-    } elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+    } elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 1\n") if $debug;
 	    	my $field = $2;
 	    	my $query = {$3 => $4};

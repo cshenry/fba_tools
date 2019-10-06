@@ -577,7 +577,11 @@ sub AddRxnToModelFromAnnotations {
 		$anno_args->{gene_count} += $total_protein_gene_count;
 	}
 	#Now adding reaction to model if it meets the necessary criteria
-	if (@{$anno_args->{proteins}} == 0 && $anno_args->{gene_count} == 0 && $self->type() ne "universal" && $self->type() ne "spontaneous" && $args->{fulldb} == 0) {
+	if ((!defined($anno_args->{proteins}) || @{$anno_args->{proteins}} == 0) && 
+		(!defined($anno_args->{gene_count}) || $anno_args->{gene_count} == 0) && 
+		$self->type() ne "universal" && 
+		$self->type() ne "spontaneous" && 
+		$args->{fulldb} == 0) {
 		return undef;
 	}
 	return $self->AddReactionToModel({
