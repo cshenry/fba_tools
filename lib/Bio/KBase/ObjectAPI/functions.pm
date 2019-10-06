@@ -719,7 +719,7 @@ sub func_gapfill_metabolic_model {
 		$params->{metabolite_matrix} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metabolite_ref},$params->{metabolite_workspace}));
 	}
 	if (!defined($params->{media_id})) {
-		if ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i) {
+		if (defined($model->genome_ref()) && length($model->genome_ref()) > 0 && ($model->genome()->domain() eq "Plant" || $model->genome()->taxonomy() =~ /viridiplantae/i)) {
 			$params->{media_id} = Bio::KBase::utilities::conf("ModelSEED","default_plant_media");
 		} else {
 			$params->{default_max_uptake} = 100;
