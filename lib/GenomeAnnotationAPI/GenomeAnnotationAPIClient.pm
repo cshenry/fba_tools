@@ -35,7 +35,7 @@ GenomeAnnotationAPI::GenomeAnnotationAPIClient
 sub new
 {
     my($class, $url, @args) = @_;
-    
+
 
     my $self = {
 	client => GenomeAnnotationAPI::GenomeAnnotationAPIClient::RpcClient->new,
@@ -55,7 +55,7 @@ sub new
     if (exists $arg_hash{"async_job_check_max_time_ms"}) {
         $self->{async_job_check_max_time} = $arg_hash{"async_job_check_max_time_ms"} / 1000.0;
     }
-    my $service_version = 'beta';
+    my $service_version = 'release';
     if (exists $arg_hash{"service_version"}) {
         $service_version = $arg_hash{"service_version"};
     }
@@ -109,15 +109,15 @@ sub new
 	        $self->{token} = $token->token;
 	    }
 	}
-	
+
 	if (exists $self->{token})
 	{
 	    $self->{client}->{token} = $self->{token};
 	}
     }
 
-    my $ua = $self->{client}->ua;	 
-    my $timeout = $ENV{CDMI_TIMEOUT} || (30 * 60);	 
+    my $ua = $self->{client}->ua;
+    my $timeout = $ENV{CDMI_TIMEOUT} || (30 * 60);
     $ua->timeout($timeout);
     bless $self, $class;
     #    $self->_validate_version();
@@ -155,10 +155,9 @@ sub _check_job {
             return $result->result->[0];
         }
     } else {
-        return {
-            finished  => 0,
-            failed  => 1,
-        };
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _check_job",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_check_job');
     }
 }
 
@@ -261,12 +260,13 @@ sub _get_taxon_submit {
             return $result->result->[0];  # job_id
         }
     } else {
-        my $job_state_ref = {};
-        return {}
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _get_taxon_submit",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_get_taxon_submit');
     }
 }
 
- 
+
 
 
 =head2 get_assembly
@@ -371,7 +371,7 @@ sub _get_assembly_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_types
@@ -476,7 +476,7 @@ sub _get_feature_types_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_type_descriptions
@@ -583,7 +583,7 @@ sub _get_feature_type_descriptions_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_type_counts
@@ -690,7 +690,7 @@ sub _get_feature_type_counts_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_ids
@@ -829,7 +829,7 @@ sub _get_feature_ids_submit {
     }
 }
 
- 
+
 
 
 =head2 get_features
@@ -978,7 +978,7 @@ sub _get_features_submit {
     }
 }
 
- 
+
 
 
 =head2 get_features2
@@ -1131,7 +1131,7 @@ sub _get_features2_submit {
     }
 }
 
- 
+
 
 
 =head2 get_proteins
@@ -1250,7 +1250,7 @@ sub _get_proteins_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_locations
@@ -1367,7 +1367,7 @@ sub _get_feature_locations_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_publications
@@ -1474,7 +1474,7 @@ sub _get_feature_publications_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_dna
@@ -1581,7 +1581,7 @@ sub _get_feature_dna_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_functions
@@ -1688,7 +1688,7 @@ sub _get_feature_functions_submit {
     }
 }
 
- 
+
 
 
 =head2 get_feature_aliases
@@ -1795,7 +1795,7 @@ sub _get_feature_aliases_submit {
     }
 }
 
- 
+
 
 
 =head2 get_cds_by_gene
@@ -1902,7 +1902,7 @@ sub _get_cds_by_gene_submit {
     }
 }
 
- 
+
 
 
 =head2 get_cds_by_mrna
@@ -2009,7 +2009,7 @@ sub _get_cds_by_mrna_submit {
     }
 }
 
- 
+
 
 
 =head2 get_gene_by_cds
@@ -2116,7 +2116,7 @@ sub _get_gene_by_cds_submit {
     }
 }
 
- 
+
 
 
 =head2 get_gene_by_mrna
@@ -2223,7 +2223,7 @@ sub _get_gene_by_mrna_submit {
     }
 }
 
- 
+
 
 
 =head2 get_mrna_by_cds
@@ -2330,7 +2330,7 @@ sub _get_mrna_by_cds_submit {
     }
 }
 
- 
+
 
 
 =head2 get_mrna_by_gene
@@ -2437,7 +2437,7 @@ sub _get_mrna_by_gene_submit {
     }
 }
 
- 
+
 
 
 =head2 get_mrna_exons
@@ -2562,7 +2562,7 @@ sub _get_mrna_exons_submit {
     }
 }
 
- 
+
 
 
 =head2 get_mrna_utrs
@@ -2685,7 +2685,7 @@ sub _get_mrna_utrs_submit {
     }
 }
 
- 
+
 
 
 =head2 get_summary
@@ -2828,7 +2828,7 @@ sub _get_summary_submit {
     }
 }
 
- 
+
 
 
 =head2 save_summary
@@ -2973,7 +2973,7 @@ sub _save_summary_submit {
     }
 }
 
- 
+
 
 
 =head2 get_combined_data
@@ -3233,7 +3233,7 @@ sub _get_combined_data_submit {
     }
 }
 
- 
+
 
 
 =head2 get_genome_v1
@@ -3253,11 +3253,14 @@ GetGenomeParamsV1 is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a GenomeAnnotationAPI.GenomeSelectorV1
 	included_fields has a value which is a reference to a list where each element is a string
 	included_feature_fields has a value which is a reference to a list where each element is a string
+	downgrade has a value which is a GenomeAnnotationAPI.boolean
+	no_merge has a value which is a GenomeAnnotationAPI.boolean
 	ignore_errors has a value which is a GenomeAnnotationAPI.boolean
 	no_data has a value which is a GenomeAnnotationAPI.boolean
 	no_metadata has a value which is a GenomeAnnotationAPI.boolean
 GenomeSelectorV1 is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
+	feature_array has a value which is a string
 	included_feature_position_index has a value which is a reference to a list where each element is an int
 	ref_path_to_genome has a value which is a reference to a list where each element is a string
 boolean is an int
@@ -3507,11 +3510,14 @@ GetGenomeParamsV1 is a reference to a hash where the following keys are defined:
 	genomes has a value which is a reference to a list where each element is a GenomeAnnotationAPI.GenomeSelectorV1
 	included_fields has a value which is a reference to a list where each element is a string
 	included_feature_fields has a value which is a reference to a list where each element is a string
+	downgrade has a value which is a GenomeAnnotationAPI.boolean
+	no_merge has a value which is a GenomeAnnotationAPI.boolean
 	ignore_errors has a value which is a GenomeAnnotationAPI.boolean
 	no_data has a value which is a GenomeAnnotationAPI.boolean
 	no_metadata has a value which is a GenomeAnnotationAPI.boolean
 GenomeSelectorV1 is a reference to a hash where the following keys are defined:
 	ref has a value which is a string
+	feature_array has a value which is a string
 	included_feature_position_index has a value which is a reference to a list where each element is an int
 	ref_path_to_genome has a value which is a reference to a list where each element is a string
 boolean is an int
@@ -3823,7 +3829,7 @@ sub _get_genome_v1_submit {
     }
 }
 
- 
+
 
 
 =head2 save_one_genome_v1
@@ -4302,7 +4308,7 @@ usermeta is a reference to a hash where the key is a string and the value is a s
 
 =item Description
 
-
+@deprecated: GenomeFileUtil.save_one_genome
 
 =back
 
@@ -4370,8 +4376,8 @@ sub _save_one_genome_v1_submit {
     }
 }
 
- 
- 
+
+
 sub status
 {
     my($self, @args) = @_;
@@ -4418,7 +4424,7 @@ sub status
         }
     }
 }
-   
+
 
 sub version {
     my ($self) = @_;
@@ -5913,6 +5919,16 @@ exclude_summary has a value which is a GenomeAnnotationAPI.boolean
 
 
 
+=item Description
+
+ref - genome refference
+feature array - optional, which array the included_feature_position_index
+    refer to. defaults to "features".
+included_feature_position_index - optional, only include features at
+    the specified indices
+ref_path_to_genome - optional, a reference path to the genome.
+
+
 =item Definition
 
 =begin html
@@ -5920,6 +5936,7 @@ exclude_summary has a value which is a GenomeAnnotationAPI.boolean
 <pre>
 a reference to a hash where the following keys are defined:
 ref has a value which is a string
+feature_array has a value which is a string
 included_feature_position_index has a value which is a reference to a list where each element is an int
 ref_path_to_genome has a value which is a reference to a list where each element is a string
 
@@ -5931,6 +5948,7 @@ ref_path_to_genome has a value which is a reference to a list where each element
 
 a reference to a hash where the following keys are defined:
 ref has a value which is a string
+feature_array has a value which is a string
 included_feature_position_index has a value which is a reference to a list where each element is an int
 ref_path_to_genome has a value which is a reference to a list where each element is a string
 
@@ -5947,6 +5965,14 @@ ref_path_to_genome has a value which is a reference to a list where each element
 
 
 
+=item Description
+
+downgrade - optional, defaults to true. Convert new genome features into
+    a back-compatible representation.
+no_merge - optional, defaults to false. If a new genome is being downgraded, do not merge
+    new fields into the features field.
+
+
 =item Definition
 
 =begin html
@@ -5956,6 +5982,8 @@ a reference to a hash where the following keys are defined:
 genomes has a value which is a reference to a list where each element is a GenomeAnnotationAPI.GenomeSelectorV1
 included_fields has a value which is a reference to a list where each element is a string
 included_feature_fields has a value which is a reference to a list where each element is a string
+downgrade has a value which is a GenomeAnnotationAPI.boolean
+no_merge has a value which is a GenomeAnnotationAPI.boolean
 ignore_errors has a value which is a GenomeAnnotationAPI.boolean
 no_data has a value which is a GenomeAnnotationAPI.boolean
 no_metadata has a value which is a GenomeAnnotationAPI.boolean
@@ -5970,6 +5998,8 @@ a reference to a hash where the following keys are defined:
 genomes has a value which is a reference to a list where each element is a GenomeAnnotationAPI.GenomeSelectorV1
 included_fields has a value which is a reference to a list where each element is a string
 included_feature_fields has a value which is a reference to a list where each element is a string
+downgrade has a value which is a GenomeAnnotationAPI.boolean
+no_merge has a value which is a GenomeAnnotationAPI.boolean
 ignore_errors has a value which is a GenomeAnnotationAPI.boolean
 no_data has a value which is a GenomeAnnotationAPI.boolean
 no_metadata has a value which is a GenomeAnnotationAPI.boolean
