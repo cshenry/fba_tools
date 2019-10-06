@@ -799,7 +799,7 @@ sub manage_sso_term {
 						};
 					}
 					$args->{function_hash}->{$roleid}->{$abbrev}->{features}->{$args->{feature}->id()} = {
-						feature_ref => "~/genome/features/".$args->{feature}->id(),
+						feature_ref => "~/genome/features/id/".$args->{feature}->id(),
 						probability => $args->{probability},
 						coverage => $args->{coverage},
 						sources => {function => $args->{role}}
@@ -842,7 +842,7 @@ sub manage_reaction_term {
 				};
 			}
 			$args->{reaction_hash}->{$rid}->{$abbrev}->{features}->{$args->{feature}->id()} = {
-				feature_ref => "~/genome/features/".$args->{feature}->id(),
+				feature_ref => "~/genome/features/id/".$args->{feature}->id(),
 				probability => $args->{probability},
 				coverage => $args->{coverage},
 				sources => {function => $args->{term}}
