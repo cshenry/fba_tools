@@ -489,7 +489,8 @@ class fba_tools(object):
            parameter "fbamodel_output_id" of type "fbamodel_id" (A string
            representing a FBAModel id.), parameter "workspace" of type
            "workspace_name" (A string representing a workspace name.),
-           parameter "gapfill_model" of type "bool" (A binary boolean)
+           parameter "gapfill_model" of type "bool" (A binary boolean),
+           parameter "gff_file" of String
         :returns: instance of type "BuildMetabolicModelResults" -> structure:
            parameter "new_fbamodel_ref" of type "ws_fbamodel_id" (The
            workspace ID for a FBAModel data object. @id ws
@@ -1014,6 +1015,20 @@ class fba_tools(object):
         """
         return self._client.call_method(
             'fba_tools.bulk_export_objects',
+            [params], self._service_ver, context)
+
+    def run_fba_tools_tests(self, params, context=None):
+        """
+        :param params: instance of type "RunFbaToolsTestsParams" ->
+           structure: parameter "test_metagenomes" of type "bool" (A binary
+           boolean), parameter "workspace" of String
+        :returns: instance of type "RunFbaToolsTestsResult" -> structure:
+           parameter "report_name" of String, parameter "report_ref" of type
+           "ws_report_id" (The workspace ID for a Report object @id ws
+           KBaseReport.Report), parameter "ref" of String
+        """
+        return self._client.call_method(
+            'fba_tools.run_fba_tools_tests',
             [params], self._service_ver, context)
 
     def status(self, context=None):

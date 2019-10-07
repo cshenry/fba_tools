@@ -74,6 +74,7 @@ our %return_counts = (
         'export_phenotype_simulation_set_as_excel_file' => 1,
         'export_phenotype_simulation_set_as_tsv_file' => 1,
         'bulk_export_objects' => 1,
+        'run_fba_tools_tests' => 1,
         'status' => 1,
 );
 
@@ -124,6 +125,7 @@ our %method_authentication = (
         'export_phenotype_simulation_set_as_excel_file' => 'required',
         'export_phenotype_simulation_set_as_tsv_file' => 'required',
         'bulk_export_objects' => 'required',
+        'run_fba_tools_tests' => 'required',
 );
 
 sub _build_valid_methods
@@ -176,6 +178,7 @@ sub _build_valid_methods
         'export_phenotype_simulation_set_as_excel_file' => 1,
         'export_phenotype_simulation_set_as_tsv_file' => 1,
         'bulk_export_objects' => 1,
+        'run_fba_tools_tests' => 1,
         'status' => 1,
     };
     return $methods;

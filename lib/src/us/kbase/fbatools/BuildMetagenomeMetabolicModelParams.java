@@ -25,7 +25,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "media_workspace",
     "fbamodel_output_id",
     "workspace",
-    "gapfill_model"
+    "gapfill_model",
+    "gff_file"
 })
 public class BuildMetagenomeMetabolicModelParams {
 
@@ -43,6 +44,8 @@ public class BuildMetagenomeMetabolicModelParams {
     private String workspace;
     @JsonProperty("gapfill_model")
     private Long gapfillModel;
+    @JsonProperty("gff_file")
+    private String gffFile;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("input_ref")
@@ -150,6 +153,21 @@ public class BuildMetagenomeMetabolicModelParams {
         return this;
     }
 
+    @JsonProperty("gff_file")
+    public String getGffFile() {
+        return gffFile;
+    }
+
+    @JsonProperty("gff_file")
+    public void setGffFile(String gffFile) {
+        this.gffFile = gffFile;
+    }
+
+    public BuildMetagenomeMetabolicModelParams withGffFile(String gffFile) {
+        this.gffFile = gffFile;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -162,7 +180,7 @@ public class BuildMetagenomeMetabolicModelParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((("BuildMetagenomeMetabolicModelParams"+" [inputRef=")+ inputRef)+", inputWorkspace=")+ inputWorkspace)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", fbamodelOutputId=")+ fbamodelOutputId)+", workspace=")+ workspace)+", gapfillModel=")+ gapfillModel)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((("BuildMetagenomeMetabolicModelParams"+" [inputRef=")+ inputRef)+", inputWorkspace=")+ inputWorkspace)+", mediaId=")+ mediaId)+", mediaWorkspace=")+ mediaWorkspace)+", fbamodelOutputId=")+ fbamodelOutputId)+", workspace=")+ workspace)+", gapfillModel=")+ gapfillModel)+", gffFile=")+ gffFile)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

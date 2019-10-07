@@ -148,12 +148,17 @@ sub compute_proteins_from_fasta_gene_data {
 	open (my $fh, "<", $filename);
 	my $id;
 	my $curseq = "";
+	my $contigcount = 0;
+	my $genecount = 0;
+	my $totallength = 0;
 	while (my $line = <$fh>) {
     		$line =~ s/\r//;
         chomp($line);
         if ($line =~ m/\>([^\s]+)/) {
 	        	my $newid = $1;
 	        	if (defined($id) && length($curseq) > 0) {
+	        		$contigcount++;
+	        		$totallength += length($curseq);
 	        		if (defined($genes->{$id})) {
 	        			for (my $j=0; $j < @{$genes->{$id}}; $j++) {
 	        				my $dna = substr($curseq,$genes->{$id}->[$j]->[0]-1,$genes->{$id}->[$j]->[1]-$genes->{$id}->[$j]->[0]);
@@ -173,6 +178,7 @@ sub compute_proteins_from_fasta_gene_data {
 							$dna =~ s/m/c/g;
 	        				}
 	        				my $prot = Bio::KBase::ObjectAPI::KBaseGenomes::Feature::translate_seq({},$dna);
+	        				$genecount++;
 	        				push(@{$proteins},$prot);
 	        				push(@{$contigs},$id);
 	        			}
@@ -185,6 +191,9 @@ sub compute_proteins_from_fasta_gene_data {
         	}
 	}
 	close($fh);
+	print "Gene count:".$genecount."\n";
+	print "Total length:".$totallength."\n";
+	print "Contig count:".$contigcount."\n";
 	return ($proteins,$contigs);
 }
 

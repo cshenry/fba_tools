@@ -508,6 +508,7 @@ module fba_tools {
 		fbamodel_id fbamodel_output_id;
 		workspace_name workspace;
 		bool gapfill_model;
+		string gff_file;
     } BuildMetagenomeMetabolicModelParams;
     
     /*
@@ -797,5 +798,18 @@ module fba_tools {
     } BulkExportObjectsResult;
     
     funcdef bulk_export_objects(BulkExportObjectsParams params) returns (BulkExportObjectsResult output) authentication required;
+    
+    typedef structure {
+        bool test_metagenomes;
+        string workspace;
+    } RunFbaToolsTestsParams;
+    
+    typedef structure {
+		string report_name;
+		ws_report_id report_ref;
+		string ref;
+    } RunFbaToolsTestsResult;
+    
+    funcdef run_fba_tools_tests(RunFbaToolsTestsParams params) returns (RunFbaToolsTestsResult output) authentication required;
     
 };

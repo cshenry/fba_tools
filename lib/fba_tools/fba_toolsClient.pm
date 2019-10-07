@@ -1986,6 +1986,7 @@ BuildMetagenomeMetabolicModelParams is a reference to a hash where the following
 	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 	workspace has a value which is a fba_tools.workspace_name
 	gapfill_model has a value which is a fba_tools.bool
+	gff_file has a value which is a string
 workspace_name is a string
 media_id is a string
 fbamodel_id is a string
@@ -2014,6 +2015,7 @@ BuildMetagenomeMetabolicModelParams is a reference to a hash where the following
 	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 	workspace has a value which is a fba_tools.workspace_name
 	gapfill_model has a value which is a fba_tools.bool
+	gff_file has a value which is a string
 workspace_name is a string
 media_id is a string
 fbamodel_id is a string
@@ -5253,6 +5255,106 @@ ws_report_id is a string
     }
 }
  
+
+
+=head2 run_fba_tools_tests
+
+  $output = $obj->run_fba_tools_tests($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.RunFbaToolsTestsParams
+$output is a fba_tools.RunFbaToolsTestsResult
+RunFbaToolsTestsParams is a reference to a hash where the following keys are defined:
+	test_metagenomes has a value which is a fba_tools.bool
+	workspace has a value which is a string
+bool is an int
+RunFbaToolsTestsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.RunFbaToolsTestsParams
+$output is a fba_tools.RunFbaToolsTestsResult
+RunFbaToolsTestsParams is a reference to a hash where the following keys are defined:
+	test_metagenomes has a value which is a fba_tools.bool
+	workspace has a value which is a string
+bool is an int
+RunFbaToolsTestsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub run_fba_tools_tests
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_fba_tools_tests (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_fba_tools_tests:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_fba_tools_tests');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "fba_tools.run_fba_tools_tests",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_fba_tools_tests',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_fba_tools_tests",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_fba_tools_tests',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -5296,16 +5398,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'bulk_export_objects',
+                method_name => 'run_fba_tools_tests',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method bulk_export_objects",
+            error => "Error invoking method run_fba_tools_tests",
             status_line => $self->{client}->status_line,
-            method_name => 'bulk_export_objects',
+            method_name => 'run_fba_tools_tests',
         );
     }
 }
@@ -7386,6 +7488,7 @@ media_workspace has a value which is a fba_tools.workspace_name
 fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 gapfill_model has a value which is a fba_tools.bool
+gff_file has a value which is a string
 
 </pre>
 
@@ -7401,6 +7504,7 @@ media_workspace has a value which is a fba_tools.workspace_name
 fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 gapfill_model has a value which is a fba_tools.bool
+gff_file has a value which is a string
 
 
 =end text
@@ -8364,6 +8468,72 @@ report_workspace has a value which is a string
 
 
 =head2 BulkExportObjectsResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 RunFbaToolsTestsParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+test_metagenomes has a value which is a fba_tools.bool
+workspace has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+test_metagenomes has a value which is a fba_tools.bool
+workspace has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 RunFbaToolsTestsResult
 
 =over 4
 

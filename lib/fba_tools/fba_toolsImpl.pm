@@ -4,8 +4,8 @@ use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
 our $VERSION = '1.7.8';
-our $GIT_URL = 'https://github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = 'e445caf84edc20738d49de61c7f96a0b783f9644';
+our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
+our $GIT_COMMIT_HASH = '0b8458398a51b453612a84d53371457b858c2748';
 
 =head1 NAME
 
@@ -2149,6 +2149,7 @@ BuildMetagenomeMetabolicModelParams is a reference to a hash where the following
 	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 	workspace has a value which is a fba_tools.workspace_name
 	gapfill_model has a value which is a fba_tools.bool
+	gff_file has a value which is a string
 workspace_name is a string
 media_id is a string
 fbamodel_id is a string
@@ -2177,6 +2178,7 @@ BuildMetagenomeMetabolicModelParams is a reference to a hash where the following
 	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 	workspace has a value which is a fba_tools.workspace_name
 	gapfill_model has a value which is a fba_tools.bool
+	gff_file has a value which is a string
 workspace_name is a string
 media_id is a string
 fbamodel_id is a string
@@ -5252,6 +5254,90 @@ sub bulk_export_objects
 
 
 
+=head2 run_fba_tools_tests
+
+  $output = $obj->run_fba_tools_tests($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.RunFbaToolsTestsParams
+$output is a fba_tools.RunFbaToolsTestsResult
+RunFbaToolsTestsParams is a reference to a hash where the following keys are defined:
+	test_metagenomes has a value which is a fba_tools.bool
+	workspace has a value which is a string
+bool is an int
+RunFbaToolsTestsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.RunFbaToolsTestsParams
+$output is a fba_tools.RunFbaToolsTestsResult
+RunFbaToolsTestsParams is a reference to a hash where the following keys are defined:
+	test_metagenomes has a value which is a fba_tools.bool
+	workspace has a value which is a string
+bool is an int
+RunFbaToolsTestsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub run_fba_tools_tests
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to run_fba_tools_tests:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_fba_tools_tests');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN run_fba_tools_tests
+    #END run_fba_tools_tests
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to run_fba_tools_tests:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_fba_tools_tests');
+    }
+    return($output);
+}
+
+
+
+
 =head2 status 
 
   $return = $obj->status()
@@ -7339,6 +7425,7 @@ media_workspace has a value which is a fba_tools.workspace_name
 fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 gapfill_model has a value which is a fba_tools.bool
+gff_file has a value which is a string
 
 </pre>
 
@@ -7354,6 +7441,7 @@ media_workspace has a value which is a fba_tools.workspace_name
 fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 gapfill_model has a value which is a fba_tools.bool
+gff_file has a value which is a string
 
 
 =end text
@@ -8317,6 +8405,72 @@ report_workspace has a value which is a string
 
 
 =head2 BulkExportObjectsResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 RunFbaToolsTestsParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+test_metagenomes has a value which is a fba_tools.bool
+workspace has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+test_metagenomes has a value which is a fba_tools.bool
+workspace has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 RunFbaToolsTestsResult
 
 =over 4
 
