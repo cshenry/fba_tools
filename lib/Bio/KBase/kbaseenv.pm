@@ -178,6 +178,26 @@ sub handle_client {
 	return $handle_client;
 }
 
+sub assembly_to_fasta {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,["ref","path","filename"],{});
+	File::Path::mkpath($parameters->{path});
+	if (-e $parameters->{path}."/".$parameters->{filename}) {
+		unlink($parameters->{path}."/".$parameters->{filename});	
+	}
+	if (Bio::KBase::utilities::utilconf("use_assembly_utils") == 1) {
+		my $assutil = Bio::KBase::kbaseenv::ac_client();
+		my $output = $assutil->get_assembly_as_fasta({"ref" => $parameters->{"ref"},"filename" => $parameters->{path}."/".$parameters->{filename}});
+	} else {
+		my $output = Bio::KBase::kbaseenv::ws_client()->get_objects([{"ref" => $parameters->{"ref"}}]);
+		my $hc = Bio::KBase::kbaseenv::handle_client();
+		$hc->download(
+			$output->[0]->{data}->{fasta_handle_info}->{handle},
+			$parameters->{path}."/".$parameters->{filename}
+		);
+	}		
+}
+
 sub get_object {
 	my ($ws,$id) = @_;
 	my $output = Bio::KBase::kbaseenv::ws_client()->get_objects([Bio::KBase::kbaseenv::configure_ws_id($ws,$id)]);
