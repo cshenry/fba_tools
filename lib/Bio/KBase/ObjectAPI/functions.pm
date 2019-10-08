@@ -2629,6 +2629,10 @@ sub func_build_metagenome_metabolic_model {
 		print "Test1\t".time()."\n";
 		$assembly_ref = $object->{_reference};
 		my $hc = Bio::KBase::kbaseenv::handle_client();
+		if (-e Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta") {
+			unlink(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta");	
+		}
+		File::Path::mkpath (Bio::KBase::utilities::conf("fba_tools","scratch")."/");
 		$hc->download(
 			$object->{fasta_handle_info}->{handle},
 			Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta"
