@@ -2626,12 +2626,15 @@ sub func_build_metagenome_metabolic_model {
 	#Reading in input object
 	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 	if ($object->{_type} eq "Assembly") {
+		print "Test1\t".time()."\n";
 		$assembly_ref = $object->{_reference};
 		my $hc = Bio::KBase::kbaseenv::handle_client();
 		$hc->download(
 			$object->{fasta_handle_info}->{handle},
 			Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta"
 		);
+		print Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta\n";
+		print "Test2\t".time()."\n";
 		foreach my $contig (keys(%{$object->{contigs}})) {
 			$contig_coverages->{$contig} = 1;
 		}
@@ -2771,7 +2774,7 @@ sub func_build_metagenome_metabolic_model {
 		max_objective_limit => $params->{max_objective_limit}
 	});
 	#Gapfilling model if requested
-	my $output = {};
+	$output = {};
 	if ($params->{gapfill_model} == 1) {
 		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			target_reaction => "bio1",
