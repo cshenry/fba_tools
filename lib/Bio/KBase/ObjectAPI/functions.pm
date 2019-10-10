@@ -2719,16 +2719,10 @@ sub func_build_metagenome_metabolic_model {
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($template_trans->{metagenome},Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")));
 	#Parsing protein sequences from metagenome assembly file
 	(my $proteins,my $contig_list) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
-	print $proteins->[0]."\n";
-	print $proteins->[1]."\n";
-	print $proteins->[2]."\n";
 	#Annotating proteins with RAST	
 	#my $rast_client = Bio::KBase::kbaseenv::sdkrast_client();
 	my $output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
 	my $function_list = $output->{functions};
-	print $function_list->[0]."\n";
-	print $function_list->[1]."\n";
-	print $function_list->[2]."\n";
 	#my $function_list = $rast_client->annotate_proteins({proteins => $proteins});
 	for (my $i=0; $i < @{$function_list}; $i++) {
 		for (my $j=0; $j < @{$function_list->[$i]}; $j++) {

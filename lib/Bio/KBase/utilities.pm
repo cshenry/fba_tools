@@ -228,6 +228,20 @@ sub to_json {
     return $JSON->encode($ref);
 }
 
+=head3 deep_copy
+
+Definition:
+	REF Bio::KBase::utilities::deep_copy(ref);
+Description:	
+
+=cut
+
+sub deep_copy {
+	my ($ref) = @_;
+	my $serialized = Bio::KBase::ObjectAPI::utilities::TOJSON($ref);
+	return Bio::KBase::ObjectAPI::utilities::FROMJSON($serialized);
+}
+
 sub arguments {
 	my ($input) = @_;
 	if (defined($input)) {

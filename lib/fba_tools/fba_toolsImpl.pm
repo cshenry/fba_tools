@@ -32,12 +32,16 @@ use Data::Dumper;
 #Initialization function for call
 sub util_initialize_call {
 	my ($self,$params,$ctx) = @_;
-	print "Import parameters:".Bio::KBase::ObjectAPI::utilities::TOJSON($params,1);
+	my $copied_params = $params;
+	if (ref($params) eq 'HASH' || ref($params) eq 'ARRAY') {
+		$copied_params = Bio::KBase::utilities::deep_copy($params);
+	}
+	print "Receiving method call parameters:\n".Bio::KBase::ObjectAPI::utilities::TOJSON($copied_params,1);
 	if (defined($ctx)) {
 		Bio::KBase::kbaseenv::initialize_call($ctx);
 	}
 	delete($self->{_kbase_store});
-	return $params;
+	return $copied_params;
 }
 
 sub util_finalize_call {
@@ -431,7 +435,7 @@ sub build_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $return,
@@ -532,7 +536,7 @@ sub build_plant_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_plant_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 
     #Getting genome
     $self->util_log("Getting genome: ".$params->{genome_workspace}."/".$params->{genome_id}."\n");
@@ -709,7 +713,7 @@ sub build_multiple_metabolic_models
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_multiple_metabolic_models
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	my $orig_genome_workspace = $params->{genome_workspace};
 	my $genomes = $params->{genome_ids};
 	# If user provides a list of genomes in text form, append these to the existing gemome ids
@@ -892,7 +896,7 @@ sub gapfill_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN gapfill_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1065,7 +1069,7 @@ sub run_flux_balance_analysis
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN run_flux_balance_analysis
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1160,7 +1164,7 @@ sub compare_fba_solutions
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN compare_fba_solutions
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_compare_fba_solutions($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1313,7 +1317,7 @@ sub propagate_model_to_new_genome
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN propagate_model_to_new_genome
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_propagate_model_to_new_genome($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1444,7 +1448,7 @@ sub simulate_growth_on_phenotype_data
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN simulate_growth_on_phenotype_data
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_simulate_growth_on_phenotype_data($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1541,7 +1545,7 @@ sub merge_metabolic_models_into_community_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN merge_metabolic_models_into_community_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_merge_metabolic_models_into_community_model($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1632,7 +1636,7 @@ sub view_flux_network
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN view_flux_network
-	$self->util_initialize_call($params,$ctx);
+	$params = $self->util_initialize_call($params,$ctx);
 	my $output = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
 	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir")."zippedhtml";
 	my $zip = Archive::Zip->new();
@@ -1779,7 +1783,7 @@ sub compare_flux_with_expression
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN compare_flux_with_expression
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_compare_flux_with_expression($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1870,7 +1874,7 @@ sub check_model_mass_balance
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN check_model_mass_balance
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = {};
 	my $model_name = Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
 	$params->{fbamodel_id} =~ s/\//-/g;
@@ -1963,7 +1967,7 @@ sub predict_auxotrophy
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN predict_auxotrophy
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$params = Bio::KBase::utilities::args($params,[],{genome_workspace => $params->{workspace}});
 	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
 	for (my $i=0; $i < @{$new_genome_list}; $i++) {
@@ -2107,7 +2111,7 @@ sub predict_metabolite_biosynthesis_pathway
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN predict_metabolite_biosynthesis_pathway
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_predict_metabolite_biosynthesis_pathway($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -2220,7 +2224,7 @@ sub build_metagenome_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_metagenome_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_build_metagenome_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $return,
@@ -2357,7 +2361,7 @@ sub fit_exometabolite_data
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN fit_exometabolite_data
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_fit_exometabolite_data($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -2460,7 +2464,7 @@ sub compare_models
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN compare_models
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_compare_models($params);
 	$self->util_finalize_call({
 		output => $return,
@@ -2573,7 +2577,7 @@ sub edit_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN edit_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     print Bio::KBase::utilities::to_json($params,1);
 	$return = Bio::KBase::ObjectAPI::functions::func_edit_metabolic_model($params);
 	$self->util_finalize_call({
@@ -2709,7 +2713,7 @@ sub edit_media
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN edit_media
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	print Bio::KBase::utilities::to_json($params,1);
 	$return = Bio::KBase::ObjectAPI::functions::func_create_or_edit_media($params);
 	$self->util_finalize_call({
@@ -2807,7 +2811,7 @@ sub excel_file_to_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN excel_file_to_model
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $input = {
 		model_name => $p->{model_name},
 		workspace_name => $p->{workspace_name},
@@ -2932,7 +2936,7 @@ sub sbml_file_to_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN sbml_file_to_model
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $file_path = $self->util_get_file_path($p->{model_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $input = {
 		sbml => "",
@@ -3054,7 +3058,7 @@ sub tsv_file_to_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN tsv_file_to_model
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $input = {
 		model_name => $p->{model_name},
 		workspace_name => $p->{workspace_name},
@@ -3174,7 +3178,7 @@ sub model_to_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN model_to_excel_file
-    $self->util_initialize_call($model,$ctx);
+    $model = $self->util_initialize_call($model,$ctx);
     my $input = {
 		object => "model",
 		format => "excel",
@@ -3270,7 +3274,7 @@ sub model_to_sbml_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN model_to_sbml_file
-    $self->util_initialize_call($model,$ctx);
+    $model = $self->util_initialize_call($model,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($model,{
 		object => "model",
 		format => "sbml",
@@ -3368,7 +3372,7 @@ sub model_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($files);
     #BEGIN model_to_tsv_file
-    $self->util_initialize_call($model,$ctx);
+    $model = $self->util_initialize_call($model,$ctx);
     my $input = {
 		object => "model",
 		format => "tsv",
@@ -3452,7 +3456,7 @@ sub export_model_as_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_model_as_excel_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     my $input = {
 		object => "model",
 		format => "excel"
@@ -3535,7 +3539,7 @@ sub export_model_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_model_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     my $input = {
 		object => "model",
 		format => "tsv"
@@ -3618,7 +3622,7 @@ sub export_model_as_sbml_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_model_as_sbml_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "model",
 		format => "sbml"
@@ -3705,7 +3709,7 @@ sub fba_to_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN fba_to_excel_file
-    $self->util_initialize_call($fba,$ctx);
+    $fba = $self->util_initialize_call($fba,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($fba,{
 		object => "fba",
 		format => "excel",
@@ -3799,7 +3803,7 @@ sub fba_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($files);
     #BEGIN fba_to_tsv_file
-    $self->util_initialize_call($fba,$ctx);
+    $fba = $self->util_initialize_call($fba,$ctx);
     $files = Bio::KBase::ObjectAPI::functions::func_export($fba,{
 		object => "fba",
 		format => "tsv",
@@ -3879,7 +3883,7 @@ sub export_fba_as_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_fba_as_excel_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "fba",
 		format => "excel"
@@ -3958,7 +3962,7 @@ sub export_fba_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_fba_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "fba",
 		format => "tsv"
@@ -4047,7 +4051,7 @@ sub tsv_file_to_media
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN tsv_file_to_media
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $mediadata = $self->util_parse_input_table($file_path,[
 		["compounds",1],
@@ -4147,7 +4151,7 @@ sub excel_file_to_media
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN excel_file_to_media
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $sheets = $self->util_parse_excel($file_path);
 	my $Media = (grep { $_ =~ /[Mm]edia/ } keys %$sheets)[0];
@@ -4247,7 +4251,7 @@ sub media_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN media_to_tsv_file
-    $self->util_initialize_call($media,$ctx);
+    $media = $self->util_initialize_call($media,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($media,{
 		object => "media",
 		format => "tsv",
@@ -4335,7 +4339,7 @@ sub media_to_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN media_to_excel_file
-    $self->util_initialize_call($media,$ctx);
+    $media = $self->util_initialize_call($media,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($media,{
 		object => "media",
 		format => "excel",
@@ -4415,7 +4419,7 @@ sub export_media_as_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_media_as_excel_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "media",
 		format => "excel"
@@ -4494,7 +4498,7 @@ sub export_media_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_media_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "media",
 		format => "tsv"
@@ -4585,7 +4589,7 @@ sub tsv_file_to_phenotype_set
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN tsv_file_to_phenotype_set
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $file_path = $self->util_get_file_path($p->{phenotype_set_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $phenodata = $self->util_parse_input_table($file_path,[
 		["geneko",0,"",";"],
@@ -4694,7 +4698,7 @@ sub phenotype_set_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN phenotype_set_to_tsv_file
-    $self->util_initialize_call($phenotype_set,$ctx);
+    $phenotype_set = $self->util_initialize_call($phenotype_set,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($phenotype_set,{
 		object => "phenotype",
 		format => "tsv",
@@ -4774,7 +4778,7 @@ sub export_phenotype_set_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_phenotype_set_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "phenotype",
 		format => "tsv"
@@ -4861,7 +4865,7 @@ sub phenotype_simulation_set_to_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN phenotype_simulation_set_to_excel_file
-    $self->util_initialize_call($pss,$ctx);
+    $pss = $self->util_initialize_call($pss,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($pss,{
 		object => "phenosim",
 		format => "excel",
@@ -4949,7 +4953,7 @@ sub phenotype_simulation_set_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN phenotype_simulation_set_to_tsv_file
-    $self->util_initialize_call($pss,$ctx);
+    $pss = $self->util_initialize_call($pss,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($pss,{
 		object => "phenosim",
 		format => "tsv",
@@ -5029,7 +5033,7 @@ sub export_phenotype_simulation_set_as_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_phenotype_simulation_set_as_excel_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "phenosim",
 		format => "excel"
@@ -5108,7 +5112,7 @@ sub export_phenotype_simulation_set_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_phenotype_simulation_set_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "phenosim",
 		format => "tsv"
@@ -5219,7 +5223,7 @@ sub bulk_export_objects
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN bulk_export_objects
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$output = Bio::KBase::ObjectAPI::functions::func_bulk_export($params,{});
 	Bio::KBase::utilities::add_report_file({
 		path => $output->{path},

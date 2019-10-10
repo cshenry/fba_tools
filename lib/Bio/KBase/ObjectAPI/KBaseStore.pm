@@ -490,22 +490,22 @@ sub save_objects {
 		}
 	}
 	foreach my $ws (keys(%{$wsdata})) {
-			my $input = {objects => $wsdata->{$ws}->{objects}};
-			if ($ws  =~ m/^\d+$/) {
-				$input->{id} = $ws;
-			} else {
-				$input->{workspace} = $ws;
-			}
-			my $listout;
-			if (defined($self->user_override()) && length($self->user_override()) > 0) {
-				$listout = Bio::KBase::utilities::administer({
-					"command" => "saveObjects",
-					"user" => $self->user_override(),
-					"params" => $input
-				});
-			} else {
-				$listout = Bio::KBase::kbaseenv::save_objects($input);
-			}		
+		my $input = {objects => $wsdata->{$ws}->{objects}};
+		if ($ws  =~ m/^\d+$/) {
+			$input->{id} = $ws;
+		} else {
+			$input->{workspace} = $ws;
+		}
+		my $listout;
+		if (defined($self->user_override()) && length($self->user_override()) > 0) {
+			$listout = Bio::KBase::utilities::administer({
+				"command" => "saveObjects",
+				"user" => $self->user_override(),
+				"params" => $input
+			});
+		} else {
+			$listout = Bio::KBase::kbaseenv::save_objects($input);
+		}		
 		#Placing output into a hash of references pointing to object infos
 		for (my $i=0; $i < @{$listout}; $i++) {
 			$self->cache()->{$listout->[$i]->[6]."/".$listout->[$i]->[0]."/".$listout->[$i]->[4]} = $refobjhash->{$wsdata->{$ws}->{refs}->[$i]}->{object};
