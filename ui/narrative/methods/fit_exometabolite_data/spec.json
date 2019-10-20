@@ -14,9 +14,9 @@
             },
             {
                "input_parameter" : "metabolite_matrix_ref",
-               "target_property" : "metabolite_matrix_ref",
+               "target_property" : "exometabolite_ref",
                "target_type_transform": "resolved-ref"
-            },
+            },    
             {
                "input_parameter" : "target_reaction",
                "target_property" : "target_reaction"
@@ -32,7 +32,7 @@
             },
             {
                "input_parameter" : "metabolite_condition",
-               "target_property" : "metabolite_condition"
+               "target_property" : "exometabolite_condition"
             },
             {
                "target_property" : "reaction_ko_list",
