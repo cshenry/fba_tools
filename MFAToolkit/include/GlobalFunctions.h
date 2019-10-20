@@ -340,6 +340,7 @@ struct OptimizationParameter {
 	bool AddLumpedReactions;
 	bool AllDrainUse;
 	bool DrainUseVar;
+	bool DilutionConstraints;
 	bool DecomposeDrain;
 	bool AllReversible;
 	bool OptimizeMetabolitesWhenZero;

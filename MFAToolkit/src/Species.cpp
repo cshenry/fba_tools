@@ -3972,6 +3972,31 @@ void Species::CreateMFAVariables(OptimizationParameter* InParameters) {
 //			NewVariable->UpperBound = InParameters->ErrorMult*DEFAULT_DELTAGF_ERROR;
 //		}
 	}
+	if (InParameters->DilutionConstraints) {
+		for (map<int , SpeciesCompartment* , std::less<int> >::iterator MapIT = Compartments.begin(); MapIT != Compartments.end(); MapIT++) {
+			if (MapIT->second != NULL) {
+				MFAVariable* NewVariable = InitializeMFAVariable();
+				NewVariable->AssociatedSpecies = this;
+				NewVariable->Name = GetData("DATABASE",STRING)+"_dil_drain";
+				NewVariable->Compartment = MapIT->second->Compartment->Index;
+				NewVariable->Type = DILUTION_DRAIN;
+				NewVariable->UpperBound = 1000000;
+				NewVariable->LowerBound = 0;
+				NewVariable->Compartment = MapIT->second->Compartment->Index;
+				MapIT->second->MFAVariables[DILUTION_DRAIN] = NewVariable;
+				NewVariable = InitializeMFAVariable();
+				NewVariable->AssociatedSpecies = this;
+				NewVariable->Name = GetData("DATABASE",STRING)+"_dil_rel";
+				NewVariable->Compartment = MapIT->second->Compartment->Index;
+				NewVariable->Type = DILUTION_RELAX;
+				NewVariable->UpperBound = 1000;
+				NewVariable->LowerBound = 0;
+				NewVariable->Compartment = MapIT->second->Compartment->Index;
+				MapIT->second->MFAVariables[DILUTION_RELAX] = NewVariable;
+			}
+		}
+	}
+
 	if (InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints) {
 		if (FFormula().compare("H") == 0) {
 			for (int i=0; i < FNumCompartments(); i++) {

@@ -179,6 +179,8 @@
 #define NEG_KPRIME_ERR 46
 #define PEAK_USE 47
 #define EXO_PEAK_USE 48
+#define DILUTION_DRAIN 49
+#define DILUTION_RELAX 50
 
 //Logic types
 #define AND 0

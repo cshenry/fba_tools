@@ -1332,6 +1332,7 @@ OptimizationParameter* ReadParameters() {
 	NewParameters->ReactionErrorUseVariables = (GetParameter("include error use variables").compare("1") == 0);
 
 	//Constraint use parameters
+	NewParameters->DilutionConstraints = (GetParameter("Dilution constraints").compare("1") == 0);
 	NewParameters->GeneConstraints = false;
 	NewParameters->MassBalanceConstraints = (GetParameter("Mass balance constraints").compare("1") == 0);
 	NewParameters->ThermoConstraints = (GetParameter("Thermodynamic constraints").compare("1") == 0);
@@ -1706,10 +1707,13 @@ void RectifyOptimizationParameters(OptimizationParameter* InParameters){
 		// Use the value specified by user.
 		//SetParameter("Minimum flux for use variable positive constraint",GetParameter("Solver tolerance").data());
 	}
-	if (GetParameter("steady state protein fba").compare("1") == 0 || GetParameter("Peak data").length() > 0 || InParameters->CatalogueFluxLoops || InParameters->SteadyStateCommunityModeling || InParameters->ReactionAdditionStudy || InParameters->PROM || InParameters->DoMinimizeFlux || InParameters->ReactionsUse || InParameters->GapFilling || InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || GetParameter("Perform auxotrophy analysis").compare("1") == 0) {
+	if (GetParameter("Intrametabolite peak data").length() > 0) {
+		InParameters->DilutionConstraints = true;
+	}
+	if (InParameters->DilutionConstraints || GetParameter("steady state protein fba").compare("1") == 0 || GetParameter("Exometabolite peak data").length() > 0 || GetParameter("Intrametabolite peak data").length() > 0 || InParameters->CatalogueFluxLoops || InParameters->SteadyStateCommunityModeling || InParameters->ReactionAdditionStudy || InParameters->PROM || InParameters->DoMinimizeFlux || InParameters->ReactionsUse || InParameters->GapFilling || InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || GetParameter("Perform auxotrophy analysis").compare("1") == 0) {
 		InParameters->DecomposeReversible = true;
 	}
-	if (InParameters->ReactionSlackVariable || InParameters->BinaryReactionSlackVariable || GetParameter("Peak data").length() > 0) {
+	if (InParameters->ReactionSlackVariable || InParameters->BinaryReactionSlackVariable) {
 		InParameters->ExcludeSimultaneousReversibleFlux = true;
 	}
 }

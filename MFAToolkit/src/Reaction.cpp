@@ -3589,6 +3589,85 @@ void Reaction::UpdateBounds(int VarType, double Min, double Max, bool ApplyToMin
 	}
 }
 
+MFAVariable* Reaction::CreateReactionVariable(MFAProblem* InProblem,int type, double upper_bound,double lower_bound,bool binary,string name) {
+	MFAVariable* var = this->GetMFAVar(type);
+	if (var == NULL) {
+		var = InitializeMFAVariable();
+		var->AssociatedReaction = this;
+		var->Type = type;
+		var->UpperBound = upper_bound;
+		var->LowerBound = lower_bound;
+		var->Binary = binary;
+		var->Name.assign(name);
+		this->MFAVariables[type] = var;
+		InProblem->AddVariable(var);
+	}
+	return var;
+}
+
+void Reaction::CreateReversibilityConstraint(MFAProblem* InProblem) {
+	//Getting flux variables
+	MFAVariable* forflux = this->GetMFAVar(FORWARD_FLUX);
+	if (forflux == NULL) {
+		forflux = this->GetMFAVar(FLUX);
+	}
+	MFAVariable* revflux = this->GetMFAVar(REVERSE_FLUX);
+	//If both direction of flux don't exist, we don't need reversibility constraints
+	if (forflux == NULL || revflux == NULL) {
+		return;
+	}
+	//Creating/retrieving binary variables
+	MFAVariable* foruse = this->CreateReactionVariable(InProblem,FORWARD_USE,1,0,true,"+"+this->GetData("DATABASE",STRING));
+	MFAVariable* revuse = this->CreateReactionVariable(InProblem,REVERSE_USE,1,0,true,"+"+this->GetData("DATABASE",STRING));
+	bool for_const = false;
+	bool rev_const = false;
+	bool reversibility_const = false;
+	//Checking if reversibility constraint already exists
+	for (int i=0; i < InProblem->FNumConstraints(); i++) {
+		if (InProblem->GetConstraint(i)->AssociatedReaction == this) {
+			if (InProblem->GetConstraint(i)->ConstraintMeaning.compare("Reaction use constraint") == 0) {
+				for (int j=0; j < InProblem->GetConstraint(i)->Variables.size(); j++) {
+					if (InProblem->GetConstraint(i)->Variables[j] == foruse) {
+						for_const = true;
+					} else if (InProblem->GetConstraint(i)->Variables[j] == revuse) {
+						rev_const = true;
+					}
+				}
+			} else if (InProblem->GetConstraint(i)->ConstraintMeaning.compare("Old style reversibility constraint") == 0) {
+				reversibility_const = true;
+			}
+		}
+	}
+	//Making any constraints that don't already exist
+	if (for_const == false) {
+		LinEquation* newconstraint = InitializeLinEquation("Reaction use constraint",0,LESS);
+		newconstraint->AssociatedReaction = this;
+		newconstraint->Variables.push_back(forflux);
+		newconstraint->Variables.push_back(foruse);
+		newconstraint->Coefficient.push_back(1);
+		newconstraint->Coefficient.push_back(-1*forflux->UpperBound);
+		InProblem->AddConstraint(newconstraint);
+	}
+	if (rev_const == false) {
+		LinEquation* newconstraint = InitializeLinEquation("Reaction use constraint",0,LESS);
+		newconstraint->AssociatedReaction = this;
+		newconstraint->Variables.push_back(revflux);
+		newconstraint->Variables.push_back(revuse);
+		newconstraint->Coefficient.push_back(1);
+		newconstraint->Coefficient.push_back(-1*revflux->UpperBound);
+		InProblem->AddConstraint(newconstraint);
+	}
+	if (reversibility_const == false) {
+		LinEquation* newconstraint = InitializeLinEquation("Old style reversibility constraint",1,LESS);
+		newconstraint->AssociatedReaction = this;
+		newconstraint->Variables.push_back(foruse);
+		newconstraint->Variables.push_back(revuse);
+		newconstraint->Coefficient.push_back(1);
+		newconstraint->Coefficient.push_back(1);
+		InProblem->AddConstraint(newconstraint);
+	}
+}
+
 void Reaction::AddUseVariables(OptimizationParameter* InParameters) {
 	if (InParameters == NULL) {
 		return;

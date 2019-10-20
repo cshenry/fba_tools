@@ -274,27 +274,7 @@ sub util_build_fba {
 		}
 	}
 	$fbaobj->parent($handler->util_store());
-	if (defined($params->{expression_matrix})) {
-		#$exphash = util_build_expression_hash($exp_matrix,$params->{expression_condition});
-		$fbaobj->process_expression_data({
-			object => $params->{expression_matrix},
-			condition => $params->{expression_condition}
-		});
-	}
-	if (defined($params->{metabolite_matrix})) {
-		$fbaobj->process_metabolomic_data({
-			object => $params->{metabolite_matrix},
-			condition => $params->{metabolite_condition},
-			type => "logp"
-		});
-	}
-	if (defined($params->{exometabolite_matrix})) {
-		$fbaobj->process_metabolomic_data({
-			object => $params->{exometabolite_matrix},
-			condition => $params->{exometabolite_condition},
-			type => "exo"
-		});
-	}
+	
 	my $bio = $params->{model}->getObject("biomasses",$params->{target_reaction});
 	if (defined($bio)) {
 		$fbaobj->biomassflux_objterms()->{$bio->id()} = 1;
@@ -389,6 +369,41 @@ sub util_build_fba {
 		}
 		$fbaobj->PrepareForGapfilling($input);
 	}
+	
+	if (defined($params->{expression_matrix})) {
+		#$exphash = util_build_expression_hash($exp_matrix,$params->{expression_condition});
+		$fbaobj->process_expression_data({
+			object => $params->{expression_matrix},
+			condition => $params->{expression_condition}
+		});
+	}
+	if (defined($params->{metabolite_matrix})) {
+		$fbaobj->process_metabolomic_data({
+			matrix => Bio::KBase::ObjectAPI::functions::process_matrix($params->{metabolite_matrix}),
+			condition => $params->{metabolite_condition},
+			type => "logp"
+		});
+	} elsif (defined($params->{metabolite_ref}) && -e $params->{metabolite_ref}) {
+		$fbaobj->process_metabolomic_data({
+			matrix => Bio::KBase::ObjectAPI::functions::load_matrix($params->{metabolite_ref}),
+			condition => $params->{metabolite_condition},
+			type => "logp"
+		});
+	}
+	if (defined($params->{exometabolite_matrix})) {
+		$fbaobj->process_metabolomic_data({
+			matrix => Bio::KBase::ObjectAPI::functions::process_matrix($params->{exometabolite_matrix}),
+			condition => $params->{exometabolite_condition},
+			type => "exo"
+		});
+	} elsif (defined($params->{exometabolite_ref}) && -e $params->{exometabolite_ref}) {
+		$fbaobj->process_metabolomic_data({
+			matrix => Bio::KBase::ObjectAPI::functions::load_matrix($params->{exometabolite_ref}),
+			condition => $params->{exometabolite_condition},
+			type => "exo"
+		});
+	}
+	
 	if (defined($params->{input_gene_parameter_file})) {
 		my $file = Bio::KBase::ObjectAPI::utilities::LOADFILE($params->{input_gene_parameter_file});
 		my $headers = [split(/\t/,$file->[0])];
@@ -712,10 +727,10 @@ sub func_gapfill_metabolic_model {
 		$handler->util_log("Getting reaction likelihoods from ".$params->{probanno_id});
 		$params->{probanno} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{probanno_id},$params->{probanno_workspace}));
 	}
-	if (defined($params->{exometabolite_ref})) {
+	if (defined($params->{exometabolite_ref}) && !-e $params->{exometabolite_ref}) {
 		$params->{exometabolite_matrix} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{exometabolite_ref},$params->{exometabolite_workspace}));
 	}
-	if (defined($params->{metabolite_ref})) {
+	if (defined($params->{metabolite_ref}) && !-e $params->{metabolite_ref}) {
 		$params->{metabolite_matrix} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metabolite_ref},$params->{metabolite_workspace}));
 	}
 	if (!defined($params->{media_id})) {
@@ -4650,7 +4665,87 @@ sub annotate_proteins {
 			$return->{functions}->[$i] = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$i]->{function})];
 		}
 	}
-	return $return
+	return $return;
+}
+
+sub process_matrix {
+	my ($matrix) = @_;
+	my $data = {
+		attributes => [],
+		attribute_values => [],
+		col_ids => $matrix->{data}->{col_ids},
+		row_ids => $matrix->{data}->{row_ids},
+		lowest => [],
+		highest => [],
+		data => []
+	};
+	for (my $j=0; $j < @{$matrix->{data}->{values}}; $j++) {
+		for (my $i=0; $i < @{$matrix->{data}->{col_ids}}; $i++) {
+			$data->{data}->[$j]->[$i] = $matrix->{data}->{values}->[$j]->[$i];
+			if (!defined($data->{highest}->[$i]) || $data->{highest}->[$i] < abs($matrix->{data}->{values}->[$j]->[$i])) {
+				$data->{highest}->[$i] = $matrix->{data}->{values}->[$j]->[$i];
+			}
+			if (!defined($data->{lowest}->[$i]) || $data->{lowest}->[$i] > abs($matrix->{data}->{values}->[$j]->[$i])) {
+				$data->{lowest}->[$i] = $matrix->{data}->{values}->[$j]->[$i];
+			}
+		}
+	}
+	if (defined($matrix->{row_attributemapping_ref}) && length($matrix->{row_attributemapping_ref}) > 0) {
+		my $mapping = $handler->util_get_object($matrix->{row_attributemapping_ref});
+		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
+			$data->{attributes}->[$m] = $mapping->{attributes}->[$m];
+			for (my $j=0; $j < @{$data->{row_ids}}; $j++) {
+				if (defined($mapping->{instances}->{$data->{row_ids}->[$j]}->[$m])) {
+					$data->{attribute_values}->[$j]->[$m] = $mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m];
+				}
+			}
+		}
+	}
+	return $data;
+}
+
+sub load_matrix {
+	my ($filename) = @_;
+	my $data = {
+		attributes => [],
+		attribute_values => [],
+		col_ids => [],
+		row_ids => [],
+		lowest => [],
+		highest => [],
+		data => []
+	};
+	my $array = Bio::KBase::ObjectAPI::utilities::LOADFILE($filename);
+	for (my $i=0; $i < @{$array}; $i++) {
+		$array->[$i] = [split(/\t/,$array->[$i])];
+	}
+	my $peak_id_col;
+	for (my $i=0; $i < @{$array->[0]}; $i++) {
+		if ($array->[0]->[$i] eq "peak_id") {
+			$peak_id_col = $i;
+			for (my $j=1; $j < @{$array}; $j++) {
+				push(@{$data->{row_ids}},$array->[$j]->[$i]);
+			}
+		} elsif (defined($peak_id_col)) {
+			push(@{$data->{col_ids}},$array->[0]->[$i]);
+			for (my $j=1; $j < @{$array}; $j++) {
+				push(@{$data->{data}->[$j]},$array->[$j]->[$i]);
+				my $true_col_id = ($i - $peak_id_col - 1);
+				if (!defined($data->{highest}->[$true_col_id]) || $data->{highest}->[$true_col_id] < abs($array->[$j]->[$i])) {
+					$data->{highest}->[$true_col_id] = $array->[$j]->[$i];
+				}
+				if (!defined($data->{lowest}->[$true_col_id]) || $data->{lowest}->[$true_col_id] > abs($array->[$j]->[$i])) {
+					$data->{lowest}->[$true_col_id] = $array->[$j]->[$i];
+				}
+			}
+		} else {
+			push(@{$data->{attributes}},$array->[0]->[$i]);
+			for (my $j=1; $j < @{$array}; $j++) {
+				push(@{$data->{attribute_values}->[$j]},$array->[$j]->[$i]);
+			}
+		}
+	}
+	return $data;
 }
 
 1;

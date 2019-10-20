@@ -302,6 +302,28 @@ sub gapfilling_html_table {
 	return $gapfilltable;
 };
 
+sub build_report_from_template { 
+	my ($name,$hash) = @_;
+	my $filename = Bio::KBase::utilities::conf("ModelSEED","template_directory").$name.".html";
+	my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE($filename);
+	for (my $i=0; $i < @{$data}; $i++) {
+		while (1) {
+			if ($data->[$i] =~ m/\|([^\|]+)\|/) {
+			my $name = $1;
+			my $replace = "";
+			if (defined($hash->{$name})) {
+				$replace = $hash->{$name};
+				
+			}
+			$data->[$i] =~ s/\|$name\|/$replace/;
+			} else {
+				last;
+			}
+		}
+	}
+	return join("\n",@{$data});
+}
+
 sub print_report_message {
 	my ($args) = @_;
 	$args = Bio::KBase::utilities::args($args,["message"],{

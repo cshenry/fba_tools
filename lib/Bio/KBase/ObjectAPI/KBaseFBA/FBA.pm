@@ -2314,38 +2314,29 @@ Description:
 
 sub process_metabolomic_data {
 	my ($self,$args) = @_;
-	$args = Bio::KBase::ObjectAPI::utilities::args(["object","condition"],{
+	$args = Bio::KBase::ObjectAPI::utilities::args(["matrix","condition"],{
 		type => "logp"
 	}, $args);
 	#Retrieving metabolite matrix
-	my $matrix = $args->{object};
-	#Attempting to find specified condition column
-	my $values;
-	my $highest;
-	my $lowest;
-	for (my $i=0; $i < @{$matrix->{data}->{col_ids}}; $i++) {
-		if ($matrix->{data}->{col_ids}->[$i] eq $args->{condition}) {
-			$values = [];
-			for (my $j=0; $j < @{$matrix->{data}->{values}}; $j++) {
-				if (!defined($highest) || $highest < abs($matrix->{data}->{values}->[$j]->[$i])) {
-					$highest = $matrix->{data}->{values}->[$j]->[$i];
-				}
-				if (!defined($lowest) || $lowest > abs($matrix->{data}->{values}->[$j]->[$i])) {
-					$lowest = $matrix->{data}->{values}->[$j]->[$i];
-				}
-				push(@{$values},$matrix->{data}->{values}->[$j]->[$i]);	
+	my $matrix = $args->{matrix};
+	my $col_index;
+	my $values = [];
+	for (my $i=0; $i < @{$matrix->{col_ids}}; $i++) {
+		if ($matrix->{col_ids}->[$i] eq $args->{condition}) {
+			$col_index = $i;
+			for (my $j=0; $j < @{$matrix->{row_ids}}; $j++) {
+				push(@{$values},$matrix->{data}->[$j]->[$i]);	
 			}
-			last;
 		}
 	}
 	#Normalizing values if the type is "abundance"
-	if ($args->{type} eq "abundance" && $highest > 0) {
-		print "Normalizing values by dividing by highest value:".$highest.". Lowest value was ".$lowest."\n";
+	if ($args->{type} eq "abundance" && $matrix->{highest}->[$col_index] > 0) {
+		print "Normalizing values by dividing by highest value:".$matrix->{highest}->[$col_index].". Lowest value was ".$matrix->{lowest}->[$col_index]."\n";
 		for (my $i=0; $i < @{$values}; $i++) {
-			$values->[$i] = $values->[$i]/$highest;
+			$values->[$i] = $values->[$i]/$matrix->{highest}->[$col_index];
 		}
 	}
-	if (!defined($values)) {
+	if (!defined($col_index)) {
 		Bio::KBase::ObjectAPI::utilities::error("Specified condition ".$args->{condition}." not found in metabolite matrix!");
 	}
 	#Now attempting to map the rows to entities in the model
@@ -2381,11 +2372,6 @@ sub process_metabolomic_data {
 		}
 		Bio::KBase::utilities::metabolite_hash($id_hash,$name_hash,$structure_hash,$formula_hash,7,"c0");
 	}
-	#Getting the mapping
-	my $mapping;
-	if (defined($matrix->{row_attributemapping_ref}) && length($matrix->{row_attributemapping_ref}) > 0) {
-		$mapping = $self->getLinkedObject($matrix->{row_attributemapping_ref});
-	}
 	#Scanning all peak IDs and metadata for matches
 	my $matchtype_count = {
 		id => [0,0],
@@ -2394,13 +2380,13 @@ sub process_metabolomic_data {
 		formula => [0,0]
 	};
 	my $idhash;
-	for (my $j=0; $j < @{$matrix->{data}->{row_ids}}; $j++) {
+	for (my $j=0; $j < @{$matrix->{row_ids}}; $j++) {
 		my $match = 0;
 		#First checking ID and all attributes for SEED ID match
-		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$id_hash,$matrix->{data}->{row_ids}->[$j],$matrix->{data}->{row_ids}->[$j]);
-		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
-			if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m])) {
-				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$id_hash,$matrix->{data}->{row_ids}->[$j],$mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m]);
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$id_hash,$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
+			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$id_hash,$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
 			}
 		}
 		if ($match > 0) {
@@ -2409,10 +2395,10 @@ sub process_metabolomic_data {
 			$match = 0;
 		}
 		#Now checking ID and all attributes for structure match
-		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$structure_hash,$matrix->{data}->{row_ids}->[$j],$matrix->{data}->{row_ids}->[$j]);
-		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
-			if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m])) {
-				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$structure_hash,$matrix->{data}->{row_ids}->[$j],$mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m]);
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$structure_hash,$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
+			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$structure_hash,$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
 			}
 		}
 		if ($match > 0) {
@@ -2421,10 +2407,10 @@ sub process_metabolomic_data {
 			$match = 0;
 		}
 		#Now checking ID and all attributes for name match
-		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$name_hash,$matrix->{data}->{row_ids}->[$j],$matrix->{data}->{row_ids}->[$j]);
-		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
-			if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m])) {
-				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$name_hash,$matrix->{data}->{row_ids}->[$j],$mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m]);
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$name_hash,$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
+			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$name_hash,$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
 			}
 		}
 		if ($match > 0) {
@@ -2433,10 +2419,10 @@ sub process_metabolomic_data {
 			$match = 0;
 		}
 		#Now checking ID and all attributes for formula match
-		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$formula_hash,$matrix->{data}->{row_ids}->[$j],$matrix->{data}->{row_ids}->[$j]);
-		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
-			if (defined($mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m])) {
-				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$formula_hash,$matrix->{data}->{row_ids}->[$j],$mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m]);
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$formula_hash,$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
+			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$formula_hash,$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
 			}
 		}
 		if ($match > 0) {
@@ -2445,14 +2431,14 @@ sub process_metabolomic_data {
 			$match = 0;
 		}
 		#Adding peak data to peak string
-		if (defined($peak_hash->{$matrix->{data}->{row_ids}->[$j]})) {
+		if (defined($peak_hash->{$matrix->{row_ids}->[$j]})) {
 			if (defined($values->[$j]) && $values->[$j] != 0) {
 				if (length($peak_string) > 0) {
 					$peak_string .= ";";
 				}
 				$peak_string .= "peak.".$j.":".$values->[$j];
 				#Making sure we only have one compartment for each compound
-				my $cpds = [keys(%{$peak_hash->{$matrix->{data}->{row_ids}->[$j]}})];
+				my $cpds = [keys(%{$peak_hash->{$matrix->{row_ids}->[$j]}})];
 				my $deletehash = {};
 				for (my $i=0; $i < @{$cpds}; $i++) {
 					for (my $j=$i+1; $j < @{$cpds}; $j++) {
@@ -2480,9 +2466,9 @@ sub process_metabolomic_data {
 					}
 				}
 				foreach my $cpdid (keys(%{$deletehash})) {
-					delete $peak_hash->{$matrix->{data}->{row_ids}->[$j]}->{$cpdid};
+					delete $peak_hash->{$matrix->{row_ids}->[$j]}->{$cpdid};
 				}
-				foreach my $cpdid (keys(%{$peak_hash->{$matrix->{data}->{row_ids}->[$j]}})) {
+				foreach my $cpdid (keys(%{$peak_hash->{$matrix->{row_ids}->[$j]}})) {
 					$peak_string .= ":".$cpdid;
 				}
 			}

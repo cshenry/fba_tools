@@ -55,6 +55,9 @@ private:
 	LinEquation* ObjectiveConstraint;
 	LinEquation* ExometaboliteObjective;
 	LinEquation* MetaboliteObjective;
+
+	vector<vector<MFAVariable*> > MetDrains;
+	vector<vector<MFAVariable*> > ExoDrains;
 public:
 	MFAProblem();
 	~MFAProblem();
@@ -75,7 +78,7 @@ public:
 	void ClearVariables(bool DeleteThem = true);
 	void DetermineProbType();
 	LinEquation* AddSumObjective(int VarType, bool Quadratic, bool Append, double Coeff, bool ForeignOnly,LinEquation* InObjective = NULL);
-	void AddMassBalanceConstraints(Data* InData);
+	void AddMassBalanceConstraints(Data* InData,bool DilutionConstraints = false);
 	LinEquation* AddSumConstraint(int VarType, bool Quadratic, double Coeff, double RHS, int EqualityType);
 	LinEquation* AddUseSolutionConst(OptSolutionData* SolutionData, vector<int> VariableTypes, OptimizationParameter* InParameters);
 	void EnforceIntergerSolution(OptSolutionData* SolutionData, vector<int> VariableTypes, bool ForeignOnly, bool RefreshSolver);

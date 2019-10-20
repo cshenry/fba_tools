@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+	<title>|title|</title>
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://www.datatables.net/rss.xml">
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css">
+	<style type="text/css" class="init">
+	body {font-family: "Lato", sans-serif;}
+
+	table {
+		font-family: arial, sans-serif;
+		border-collapse: collapse;
+		width: 100%;
+	}
+
+	td, th {
+		border: 1px solid #dddddd;
+		text-align: left;
+		padding: 8px;
+	}
+	</style>
+	<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+	<script type="text/javascript" language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+	<script type="text/javascript" class="init">
+
+var exomet = |exodata|;
+
+var intramet = |intradata|;
+
+$(document).ready(function() {
+	$('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
+		$.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust();
+	} );
+	
+	$('#example').DataTable( {
+        data: exomet,
+        scrollY:        200,
+		scrollCollapse: true,
+		paging:         false,
+        columns: [
+            { title: "Peak" },
+            { title: "Mass" },
+            { title: "Formula" },
+            { title: "Metabolites" },
+            { title: "Score" },
+            { title: "Gapfilled reactions" },
+            { title: "Model reactions" }
+        ]
+    } );
+    
+    $('#example2').DataTable( {
+        data: intramet,
+        scrollY:        200,
+		scrollCollapse: true,
+		paging:         false,
+        columns: [
+            { title: "Peak" },
+            { title: "Mass" },
+            { title: "Formula" },
+            { title: "Metabolites" },
+            { title: "Score" },
+            { title: "Gapfilled reactions" },
+            { title: "Model reactions" }
+        ]
+    } );
+
+} );
+
+</script>
+</head>
+<body class="wide comments example dt-example-bootstrap">
+<div>
+	<ul class="nav nav-tabs" role="tablist" id="tabs">
+		|tabone|
+		|tabtwo|
+	</ul>
+	<div class="tab-content">
+		|divone|
+		|divtwo|
+	</div>
+</div>
+<div>|gapfilltable|</div>
+</body>
+</html>
