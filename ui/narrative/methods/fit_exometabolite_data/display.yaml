@@ -45,7 +45,7 @@ parameters :
         long-hint : |
             Matrix of exometabolite data to fit model to
 
-    exometabolite_ref :
+    exometabolite_condition :
         ui-name : |
             Data column to fit
         short-hint : |
