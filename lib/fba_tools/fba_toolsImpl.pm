@@ -2362,7 +2362,7 @@ sub fit_exometabolite_data
     my($results);
     #BEGIN fit_exometabolite_data
     $params = $self->util_initialize_call($params,$ctx);
-	$results = Bio::KBase::ObjectAPI::functions::func_fit_exometabolite_data($params);
+	$results = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $results,
 		workspace => $params->{workspace},
