@@ -13,7 +13,7 @@
                "target_type_transform": "resolved-ref"
             },
             {
-               "input_parameter" : "metabolite_matrix_ref",
+               "input_parameter" : "exometabolite_ref",
                "target_property" : "exometabolite_ref",
                "target_type_transform": "resolved-ref"
             },    
@@ -31,7 +31,7 @@
                "target_type_transform": "resolved-ref"
             },
             {
-               "input_parameter" : "metabolite_condition",
+               "input_parameter" : "exometabolite_condition",
                "target_property" : "exometabolite_condition"
             },
             {
@@ -126,7 +126,7 @@
          "default_values" : [
             ""
          ],
-         "id" : "metabolite_matrix_ref",
+         "id" : "exometabolite_ref",
          "field_type" : "text",
          "allow_multiple" : false,
          "optional" : false,
@@ -140,7 +140,7 @@
          "field_type" : "textsubdata",
          "allow_multiple" : false,
          "optional" : false,
-         "id" : "metabolite_condition",
+         "id" : "exometabolite_condition",
          "default_values" : [
             ""
          ],
@@ -152,7 +152,7 @@
                "path_to_subdata" : [
                   "col_mapping"
                ],
-               "parameter_id" : "metabolite_matrix_ref",
+               "parameter_id" : "exometabolite_ref",
                "selection_id" : "id",
                "subdata_included" : [
                   "col_mapping/[*]"

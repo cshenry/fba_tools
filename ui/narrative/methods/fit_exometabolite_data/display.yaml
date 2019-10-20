@@ -37,7 +37,7 @@ parameters :
         long-hint : |
             The metabolic network model consisting of genome-wide set of stoichiometric reactions, compounds, and the weighted components of the biomass on which you wish to carry out Flux Balance Analysis
 
-    metabolite_matrix_ref :
+    exometabolite_ref :
         ui-name : |
             Exometabolite matrix
         short-hint : |
@@ -45,7 +45,7 @@ parameters :
         long-hint : |
             Matrix of exometabolite data to fit model to
 
-    metabolite_condition :
+    exometabolite_ref :
         ui-name : |
             Data column to fit
         short-hint : |
