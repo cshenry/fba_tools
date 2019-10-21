@@ -3605,6 +3605,41 @@ MFAVariable* Reaction::CreateReactionVariable(MFAProblem* InProblem,int type, do
 	return var;
 }
 
+void Reaction::CreateUseVariableConstraint(MFAProblem* InProblem, MFAVariable* variable) {
+	//Checking if constraint already exists
+	for (int i=0; i < InProblem->FNumConstraints(); i++) {
+		if (InProblem->GetConstraint(i)->AssociatedReaction == this) {
+			if (InProblem->GetConstraint(i)->ConstraintMeaning.compare("Reaction use constraint") == 0) {
+				for (int j=0; j < InProblem->GetConstraint(i)->Variables.size(); j++) {
+					if (InProblem->GetConstraint(i)->Variables[j] == variable) {
+						return;
+					}
+				}
+			}
+		}
+	}
+	MFAVariable* fluxvar;
+	if (variable->Type == REACTION_USE || variable->Type == FORWARD_USE) {
+		fluxvar = this->GetMFAVar(FORWARD_FLUX);
+		if (fluxvar == NULL) {
+			fluxvar = this->GetMFAVar(FLUX);
+		}
+	} else {
+		fluxvar = this->GetMFAVar(REVERSE_FLUX);
+	}
+	if (fluxvar == NULL) {
+		cout << "Reaction::CreateUseVariableConstraint: No flux variable associated with input use variable!" << endl;
+		return;
+	}
+	LinEquation* newconstraint = InitializeLinEquation("Reaction use constraint",0,LESS);
+	newconstraint->AssociatedReaction = this;
+	newconstraint->Variables.push_back(fluxvar);
+	newconstraint->Variables.push_back(variable);
+	newconstraint->Coefficient.push_back(1);
+	newconstraint->Coefficient.push_back(-1*fluxvar->UpperBound);
+	InProblem->AddConstraint(newconstraint);
+}
+
 void Reaction::CreateReversibilityConstraint(MFAProblem* InProblem) {
 	//Getting flux variables
 	MFAVariable* forflux = this->GetMFAVar(FORWARD_FLUX);
@@ -3619,53 +3654,24 @@ void Reaction::CreateReversibilityConstraint(MFAProblem* InProblem) {
 	//Creating/retrieving binary variables
 	MFAVariable* foruse = this->CreateReactionVariable(InProblem,FORWARD_USE,1,0,true,"+"+this->GetData("DATABASE",STRING));
 	MFAVariable* revuse = this->CreateReactionVariable(InProblem,REVERSE_USE,1,0,true,"+"+this->GetData("DATABASE",STRING));
-	bool for_const = false;
-	bool rev_const = false;
+	this->CreateUseVariableConstraint(InProblem, foruse);
+	this->CreateUseVariableConstraint(InProblem, revuse);
 	bool reversibility_const = false;
 	//Checking if reversibility constraint already exists
 	for (int i=0; i < InProblem->FNumConstraints(); i++) {
 		if (InProblem->GetConstraint(i)->AssociatedReaction == this) {
-			if (InProblem->GetConstraint(i)->ConstraintMeaning.compare("Reaction use constraint") == 0) {
-				for (int j=0; j < InProblem->GetConstraint(i)->Variables.size(); j++) {
-					if (InProblem->GetConstraint(i)->Variables[j] == foruse) {
-						for_const = true;
-					} else if (InProblem->GetConstraint(i)->Variables[j] == revuse) {
-						rev_const = true;
-					}
-				}
-			} else if (InProblem->GetConstraint(i)->ConstraintMeaning.compare("Old style reversibility constraint") == 0) {
-				reversibility_const = true;
+			if (InProblem->GetConstraint(i)->ConstraintMeaning.compare("Old style reversibility constraint") == 0) {
+				return;
 			}
 		}
 	}
-	//Making any constraints that don't already exist
-	if (for_const == false) {
-		LinEquation* newconstraint = InitializeLinEquation("Reaction use constraint",0,LESS);
-		newconstraint->AssociatedReaction = this;
-		newconstraint->Variables.push_back(forflux);
-		newconstraint->Variables.push_back(foruse);
-		newconstraint->Coefficient.push_back(1);
-		newconstraint->Coefficient.push_back(-1*forflux->UpperBound);
-		InProblem->AddConstraint(newconstraint);
-	}
-	if (rev_const == false) {
-		LinEquation* newconstraint = InitializeLinEquation("Reaction use constraint",0,LESS);
-		newconstraint->AssociatedReaction = this;
-		newconstraint->Variables.push_back(revflux);
-		newconstraint->Variables.push_back(revuse);
-		newconstraint->Coefficient.push_back(1);
-		newconstraint->Coefficient.push_back(-1*revflux->UpperBound);
-		InProblem->AddConstraint(newconstraint);
-	}
-	if (reversibility_const == false) {
-		LinEquation* newconstraint = InitializeLinEquation("Old style reversibility constraint",1,LESS);
-		newconstraint->AssociatedReaction = this;
-		newconstraint->Variables.push_back(foruse);
-		newconstraint->Variables.push_back(revuse);
-		newconstraint->Coefficient.push_back(1);
-		newconstraint->Coefficient.push_back(1);
-		InProblem->AddConstraint(newconstraint);
-	}
+	LinEquation* newconstraint = InitializeLinEquation("Old style reversibility constraint",1,LESS);
+	newconstraint->AssociatedReaction = this;
+	newconstraint->Variables.push_back(foruse);
+	newconstraint->Variables.push_back(revuse);
+	newconstraint->Coefficient.push_back(1);
+	newconstraint->Coefficient.push_back(1);
+	InProblem->AddConstraint(newconstraint);
 }
 
 void Reaction::AddUseVariables(OptimizationParameter* InParameters) {

@@ -2930,6 +2930,7 @@ sub loadMFAToolkitResults {
 	$self->parseSSCommunityFluxAnalysis();
 	$self->parseMetabolomicsFittingResults();
 	$self->parseLoopResults();
+	$self->add_LP_file();
 }
 
 =head3 parseBiomassRemovals
@@ -3449,6 +3450,22 @@ sub parseLoopResults {
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/MFAOutput/FluxLoops.txt") {
 		$self->outputfiles()->{FluxLoops} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/FluxLoops.txt");
+	}
+}
+
+=head3 add_LP_file
+Definition:
+	void ModelSEED::MS::Model->add_LP_file();
+Description:
+	Adds characteristic LP file to FBA object
+
+=cut
+
+sub add_LP_file {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/CurrentProblem.lp100000") {
+		$self->outputfiles()->{LP_file} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/CurrentProblem.lp100000");
 	}
 }
 

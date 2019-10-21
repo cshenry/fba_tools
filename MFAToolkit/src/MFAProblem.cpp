@@ -5963,6 +5963,7 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 		}
 	}
 	CurrentOptimum = CurrentSolution->Objective;
+	GlobalWriteLPFile(Solver,100000);
 	//Fixing objective at max
 	int sense = GREATER;
 	if (!FMax()) {
@@ -10477,6 +10478,8 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 	this->ResetSolver();
 	this->LoadSolver();
 	CurrentSolution = RunSolver(true,false,true);
+	//Printing characteristic flux LP file
+	GlobalWriteLPFile(Solver,100000);
 	cout << "biomass flux with expression constraints: " << CurrentSolution->Objective << endl;
 	if (CurrentSolution->Status != SUCCESS) {
 		SetParameter("expression informed biomass optimization","fail");
@@ -10595,7 +10598,7 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 							double value = InternalSolution->SolutionData[ObjFunct->Variables[i]->Index];
 							if (value > MFA_ZERO_TOLERANCE) {
 								if (current->Type == REACTION_SLACK) {
-									ObjFunct->Variables[i]->Binary = true;
+									//ObjFunct->Variables[i]->Binary = true;
 									NewObjFunct->Variables.push_back(ObjFunct->Variables[i]);
 									NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
 								} else if (current->Type == FLUX || current->Type == FORWARD_FLUX || current->Type == REVERSE_FLUX) {
@@ -10607,27 +10610,8 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 									} else if (current->Type == FORWARD_FLUX) {
 										vartype = FORWARD_USE;
 									}
-									MFAVariable* NewVariable;
-									if (current->AssociatedReaction->MFAVariables[vartype] == NULL) {
-										NewVariable = InitializeMFAVariable();
-										NewVariable->AssociatedReaction = ObjFunct->Variables[i]->AssociatedReaction;
-										NewVariable->Name.assign(sign);
-										NewVariable->Name.assign(NewVariable->AssociatedReaction->GetData("DATABASE",STRING));
-										NewVariable->Type = vartype;
-										NewVariable->UpperBound = 1;
-										NewVariable->LowerBound = 0;
-										NewVariable->Binary = true;
-										this->AddVariable(NewVariable);
-										current->AssociatedReaction->MFAVariables[vartype] = NewVariable;
-										LinEquation* newconstraint = InitializeLinEquation("Use constraints",0,LESS);
-										newconstraint->Variables.push_back(current);
-										newconstraint->Variables.push_back(NewVariable);
-										newconstraint->Coefficient.push_back(1);
-										newconstraint->Coefficient.push_back(-1*current->UpperBound);
-										this->AddConstraint(newconstraint);
-									} else {
-										NewVariable = current->AssociatedReaction->MFAVariables[vartype];
-									}
+									MFAVariable* NewVariable = current->AssociatedReaction->CreateReactionVariable(this,vartype,1,0,true,"+"+current->AssociatedReaction->GetData("DATABASE",STRING));
+									current->AssociatedReaction->CreateUseVariableConstraint(this, NewVariable);
 									NewObjFunct->Variables.push_back(NewVariable);
 									NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
 								} else if (current->Type == DRAIN_FLUX || current->Type == FORWARD_DRAIN_FLUX || current->Type == REVERSE_DRAIN_FLUX) {
@@ -10659,11 +10643,13 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 									NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
 								}
 							} else {
-								original_bound_indecies.push_back(i);
-								original_upper_bound.push_back(ObjFunct->Variables[i]->UpperBound);
-								original_lower_bound.push_back(ObjFunct->Variables[i]->LowerBound);
-								ObjFunct->Variables[i]->UpperBound = 0;
-								ObjFunct->Variables[i]->LowerBound = 0;
+								NewObjFunct->Variables.push_back(ObjFunct->Variables[i]);
+								NewObjFunct->Coefficient.push_back(10000000);
+								//original_bound_indecies.push_back(i);
+								//original_upper_bound.push_back(ObjFunct->Variables[i]->UpperBound);
+								//original_lower_bound.push_back(ObjFunct->Variables[i]->LowerBound);
+								//ObjFunct->Variables[i]->UpperBound = 0;
+								//ObjFunct->Variables[i]->LowerBound = 0;
 							}
 						}
 					}
@@ -10672,6 +10658,8 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 					ObjFunct = NewObjFunct;
 					this->LoadSolver(false);
 					InternalSolution = RunSolver(true,false,true);
+					//Printing characteristic LP file
+					GlobalWriteLPFile(Solver,100000);
 					for (int j=0; j < int(NewObjFunct->Variables.size());j++) {
 						if (NewObjFunct->Variables[j]->Type != REACTION_SLACK) {
 							if (m==0) {
