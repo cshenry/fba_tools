@@ -5964,6 +5964,7 @@ int MFAProblem::FluxBalanceAnalysisMasterPipeline(Data* InData, OptimizationPara
 	}
 	CurrentOptimum = CurrentSolution->Objective;
 	GlobalWriteLPFile(Solver,100000);
+	PrintVariableKey("PrimaryVariableKey.txt",true);
 	//Fixing objective at max
 	int sense = GREATER;
 	if (!FMax()) {
@@ -10480,6 +10481,7 @@ int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParam
 	CurrentSolution = RunSolver(true,false,true);
 	//Printing characteristic flux LP file
 	GlobalWriteLPFile(Solver,100000);
+	PrintVariableKey("PrimaryVariableKey.txt",true);
 	cout << "biomass flux with expression constraints: " << CurrentSolution->Objective << endl;
 	if (CurrentSolution->Status != SUCCESS) {
 		SetParameter("expression informed biomass optimization","fail");
@@ -10660,6 +10662,7 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 					InternalSolution = RunSolver(true,false,true);
 					//Printing characteristic LP file
 					GlobalWriteLPFile(Solver,100000);
+					PrintVariableKey("PrimaryVariableKey.txt",true);
 					for (int j=0; j < int(NewObjFunct->Variables.size());j++) {
 						if (NewObjFunct->Variables[j]->Type != REACTION_SLACK) {
 							if (m==0) {
@@ -13721,11 +13724,15 @@ void MFAProblem::PrintSolutions(int StartIndex, int EndIndex,bool tightbounds) {
 	Output.close();
 }
 
-void MFAProblem::PrintVariableKey() {
-	if (GetParameter("write variable key").compare("1") == 0) {
+void MFAProblem::PrintVariableKey(string InFilename,bool override) {
+	if (GetParameter("write variable key").compare("1") == 0 || override) {
 		ofstream Output;
 
-		if (!OpenOutput(Output,FOutputFilepath()+GetParameter("MFA variable key filename"))) {
+		string Filename = InFilename;
+		if (Filename.length() == 0) {
+			Filename = GetParameter("MFA variable key filename");
+		}
+		if (!OpenOutput(Output,FOutputFilepath()+Filename)) {
 			return;
 		}
 

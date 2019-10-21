@@ -213,7 +213,7 @@ public:
 	int LoadTightBounds(Data* InData, bool SetBoundToTightBounds);
 	void SaveTightBounds();
 	void PrintSolutions(int StartIndex, int EndIndex,bool tightbounds = false);
-	void PrintVariableKey();
+	void PrintVariableKey(string InFilename = "",bool override = false);
 	void WriteLPFile();
 	void WriteMFALog();
 };
