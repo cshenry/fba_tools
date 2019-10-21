@@ -3465,8 +3465,10 @@ sub  {
 	my ($self) = @_;
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/CurrentProblem.lp100000") {
-		$self->outputfiles()->{LP_file} = [join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/CurrentProblem.lp100000")});
-		$self->outputfiles()->{variable_key} = [join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/PrimaryVariableKey.txt")});
+		my $array = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/CurrentProblem.lp100000");
+		$self->outputfiles()->{LP_file} = [join("\n",@{$array})];
+		$array = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/PrimaryVariableKey.txt");
+		$self->outputfiles()->{variable_key} = [join("\n",@{$array})];
 	}
 }
 
