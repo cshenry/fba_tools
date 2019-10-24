@@ -3461,7 +3461,7 @@ Description:
 
 =cut
 
-sub  {
+sub add_LP_file {
 	my ($self) = @_;
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/CurrentProblem.lp100000") {

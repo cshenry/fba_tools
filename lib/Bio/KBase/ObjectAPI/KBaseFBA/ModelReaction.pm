@@ -29,6 +29,7 @@ has biomassTransporter => ( is => 'rw', isa => 'Bool',printOrder => '-1', type =
 has isTransporter => ( is => 'rw', isa => 'Bool',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildisTransporter' );
 has translatedDirection  => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildtranslatedDirection' );
 has featureIDs  => ( is => 'rw', isa => 'ArrayRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildfeatureIDs' );
+has features  => ( is => 'rw', isa => 'ArrayRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildfeatures' );
 has featureUUIDs  => ( is => 'rw', isa => 'ArrayRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildfeatureUUIDs' );
 has equationCode => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildequationcode' );
 has revEquationCode => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildrevequationcode' );
@@ -258,6 +259,22 @@ sub _buildfeatureIDs {
 		}
 	}
 	return [keys(%{$featureHash})];
+}
+sub _buildfeatures {
+	my ($self) = @_;
+	my $featureHash = {};
+	my $features = [];
+	foreach my $protein (@{$self->modelReactionProteins()}) {
+		foreach my $subunit (@{$protein->modelReactionProteinSubunits()}) {
+			foreach my $gene (@{$subunit->features()}) {
+				if (!defined($featureHash->{$gene->id()})) {
+					push(@{$features},$gene);
+				}
+				$featureHash->{$gene->id()} = 1;
+			}
+		}
+	}
+	return $features;
 }
 sub _buildfeatureUUIDs {
 	my ($self) = @_;
