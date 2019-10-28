@@ -174,6 +174,7 @@ public:
 	int MetabolomicsSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution);
 	int CreateMetabolomicsVariablesConstraints(Data* InData, string PeakData, bool ExometabolomicData);
 	int GapFilling(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
+	int BinaryReactionDeactivationSearch(vector<MFAVariable*> variables,vector<double> lower_bounds,vector<double> upper_bounds);
 	vector<MFAVariable*> BiomassSensitivityAnalysis(OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
 	int ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
 	int RunImplementedGapfillingSolution(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);

@@ -2047,7 +2047,6 @@ OptSolutionData* MFAProblem::RunSolver(bool SaveSolution, bool InInputSolution,b
 	OptSolutionData* CurrentSolution = NULL;
 
 	CurrentSolution = GlobalRunSolver(Solver,ProbType);
-	
 	if (SaveSolution && CurrentSolution != NULL) {
 		if (CurrentSolution->Status == SUCCESS) {
 			Solutions.push_back(CurrentSolution);
@@ -2058,7 +2057,6 @@ OptSolutionData* MFAProblem::RunSolver(bool SaveSolution, bool InInputSolution,b
 			InputSolution(CurrentSolution);
 		}
 	}
-
 	return CurrentSolution;
 }
 
@@ -4554,43 +4552,55 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 	this->LoadSolver();
 	OptSolutionData* NewSolution = RunSolver(false,true,false);
 	double objective = NewSolution->Objective;
-	ofstream Output;
-	if (PrintResults) {
-		OpenOutput(Output,FOutputFilepath()+"MFAOutput/ReactionAdditionAnalysis.txt");
-		Output << "Objective\tReaction added\tRetained" << endl;
-	}
-	//Now re-adding reactions one at a time and checking objective value
-	for (int i=0; i < TestVariables.size(); i++) {
-		TestVariables[i]->LowerBound = original_lower_bound[i];
-		TestVariables[i]->UpperBound = original_upper_bound[i];
-		LoadVariable(TestVariables[i]->Index);
-		NewSolution = RunSolver(false,true,false);
-		string sign = "+";
-		if (TestVariables[i]->Type == REVERSE_FLUX || TestVariables[i]->Type == REVERSE_USE) {
-			sign = "-";
+	//If the objective is maxed out with all reactions knocked out, then no reactions will be rejected
+	if (objective < 1000) {
+		ofstream Output;
+		if (PrintResults) {
+			OpenOutput(Output,FOutputFilepath()+"MFAOutput/ReactionAdditionAnalysis.txt");
+			Output << "Objective\tReaction added\tRetained" << endl;
+		}
+		//Now re-adding reactions one at a time and checking objective value
+		for (int i=0; i < TestVariables.size(); i++) {
+			TestVariables[i]->LowerBound = original_lower_bound[i];
+			TestVariables[i]->UpperBound = original_upper_bound[i];
+			LoadVariable(TestVariables[i]->Index);
+			NewSolution = RunSolver(false,true,false);
+			string sign = "+";
+			if (TestVariables[i]->Type == REVERSE_FLUX || TestVariables[i]->Type == REVERSE_USE) {
+				sign = "-";
+			}
+			if (PrintResults) {
+				Output << NewSolution->Objective << "\t" << sign << TestVariables[i]->AssociatedReaction->GetData("DATABASE",STRING) << "\t";
+			}
+			if (objective > MFA_ZERO_TOLERANCE && NewSolution->Objective/objective > InParameters->ObjectiveLimit) {
+				TestVariables[i]->UpperBound = 0;
+				TestVariables[i]->LowerBound = 0;
+				this->LoadVariable(TestVariables[i]->Index);
+				cout << "Rejected " << objective << " " << NewSolution->Objective << " " << sign << TestVariables[i]->AssociatedReaction->GetData("DATABASE",STRING) << endl;
+				rejected_count++;
+				if (PrintResults) {
+					Output << "0" << endl;
+				}
+			} else {
+				cout << "Retained " << objective << " " << NewSolution->Objective << " " << sign << TestVariables[i]->AssociatedReaction->GetData("DATABASE",STRING) << endl;
+				if (PrintResults) {
+					Output << "1" << endl;
+				}
+			}
 		}
 		if (PrintResults) {
-			Output << NewSolution->Objective << "\t" << sign << TestVariables[i]->AssociatedReaction->GetData("DATABASE",STRING) << "\t";
+			Output.close();
 		}
-		if (objective > MFA_ZERO_TOLERANCE && NewSolution->Objective/objective > InParameters->ObjectiveLimit) {
-			TestVariables[i]->UpperBound = 0;
-			TestVariables[i]->LowerBound = 0;
-			this->LoadVariable(TestVariables[i]->Index);
-			cout << "Rejected " << objective << " " << NewSolution->Objective << " " << sign << TestVariables[i]->AssociatedReaction->GetData("DATABASE",STRING) << endl;
-			rejected_count++;
-			if (PrintResults) {
-				Output << "0" << endl;
-			}
-		} else {
-			cout << "Retained " << objective << " " << NewSolution->Objective << " " << sign << TestVariables[i]->AssociatedReaction->GetData("DATABASE",STRING) << endl;
-			if (PrintResults) {
-				Output << "1" << endl;
-			}
+		if (InParameters->PrintSolutions) {
+			CurrentSolution = RunSolver(true,true,false);
+			PrintSolutions(FNumSolutions()-1,FNumSolutions());
 		}
-	}
-	if (InParameters->PrintSolutions) {
-		CurrentSolution = RunSolver(true,true,false);
-		PrintSolutions(FNumSolutions()-1,FNumSolutions());
+	} else {
+		for (int i=0; i < TestVariables.size(); i++) {
+			TestVariables[i]->LowerBound = original_lower_bound[i];
+			TestVariables[i]->UpperBound = original_upper_bound[i];
+			LoadVariable(TestVariables[i]->Index);
+		}
 	}
 	//Restoring media constraints
 	for (int i=0; i < original_media_bound.size(); i++) {
@@ -4606,9 +4616,6 @@ int MFAProblem::ReactionAdditionTesting(Data* InData, OptimizationParameter* InP
 	for (int i=0; i < activated_peaks.size(); i++) {
 		activated_peaks[i]->UpperBound = 1;
 		activated_peaks[i]->LowerBound = 1;
-	}
-	if (PrintResults) {
-		Output.close();
 	}
 	ObjFunct = OldObjective;
 	return rejected_count;
@@ -10129,26 +10136,29 @@ int MFAProblem::MetabolomicsSensitivityAnalysis(Data* InData,OptSolutionData*& C
 				if (ExometaboliteObjective != NULL) {
 					ObjFunct = ExometaboliteObjective;
 					this->LoadObjective();
-					OptSolutionData* NewSolution = RunSolver(true,false,false);
-					for (int j=0; j < working_exometabolites.size(); j++) {
-						if (NewSolution->SolutionData[working_exometabolites[j]->Index] < MFA_ZERO_TOLERANCE) {
-							string current = exo_dependent_rxn[j];
-							if (this->GetVariable(i)->Mark) {
-								current = exo_dependent_gfrxn[j];
-							}
-							if (current.length() > 0) {
-								current.append(";");
-							}
-							if (this->GetVariable(i)->Type == FLUX || this->GetVariable(i)->Type == FORWARD_FLUX) {
-								current.append("+");
-							} else {
-								current.append("-");
-							}
-							current.append(this->GetVariable(i)->AssociatedReaction->GetData("DATABASE",STRING));
-							if (this->GetVariable(i)->Mark) {
-								exo_dependent_gfrxn[j] = current;
-							} else {
-								exo_dependent_rxn[j] = current;
+					OptSolutionData* NewSolution = RunSolver(false,false,false);
+					if (NewSolution != NULL && NewSolution->Status == SUCCESS) {
+						cout << "SUCCESS11" << NewSolution->Objective << endl;
+						for (int j=0; j < working_exometabolites.size(); j++) {
+							if (NewSolution->SolutionData[working_exometabolites[j]->Index] < MFA_ZERO_TOLERANCE) {
+								string current = exo_dependent_rxn[j];
+								if (this->GetVariable(i)->Mark) {
+									current = exo_dependent_gfrxn[j];
+								}
+								if (current.length() > 0) {
+									current.append(";");
+								}
+								if (this->GetVariable(i)->Type == FLUX || this->GetVariable(i)->Type == FORWARD_FLUX) {
+									current.append("+");
+								} else {
+									current.append("-");
+								}
+								current.append(this->GetVariable(i)->AssociatedReaction->GetData("DATABASE",STRING));
+								if (this->GetVariable(i)->Mark) {
+									exo_dependent_gfrxn[j] = current;
+								} else {
+									exo_dependent_rxn[j] = current;
+								}
 							}
 						}
 					}
@@ -10156,26 +10166,29 @@ int MFAProblem::MetabolomicsSensitivityAnalysis(Data* InData,OptSolutionData*& C
 				if (MetaboliteObjective != NULL) {
 					ObjFunct = MetaboliteObjective;
 					this->LoadObjective();
-					OptSolutionData* NewSolution = RunSolver(true,false,false);
-					for (int j=0; j < working_metabolites.size(); j++) {
-						if (NewSolution->SolutionData[working_metabolites[j]->Index] < MFA_ZERO_TOLERANCE) {
-							string current = met_dependent_rxn[j];
-							if (this->GetVariable(i)->Mark) {
-								current = met_dependent_gfrxn[j];
-							}
-							if (current.length() > 0) {
-								current.append(";");
-							}
-							if (this->GetVariable(i)->Type == FLUX || this->GetVariable(i)->Type == FORWARD_FLUX) {
-								current.append("+");
-							} else {
-								current.append("-");
-							}
-							current.append(this->GetVariable(i)->AssociatedReaction->GetData("DATABASE",STRING));
-							if (this->GetVariable(i)->Mark) {
-								met_dependent_gfrxn[j] = current;
-							} else {
-								met_dependent_rxn[j] = current;
+					OptSolutionData* NewSolution = RunSolver(false,false,false);
+					if (NewSolution != NULL && NewSolution->Status == SUCCESS) {
+						cout << "SUCCESS2" << NewSolution->Objective << endl;
+						for (int j=0; j < working_metabolites.size(); j++) {
+							if (NewSolution->SolutionData[working_metabolites[j]->Index] < MFA_ZERO_TOLERANCE) {
+								string current = met_dependent_rxn[j];
+								if (this->GetVariable(i)->Mark) {
+									current = met_dependent_gfrxn[j];
+								}
+								if (current.length() > 0) {
+									current.append(";");
+								}
+								if (this->GetVariable(i)->Type == FLUX || this->GetVariable(i)->Type == FORWARD_FLUX) {
+									current.append("+");
+								} else {
+									current.append("-");
+								}
+								current.append(this->GetVariable(i)->AssociatedReaction->GetData("DATABASE",STRING));
+								if (this->GetVariable(i)->Mark) {
+									met_dependent_gfrxn[j] = current;
+								} else {
+									met_dependent_rxn[j] = current;
+								}
 							}
 						}
 					}
@@ -10246,7 +10259,7 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 			    double penalty = atof((*rows)[i][1].data())*InParameters->alpha;
 			    penaltysum += penalty;
 			    ObjFunct->Coefficient.push_back(penalty);
-			    cout << " pushed REACTION_SLACK with penalty " << penalty << endl;
+			    //cout << " pushed REACTION_SLACK with penalty " << penalty << endl;
 			  }
 			}
 			else {
@@ -10315,7 +10328,7 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 						}
 						ObjFunct->Variables.push_back(newvar);
 						ObjFunct->Coefficient.push_back(penalty);
-					    cout << " pushed USE of type " << variables[j] << " with penalty " << penalty << endl;
+					    //cout << " pushed USE of type " << variables[j] << " with penalty " << penalty << endl;
 					}
 				}
 			}
@@ -10380,6 +10393,51 @@ int MFAProblem::GapFilling(Data* InData, OptimizationParameter* InParameters,Opt
 	this->MetabolomicsSensitivityAnalysis(InData,CurrentSolution);
 	CurrentOptimum = CurrentSolution->Objective;
 	return SUCCESS;
+}
+
+int MFAProblem::BinaryReactionDeactivationSearch(vector<MFAVariable*> in_variables,vector<double> lower_bounds,vector<double> upper_bounds) {
+	//Assuming all the input variables are set to zero and testing
+	//cout << "Testing: " << in_variables.size() << endl;
+	this->LoadSolver(false);
+	OptSolutionData* NewSolution = RunSolver(false,false,false);
+	if (NewSolution->Status == SUCCESS) {
+		//cout << "Success: " << in_variables.size() << " " << 0 << endl;
+		return 0;
+	} else if (in_variables.size() == 1) {
+		in_variables[0]->UpperBound = upper_bounds[0];
+		in_variables[0]->LowerBound = lower_bounds[0];
+		return 1;
+	}
+	//Break the variable list into two halves and submit recursively to this function
+	int half = int(in_variables.size()/2);
+	//cout << "Half:" << half << endl;
+	vector<MFAVariable*> new_variables;
+	vector<double> new_lower_bounds;
+	vector<double> new_upper_bounds;
+	for (int i=0; i < half; i++) {
+		new_variables.push_back(in_variables[i]);
+		new_lower_bounds.push_back(lower_bounds[i]);
+		new_upper_bounds.push_back(upper_bounds[i]);
+	}
+	for (int i=half; i < in_variables.size(); i++) {
+		in_variables[i]->UpperBound = upper_bounds[i];
+		in_variables[i]->LowerBound = lower_bounds[i];
+	}
+	int activated_count = this->BinaryReactionDeactivationSearch(new_variables,new_lower_bounds,new_upper_bounds);
+	//Now any essential reactions in the front half are activated - repeating process with back half
+	new_variables.clear();
+	new_lower_bounds.clear();
+	new_upper_bounds.clear();
+	for (int i=half; i < in_variables.size(); i++) {
+		new_variables.push_back(in_variables[i]);
+		new_lower_bounds.push_back(lower_bounds[i]);
+		new_upper_bounds.push_back(upper_bounds[i]);
+		in_variables[i]->UpperBound = 0;
+		in_variables[i]->LowerBound = 0;
+	}
+	activated_count += this->BinaryReactionDeactivationSearch(new_variables,new_lower_bounds,new_upper_bounds);
+	//cout << "Cut: " << in_variables.size() << " " << activated_count << endl;
+	return activated_count;
 }
 
 int MFAProblem::RunImplementedGapfillingSolution(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution) {
@@ -10590,6 +10648,8 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 				}
 				//Now adding a step in case binary variables are not being used, which intoduces binary variables for key terms and reminimizes
 				vector<int> original_bound_indecies;
+				vector<MFAVariable*> original_variables;
+				vector<double> original_coefficients;
 				vector<double> original_upper_bound;
 				vector<double> original_lower_bound;
 				if (InParameters->ReactionsUse == false && slacks_in_objective == false) {
@@ -10612,7 +10672,7 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 									} else if (current->Type == FORWARD_FLUX) {
 										vartype = FORWARD_USE;
 									}
-									MFAVariable* NewVariable = current->AssociatedReaction->CreateReactionVariable(this,vartype,1,0,true,"+"+current->AssociatedReaction->GetData("DATABASE",STRING));
+									MFAVariable* NewVariable = current->AssociatedReaction->CreateReactionVariable(this,vartype,1,0,true,sign+current->AssociatedReaction->GetData("DATABASE",STRING));
 									current->AssociatedReaction->CreateUseVariableConstraint(this, NewVariable);
 									NewObjFunct->Variables.push_back(NewVariable);
 									NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
@@ -10644,27 +10704,45 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 									NewObjFunct->Variables.push_back(NewVariable);
 									NewObjFunct->Coefficient.push_back(ObjFunct->Coefficient[i]);
 								}
-							} else {
-								NewObjFunct->Variables.push_back(ObjFunct->Variables[i]);
-								NewObjFunct->Coefficient.push_back(10000000);
-								//original_bound_indecies.push_back(i);
-								//original_upper_bound.push_back(ObjFunct->Variables[i]->UpperBound);
-								//original_lower_bound.push_back(ObjFunct->Variables[i]->LowerBound);
-								//ObjFunct->Variables[i]->UpperBound = 0;
-								//ObjFunct->Variables[i]->LowerBound = 0;
+							} else  {
+								original_bound_indecies.push_back(i);
+								original_variables.push_back(ObjFunct->Variables[i]);
+								original_upper_bound.push_back(ObjFunct->Variables[i]->UpperBound);
+								original_lower_bound.push_back(ObjFunct->Variables[i]->LowerBound);
+								original_coefficients.push_back(ObjFunct->Coefficient[i]);
+								ObjFunct->Variables[i]->UpperBound = 0;
+								ObjFunct->Variables[i]->LowerBound = 0;
 							}
 						}
 					}
 					//Minimizing modified objective with only boolean variables
 					LinEquation* oldobj = ObjFunct;
 					ObjFunct = NewObjFunct;
-					this->LoadSolver(false);
+					int activated_count = this->BinaryReactionDeactivationSearch(original_variables,original_lower_bound,original_upper_bound);
+					if (activated_count > 0) {
+						for (int j=0; j < original_variables.size(); j++) {
+							if (original_variables[j]->UpperBound > 0) {
+								string sign = "+";
+								int vartype = REACTION_USE;
+								if (original_variables[j]->Type == REVERSE_FLUX || original_variables[j]->Type == REVERSE_USE) {
+									sign = "-";
+									vartype = REVERSE_USE;
+								} else if (original_variables[j]->Type == FORWARD_FLUX) {
+									vartype = FORWARD_USE;
+								}
+								MFAVariable* NewVariable = original_variables[j]->AssociatedReaction->CreateReactionVariable(this,vartype,1,0,true,sign+original_variables[j]->AssociatedReaction->GetData("DATABASE",STRING));
+								original_variables[j]->AssociatedReaction->CreateUseVariableConstraint(this, NewVariable);
+								NewObjFunct->Variables.push_back(NewVariable);
+								NewObjFunct->Coefficient.push_back(original_coefficients[j]);
+							}
+						}
+					}
 					InternalSolution = RunSolver(true,false,true);
 					//Printing characteristic LP file
 					GlobalWriteLPFile(Solver,100000);
 					PrintVariableKey("PrimaryVariableKey.txt",true);
 					for (int j=0; j < int(NewObjFunct->Variables.size());j++) {
-						if (NewObjFunct->Variables[j]->Type != REACTION_SLACK) {
+						if (NewObjFunct->Variables[j]->Type != REACTION_SLACK && fabs(InternalSolution->SolutionData[NewObjFunct->Variables[j]->Index]) > MFA_ZERO_TOLERANCE) {
 							if (m==0) {
 								output_solution.push_back(NewObjFunct->Variables[j]);
 							}
@@ -10675,7 +10753,7 @@ vector<MFAVariable*> MFAProblem::SolveGapfillingProblem(int currentround,OptSolu
 					ObjFunct = oldobj;
 				} else {
 					for (int j=0; j < int(ObjFunct->Variables.size());j++) {
-						if (ObjFunct->Variables[j]->Type != REACTION_SLACK) {
+						if (ObjFunct->Variables[j]->Type != REACTION_SLACK && fabs(InternalSolution->SolutionData[ObjFunct->Variables[j]->Index]) > MFA_ZERO_TOLERANCE) {
 							if (m==0) {
 								output_solution.push_back(ObjFunct->Variables[j]);
 							}
