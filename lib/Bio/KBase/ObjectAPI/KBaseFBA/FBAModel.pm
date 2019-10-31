@@ -77,7 +77,21 @@ sub _buildfeatureHash {
 # FUNCTIONS:
 #***********************************************************************************************************
 sub load_metabolite_hashes {
-	my ($self,$id_hash,$name_hash,$structure_hash,$formula_hash,$priority,$cmp) = @_;
+	my ($self,$args) = @_;
+	$args = Bio::KBase::utilities::args($args,["priority"],{
+		compartment => "c",
+		compartment_index => 0,
+		priority => 0,
+		hashes => {
+			ids => {},
+			names => {},
+			structures => {},
+			base_structures => {},
+			formulas => {}
+		}
+	});
+	my $cmp = $args->{compartment};
+	my $priority = $args->{priority};
 	my $cpds = $self->modelcompounds();
 	for (my $i=0; $i < @{$cpds}; $i++) {
 		if ($cpds->[$i]->modelcompartment()->compartment()->id() eq $cmp) {
@@ -86,26 +100,27 @@ sub load_metabolite_hashes {
 				my $cpdhash = Bio::KBase::utilities::compound_hash();
 				if (defined($cpdhash->{$msid}->{names})) {
 					for (my $j=0; $j < @{$cpdhash->{$msid}->{names}}; $j++) {
-						$name_hash->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$msid}->{names}->[$j])}->{$cpds->[$i]->id()} = $priority;
+						$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$msid}->{names}->[$j])}->{$cpds->[$i]->id()} = $priority;
 					}
 				}
-				$id_hash->{$msid}->{$cpds->[$i]->id()} = $priority;
+				$args->{hashes}->{ids}->{$msid}->{$cpds->[$i]->id()} = $priority;
 			} elsif ($cpds->[$i]->id() =~ m/(^.+)_[a-z]\d+/) {
-				$id_hash->{$1}->{$cpds->[$i]->id()} = $priority;
+				$args->{hashes}->{ids}->{$1}->{$cpds->[$i]->id()} = $priority;
 			}
 			if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
-				$structure_hash->{$cpds->[$i]->inchikey()}->{$cpds->[$i]->id()} = $priority;
+				$args->{hashes}->{structures}->{$cpds->[$i]->inchikey()}->{$cpds->[$i]->id()} = $priority;
+				my $array = [split(/[_-]/,$cpds->[$i]->inchikey())];
+				$args->{hashes}->{base_structures}->{$array->[0]}->{$cpds->[$i]->id()} = $priority;
 			}
 			if (defined($cpds->[$i]->smiles()) && length($cpds->[$i]->smiles()) > 0) {
-				$structure_hash->{$cpds->[$i]->smiles()}->{$cpds->[$i]->id()} = $priority;
+				$args->{hashes}->{structures}->{$cpds->[$i]->smiles()}->{$cpds->[$i]->id()} = $priority;
 			}
 			if (defined($cpds->[$i]->formula()) && length($cpds->[$i]->formula()) > 0) {
-				$formula_hash->{$cpds->[$i]->neutral_formula()}->{$cpds->[$i]->id()} = $priority;
+				$args->{hashes}->{formulas}->{$cpds->[$i]->neutral_formula()}->{$cpds->[$i]->id()} = $priority;
 			}
 			if (defined($cpds->[$i]->name()) && length($cpds->[$i]->name()) > 0) {
-				$name_hash->{Bio::KBase::utilities::nameToSearchname($cpds->[$i]->name())}->{$cpds->[$i]->id()} = $priority;
+				$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpds->[$i]->name())}->{$cpds->[$i]->id()} = $priority;
 			}
-			
 		}
 	}
 }
@@ -117,6 +132,15 @@ sub EnsureProperATPProduction {
 		max_objective_limit => 1.4
 	}, @_);
 	my $oldtemplate = $self->template();
+	#Need to instantiate compound and reaction objects before swapping out the template
+	my $mdlcpds = $self->modelcompounds();
+	for (my $i=0; $i < @{$mdlcpds}; $i++) {
+		$mdlcpds->[$i]->compound();
+	}
+	my $mdlrxns = $self->modelreactions();
+	for (my $i=0; $i < @{$mdlrxns}; $i++) {
+		$mdlrxns->[$i]->reaction();
+	}
 	my $template_trans = Bio::KBase::constants::template_trans();
 	$self->template($self->getLinkedObject(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core}));
 	#Retrieving and hashing core reactions
@@ -126,7 +150,7 @@ sub EnsureProperATPProduction {
 		$rxnhash->{$corerxns->[$i]->msid()} = $corerxns->[$i]->direction();
 	}
 	#Removing noncore reactions temporarily
-	my $mdlrxns = $self->modelreactions();
+	$mdlrxns = $self->modelreactions();
 	my $removedrxn = [];
 	for (my $i=0; $i < @{$mdlrxns}; $i++) {
 		my $id = $mdlrxns->[$i]->id();

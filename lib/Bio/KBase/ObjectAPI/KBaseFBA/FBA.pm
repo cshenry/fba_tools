@@ -2343,35 +2343,59 @@ sub process_metabolomic_data {
 	my $peak_hash = {};
 	my $peak_string = "";
 	#Retrieving data hashes for all compounds in model, database, and source model
-	my $id_hash = {};
-	my $name_hash = {};
-	my $structure_hash = {};
-	my $formula_hash = {};
+	my $input = {
+		priority => 1,
+		compartment => "e",
+		compartment_index => 0,
+		hashes => {
+			ids => {},
+			names => {},
+			structures => {},
+			base_structures => {},
+			formulas => {}
+		}
+	};
 	if ($args->{type} eq "exo") {
-		$self->fbamodel()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,1,"e");
-		$self->fbamodel()->template()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,2,"e","0");
+		$self->fbamodel()->load_metabolite_hashes($input);
+		$input->{priority} = 2;
+		$self->fbamodel()->template()->load_metabolite_hashes($input);
 		if (defined($self->{_source_model})) {
-			$self->{_source_model}->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,3,"e");
+			$input->{priority} = 3;
+			$self->{_source_model}->load_metabolite_hashes($input);
 		}
-		$self->fbamodel()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,4,"c");
-		$self->fbamodel()->template()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,5,"c","0");
+		$input->{compartment} = "c";
+		$input->{priority} = 4;
+		$self->fbamodel()->load_metabolite_hashes($input);
+		$input->{priority} = 5;
+		$self->fbamodel()->template()->load_metabolite_hashes($input);
 		if (defined($self->{_source_model})) {
-			$self->{_source_model}->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,6,"c");
+			$input->{priority} = 6;
+			$self->{_source_model}->load_metabolite_hashes($input);
 		}
-		Bio::KBase::utilities::metabolite_hash($id_hash,$name_hash,$structure_hash,$formula_hash,7,"c0");
+		$input->{priority} = 7;
+		Bio::KBase::utilities::metabolite_hash($input);
 	} else {
-		$self->fbamodel()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,1,"c");
-		$self->fbamodel()->template()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,2,"c","0");
+		$input->{compartment} = "c";
+		$self->fbamodel()->load_metabolite_hashes($input);
+		$input->{priority} = 2;
+		$self->fbamodel()->template()->load_metabolite_hashes($input);
 		if (defined($self->{_source_model})) {
-			$self->{_source_model}->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,3,"c");
+			$input->{priority} = 3;
+			$self->{_source_model}->load_metabolite_hashes($input);
 		}
-		$self->fbamodel()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,4,"e");
-		$self->fbamodel()->template()->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,5,"e","0");
+		$input->{priority} = 7;
+		Bio::KBase::utilities::metabolite_hash($input);
+		$input->{compartment} = "e";
+		$input->{priority} = 4;
+		$self->fbamodel()->load_metabolite_hashes($input);
+		$input->{priority} = 5;
+		$self->fbamodel()->template()->load_metabolite_hashes($input);
 		if (defined($self->{_source_model})) {
-			$self->{_source_model}->load_metabolite_hashes($id_hash,$name_hash,$structure_hash,$formula_hash,6,"e");
+			$input->{priority} = 6;
+			$self->{_source_model}->load_metabolite_hashes($input);
 		}
-		Bio::KBase::utilities::metabolite_hash($id_hash,$name_hash,$structure_hash,$formula_hash,7,"c0");
 	}
+	my $hashes = $input->{hashes};
 	#Scanning all peak IDs and metadata for matches
 	my $matchtype_count = {
 		id => [0,0],
@@ -2383,10 +2407,10 @@ sub process_metabolomic_data {
 	for (my $j=0; $j < @{$matrix->{row_ids}}; $j++) {
 		my $match = 0;
 		#First checking ID and all attributes for SEED ID match
-		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$id_hash,$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{ids},$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
 		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
 			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
-				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$id_hash,$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{ids},$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
 			}
 		}
 		if ($match > 0) {
@@ -2395,10 +2419,10 @@ sub process_metabolomic_data {
 			$match = 0;
 		}
 		#Now checking ID and all attributes for structure match
-		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$structure_hash,$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{structures},$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
 		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
 			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
-				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$structure_hash,$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{structures},$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
 			}
 		}
 		if ($match > 0) {
@@ -2407,10 +2431,10 @@ sub process_metabolomic_data {
 			$match = 0;
 		}
 		#Now checking ID and all attributes for name match
-		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$name_hash,$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{names},$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
 		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
 			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
-				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$name_hash,$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{names},$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
 			}
 		}
 		if ($match > 0) {
@@ -2419,10 +2443,10 @@ sub process_metabolomic_data {
 			$match = 0;
 		}
 		#Now checking ID and all attributes for formula match
-		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$formula_hash,$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{formulas},$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
 		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
 			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
-				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$formula_hash,$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{formu},$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
 			}
 		}
 		if ($match > 0) {

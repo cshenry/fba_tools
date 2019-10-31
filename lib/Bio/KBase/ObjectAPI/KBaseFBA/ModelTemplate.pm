@@ -131,33 +131,50 @@ sub _buildroleSearchNameHash {
 # FUNCTIONS:
 #***********************************************************************************************************
 sub load_metabolite_hashes {
-	my ($self,$id_hash,$name_hash,$structure_hash,$formula_hash,$priority,$cmp,$index) = @_;
+	my ($self,$args) = @_;
+	$args = Bio::KBase::utilities::args($args,["priority"],{
+		compartment => "c",
+		compartment_index => 0,
+		priority => 0,
+		hashes => {
+			ids => {},
+			names => {},
+			structures => {},
+			base_structures => {},
+			formulas => {}
+		}
+	});
+	my $cmp = $args->{compartment};
+	my $index = $args->{compartment_index};
+	my $priority = $args->{priority};
 	my $cpds = $self->compcompounds();
 	for (my $i=0; $i < @{$cpds}; $i++) {
 		if ($cpds->[$i]->templatecompartment()->id() eq $cmp) {
 			if ($cpds->[$i]->id() =~ m/(cpd\d+)/) {
 				my $msid = $1;
-				$id_hash->{$msid}->{$cpds->[$i]->id().$index} = $priority;
+				$args->{hashes}->{ids}->{$msid}->{$cpds->[$i]->id().$index} = $priority;
 				my $cpdhash = Bio::KBase::utilities::compound_hash();
 				if (defined($cpdhash->{$msid}->{names})) {
 					for (my $j=0; $j < @{$cpdhash->{$msid}->{names}}; $j++) {
-						$name_hash->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$msid}->{names}->[$j])}->{$cpds->[$i]->id().$index} = $priority;
+						$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$msid}->{names}->[$j])}->{$cpds->[$i]->id().$index} = $priority;
 					}
 				}
 			} elsif ($cpds->[$i]->id() =~ m/(^.+)_[a-z]\d+/) {
-				$id_hash->{$1}->{$cpds->[$i]->id().$index} = $priority;
+				$args->{hashes}->{ids}->{$1}->{$cpds->[$i]->id().$index} = $priority;
 			}
 			if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
-				$structure_hash->{$cpds->[$i]->inchikey()}->{$cpds->[$i]->id().$index} = $priority;
+				$args->{hashes}->{structures}->{$cpds->[$i]->inchikey()}->{$cpds->[$i]->id().$index} = $priority;
+				my $array = [split(/[_-]/,$cpds->[$i]->inchikey())];
+				$args->{hashes}->{base_structures}->{$array->[0]}->{$cpds->[$i]->id().$index} = $priority;
 			}
 			if (defined($cpds->[$i]->smiles()) && length($cpds->[$i]->smiles()) > 0) {
-				$structure_hash->{$cpds->[$i]->smiles()}->{$cpds->[$i]->id().$index} = $priority;
+				$args->{hashes}->{structures}->{$cpds->[$i]->smiles()}->{$cpds->[$i]->id().$index} = $priority;
 			}
 			if (defined($cpds->[$i]->formula()) && length($cpds->[$i]->formula()) > 0) {
-				$formula_hash->{$cpds->[$i]->neutral_formula()}->{$cpds->[$i]->id().$index} = $priority;
+				$args->{hashes}->{formulas}->{$cpds->[$i]->neutral_formula()}->{$cpds->[$i]->id().$index} = $priority;
 			}
 			if (defined($cpds->[$i]->templatecompound()->name()) && length($cpds->[$i]->templatecompound()->name()) > 0) {
-				$name_hash->{Bio::KBase::utilities::nameToSearchname($cpds->[$i]->templatecompound()->name())}->{$cpds->[$i]->id().$index} = $priority;
+				$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpds->[$i]->templatecompound()->name())}->{$cpds->[$i]->id().$index} = $priority;
 			}
 		}
 	}

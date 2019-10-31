@@ -46,31 +46,62 @@ sub reaction_hash {
 };
 
 sub metabolite_hash {
-	my ($id_hash,$name_hash,$structure_hash,$formula_hash,$priority,$cmp) = @_;
+	my ($args) = @_;
+	$args = Bio::KBase::utilities::args($args,["priority"],{
+		compartment => "c",
+		compartment_index => 0,
+		priority => 0,
+		hashes => {
+			ids => {},
+			names => {},
+			structures => {},
+			base_structures => {},
+			formulas => {}
+		}
+	});
+	my $cmp = $args->{compartment}.$args->{compartment_index};
+	my $priority = $args->{priority};
 	my $cpdhash = Bio::KBase::utilities::compound_hash();
 	foreach my $cpdid (keys(%{$cpdhash})) {
 		my $data = $cpdhash->{$cpdid};
 		if ($cpdid =~ m/(cpd\d+)/) {
-			$id_hash->{$1}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{ids}->{$1}->{$cpdid."_".$cmp} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{kegg_aliases})) {
+			foreach my $newid (@{$cpdhash->{$cpdid}->{kegg_aliases}}) {
+				$args->{hashes}->{ids}->{$newid}->{$cpdid."_".$cmp} = $priority;
+			}
+		}
+		if (defined($cpdhash->{$cpdid}->{bigg_aliases})) {
+			foreach my $newid (@{$cpdhash->{$cpdid}->{bigg_aliases}}) {
+				$args->{hashes}->{ids}->{$newid}->{$cpdid."_".$cmp} = $priority;
+			}
+		}
+		if (defined($cpdhash->{$cpdid}->{metacyc_aliases})) {
+			foreach my $newid (@{$cpdhash->{$cpdid}->{metacyc_aliases}}) {
+				$args->{hashes}->{ids}->{$newid}->{$cpdid."_".$cmp} = $priority;
+			}
 		}
 		if (defined($cpdhash->{$cpdid}->{inchikey})) {
-			$structure_hash->{$cpdhash->{$cpdid}->{inchikey}}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{inchikey}}->{$cpdid."_".$cmp} = $priority;
+			my $array = [split(/[_-]/,$cpdhash->{$cpdid}->{inchikey})];
+			$args->{hashes}->{base_structures}->{$array->[0]}->{$cpdid."_".$cmp} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{smiles})) {
-			$structure_hash->{$cpdhash->{$cpdid}->{smiles}}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{smiles}}->{$cpdid."_".$cmp} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{formula})) {
-			$formula_hash->{$cpdhash->{$cpdid}->{formula}}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{formulas}->{$cpdhash->{$cpdid}->{formula}}->{$cpdid."_".$cmp} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{name})) {
-			$name_hash->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$cpdid}->{name})}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$cpdid}->{name})}->{$cpdid."_".$cmp} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{abbreviation})) {
-			$name_hash->{$cpdhash->{$cpdid}->{abbreviation}}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{names}->{$cpdhash->{$cpdid}->{abbreviation}}->{$cpdid."_".$cmp} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{names})) {
 			foreach my $name (@{$cpdhash->{$cpdid}->{names}}) {
-				$name_hash->{$name}->{$cpdid."_".$cmp} = $priority;
+				$args->{hashes}->{names}->{$name}->{$cpdid."_".$cmp} = $priority;
 			}
 		}
 	}
