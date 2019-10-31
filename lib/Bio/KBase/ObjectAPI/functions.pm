@@ -774,7 +774,7 @@ sub func_gapfill_metabolic_model {
 	}
 	$handler->util_log("Saving gapfilled model.");
 	# If the model is saved in the workspace, add it to the genome reference path
-	if ($model->_reference() =~ m/^(\w+\/\w+\/\w+)/) {
+	if ($model->_reference() =~ m/^(\w+\/\w+\/\w+)/ && defined($model->genome_ref()) && length($model->genome_ref()) > 0) {
 		$model->genome_ref($model->_reference() . ";" . $model->genome_ref());
 	}
 	my $modelmeta = $handler->util_save_object($model,Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
@@ -2775,6 +2775,7 @@ sub func_build_metagenome_metabolic_model {
 		reaction_hash => $reaction_hash,
 		modelid => $params->{fbamodel_output_id}
 	});
+	$mdl->genome_ref("kbase/EmptyGenome");
 	$mdl->EnsureProperATPProduction({
 		anaerobe => 0,
 		max_objective_limit => $params->{max_objective_limit}
