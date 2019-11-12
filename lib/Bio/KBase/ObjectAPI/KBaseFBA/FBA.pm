@@ -3654,6 +3654,14 @@ sub parseMetaboliteInteraction {
 						}
 					}
 				}
+				my $thresholds = Bio::KBase::constants::auxotrophy_thresholds()->{$cpd};
+				if ($outputhash->{$cpd}->{gfrxn} >= $thresholds->[0]) {
+					$outputhash->{$cpd}->{auxotrophic} = 1;
+				}
+				my $fration = $outputhash->{$cpd}->{gfrxn}/$outputhash->{$cpd}->{totalrxn};
+				if ($fration >= $thresholds->[1]) {
+					$outputhash->{$cpd}->{auxotrophic} = 1;
+				}
 				#Populating data for overall reaction for metabolite
 				my $finalflux = 0;
 				foreach my $overcpd (keys(%{$rxncpdhash})) {

@@ -521,12 +521,14 @@ sub createEquation {
 				    if($args->{format} eq "name"){
 						$printId = $cpd->name();
 				    } elsif ($args->{format} eq "msid"){
-				    	$printId = $cpd->msid();
-				     } elsif ($args->{format} eq "codeid"){
-				    	$printId = $cpd->codeid();
-				    }elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
+				    		$printId = $cpd->msid();
+				    	} elsif ($args->{format} eq "inchikey"){
+				    		$printId = $cpd->inchikey();
+				    } elsif ($args->{format} eq "codeid"){
+				    		$printId = $cpd->codeid();
+				    } elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
 						$printId = $cpd->getAlias($args->{format});
-				    }elsif($args->{format} eq "formula"){
+				    } elsif($args->{format} eq "formula"){
 						$printId = $cpd->formula();
 				    }
 				}

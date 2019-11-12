@@ -409,27 +409,28 @@ sub save_objects {
 	my $wsdata;
 	my $output = {};
 	foreach my $ref (keys(%{$refobjhash})) {
-			my $obj = $refobjhash->{$ref};
-			my $objdata = {
-				provenance => Bio::KBase::utilities::provenance()
-			};
-			if (defined($obj->{hash}) && $obj->{hash} == 1) {
-				$objdata->{type} = $obj->{type};
-				$objdata->{data} = $obj->{object};
-			} else {
-				$objdata->{type} = $obj->{object}->_type();
-				$objdata->{data} = $obj->{object}->serializeToDB();	
-			}
-			if (defined($obj->{hidden})) {
-				$objdata->{hidden} = $obj->{hidden};
-			}
-			if (defined($obj->{meta})) {
-				$objdata->{meta} = $obj->{meta};
-			}
-			if (defined($objdata->{provenance}->[0]->{method_params}->[0]->{notes})) {
-				$objdata->{meta}->{notes} = $objdata->{provenance}->[0]->{method_params}->[0]->{notes};
-			}
-			my $array = [split(/\//,$ref)];
+		print "Initial pass:".$ref."\n";
+		my $obj = $refobjhash->{$ref};
+		my $objdata = {
+			provenance => Bio::KBase::utilities::provenance()
+		};
+		if (defined($obj->{hash}) && $obj->{hash} == 1) {
+			$objdata->{type} = $obj->{type};
+			$objdata->{data} = $obj->{object};
+		} else {
+			$objdata->{type} = $obj->{object}->_type();
+			$objdata->{data} = $obj->{object}->serializeToDB();	
+		}
+		if (defined($obj->{hidden})) {
+			$objdata->{hidden} = $obj->{hidden};
+		}
+		if (defined($obj->{meta})) {
+			$objdata->{meta} = $obj->{meta};
+		}
+		if (defined($objdata->{provenance}->[0]->{method_params}->[0]->{notes})) {
+			$objdata->{meta}->{notes} = $objdata->{provenance}->[0]->{method_params}->[0]->{notes};
+		}
+		my $array = [split(/\//,$ref)];
 		if (@{$array} < 2) {
 			Bio::KBase::ObjectAPI::utilities->error("Invalid reference:".$ref);
 		}
@@ -439,6 +440,7 @@ sub save_objects {
 			$objdata->{name} = $array->[1];
 		}
 		if ($array->[0] eq "NULL") {
+			print "NULL:".$ref."\n";
 			#This enables us to write "cache only" objects that won't ever be stored permanently in the workspace
 			$self->cache()->{$ref} = $obj->{object};
 			$self->uuid_refs()->{$obj->{object}->uuid()} = $ref;
@@ -456,6 +458,7 @@ sub save_objects {
 			$refobjhash->{$ref}->{object}->_wsmeta({});
 			$output->{$ref} = [0,$array->[1],$objdata->{type},"",0,"",0,$array->[0],"",0,{}];
 		} else {
+			print "Not NULL:".$ref."\n";
 			if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
 				require "GenomeFileUtil/GenomeFileUtilClient.pm";
 				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
@@ -496,6 +499,7 @@ sub save_objects {
 		} else {
 			$input->{workspace} = $ws;
 		}
+		print "Save array:".$input->{workspace}." ".$input->{id}."\n";
 		my $listout;
 		if (defined($self->user_override()) && length($self->user_override()) > 0) {
 			$listout = Bio::KBase::utilities::administer({

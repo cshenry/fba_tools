@@ -1086,9 +1086,9 @@ sub query_pubchem {
 				$query .= ",";
 			}
 			$query .= $args->{inchikey}->[$j];
-			if (($j+1) % 10 == 0) {
+			if (($j+1) % 10 == 0 || $j == (@{$args->{inchikey}}-1)) {
 				my $restout = Bio::KBase::ObjectAPI::utilities::rest_download({
-					url => "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/".$query."/property/MolecularFormula,MolecularWeight,InChIKey/JSON"
+					url => "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/".$query."/property/MolecularFormula,MolecularWeight,InChIKey,CanonicalSMILES/JSON"
 				});
 				if (defined($restout->{PropertyTable}->{Properties})) {
 					for (my $i=0; $i < @{$restout->{PropertyTable}->{Properties}}; $i++) {
@@ -1097,7 +1097,7 @@ sub query_pubchem {
 				}
 				$query = "";
 			}
-		}	
+		}
 	}
 	return $output;
 }

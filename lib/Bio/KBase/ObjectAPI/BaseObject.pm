@@ -244,7 +244,8 @@ sub fix_reference {
 		}
 		my $newref = $self->store()->uuid_to_ref($uuid);
 		if (!defined($newref)) {
-			Bio::KBase::ObjectAPI::utilities::error("Attempting to save object with references to unsaved object:".$uuid);
+			#Bio::KBase::ObjectAPI::utilities::error("Attempting to save object with references to unsaved object:".$uuid);
+			return $uuid;
 		}
 		$ref =~ s/$uuid/$newref/;
 		return $ref;

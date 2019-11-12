@@ -193,7 +193,8 @@ sub EnsureProperATPProduction {
 		atp_production_check => 0,
 		#base_atp_production => 260,
 		blacklist => $blacklist
-	},$self);
+	},{fbamodel => $self});
+	$self->attributes()->{core_gapfilling} = $output->{number_gapfilled_reactions};
 	#Restoring the template
 	$self->template($oldtemplate);
 	#Adding noncore reactions back into the model
@@ -219,6 +220,7 @@ sub EnsureProperATPProduction {
 	},$datachannel);
 	my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
 	my $first = 1;
+	$self->attributes()->{base_rejected_rxn} = 0;
 	if (defined($rxn_addition_data)) {
 		for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
 			my $row = [split(/\t/,$rxn_addition_data->[$i])];
@@ -243,6 +245,12 @@ sub EnsureProperATPProduction {
 					 	}
 					 }
 				}
+				$self->attributes()->{base_rejected_rxn}++;
+			} else {
+				if (!defined($self->attributes()->{initial_atp})) {
+					$self->attributes()->{initial_atp} = $row->[0];
+				}
+				$self->attributes()->{base_atp} = $row->[0];
 			}
 		}
 	}
@@ -531,13 +539,13 @@ Description:
 sub adjustModelReaction {
     my $self = shift;
     my $args = Bio::KBase::ObjectAPI::utilities::args(["reaction"],{
-    	direction => undef,
-    	gpr => undef,
-    	enzyme => undef,
-    	pathway => undef,
-    	name => undef,
-    	reference => undef,
-    	genetranslation => undef
+	    	direction => undef,
+	    	gpr => undef,
+	    	enzyme => undef,
+	    	pathway => undef,
+	    	name => undef,
+	    	reference => undef,
+	    	genetranslation => undef
     }, @_);
 	my $rxnid = $args->{reaction};
 	my $mdlrxn = $self->getObject("modelreactions",$rxnid);
@@ -773,14 +781,14 @@ sub LoadExternalReactionEquation {
 	    		$cpd =~ s/\+/PLUS/g;
 	    		$cpd =~ s/[\W_]//g;
 	    		my $cpdobj;
-				my $inchikey = "";
-				my $smiles = "";
+			my $inchikey = "";
+			my $smiles = "";
 
-				my $compound_rec = $args->{compounds}->{$origid};
-				if (!defined $compound_rec && $origid !~ m/^cpd\d+_[a-z]\d+$/){
-					Bio::KBase::ObjectAPI::utilities::error("Undefined compound used as reactant: $origid");
-				}
-				#if compoud has a parsed name
+			my $compound_rec = $args->{compounds}->{$origid};
+			if (!defined $compound_rec && $origid !~ m/^cpd\d+_[a-z]\d+$/){
+				Bio::KBase::ObjectAPI::utilities::error("Undefined compound used as reactant: $origid");
+			}
+			#if compoud has a parsed name
 	    		if (defined($compound_rec->[3])) {
 					# at the moment smiles and inchi always come from source, never templates
 					if (defined($compound_rec->[-1])) {
