@@ -2185,7 +2185,6 @@ sub func_baseline_gapfilling {
 		target_reaction => $params->{target_reaction},
 	});
 	$fba->runFBA();
-	exit();
 	#Error checking the FBA and gapfilling solution
 	if (!defined($fba->gapfillingSolutions()->[0])) {
 		Bio::KBase::utilities::error("Initial base-line gapfilling failed! Check that model and media formulations are valid.");
