@@ -734,6 +734,9 @@ sub getLinkedObject {
 	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 7\n") if $debug;
 		Bio::KBase::ObjectAPI::utilities::error("FAILED!");
+	} elsif ($ref =~ m/^\//) {
+		print("Branch 13\n") if $debug;
+    		return $self->store()->get_object($ref);
 	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-:\%]+$/) {
 		print("Branch 8\n") if $debug;
     		return $self->store()->get_object($refchain.$ref);
