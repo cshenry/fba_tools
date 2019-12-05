@@ -1976,9 +1976,6 @@ sub merge_models {
 		push(@{$genomeObj->{contig_ids}},@{$mdlgenome->{contig_ids}});	
 		print "Loading features\n";
 		for (my $j=0; $j < @{$mdlgenome->features()}; $j++) {
-			if (!defined($mdlgenome->features()->[$j]->quality())) {
-				$mdlgenome->features()->[$j]->quality({});
-			}
 			$genomeObj->add("features",$mdlgenome->features()->[$j]);
 		}
 		$self->template_refs()->[$i+1] = $model->template_ref();
