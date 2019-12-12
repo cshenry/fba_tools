@@ -211,6 +211,11 @@ sub process_object {
 					push(@{$data->{features}},$data->{non_coding_features}->[$i]);
 				}
 			}
+			for (my $i=0; $i < @{$data->{features}}; $i++) {
+				if (!defined($data->{features}->[$i]->{function}) && defined($data->{features}->[$i]->{functions}->[0])) {
+					$data->{features}->[$i]->{function} = join(" @ ",@{$data->{features}->[$i]->{functions}});
+				}
+			}
 		}
 		if ($type eq "AttributeMapping" || $type eq "MetaboliteMatrix" || $type eq "BinnedContigs" || $type eq "Assembly" || $type eq "MediaSet" || $type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
 			$self->cache()->{$ref} = $data;
@@ -409,7 +414,6 @@ sub save_objects {
 	my $wsdata;
 	my $output = {};
 	foreach my $ref (keys(%{$refobjhash})) {
-		print "Initial pass:".$ref."\n";
 		my $obj = $refobjhash->{$ref};
 		my $objdata = {
 			provenance => Bio::KBase::utilities::provenance()
@@ -440,7 +444,6 @@ sub save_objects {
 			$objdata->{name} = $array->[1];
 		}
 		if ($array->[0] eq "NULL") {
-			print "NULL:".$ref."\n";
 			#This enables us to write "cache only" objects that won't ever be stored permanently in the workspace
 			$self->cache()->{$ref} = $obj->{object};
 			$self->uuid_refs()->{$obj->{object}->uuid()} = $ref;
@@ -458,7 +461,6 @@ sub save_objects {
 			$refobjhash->{$ref}->{object}->_wsmeta({});
 			$output->{$ref} = [0,$array->[1],$objdata->{type},"",0,"",0,$array->[0],"",0,{}];
 		} else {
-			print "Not NULL:".$ref."\n";
 			if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
 				require "GenomeFileUtil/GenomeFileUtilClient.pm";
 				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
@@ -499,7 +501,6 @@ sub save_objects {
 		} else {
 			$input->{workspace} = $ws;
 		}
-		print "Save array:".$input->{workspace}." ".$input->{id}."\n";
 		my $listout;
 		if (defined($self->user_override()) && length($self->user_override()) > 0) {
 			$listout = Bio::KBase::utilities::administer({

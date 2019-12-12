@@ -389,6 +389,8 @@ sub util_build_fba {
 			condition => $params->{metabolite_condition},
 			type => "logp"
 		});
+	} elsif (defined($params->{metabolite_peak_string})) {
+		$fbaobj->parameters()->{"Intrametabolite peak data"} = $params->{metabolite_peak_string};
 	}
 	if (defined($params->{exometabolite_matrix})) {
 		$fbaobj->process_metabolomic_data({
@@ -402,6 +404,8 @@ sub util_build_fba {
 			condition => $params->{exometabolite_condition},
 			type => "exo"
 		});
+	} elsif (defined($params->{exometabolite_peak_string})) {
+		$fbaobj->parameters()->{"Exometabolite peak data"} = $params->{exometabolite_peak_string};
 	}
 	
 	if (defined($params->{input_gene_parameter_file})) {
@@ -733,7 +737,8 @@ sub func_gapfill_metabolic_model {
 		number_of_solutions => 1,
 		gapfill_output_id => undef,
 		atp_production_check => 1,
-		add_external_reactions => 1
+		add_external_reactions => 1,
+		peak_string => undef
 	});
 	my $printreport = 1;
 	my $htmlreport = "<html>";
