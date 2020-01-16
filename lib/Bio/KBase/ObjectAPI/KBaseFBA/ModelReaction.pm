@@ -42,6 +42,7 @@ has complexString => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 
 has gapfillString => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildgapfillString' );
 has stoichiometry => ( is => 'rw', isa => 'ArrayRef', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstoichiometry' );
 has reaction => (is => 'rw', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_reaction', clearer => 'clear_reaction', isa => 'Ref', weak_ref => 1);
+has smarts => ( is => 'rw', isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildsmarts' );
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -69,14 +70,14 @@ sub _build_reaction {
 		 	$rxn = $self->parent()->template()->add("reactions",{
 		 		id => "rxn00000_c",
 				reaction_ref => "~/biochemistry/reactions/id/rxn00000",
-		    	name => "CustomReaction",
-		    	direction => "=",
-		    	templateReactionReagents => [],
-		    	templatecompartment_ref => "~/compartments/id/c",
-		    	reverse_penalty => 5,
-		    	forward_penalty => 5,
-		    	base_cost => 10,
-		    	GapfillDirection => "="
+				name => "CustomReaction",
+				direction => "=",
+				templateReactionReagents => [],
+				templatecompartment_ref => "~/compartments/id/c",
+				reverse_penalty => 5,
+				forward_penalty => 5,
+				base_cost => 10,
+				GapfillDirection => "="
 		 	});
 		 }
 	 }
@@ -129,8 +130,8 @@ sub _buildrevcompfreeequationcode {
 }
 
 sub _buildequationformula {
-    my ($self,$args) = @_;
-    return $self->createEquation({indecies => 0,format=>"formula",hashed=>0,water=>0});
+	my ($self,$args) = @_;
+	return $self->createEquation({indecies => 0,format=>"formula",hashed=>0,water=>0});
 }
 
 sub _buildmodelCompartmentLabel {
@@ -142,25 +143,25 @@ sub _buildgprString {
 	my $gprs = [];
 	my $allUnknown = 1;
 	foreach my $protein (@{$self->modelReactionProteins()}) {
-	    my $one_gpr = $protein->gprString();
-	    if ( $one_gpr ne "Unknown" ) {
+		my $one_gpr = $protein->gprString();
+		if ( $one_gpr ne "Unknown" ) {
 		$allUnknown = 0;
-	    }
-	    push(@$gprs, $protein->gprString());
+		}
+		push(@$gprs, $protein->gprString());
 	}
 	my $gpr = "";
 	# Account for possibility that all of the multiple reaction proteins are empty.
 	if ( $allUnknown == 1 ) {
-	    $gpr = "Unknown";
-	    return $gpr;
+		$gpr = "Unknown";
+		return $gpr;
 	}
 	foreach my $one_gpr (@$gprs) {
-	    # Avoid printing GPRs that look like (unknown or GENE) if one modelReactionProtein is empty and another has genes in it.
-	    if ( $one_gpr eq "Unknown" ) { next; }
-	    if (length($gpr) > 0) {
+		# Avoid printing GPRs that look like (unknown or GENE) if one modelReactionProtein is empty and another has genes in it.
+		if ( $one_gpr eq "Unknown" ) { next; }
+		if (length($gpr) > 0) {
 		$gpr .= " or ";	
-	    }
-	    $gpr .= $one_gpr;
+		}
+		$gpr .= $one_gpr;
 	}
 	if (@{$self->modelReactionProteins()} > 1) {
 		$gpr = "(".$gpr.")";	
@@ -325,6 +326,30 @@ sub _buildstoichiometry {
 	}
 	return $stoichiometry;
 }
+sub _buildsmarts {
+	my ($self) = @_;
+	my $react_smarts = "";
+	my $prod_smarts = "";
+	my $rgts = $self->modelReactionReagents();
+	for (my $j=0; $j < @{$rgts}; $j++) {
+		if (defined($rgts->[$j]->modelcompound()->smiles()) && length($rgts->[$j]->modelcompound()->smiles()) > 0) {
+			if ($rgts->[$j]->coefficient() < 0) {
+				if (length($react_smarts) > 0) {
+					$react_smarts .= ".";
+				}
+				$react_smarts .= $rgts->[$j]->modelcompound()->smiles()
+			} else {
+				if (length($prod_smarts) > 0) {
+					$prod_smarts .= ".";
+				}
+				$prod_smarts .= $rgts->[$j]->modelcompound()->smiles()
+			}
+		} else {
+			return "";
+		}
+	}
+	return $react_smarts.">>".$prod_smarts;
+}
 
 #***********************************************************************************************************
 # CONSTANTS:
@@ -346,98 +371,98 @@ sub reaction_expression {
 }
 
 sub kegg {
-    my ($self,$id) = @_;
-    if (defined($id)) {
-    	my $aliases = $self->aliases();
-    	for (my $i=0; $i < @{$aliases}; $i++) {
-    		if ($aliases->[$i] eq "KEGG:".$id) {
-    			return $id;
-    		}
-    	}
-    	push(@{$aliases},"KEGG:".$id);
-    }
-    my $aliases = $self->getAliases("KEGG");
-    return (@$aliases) ? $aliases->[0] : undef;
+	my ($self,$id) = @_;
+	if (defined($id)) {
+		my $aliases = $self->aliases();
+		for (my $i=0; $i < @{$aliases}; $i++) {
+			if ($aliases->[$i] eq "KEGG:".$id) {
+				return $id;
+			}
+		}
+		push(@{$aliases},"KEGG:".$id);
+	}
+	my $aliases = $self->getAliases("KEGG");
+	return (@$aliases) ? $aliases->[0] : undef;
 }
 
 sub enzyme {
-    my ($self,$enzyme) = @_;
-    if (defined($enzyme)) {
-    	my $aliases = $self->aliases();
-    	for (my $i=0; $i < @{$aliases}; $i++) {
-    		if ($aliases->[$i] eq "EC:".$enzyme) {
-    			return $enzyme;
-    		}
-    	}
-    	push(@{$aliases},"EC:".$enzyme);
-    }
-    my $aliases = $self->getAliases("EC");
-    return (@$aliases) ? $aliases->[0] : undef;
+	my ($self,$enzyme) = @_;
+	if (defined($enzyme)) {
+		my $aliases = $self->aliases();
+		for (my $i=0; $i < @{$aliases}; $i++) {
+			if ($aliases->[$i] eq "EC:".$enzyme) {
+				return $enzyme;
+			}
+		}
+		push(@{$aliases},"EC:".$enzyme);
+	}
+	my $aliases = $self->getAliases("EC");
+	return (@$aliases) ? $aliases->[0] : undef;
 }
 
 sub getAlias {
-    my ($self,$set) = @_;
-    my $aliases = $self->getAliases($set);
-    return (@$aliases) ? $aliases->[0] : undef;
+	my ($self,$set) = @_;
+	my $aliases = $self->getAliases($set);
+	return (@$aliases) ? $aliases->[0] : undef;
 }
 
 sub getAliases {
-    my ($self,$setName) = @_;
-    return [] unless(defined($setName));
-    my $output = [];
-    my $aliases = $self->aliases();
-    for (my $i=0; $i < @{$aliases}; $i++) {
-    	if ($aliases->[$i] =~ m/$setName:(.+)/) {
-    		push(@{$output},$1);
-    	} elsif ($aliases->[$i] !~ m/:/ && $setName eq "name") {
-    		push(@{$output},$aliases->[$i]);
-    	}
-    }
-    return $output;
+	my ($self,$setName) = @_;
+	return [] unless(defined($setName));
+	my $output = [];
+	my $aliases = $self->aliases();
+	for (my $i=0; $i < @{$aliases}; $i++) {
+		if ($aliases->[$i] =~ m/$setName:(.+)/) {
+			push(@{$output},$1);
+		} elsif ($aliases->[$i] !~ m/:/ && $setName eq "name") {
+			push(@{$output},$aliases->[$i]);
+		}
+	}
+	return $output;
 }
 
 sub allAliases {
 	my ($self) = @_;
-    my $output = [];
-    my $aliases = $self->aliases();
-    for (my $i=0; $i < @{$aliases}; $i++) {
-    	if ($aliases->[$i] =~ m/(.+):(.+)/) {
-    		push(@{$output},$2);
-    	} else {
-    		push(@{$output},$aliases->[$i]);
-    	}
-    }
-    return $output;
+	my $output = [];
+	my $aliases = $self->aliases();
+	for (my $i=0; $i < @{$aliases}; $i++) {
+		if ($aliases->[$i] =~ m/(.+):(.+)/) {
+			push(@{$output},$2);
+		} else {
+			push(@{$output},$aliases->[$i]);
+		}
+	}
+	return $output;
 }
 
 sub hasAlias {
-    my ($self,$alias,$setName) = @_;
-    my $aliases = $self->aliases();
-    for (my $i=0; $i < @{$aliases}; $i++) {
-    	if (defined($setName) && $aliases->[$i] eq $setName.":".$alias) {
-    		return 1;
-    	} elsif (!defined($setName) && $aliases->[$i] eq $alias) {
-    		return 1;
-    	}
-    }
-    return 0;
+	my ($self,$alias,$setName) = @_;
+	my $aliases = $self->aliases();
+	for (my $i=0; $i < @{$aliases}; $i++) {
+		if (defined($setName) && $aliases->[$i] eq $setName.":".$alias) {
+			return 1;
+		} elsif (!defined($setName) && $aliases->[$i] eq $alias) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 sub addAlias {
-    my ($self,$alias,$setName) = @_;
-    my $aliases = $self->aliases();
-    for (my $i=0; $i < @{$aliases}; $i++) {
-    	if (defined($setName) && $aliases->[$i] eq $setName.":".$alias) {
-    		return ;
-    	} elsif (!defined($setName) && $aliases->[$i] eq $alias) {
-    		return ;
-    	}
-    }
-    if (defined($setName)) {
-    	push(@{$aliases},$setName.":".$alias);
-    } else {
-    	push(@{$aliases},$alias);
-    }
+	my ($self,$alias,$setName) = @_;
+	my $aliases = $self->aliases();
+	for (my $i=0; $i < @{$aliases}; $i++) {
+		if (defined($setName) && $aliases->[$i] eq $setName.":".$alias) {
+			return ;
+		} elsif (!defined($setName) && $aliases->[$i] eq $alias) {
+			return ;
+		}
+	}
+	if (defined($setName)) {
+		push(@{$aliases},$setName.":".$alias);
+	} else {
+		push(@{$aliases},$alias);
+	}
 }
 
 =head3 createEquation
@@ -452,8 +477,8 @@ Description:
 =cut
 
 sub createEquation {
-    my ($self,$args) = @_;
-    $args = Bio::KBase::ObjectAPI::utilities::args([], {
+	my ($self,$args) = @_;
+	$args = Bio::KBase::ObjectAPI::utilities::args([], {
 		indecies => 1,
 		format => 'id',
 		hashed => 0,
@@ -464,19 +489,19 @@ sub createEquation {
 		protons => 1,
 		generalized => 0,
 		stoichiometry => 0
-    }, $args);
+	}, $args);
 	
 	my $rgts = $self->modelReactionReagents();
 	my $rgtHash;
 	my $objhash;
-    my $rxnCompID = $self->modelcompartment()->compartment()->id();
-    my $hcpd = $self->parent()->template()->checkForProton();
+	my $rxnCompID = $self->modelcompartment()->compartment()->id();
+	my $hcpd = $self->parent()->template()->checkForProton();
  	if (!defined($hcpd) && $args->{hashed}==1) {
-	    Bio::KBase::ObjectAPI::utilities::error("Could not find proton in biochemistry!");
+		Bio::KBase::ObjectAPI::utilities::error("Could not find proton in biochemistry!");
 	}
 	my $wcpd = $self->parent()->template()->checkForWater();
  	if (!defined($wcpd) && $args->{water}==1) {
-	    Bio::KBase::ObjectAPI::utilities::error("Could not find water in biochemistry!");
+		Bio::KBase::ObjectAPI::utilities::error("Could not find water in biochemistry!");
 	}
 	
 	for (my $i=0; $i < @{$rgts}; $i++) {
@@ -497,100 +522,100 @@ sub createEquation {
 		$rgtHash->{$id}->{"name"} = $rgt->modelcompound()->name();
 	}
 
-    my @reactcode = ();
-    my @productcode = ();
-    my $sign = " <=> ";
+	my @reactcode = ();
+	my @productcode = ();
+	my $sign = " <=> ";
 
-    if($args->{direction}==1){
+	if($args->{direction}==1){
 		$sign = " => " if $self->direction() eq ">";
 		$sign = " <= " if $self->direction() eq "<";
-    }
+	}
 	
-    my %FoundComps=();
-    my $CompCount=0;
+	my %FoundComps=();
+	my $CompCount=0;
 
-    my $sortedCpd = [sort(keys(%{$rgtHash}))];
-    for (my $i=0; $i < @{$sortedCpd}; $i++) {
+	my $sortedCpd = [sort(keys(%{$rgtHash}))];
+	for (my $i=0; $i < @{$sortedCpd}; $i++) {
 		#No matter what "print ID" is selected, the reagents will be sorted by cpd ID first
 		my $comps = [sort(keys(%{$rgtHash->{$sortedCpd->[$i]}}))];
 		for (my $j=0; $j < @{$comps}; $j++) {
 			if ($comps->[$j] =~ m/([a-z])(\d+)/) {
 			   	my $printId = $sortedCpd->[$i];
-			    my $cpd = $objhash->{$sortedCpd->[$i]}->{$comps->[$j]}->modelcompound();
-			    if($args->{format} ne "id"){
-				    if($args->{format} eq "name"){
+				my $cpd = $objhash->{$sortedCpd->[$i]}->{$comps->[$j]}->modelcompound();
+				if($args->{format} ne "id"){
+					if($args->{format} eq "name"){
 						$printId = $cpd->name();
-				    } elsif ($args->{format} eq "msid"){
-				    		$printId = $cpd->msid();
-				    	} elsif ($args->{format} eq "inchikey"){
-				    		$printId = $cpd->inchikey();
-				    } elsif ($args->{format} eq "codeid"){
-				    		$printId = $cpd->codeid();
-				    } elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
+					} elsif ($args->{format} eq "msid"){
+							$printId = $cpd->msid();
+						} elsif ($args->{format} eq "inchikey"){
+							$printId = $cpd->inchikey();
+					} elsif ($args->{format} eq "codeid"){
+							$printId = $cpd->codeid();
+					} elsif($args->{format} ne "uuid" && $args->{format} ne "formula") {
 						$printId = $cpd->getAlias($args->{format});
-				    } elsif($args->{format} eq "formula"){
+					} elsif($args->{format} eq "formula"){
 						$printId = $cpd->formula();
-				    }
+					}
 				}
-		    
+			
 				my $comp = $1;
 				my $index = $2;
 				my $compartment = $comp;
 		
 				if($args->{generalized} && !exists($FoundComps{$comp})){
-				    $compartment = $CompCount;
-				    $FoundComps{$comp}=$CompCount;
-				    $CompCount++;
+					$compartment = $CompCount;
+					$FoundComps{$comp}=$CompCount;
+					$CompCount++;
 				}elsif($args->{generalized} && exists($FoundComps{$comp})){
-				    $compartment = $FoundComps{$comp};
+					$compartment = $FoundComps{$comp};
 				}
 				#print "COMP1:".$compartment."\n";
 				if ($args->{indecies} == 0) {
-				    $compartment = "[".$compartment."]" if !$args->{stoichiometry};
+					$compartment = "[".$compartment."]" if !$args->{stoichiometry};
 				}else{
-				    $compartment = "[".$compartment.$index."]" if !$args->{stoichiometry};
+					$compartment = "[".$compartment.$index."]" if !$args->{stoichiometry};
 				}
 				#print "COMP2:".$compartment."\n";
 				$compartment= "" if !$args->{compts};
 		
 				if ($rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]} < 0) {
-				    my $coef = -1*$rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
-				    my $reactcode = "(".$coef.") ".$printId.$compartment;
+					my $coef = -1*$rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
+					my $reactcode = "(".$coef.") ".$printId.$compartment;
 					if($args->{stoichiometry}==1){
-				    	my $name = $rgtHash->{$sortedCpd->[$i]}->{name};
-					    $coef = $rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
-					    $reactcode = join(":",($coef,$printId,$compartment,'0',"\"".$name."\""));
+						my $name = $rgtHash->{$sortedCpd->[$i]}->{name};
+						$coef = $rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
+						$reactcode = join(":",($coef,$printId,$compartment,'0',"\"".$name."\""));
 					}
-				    push(@reactcode,$reactcode);
+					push(@reactcode,$reactcode);
 		
 				} elsif ($rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]} > 0) {
-				    my $coef = $rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
-				    
-				    my $productcode .= "(".$coef.") ".$printId.$compartment;
+					my $coef = $rgtHash->{$sortedCpd->[$i]}->{$comps->[$j]};
+					
+					my $productcode .= "(".$coef.") ".$printId.$compartment;
 					if($args->{stoichiometry}==1){
-					    my $name = $rgtHash->{$sortedCpd->[$i]}->{name};
-					    $productcode = join(":",($coef,$printId,$compartment,'0',"\"".$name."\""));
+						my $name = $rgtHash->{$sortedCpd->[$i]}->{name};
+						$productcode = join(":",($coef,$printId,$compartment,'0',"\"".$name."\""));
 					}
-				    push(@productcode, $productcode);
+					push(@productcode, $productcode);
 				}
-		    }
+			}
 		}
-    }
+	}
 
-    my $reaction_string = join(" + ",@reactcode).$sign.join(" + ",@productcode);
+	my $reaction_string = join(" + ",@reactcode).$sign.join(" + ",@productcode);
 
 	if($args->{stoichiometry} == 1){
 		$reaction_string = join(";",@reactcode,@productcode);
 	}
 
-    if($args->{reverse}==1){
+	if($args->{reverse}==1){
 	$reaction_string = join(" + ",@productcode).$sign.join(" + ",@reactcode);
-    }
+	}
 
-    if ($args->{hashed} == 1) {
+	if ($args->{hashed} == 1) {
 	#return Digest::MD5::md5_hex($reaction_string);
-    }
-    return $reaction_string;
+	}
+	return $reaction_string;
 }
 
 =head3 hasModelReactionReagent
@@ -602,17 +627,17 @@ Description:
 =cut
 
 sub hasModelReactionReagent {
-    my ($self,$mdlcpd_id) = @_;
-    my $rgts = $self->modelReactionReagents();
-    if (!defined($rgts->[0])) {
+	my ($self,$mdlcpd_id) = @_;
+	my $rgts = $self->modelReactionReagents();
+	if (!defined($rgts->[0])) {
 	return 0;	
-    }
-    for (my $i=0; $i < @{$rgts}; $i++) {
-	if ($rgts->[$i]->modelcompound()->id() eq $mdlcpd_id) {
-	    return 1;
 	}
-    }
-    return 0;
+	for (my $i=0; $i < @{$rgts}; $i++) {
+	if ($rgts->[$i]->modelcompound()->id() eq $mdlcpd_id) {
+		return 1;
+	}
+	}
+	return 0;
 }
 
 =head3 addReagentToReaction
@@ -627,8 +652,8 @@ Description:
 =cut
 
 sub addReagentToReaction {
-    my $self = shift;
-    my $args = Bio::KBase::ObjectAPI::utilities::args(["coefficient","modelcompound_ref"],{}, @_);
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["coefficient","modelcompound_ref"],{}, @_);
 	my $rgts = $self->modelReactionReagents();
 	for (my $i=0; $i < @{$rgts}; $i++) {
 		if ($rgts->[$i]->modelcompound_ref() eq $args->{modelcompound_ref}) {
@@ -654,8 +679,8 @@ Description:
 =cut
 
 sub addModelReactionProtein {
-    my $self = shift;
-    my $args = Bio::KBase::ObjectAPI::utilities::args(["proteinDataTree"], {complex_ref => ""}, @_);
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["proteinDataTree"], {complex_ref => ""}, @_);
 	my $prots = $self->modelReactionProteins();
 #	for (my $i=0; $i < @{$prots}; $i++) {
 #		if ($prots->[$i]->complex_ref() eq $args->{complex_ref}) {
@@ -701,81 +726,81 @@ Description:
 
 sub setGPRFromArray {
 	my $self = shift;
-    my $args = Bio::KBase::ObjectAPI::utilities::args(["gpr"],{}, @_);
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["gpr"],{}, @_);
 	$self->modelReactionProteins([]);
 	foreach my $prot (@{$self->modelReactionProteins()}) {
 		$self->remove("modelReactionProteins",$prot);
 	}
 	for (my $i=0; $i < @{$args->{gpr}}; $i++) {
-    	if (defined($args->{gpr}->[$i]) && ref($args->{gpr}->[$i]) eq "ARRAY") {
-	    	my $prot = $self->add("modelReactionProteins",{
-	    		complex_ref => "",
-	    		note => "Manually specified GPR"
-	    	});
-	    	for (my $j=0; $j < @{$args->{gpr}->[$i]}; $j++) {
-	    		if (defined($args->{gpr}->[$i]->[$j]) && ref($args->{gpr}->[$i]->[$j]) eq "ARRAY") {
-		    		for (my $k=0; $k < @{$args->{gpr}->[$i]->[$j]}; $k++) {
-		    			if (defined($args->{gpr}->[$i]->[$j]->[$k])) {
-						    my $featureId = $args->{gpr}->[$i]->[$j]->[$k];
-						    my $ftrObj = $self->genome()->getObject("features",$featureId);
-						    if (!defined($ftrObj)) {
+		if (defined($args->{gpr}->[$i]) && ref($args->{gpr}->[$i]) eq "ARRAY") {
+			my $prot = $self->add("modelReactionProteins",{
+				complex_ref => "",
+				note => "Manually specified GPR"
+			});
+			for (my $j=0; $j < @{$args->{gpr}->[$i]}; $j++) {
+				if (defined($args->{gpr}->[$i]->[$j]) && ref($args->{gpr}->[$i]->[$j]) eq "ARRAY") {
+					for (my $k=0; $k < @{$args->{gpr}->[$i]->[$j]}; $k++) {
+						if (defined($args->{gpr}->[$i]->[$j]->[$k])) {
+							my $featureId = $args->{gpr}->[$i]->[$j]->[$k];
+							my $ftrObj = $self->genome()->getObject("features",$featureId);
+							if (!defined($ftrObj)) {
 								$prot->note($featureId);
-						    }
-						    else {
+							}
+							else {
 								my $subunit = $prot->add("modelReactionProteinSubunits",{
-								    role => "",
-								    triggering => 0,
-								    optionalSubunit => 0,
-								    note => "Manually specified GPR",
-								    feature_refs => [$ftrObj->_reference()]
-							    });
-			    			}
-			    		}
-		    		}
-	    		}
-	    	}
-    	}
-    }
+									role => "",
+									triggering => 0,
+									optionalSubunit => 0,
+									note => "Manually specified GPR",
+									feature_refs => [$ftrObj->_reference()]
+								});
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 sub ImportExternalEquation {
 	my $self = shift;
-    my $args = Bio::KBase::ObjectAPI::utilities::args(["reagents"],{}, @_);
-    my $rxncpds = $self->modelReactionReagents();
-    for (my $i=0; $i < @{$rxncpds}; $i++){
-    	$self->remove("modelReactionReagents",$rxncpds->[$i])
-    }
-    $self->modelReactionReagents([]);
-    foreach my $key (keys(%{$args->{reagents}})) {
-    	$self->add("modelReactionReagents",{
-	    	modelcompound_ref => "~/modelcompounds/id/".$key,
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["reagents"],{}, @_);
+	my $rxncpds = $self->modelReactionReagents();
+	for (my $i=0; $i < @{$rxncpds}; $i++){
+		$self->remove("modelReactionReagents",$rxncpds->[$i])
+	}
+	$self->modelReactionReagents([]);
+	foreach my $key (keys(%{$args->{reagents}})) {
+		$self->add("modelReactionReagents",{
+			modelcompound_ref => "~/modelcompounds/id/".$key,
 			coefficient => $args->{reagents}->{$key}
-	    });
-    }		
-    my $output = $self->parent()->template()->searchForReactionByCode($self->equationCode());
-    if (defined($output)) {
-    	$self->reaction_ref($self->parent()->template()->_reference()."/reactions/id/".$output->{rxnobj}->id());
-    	if ($output->{dir} eq "r") {
-    		if ($self->direction() eq ">") {
-    			$self->direction("<");
-    		} elsif ($self->direction() eq "<") {
-    			$self->direction(">");
-    		}
-    		my $rgts = $self->modelReactionReagents();
-    		for (my $i=0; $i < @{$rgts}; $i++) {
-    			$rgts->[$i]->coefficient(-1*$rgts->[$i]->coefficient());
-    		}
-    	}	
-    } else {
-    	Bio::KBase::utilities::log("Not found:".$self->id(),"debugging");
-    	my $array = [split(/_/,$self->id())];
-    	my $rxn = $self->parent()->template()->searchForReaction($array->[0]);
-    	if (defined($rxn)) {
-    		Bio::KBase::utilities::log($rxn->createEquation({format=>"codeid",hashed=>0,protons=>0,direction=>0}),"debugging");
-    		Bio::KBase::utilities::log($self->createEquation({indecies => 0,format=>"codeid",hashed=>0,protons=>0,direction=>0}),"debugging");
-    	}
-    	$self->reaction_ref($self->parent()->template()->_reference()."/reactions/id/rxn00000_c");
-    }
+		});
+	}		
+	my $output = $self->parent()->template()->searchForReactionByCode($self->equationCode());
+	if (defined($output)) {
+		$self->reaction_ref($self->parent()->template()->_reference()."/reactions/id/".$output->{rxnobj}->id());
+		if ($output->{dir} eq "r") {
+			if ($self->direction() eq ">") {
+				$self->direction("<");
+			} elsif ($self->direction() eq "<") {
+				$self->direction(">");
+			}
+			my $rgts = $self->modelReactionReagents();
+			for (my $i=0; $i < @{$rgts}; $i++) {
+				$rgts->[$i]->coefficient(-1*$rgts->[$i]->coefficient());
+			}
+		}	
+	} else {
+		Bio::KBase::utilities::log("Not found:".$self->id(),"debugging");
+		my $array = [split(/_/,$self->id())];
+		my $rxn = $self->parent()->template()->searchForReaction($array->[0]);
+		if (defined($rxn)) {
+			Bio::KBase::utilities::log($rxn->createEquation({format=>"codeid",hashed=>0,protons=>0,direction=>0}),"debugging");
+			Bio::KBase::utilities::log($self->createEquation({indecies => 0,format=>"codeid",hashed=>0,protons=>0,direction=>0}),"debugging");
+		}
+		$self->reaction_ref($self->parent()->template()->_reference()."/reactions/id/rxn00000_c");
+	}
 }
 
 sub loadGPRFromString {

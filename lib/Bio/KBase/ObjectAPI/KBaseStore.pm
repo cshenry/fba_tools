@@ -206,6 +206,12 @@ sub process_object {
 					push(@{$data->{features}},$data->{cdss}->[$i]);
 				}
 			}
+			if (defined($data->{mrnas})) {
+				for (my $i = 0; $i < @{$data->{mrnas}}; $i++) {
+					$data->{mrnas}->[$i]->{type} = "CDS";
+					push(@{$data->{features}},$data->{mrnas}->[$i]);
+				}
+			}
 			if (defined($data->{non_coding_features})) {
 				for (my $i = 0; $i < @{$data->{non_coding_features}}; $i++) {
 					push(@{$data->{features}},$data->{non_coding_features}->[$i]);

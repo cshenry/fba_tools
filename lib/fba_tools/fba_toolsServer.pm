@@ -29,6 +29,8 @@ our $CallContext;
 
 our %return_counts = (
         'build_metabolic_model' => 1,
+        'characterize_genome_metabolism_using_model' => 1,
+        'run_model_characterization' => 1,
         'build_plant_metabolic_model' => 1,
         'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
@@ -80,6 +82,8 @@ our %return_counts = (
 
 our %method_authentication = (
         'build_metabolic_model' => 'required',
+        'characterize_genome_metabolism_using_model' => 'required',
+        'run_model_characterization' => 'required',
         'build_plant_metabolic_model' => 'required',
         'build_multiple_metabolic_models' => 'required',
         'gapfill_metabolic_model' => 'required',
@@ -133,6 +137,8 @@ sub _build_valid_methods
     my($self) = @_;
     my $methods = {
         'build_metabolic_model' => 1,
+        'characterize_genome_metabolism_using_model' => 1,
+        'run_model_characterization' => 1,
         'build_plant_metabolic_model' => 1,
         'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,

@@ -153,6 +153,43 @@ module fba_tools {
     */
     funcdef build_metabolic_model(BuildMetabolicModelParams params) returns (BuildMetabolicModelResults) authentication required;
 
+	typedef structure {
+		genome_id genome_id;
+		workspace_name genome_workspace;
+		fbamodel_id fbamodel_output_id;
+		workspace_name workspace;
+		template_id template_id;
+		workspace_name template_workspace;
+		bool use_annotated_functions;
+		bool merge_all_annotations;
+		list<string> source_ontology_list;
+    } CharacterizeGenomeUsingModelParams;    
+    
+    typedef structure {
+        ws_fbamodel_id new_fbamodel_ref;
+        ws_fba_id new_fba_ref;
+    } CharacterizeGenomeUsingModelResults;
+    /*
+        Builds a model and characterizes an input genome using the model
+    */
+    funcdef characterize_genome_metabolism_using_model(CharacterizeGenomeUsingModelParams params) returns (CharacterizeGenomeUsingModelResults) authentication required;
+
+	typedef structure {
+		fbamodel_id fbamodel_id;
+		workspace_name fbamodel_workspace;
+		fbamodel_id fbamodel_output_id;
+		workspace_name workspace;
+	} RunModelCharacterizationParams;    
+    
+    typedef structure {
+        ws_fbamodel_id new_fbamodel_ref;
+        ws_fba_id new_fba_ref;
+    } RunModelCharacterizationResults;
+    /*
+        Builds a model and characterizes an input genome using the model
+    */
+    funcdef run_model_characterization(RunModelCharacterizationParams params) returns (RunModelCharacterizationResults) authentication required;
+
     typedef structure {
 		genome_id genome_id;
 		workspace_name genome_workspace;

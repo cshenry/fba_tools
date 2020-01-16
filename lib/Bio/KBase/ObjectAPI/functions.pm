@@ -2836,6 +2836,151 @@ sub func_build_metagenome_metabolic_model {
 	return $output;
 }
 
+sub func_model_based_genome_characterization {
+	my ($params,$datachannel) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","genome_id"],{
+		fbamodel_output_id => $params->{genome_id}.".mdl",
+		template_id => "auto",
+		genome_workspace => $params->{workspace},
+		template_workspace => undef,
+		use_annotated_functions => 1,
+        merge_all_annotations => 0,
+        source_ontology_list => []
+	});
+	Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
+		workspace => $params->{workspace},
+		genome_id => $params->{genome_id},
+		fbamodel_output_id => $params->{fbamodel_output_id}.".base",
+		template_id => $params->{template_id},
+		genome_workspace => $params->{genome_workspace},
+		template_workspace => $params->{template_workspace},
+		gapfill_model => 0,
+		anaerobe => 0,
+		use_annotated_functions => $params->{use_annotated_functions},
+        merge_all_annotations => $params->{merge_all_annotations},
+        source_ontology_list => $params->{source_ontology_list},
+        add_auxotrophy_transporters => 1
+	},$datachannel);
+	return Bio::KBase::ObjectAPI::functions::func_run_model_chacterization_pipeline({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_output_id}.".gapfilled",
+		fbamodel_output_id => $params->{fbamodel_output_id},
+	},$datachannel); 
+}	
+
+sub func_run_model_chacterization_pipeline {
+	my ($params,$datachannel) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
+		fbamodel_workspace => $params->{workspace},
+		fbamodel_output_id => undef
+	});
+	if (!defined($datachannel->{fbamodel})) {
+		$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+	}
+	if (!defined($params->{fbamodel_output_id})) {
+		$params->{fbamodel_output_id} = $datachannel->{fbamodel}->id();
+	}
+	my $rxnhash = Bio::KBase::utilities::reaction_hash();
+	my $auxo_output = Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy_from_model({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_output_id}.".base",
+	},$datachannel);
+	my $baseline_gapfilling = $datachannel->{fbamodel}->attributes()->{baseline_gapfilling};
+	delete $datachannel->{fbamodel};
+	my $gapfill_output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_output_id}.".base",
+		media_id => $params->{fbamodel_output_id}.".base".".auxo_media",
+		fbamodel_output_id => $params->{fbamodel_output_id}.".gapfilled"
+	},$datachannel);
+	$datachannel->{fbamodel}->attributes()->{baseline_gapfilling} = $baseline_gapfilling;
+	$datachannel->{fbamodel}->attributes()->{auxotrophy_gapfilling} = $gapfill_output->{number_gapfilled_reactions};
+	$datachannel->{fbamodel}->attributes()->{gapfilled_atpprod} = $gapfill_output->{atpproduction};
+	$datachannel->{fbamodel}->attributes()->{gapfilled_biomass} = $gapfill_output->{growth};
+	my $fba_output = Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_output_id}.".gapfilled",
+		fba_output_id => $params->{fbamodel_output_id}.".fba",
+		media_id => $params->{fbamodel_output_id}.".base".".auxo_media",
+		fva => 1,
+		minimize_flux => 1,
+		max_c_uptake => 30
+	},$datachannel);	
+	$datachannel->{fbamodel}->attributes()->{auxo_biomass} = $fba_output->{objective};
+	my $fbaobj = $datachannel->{fba};
+	my $rxnvar = $fbaobj->FBAReactionVariables();
+	my $classhash = {};
+	for (my $i=0; $i < @{$rxnvar}; $i++) {
+		if ($rxnvar->[$i]->modelreaction_ref() =~ m/(rxn\d+)/) {
+			$classhash->{$1}->{auxo} = $rxnvar->[$i]->{class};
+		}
+		if (!defined($datachannel->{fbamodel}->attributes()->{"auxo_class_".$rxnvar->[$i]->{class}})) {
+			$datachannel->{fbamodel}->attributes()->{"auxo_class_".$rxnvar->[$i]->{class}} = 0;
+		}
+		$datachannel->{fbamodel}->attributes()->{"auxo_class_".$rxnvar->[$i]->{class}}++;
+	}
+	$fba_output = Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
+		workspace => $params->{workspace},
+		fbamodel_id => $params->{fbamodel_output_id}.".gapfilled",
+		fba_output_id => $params->{fbamodel_output_id}.".fba",
+		fva => 1,
+		minimize_flux => 1,
+		max_c_uptake => 30
+	},$datachannel);	
+	$datachannel->{fbamodel}->attributes()->{complete_biomass} = $fba_output->{objective};
+	$fbaobj = $datachannel->{fba};
+	$rxnvar = $fbaobj->FBAReactionVariables();
+	for (my $i=0; $i < @{$rxnvar}; $i++) {
+		if ($rxnvar->[$i]->modelreaction_ref() =~ m/(rxn\d+)/) {
+			$classhash->{$1}->{comp} = $rxnvar->[$i]->{class};
+		}
+		if (!defined($datachannel->{fbamodel}->attributes()->{"complete_class_".$rxnvar->[$i]->{class}})) {
+			$datachannel->{fbamodel}->attributes()->{"complete_class_".$rxnvar->[$i]->{class}} = 0;
+		}
+		$datachannel->{fbamodel}->attributes()->{"complete_class_".$rxnvar->[$i]->{class}}++;
+	}
+	my $rxns = $datachannel->{fbamodel}->modelreactions();
+	for (my $i=0; $i < @{$rxns}; $i++) {
+		if ($rxns->[$i]->id() =~ m/(rxn\d+)/) {
+			my $rxnid = $1;
+			if (defined($rxnhash->{$rxnid}) && defined($rxnhash->{$rxnid}->{kegg_pathways})) {
+				for (my $j=0; $j < @{$rxnhash->{$rxnid}->{kegg_pathways}}; $j++) {
+					if (!defined($datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]})) {
+						$datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]} = {
+							rxn => 0, nonblocked => 0, gf => 0,rxns => {}
+						};
+					}
+					if (length($rxns->[$i]->gapfillString()) > 0) {
+						$datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]}->{gf}++;
+						$datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]}->{rxns}->{$rxnid} = "g";
+					} else {
+						$datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]}->{rxn}++;
+						$datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]}->{rxns}->{$rxnid} = "n";
+					}
+					if (defined($classhash->{$rxnid}->{comp}) && $classhash->{$rxnid}->{comp} ne "Blocked") {
+						$datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]}->{nonblocked}++;
+						if ($datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]}->{rxns}->{$rxnid} ne "g") {
+							$datachannel->{fbamodel}->attributes()->{"pathways_".$rxnhash->{$rxnid}->{kegg_pathways}->[$j]}->{rxns}->{$rxnid} = "a";
+						}
+					}
+				}
+			}
+		}
+	}
+	foreach my $cpd (keys(%{$auxo_output->{auxotrophy_data}})) {
+		$datachannel->{fbamodel}->attributes()->{"auxotrophy_".$cpd} = $auxo_output->{auxotrophy_data}->{$cpd}->{name}.":".
+			$auxo_output->{auxotrophy_data}->{$cpd}->{totalrxn}.":".
+			$auxo_output->{auxotrophy_data}->{$cpd}->{gfrxn}.":".
+			$auxo_output->{auxotrophy_data}->{$cpd}->{auxotrophic};
+	}
+	my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},Bio::KBase::utilities::buildref($params->{fbamodel_output_id}.".gapfilled",$params->{workspace}));
+	Bio::KBase::utilities::print_report_message({message => "<p>Model-based characterization of input genome complete. Examine model JSON file attributes values for output.</p>",append => 0,html => 1});
+	return {
+		new_fbamodel_ref => $datachannel->{fbamodel}->_wsworkspace()."/".$datachannel->{fbamodel}->_wswsid(),
+		new_fba_ref => $fbaobj->_wsworkspace()."/".$fbaobj->_wswsid()
+	};
+}
+
 sub func_create_or_edit_media {
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","media_output_id"],{
@@ -3005,6 +3150,228 @@ sub func_create_or_edit_media {
 		ws_report_id => $params->{workspace}.'/'.$params->{media_output_id}.".create_or_edit_media.report"
 	};
 }
+
+sub func_run_pickaxe {
+	my ($params,$model,$currentgen,$metabolomics_data) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","model_id"],{
+    		rule_sets => ["enzymatic"],
+    		generations => 1,
+    		prune => "none",
+    		add_transport => 0,
+    		out_model_id => $params->{model_id},
+    		compounds => [],
+    		template_id => "gramneg",
+    		template_workspace => undef,
+    		metabolomics_data => undef,
+    		compound_limit => 100000
+    });
+	#Setting generation if this is the first time calling the function
+	if (!defined($currentgen)) {
+		$currentgen = 1;
+	}
+	#Processing metabolomics data if this is the first run through
+	if (defined($params->{metabolomics_data}) && !defined($metabolomics_data)) {
+		$metabolomics_data = {
+			peak_to_struct => {},
+			struct_to_peaks => {}
+		};
+	}
+    #Loading model or compound set
+    my $input_model_array = ["id\tstructure"];
+    my $input_compounds_with_no_structure = [];
+    my $input_compounds_with_structure = 0;
+    if (!defined($model)) {
+    		#This must be the first time calling the function
+    		my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{model_id},$params->{workspace}));
+    		if (ref($object) eq "HASH") {
+			for (my $i=0; $i<@{$object->{compounds}}; $i++){
+				my $cpd = $object->{compounds}->[$i];
+				if (!defined($cpd->{smiles}) || length($cpd->{smiles}) == 0) {
+					push(@{$input_compounds_with_no_structure},$cpd->{id}."\t".$cpd->{name});
+				} else {
+					$input_compounds_with_structure++;
+					push(@{$input_model_array},$cpd->{id}."\t".$cpd->{smiles});
+				}
+			}
+	    } else {
+	    		my $cpds = $object->modelcompounds();
+	    		for (my $i=0; $i < @{$cpds}; $i++) {
+	    			if (!defined($cpds->[$i]->smiles()) && length($cpds->[$i]->smiles()) == 0) {
+	    				push(@{$input_compounds_with_no_structure},$cpds->[$i]->id()."\t".$cpds->[$i]->name());
+	    			} else {
+	    				$input_compounds_with_structure++;
+					push(@{$input_model_array},$cpds->[$i]->id()."\t".$cpds->[$i]->smiles());
+	    			}
+	    		}
+	    }
+	    print "Structures found for ".$input_compounds_with_structure." compounds in the input!\n";
+	    print "No structures found for ".@{$input_compounds_with_no_structure}." compounds, as follows:\n".join("\n",@{$input_compounds_with_no_structure})."\n";
+	    #Creating model to contain chemistry generated by pickaxe
+		my $template_trans = Bio::KBase::constants::template_trans();
+		$model = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+			id => $params->{out_model_id},
+			source => "PickAxe",
+			source_id => $params->{out_model_id},
+			type => "MINE",
+			name => $params->{out_model_id},
+			template_ref => Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{$params->{template_id}},
+			template_refs => [Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{$params->{template_id}}],
+			gapfillings => [],
+			gapgens => [],
+			biomasses => [],
+			modelcompartments => [],
+			modelcompounds => [],
+			modelreactions => []
+		});
+    } else {
+    		#This is a second or greater generation run and we want to create pickaxe input from new compounds in the input model
+    		my $cpds = $model->modelcompounds();
+    		my $rxns = $model->modelreactions();
+    		for (my $i=0; $i < @{$cpds}; $i++) {
+    			if ($cpds->[$i]->numerical_attributes()->{generation} == ($currentgen-1)) {
+    				$input_compounds_with_structure++;
+    				push(@{$input_model_array},$cpds->[$i]->id()."\t".$cpds->[$i]->smiles());
+    			}
+    		}
+    }
+    Bio::KBase::ObjectAPI::utilities::PRINTFILE(Bio::KBase::utilities::conf("kb_pickaxe","scratch")."/inputModel.tsv",$input_model_array);
+    my $output;
+    if ($input_compounds_with_structure == 0) {
+    		if ($currentgen == 1) {
+    			Bio::KBase::utilities::print_report_message({message => "<p>Pickaxe could not be run. No input compounds with structure were provided. If inputing a metabolic model, try integrating the model with ModelSEED IDs prior to running pickaxe.</p>",append => 0,html => 1});
+    		} else {
+    			Bio::KBase::utilities::print_report_message({message => "<p>Pickaxe run ended prematurely at generation ".($currentgen-1)." because no new compounds were generated in the last generation.</p>",append => 1,html => 1});
+    		}
+    		$output->{results}->{generations}->[$currentgen] = {total => {reactions => 0,compounds => 0}};
+    } else {
+	    #Iterating over rulesets and running the pickaxe command for each one
+	    $output->{results}->{generations}->[$currentgen] = {total => {reactions => 0,compounds => 0}};
+	    foreach my $ruleset (@{$params->{rule_sets}}) {
+	    		$output->{results}->{generations}->[$currentgen]->{$ruleset} = {reactions => 0,compounds => 0};
+	    		my $command = "python3 /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/pickaxe.py -g 1 -c /kb/module/work/tmp/inputModel.tsv -o /kb/module/work/tmp";
+	    		my $coreactant_path = "/kb/module/data/NoCoreactants.tsv";
+	    		my $retro_rule_path = "/kb/module/data/".$ruleset.".tsv --bnice -q -m 4";
+	    		if ($ruleset eq 'spontaneous') {
+		        $command .= ' -C /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/data/ChemicalDamageCoreactants.tsv -r /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/data/ChemicalDamageReactionRules.tsv';
+		    } elsif ($ruleset eq 'enzymatic') {
+		        $command .= ' -C /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/data/EnzymaticCoreactants.tsv -r /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/data/EnzymaticReactionRules.tsv --bnice';
+		    } elsif ($ruleset =~ /retro_rules/) {
+		        $command .= " -C $coreactant_path -r $retro_rule_path";
+		    } else {
+		        die "Invalid reaction rule set or rule set not defined";
+		    }
+		    #Dealing with pruning policy
+		    if ($params->{prune} eq 'model') {
+		        $command .= ' -p /kb/module/work/tmp/inputModel.tsv';
+		
+		    } elsif ($params->{prune} eq 'biochemistry') {
+		        $command .= ' -p /kb/module/data/Compounds.json';
+		    }
+		    #Running pickax
+		    system($command);
+		    #Parsing current pickax output and adding to model
+		    open my $mcf, ">", "/kb/module/work/tmp/FBAModelCompounds.tsv"  or die "Couldn't open FBAModelCompounds file $!\n";
+			open my $mcr, ">", "/kb/module/work/tmp/FBAModelReactions.tsv"  or die "Couldn't open FBAModelCompounds file $!\n";;;
+		    #Adding compounds to model
+			open my $fhc, "<", "/kb/module/work/tmp/compounds.tsv" or die "Couldn't open compounds file $!\n";
+#			while (my $input = <$fhc>){
+#				chomp $input;
+#				my $array = [split(/\t/,$input)];
+#				$array->[3] =~ s/(\+|-)\d*$//;
+#				$mdl->add("modelcompound",{
+#					id => ,
+#					name => ,
+#					formula => ,
+#					charge => ,
+#					aliases => ,
+#					inchikey => ,
+#					smiles => ,
+#					
+#				});
+#			}
+			#Adding compounds to model
+			open $fhc, "<", "/kb/module/work/tmp/compounds.tsv" or die "Couldn't open compounds file $!\n";
+			while (my $input = <$fhc>){
+				chomp $input;
+				my $array = [split(/\t/,$input)];
+				$array->[3] =~ s/(\+|-)\d*$//;
+#				$mdl->add("modelcompound",{
+#					id => ,
+#					name => ,
+#					formula => ,
+#					charge => ,
+#					aliases => ,
+#					inchikey => ,
+#					smiles => ,
+#					
+#				});
+			}	
+			#Adding reactions to model
+#			open my $fhr, "<", "/kb/module/work/tmp/reactions.tsv" or die "Couldn't open reactions file $!\n";
+#			while (my $input = <$fhr>){
+#		        chomp $input;
+#		        my $array = [split(/\t/,$input)];
+#		        print $mcr "$rxnId[0]\t>\tc0\tnone\t$rxnId[0]\tnone\tnone\t$rxnId[5]\t$rxnId[2]\n";
+#		    }
+#		    print $mcf "id\tname\tformula\tcharge\taliases\tinchikey\tsmiles\n";
+#		    <$fhc>;
+	    }      
+#        my @cpdData = split /\t/, $input;
+#        # KBase doesn't use charges in formulas so strip these
+#        $cpdData[3] =~ s/(\+|-)\d*$//;
+#        if (defined $cpdStHash->{$cpdData[0]}){
+#            my $seedcmp = $co->[$cpdStHash->{$cpdData[0]}];
+#            print $mcf "$cpdData[0]_c0\t$seedcmp->{name}\t$seedcmp->{formula}\t$seedcmp->{charge}\tnone\t$cpdData[5]\t$cpdData[6]\n";
+#        } elsif (defined $inchikeyHash->{$cpdData[5]}){
+#            my $seedcmp = $co->[$inchikeyHash->{$cpdData[5]}];
+#            print $mcf "$cpdData[0]_c0\t$seedcmp->{name}\t$seedcmp->{formula}\t$seedcmp->{charge}\tnone\t$cpdData[5]\t$cpdData[6]\n";
+#        } else {
+#            print $mcf "$cpdData[0]_c0\t$cpdData[0]\t$cpdData[3]\t$cpdData[4]\tnone\t$cpdData[5]\t$cpdData[6]\n";
+#        }
+#		close $fhc;
+#		print $mcr "id\tdirection\tcompartment\tgpr\tname\tenzyme\tpathway\treference\tequation\n";
+#		<$fhr>;
+	    #If more generations are desired, call this function again recursively
+		my $cpdcount = 0;
+		my $rxncount = 0;
+		if ($currentgen < $params->{generation} && $cpdcount > 0) {
+			$output = Bio::KBase::ObjectAPI::functions::func_run_pickaxe($params,$model,$currentgen+1,$metabolomics_data);
+		} elsif ($currentgen < $params->{generation}) {
+			Bio::KBase::utilities::print_report_message({message => "<p>Pickaxe run ended prematurely at generation ".($currentgen-1)." because no new compounds were generated in the last generation.</p>",append => 1,html => 1});
+		}
+		$output->{results}->{generations}->[$currentgen] = {new_reactions => $rxncount,new_compounds => $cpdcount};
+	}
+	#Only the first function call should proceed with final steps
+	if ($currentgen != 1) {
+		return $output;
+	}
+	#Finalizing model and returning
+	my $cpdhash;
+	if (@{$model->modelcompounds()} > 0) {
+		#Adding transport reactions
+		if ($params->{add_transport}) {
+			my $cpds = $model->modelcompounds();
+			for (my $i=0; $i < @{$cpds}; $i++) {
+				if ($cpds->[$i]->id() !~ m/cpd\d+/) {
+					$model->addModelReaction({
+						reaction => "drain-".$cpds->[$i]->id(),
+						equation => $cpds->[$i]->id()." =>",
+						direction => ">",
+						name => $cpds->[$i]->name()." drain",
+						compounds => $cpdhash,
+						addReaction => 1
+					});
+				}
+			}
+		}
+		#Saving the model object
+		$output->{model_ref} = Bio::KBase::utilities::buildref($params->{out_model_id},$params->{workspace});
+		my $wsmeta = $handler->util_save_object($model,$output->{model_ref},{type => "KBaseFBA.FBAModel"});
+	}
+	#Update output with current data
+	return $output;
+}
+
 
 sub func_edit_metabolic_model {
 	my ($params,$model) = @_;

@@ -77,6 +77,53 @@ class fba_tools(object):
             'fba_tools.build_metabolic_model',
             [params], self._service_ver, context)
 
+    def characterize_genome_metabolism_using_model(self, params, context=None):
+        """
+        Builds a model and characterizes an input genome using the model
+        :param params: instance of type "CharacterizeGenomeUsingModelParams"
+           -> structure: parameter "genome_id" of type "genome_id" (A string
+           representing a Genome id.), parameter "genome_workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.),
+           parameter "template_id" of type "template_id" (A string
+           representing a NewModelTemplate id.), parameter
+           "template_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter
+           "use_annotated_functions" of type "bool" (A binary boolean),
+           parameter "merge_all_annotations" of type "bool" (A binary
+           boolean), parameter "source_ontology_list" of list of String
+        :returns: instance of type "CharacterizeGenomeUsingModelResults" ->
+           structure: parameter "new_fbamodel_ref" of type "ws_fbamodel_id"
+           (The workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
+           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA)
+        """
+        return self._client.call_method(
+            'fba_tools.characterize_genome_metabolism_using_model',
+            [params], self._service_ver, context)
+
+    def run_model_characterization(self, params, context=None):
+        """
+        Builds a model and characterizes an input genome using the model
+        :param params: instance of type "RunModelCharacterizationParams" ->
+           structure: parameter "fbamodel_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "fbamodel_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "workspace" of type
+           "workspace_name" (A string representing a workspace name.)
+        :returns: instance of type "RunModelCharacterizationResults" ->
+           structure: parameter "new_fbamodel_ref" of type "ws_fbamodel_id"
+           (The workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
+           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA)
+        """
+        return self._client.call_method(
+            'fba_tools.run_model_characterization',
+            [params], self._service_ver, context)
+
     def build_plant_metabolic_model(self, params, context=None):
         """
         Build a genome-scale metabolic model based on annotations in an input genome typed object

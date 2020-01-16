@@ -182,6 +182,42 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: characterize_genome_metabolism_using_model</p>
+     * <pre>
+     * Builds a model and characterizes an input genome using the model
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.CharacterizeGenomeUsingModelParams CharacterizeGenomeUsingModelParams}
+     * @return   instance of type {@link us.kbase.fbatools.CharacterizeGenomeUsingModelResults CharacterizeGenomeUsingModelResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public CharacterizeGenomeUsingModelResults characterizeGenomeMetabolismUsingModel(CharacterizeGenomeUsingModelParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<CharacterizeGenomeUsingModelResults>> retType = new TypeReference<List<CharacterizeGenomeUsingModelResults>>() {};
+        List<CharacterizeGenomeUsingModelResults> res = caller.jsonrpcCall("fba_tools.characterize_genome_metabolism_using_model", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: run_model_characterization</p>
+     * <pre>
+     * Builds a model and characterizes an input genome using the model
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.RunModelCharacterizationParams RunModelCharacterizationParams}
+     * @return   instance of type {@link us.kbase.fbatools.RunModelCharacterizationResults RunModelCharacterizationResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public RunModelCharacterizationResults runModelCharacterization(RunModelCharacterizationParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<RunModelCharacterizationResults>> retType = new TypeReference<List<RunModelCharacterizationResults>>() {};
+        List<RunModelCharacterizationResults> res = caller.jsonrpcCall("fba_tools.run_model_characterization", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: build_plant_metabolic_model</p>
      * <pre>
      * Build a genome-scale metabolic model based on annotations in an input genome typed object

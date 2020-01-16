@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '1.7.8';
 our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = '0b8458398a51b453612a84d53371457b858c2748';
+our $GIT_COMMIT_HASH = 'e348a4f9023ef30cec3b8044d98a615e1627ce28';
 
 =head1 NAME
 
@@ -449,6 +449,216 @@ sub build_metabolic_model
 	my $msg = "Invalid returns passed to build_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'build_metabolic_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 characterize_genome_metabolism_using_model
+
+  $return = $obj->characterize_genome_metabolism_using_model($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.CharacterizeGenomeUsingModelParams
+$return is a fba_tools.CharacterizeGenomeUsingModelResults
+CharacterizeGenomeUsingModelParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+	use_annotated_functions has a value which is a fba_tools.bool
+	merge_all_annotations has a value which is a fba_tools.bool
+	source_ontology_list has a value which is a reference to a list where each element is a string
+genome_id is a string
+workspace_name is a string
+fbamodel_id is a string
+template_id is a string
+bool is an int
+CharacterizeGenomeUsingModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.CharacterizeGenomeUsingModelParams
+$return is a fba_tools.CharacterizeGenomeUsingModelResults
+CharacterizeGenomeUsingModelParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+	use_annotated_functions has a value which is a fba_tools.bool
+	merge_all_annotations has a value which is a fba_tools.bool
+	source_ontology_list has a value which is a reference to a list where each element is a string
+genome_id is a string
+workspace_name is a string
+fbamodel_id is a string
+template_id is a string
+bool is an int
+CharacterizeGenomeUsingModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Builds a model and characterizes an input genome using the model
+
+=back
+
+=cut
+
+sub characterize_genome_metabolism_using_model
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to characterize_genome_metabolism_using_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'characterize_genome_metabolism_using_model');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN characterize_genome_metabolism_using_model
+    $params = $self->util_initialize_call($params,$ctx);
+	$return = Bio::KBase::ObjectAPI::functions::func_model_based_genome_characterization($params);
+	$self->util_finalize_call({
+		output => $return,
+		workspace => $params->{workspace},
+		report_name => $params->{fbamodel_output_id}.".report",
+	});
+    #END characterize_genome_metabolism_using_model
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to characterize_genome_metabolism_using_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'characterize_genome_metabolism_using_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 run_model_characterization
+
+  $return = $obj->run_model_characterization($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.RunModelCharacterizationParams
+$return is a fba_tools.RunModelCharacterizationResults
+RunModelCharacterizationParams is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+fbamodel_id is a string
+workspace_name is a string
+RunModelCharacterizationResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.RunModelCharacterizationParams
+$return is a fba_tools.RunModelCharacterizationResults
+RunModelCharacterizationParams is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+fbamodel_id is a string
+workspace_name is a string
+RunModelCharacterizationResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Builds a model and characterizes an input genome using the model
+
+=back
+
+=cut
+
+sub run_model_characterization
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to run_model_characterization:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_model_characterization');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN run_model_characterization
+    $params = $self->util_initialize_call($params,$ctx);
+	$return = Bio::KBase::ObjectAPI::functions::func_run_model_chacterization_pipeline($params);
+	$self->util_finalize_call({
+		output => $return,
+		workspace => $params->{workspace},
+		report_name => $params->{fbamodel_output_id}.".report",
+	});
+    #END run_model_characterization
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to run_model_characterization:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_model_characterization');
     }
     return($return);
 }
@@ -6272,6 +6482,152 @@ new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
 new_fba_ref has a value which is a fba_tools.ws_fba_id
 number_gapfilled_reactions has a value which is an int
 number_removed_biomass_compounds has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 CharacterizeGenomeUsingModelParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+genome_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+use_annotated_functions has a value which is a fba_tools.bool
+merge_all_annotations has a value which is a fba_tools.bool
+source_ontology_list has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+genome_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+use_annotated_functions has a value which is a fba_tools.bool
+merge_all_annotations has a value which is a fba_tools.bool
+source_ontology_list has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 CharacterizeGenomeUsingModelResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+
+
+=end text
+
+=back
+
+
+
+=head2 RunModelCharacterizationParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 RunModelCharacterizationResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
 
 
 =end text
