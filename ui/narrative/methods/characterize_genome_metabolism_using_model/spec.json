@@ -1,0 +1,222 @@
+{
+   "name" : "characterize_genome_metabolism_using_model",
+   "ver" : "1.0.0",
+   "authors" : [
+      "chenry"
+   ],
+   "contact" : "http://kbase.us/contact-us/",
+   "visible" : true,
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "parameters" : [
+      {
+         "id" : "genome_id",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseGenomes.Genome"
+            ]
+         }
+      },
+      {
+         "text_options" : {
+            "is_output_name" : true,
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "fbamodel_output_id",
+         "advanced" : false
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "auto",
+                  "display" : "Automatic selection",
+                  "ui_name" : "Automatic selection",
+                  "value" : "auto"
+               },
+               {
+                  "value" : "gramneg",
+                  "ui_name" : "Gram negative",
+                  "display" : "Gram negative",
+                  "id" : "gramneg"
+               },
+               {
+                  "id" : "grampos",
+                  "value" : "grampos",
+                  "ui_name" : "Gram positive",
+                  "display" : "Gram positive"
+               },
+               {
+                  "display" : "Plant",
+                  "ui_name" : "Plant",
+                  "value" : "plant",
+                  "id" : "plant"
+               },
+               {
+                  "display" : "Core metabolism",
+                  "ui_name" : "Core metabolism",
+                  "value" : "core",
+                  "id" : "core"
+               }
+            ]
+         },
+         "id" : "template_id",
+         "advanced" : false,
+         "default_values" : [
+            "auto"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "use_annotated_functions",
+         "advanced" : true,
+         "default_values" : [
+            "1"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : "0",
+            "checked_value" : "1"
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "merge_all_annotations",
+         "advanced" : true,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : "0",
+            "checked_value" : "1"
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "textsubdata",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "source_ontology_list",
+         "advanced" : true,
+         "textsubdata_options" : {
+            "allow_custom" : false,
+            "show_src_obj" : true,
+            "subdata_selection" : {
+               "path_to_subdata" : [
+                  "ontology_events"
+               ],
+               "parameter_id" : "genome_id",
+               "selection_id" : "id",
+               "subdata_included" : [
+                  "ontology_events/[*]/id",
+                  "ontology_events/[*]/description"
+               ]
+            },
+            "multiselection" : true
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      }
+   ],
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "name" : "fba_tools",
+         "method" : "characterize_genome_metabolism_using_model",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "input_parameter" : "genome_id",
+               "target_property" : "genome_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "target_property" : "fbamodel_output_id",
+               "input_parameter" : "fbamodel_output_id"
+            },
+            {
+               "target_property" : "template_id",
+               "input_parameter" : "template_id"
+            },
+            {
+               "target_property" : "use_annotated_functions",
+               "input_parameter" : "use_annotated_functions"
+            },
+            {
+               "target_property" : "source_ontology_list",
+               "input_parameter" : "source_ontology_list"
+            },
+            {
+               "target_property" : "merge_all_annotations",
+               "input_parameter" : "merge_all_annotations"
+            }
+         ],
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			},
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "ws"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
+            },
+            {
+               "target_property" : "obj",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ]
+      }
+   },
+   "job_id_output_field" : "docker"
+}
