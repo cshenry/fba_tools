@@ -12,6 +12,7 @@ our $ws_client = undef;
 our $ga_client = undef;
 our $ac_client = undef;
 our $rast_client = undef;
+our $gfu_client = undef;
 our $rastsdk_client = undef;
 our $handle_client = undef;
 our $data_file_client = undef;
@@ -97,6 +98,12 @@ sub create_context_from_client_config {
 		filename => $parameters->{filename},
 		service => "authentication"
 	});
+	if (!defined($config->{authentication}->{token})) {
+		$config->{authentication}->{token} = $ENV{'KB_AUTH_TOKEN'};
+	}
+	if (!defined($config->{authentication}->{user_id})) {
+		$config->{authentication}->{user_id} = "chenry";
+	}
 	return Bio::KBase::utilities::create_context({
 		setcontext => $parameters->{setcontext},
 		token => $config->{authentication}->{token},
@@ -164,6 +171,18 @@ sub ac_client {
 		$ac_client = new AssemblyUtil::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ac_client;
+}
+
+sub gfu_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($gfu_client)) {
+		require "GenomeFileUtil/GenomeFileUtilClient.pm";
+		$gfu_client = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+	}
+	return $gfu_client;
 }
 
 sub handle_client {

@@ -8,6 +8,7 @@ use Bio::KBase::ObjectAPI::KBaseGenomes::Feature;
 
 our $reaction_hash;
 our $compound_hash;
+our $pathway_hash;
 our $kegg_hash;
 our $config = undef;
 our $ctx = undef;
@@ -139,6 +140,24 @@ sub compound_hash {
 		}
 	}
 	return $compound_hash;
+}
+
+sub pathway_hash {
+	if (!defined($pathway_hash)) {
+		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","kegg_pathways"));
+		for (my $i=1; $i < @{$lines}; $i++) {
+			my $array = [split(/\t/,$lines->[$i])];
+			my $id = $array->[1];
+			$id =~ s/map//;
+			$pathway_hash->{$id} = {
+				source => $array->[0],
+				name => $array->[2],
+				classes => [split(/;\s/,$array->[3])],
+				reactions => [split(/\|/,$array->[4])]
+			};
+		}
+	}
+	return $pathway_hash;
 }
 
 sub compute_neutral_formula {

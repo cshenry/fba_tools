@@ -36,7 +36,9 @@ sub util_initialize_call {
 	if (ref($params) eq 'HASH' || ref($params) eq 'ARRAY') {
 		$copied_params = Bio::KBase::utilities::deep_copy($params);
 	}
-	print "Receiving method call parameters:\n".Bio::KBase::ObjectAPI::utilities::TOJSON($copied_params,1);
+	if (Bio::KBase::utilities::conf("fba_tools","verbocity") > 1) {
+		print "Receiving method call parameters:\n".Bio::KBase::ObjectAPI::utilities::TOJSON($copied_params,1);
+	}
 	if (defined($ctx)) {
 		Bio::KBase::kbaseenv::initialize_call($ctx);
 	}

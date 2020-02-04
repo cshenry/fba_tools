@@ -207,6 +207,14 @@ sub NewBuildModel {
 		modelcompounds => [],
 		modelreactions => []
 	});
+	#Creating attributes
+	my $attributes = {
+		pathways => {},
+	    	auxotrophy => {},
+	    fbas => {},
+	    	gene_count => 0
+	};
+	$mdl->attributes($attributes);
 	$mdl->parent($self->store());
 	#Adding genome and metagenome reference
 	if (defined($args->{genome})) {
@@ -241,6 +249,7 @@ sub NewBuildModel {
 			model => $mdl
 		});
 	}
+	$mdl->attributes()->{gene_count} = @{$mdl->features()};
 	return $mdl;
 }
 

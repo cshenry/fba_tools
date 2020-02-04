@@ -194,7 +194,7 @@ sub EnsureProperATPProduction {
 		#base_atp_production => 260,
 		blacklist => $blacklist
 	},{fbamodel => $self});
-	$self->attributes()->{core_gapfilling} = $output->{number_gapfilled_reactions};
+	$self->attributes()->{core_gapfilling} = $output->{number_gapfilled_reactions}+0;
 	#Restoring the template
 	$self->template($oldtemplate);
 	#Adding noncore reactions back into the model
@@ -220,7 +220,7 @@ sub EnsureProperATPProduction {
 	},$datachannel);
 	my $rxn_addition_data = $datachannel->{fba}->outputfiles()->{ReactionAdditionAnalysis};
 	my $first = 1;
-	$self->attributes()->{base_rejected_rxn} = 0;
+	$self->attributes()->{base_rejected_reactions} = 0;
 	if (defined($rxn_addition_data)) {
 		for (my $i=1; $i < @{$rxn_addition_data}; $i++) {
 			my $row = [split(/\t/,$rxn_addition_data->[$i])];
@@ -245,17 +245,117 @@ sub EnsureProperATPProduction {
 					 	}
 					 }
 				}
-				$self->attributes()->{base_rejected_rxn}++;
+				$self->attributes()->{base_rejected_reactions}++;
 			} else {
 				if (!defined($self->attributes()->{initial_atp})) {
-					$self->attributes()->{initial_atp} = $row->[0];
+					$self->attributes()->{initial_atp} = $row->[0]+0;
 				}
-				$self->attributes()->{base_atp} = $row->[0];
+				$self->attributes()->{base_atp} = $row->[0]+0;
 			}
 		}
 	}
 	#Removing ATP biomass again
 	$self->remove("biomasses",$biorxn);
+}
+
+sub ComputePathwayAttributes {
+	my $self = shift;
+	my $classhash = shift;
+	my $attributes = $self->attributes();
+	my $rxns = $self->modelreactions();
+	my $pathwayhash = Bio::KBase::utilities::pathway_hash();
+	my $rxnhash = Bio::KBase::utilities::reaction_hash();
+	for (my $i=0; $i < @{$rxns}; $i++) {
+		if ($rxns->[$i]->id() =~ m/(rxn\d+)/) {
+			my $rxnid = $1;
+			if (defined($rxnhash->{$rxnid}) && defined($rxnhash->{$rxnid}->{kegg_pathways})) {
+				for (my $j=0; $j < @{$rxnhash->{$rxnid}->{kegg_pathways}}; $j++) {
+					my $pathid = $rxnhash->{$rxnid}->{kegg_pathways}->[$j];
+					$pathid =~ s/[a-z]//g;
+					if (defined($pathwayhash->{$pathid})) {
+						if (!defined($attributes->{pathways}->{$pathid})) {
+							$attributes->{pathways}->{$pathid} = {
+								id => $pathid,
+ 								source => $pathwayhash->{$pathid}->{source},
+							    	name => $pathwayhash->{$pathid}->{name},
+							    classes => $pathwayhash->{$pathid}->{classes},
+							    	reactions => {},
+							    	gapfilled_rxn => 0,
+							    functional_rxn => 0,
+							    nonfunctional_rxn => 0,
+							    pathway_size => @{$pathwayhash->{$pathid}->{reactions}}+0,
+							    	is_present => 0,#Set in second pass
+							    gene_count => 0,
+							    average_genes_per_reaction => 0,#Correct in second pass
+							    	stddev_genes_per_reaction => 0,#Set in second pass
+							    	average_coverage_per_reaction => 0,#Correct in second pass
+							    	stddev_coverage_per_reaction => 0,#Set in second pass
+							    	featurehash => {},#Delete in second pass
+							    	coverages => [],#Delete in second pass
+							    	genecounts => []#Delete in second pass
+							};
+						}
+						if (length($rxns->[$i]->gapfillString()) > 0) {
+							$attributes->{pathways}->{$pathid}->{gapfilled_rxn}++;
+							$attributes->{pathways}->{$pathid}->{reactions}->{$rxnid} = "g";
+						} elsif (defined($classhash->{$rxnid}->{comp}) && $classhash->{$rxnid}->{comp} ne "Blocked") {
+							$attributes->{pathways}->{$pathid}->{functional_rxn}++;
+							$attributes->{pathways}->{$pathid}->{reactions}->{$rxnid} = "a";
+						} else {
+							$attributes->{pathways}->{$pathid}->{nonfunctional_rxn}++;
+							$attributes->{pathways}->{$pathid}->{reactions}->{$rxnid} = "b";
+						}
+						if ($self->type() eq "Metagenome") {
+							$attributes->{pathways}->{$pathid}->{gene_count} += $rxns->[$i]->gene_count();
+							$attributes->{pathways}->{$pathid}->{average_genes_per_reaction} += $rxns->[$i]->gene_count();
+							$attributes->{pathways}->{$pathid}->{average_coverage_per_reaction} += $rxns->[$i]->coverage();
+							push(@{$attributes->{pathways}->{$pathid}->{genecounts}},$rxns->[$i]->gene_count());
+							push(@{$attributes->{pathways}->{$pathid}->{coverages}},$rxns->[$i]->coverage());
+						} else {
+							my $ftrids = $rxns->[$i]->featureIDs();
+							$attributes->{pathways}->{$pathid}->{average_genes_per_reaction} += @{$ftrids};
+							push(@{$attributes->{pathways}->{$pathid}->{genecounts}},@{$ftrids});
+							foreach my $ftrid (@{$ftrids}) {
+								$attributes->{pathways}->{$pathid}->{featurehash}->{$ftrid} = 1;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	foreach my $pathid (keys(%{$attributes->{pathways}})) {
+		$attributes->{pathways}->{$pathid}->{is_present} = 0;
+		if ($attributes->{pathways}->{$pathid}->{gene_count} == 0) {
+			$attributes->{pathways}->{$pathid}->{gene_count} = keys(%{$attributes->{pathways}->{$pathid}->{featurehash}});
+		}
+		if (defined($attributes->{pathways}->{$pathid}->{coverages})) {
+			my $count = @{$attributes->{pathways}->{$pathid}->{coverages}};
+			if ($count > 0) {
+				$attributes->{pathways}->{$pathid}->{average_genes_per_reaction} = $attributes->{pathways}->{$pathid}->{average_genes_per_reaction}/$count;
+				foreach my $gcount (@{$attributes->{pathways}->{$pathid}->{coverages}}) {
+					$attributes->{pathways}->{$pathid}->{stddev_coverage_per_reaction} += ($attributes->{pathways}->{$pathid}->{average_genes_per_reaction} - $gcount)*($attributes->{pathways}->{$pathid}->{average_genes_per_reaction} - $gcount);
+				}
+				$attributes->{pathways}->{$pathid}->{stddev_coverage_per_reaction} = $attributes->{pathways}->{$pathid}->{stddev_coverage_per_reaction}/$count;
+				$attributes->{pathways}->{$pathid}->{stddev_coverage_per_reaction} = sqrt($attributes->{pathways}->{$pathid}->{stddev_coverage_per_reaction});
+			}
+		}
+		my $count = @{$attributes->{pathways}->{$pathid}->{genecounts}};
+		if ($count > 0) {
+			$attributes->{pathways}->{$pathid}->{average_coverage_per_reaction} = $attributes->{pathways}->{$pathid}->{average_coverage_per_reaction}/$count;
+			foreach my $cov (@{$attributes->{pathways}->{$pathid}->{coverages}}) {
+				$attributes->{pathways}->{$pathid}->{stddev_genes_per_reaction} += ($attributes->{pathways}->{$pathid}->{average_coverage_per_reaction} - $cov)*($attributes->{pathways}->{$pathid}->{average_coverage_per_reaction} - $cov);
+			}
+			$attributes->{pathways}->{$pathid}->{stddev_genes_per_reaction} = $attributes->{pathways}->{$pathid}->{stddev_genes_per_reaction}/$count;
+			$attributes->{pathways}->{$pathid}->{stddev_genes_per_reaction} = sqrt($attributes->{pathways}->{$pathid}->{stddev_genes_per_reaction});
+		}
+		if ($attributes->{pathways}->{$pathid}->{functional_rxn} >= 3) {#TODO - need a better way to do this
+			$attributes->{pathways}->{$pathid}->{is_present} = 1;
+		}
+		delete $attributes->{pathways}->{$pathid}->{featurehash};
+		delete $attributes->{pathways}->{$pathid}->{coverages};
+		delete $attributes->{pathways}->{$pathid}->{genecounts};
+	}	
 }
 
 sub gene_count {
@@ -271,6 +371,23 @@ sub gene_count {
 	}
 	my $count = keys(%{$ftrhash});
 	return $count;
+}
+
+sub initialize_attributes {
+	my $self = shift;
+	my $attributes = $self->attributes();
+	if (!defined($attributes->{gene_count})) {
+		$attributes->{gene_count} = $self->gene_count();
+	}
+	if (!defined($attributes->{fbas})) {
+		$attributes->{fbas} = {};
+	}
+	if (!defined($attributes->{auxotrophy})) {
+		$attributes->{auxotrophy} = {};
+	}
+	if (!defined($attributes->{pathways})) {
+		$attributes->{pathways} = {};
+	}
 }
 
 sub gapfilled_reaction_count {
@@ -1880,27 +1997,6 @@ sub searchForCompartment {
 sub merge_models {
 	my $self = shift;
 	my $parameters = Bio::KBase::ObjectAPI::utilities::args(["models","fbamodel_output_id"], {mixed_bag_model => 0}, @_);
-	my $genomeObj = Bio::KBase::ObjectAPI::KBaseGenomes::Genome->new({
-		id => $parameters->{fbamodel_output_id}.".genome",
-		scientific_name => $parameters->{fbamodel_output_id}." genome",
-		domain => "Community",
-		genetic_code => 11,
-		dna_size => 0,
-		num_contigs => 0,
-		contig_lengths => [],
-		contig_ids => [],
-		source => Bio::KBase::utilities::conf("ModelSEED","source"),
-		source_id => $parameters->{fbamodel_output_id}.".genome",
-		md5 => "",
-		taxonomy => "Community",
-		gc_content => 0,
-		complete => 0,
-		publications => [],
-		features => [],
-    });
-    $genomeObj->parent($self->parent());
-    $genomeObj->_reference($self->genome_ref());
-    $self->genome($genomeObj);
     my $cmpsHash = {
 		e => $self->addCompartmentToModel({
 			compartment => $self->template()->biochemistry()->getObject("compartments","e"),
@@ -1943,6 +2039,7 @@ sub merge_models {
 		});
 	}
 	my $biohash = {};
+	$self->other_genome_refs([]);
 	for (my $i=0; $i < @{$parameters->{models}}; $i++) {
 		print "Loading model ".$parameters->{models}->[$i]."\n";
 		my $model = $self->getLinkedObject($parameters->{models}->[$i]);
@@ -1962,23 +2059,12 @@ sub merge_models {
 				});
 			}
 		}
-		#Adding genome, features, and roles to master mapping and annotation
-		my $mdlgenome = $model->genome();
-		my $prior_size = $genomeObj->dna_size();
-		if (defined($mdlgenome->dna_size())) {
-			$genomeObj->dna_size($genomeObj->dna_size()+$mdlgenome->dna_size());
-			if ($genomeObj->dna_size() > 0) {
-				$genomeObj->gc_content(($genomeObj->gc_content()*$prior_size+$mdlgenome->dna_size()*$mdlgenome->gc_content())/$genomeObj->dna_size());
-			}
+		if ($i == 0) {
+			$self->genome_ref($model->genome_ref());
+		} else {
+			$self->other_genome_refs()->[$i-1] = $model->genome_ref();
 		}
-		$genomeObj->num_contigs($genomeObj->num_contigs()+$mdlgenome->num_contigs());
-		push(@{$genomeObj->{contig_lengths}},@{$mdlgenome->{contig_lengths}});
-		push(@{$genomeObj->{contig_ids}},@{$mdlgenome->{contig_ids}});	
-		print "Loading features\n";
-		for (my $j=0; $j < @{$mdlgenome->features()}; $j++) {
-			$genomeObj->add("features",$mdlgenome->features()->[$j]);
-		}
-		$self->template_refs()->[$i+1] = $model->template_ref();
+		$self->template_refs()->[$i] = $model->template_ref();
 		#Adding compartments to community model
 		my $cmps = $model->modelcompartments();
 		print "Loading compartments\n";
@@ -2105,7 +2191,6 @@ sub merge_models {
 		}
 	}
 	print "Merge complete!";
-	return $genomeObj;
 }
 
 sub merge_in_reaction {
@@ -2671,6 +2756,7 @@ sub translate_model {
 sub translate_to_localrefs {
 	my $self = shift;
 	my %seen = ();
+	$self->initialize_attributes();
 	my $compartments = $self->modelcompartments();
     for (my $i=0; $i < @{$compartments}; $i++) {
 		if ($compartments->[$i]->compartment_ref() =~ m/\/([^\/]+)$/) {
