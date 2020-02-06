@@ -187,7 +187,7 @@ sub process_object {
 		my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
 		if (($type eq "Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) || ($type eq "GenomeAnnotation")) {
 			require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
+			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"));
 			my $gaoutput = $ga->get_genome_v1({
 				genomes       => [ {
 					"ref" => $origref
@@ -223,11 +223,12 @@ sub process_object {
 				}
 			}
 		}
-		if ($type eq "AttributeMapping" || $type eq "ChemicalAbundanceMatrix" || $type eq "BinnedContigs" || $type eq "Assembly" || $type eq "MediaSet" || $type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
+		if ($type eq "AttributeMapping" || $type eq "AnnotatedMetagenomeAssembly" || $type eq "ChemicalAbundanceMatrix" || $type eq "BinnedContigs" || $type eq "Assembly" || $type eq "MediaSet" || $type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
 			$self->cache()->{$ref} = $data;
 			$self->cache()->{$ref}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
 			$self->cache()->{$ref}->{_type} = $type;
 			$self->cache()->{$ref}->{_ref_chain} = $origref;
+			$self->cache()->{$ref}->{_wsinfo} = $info;
 		} else {
 			$self->cache()->{$ref} = $class->new($data);
 			$self->cache()->{$ref}->ref_chain($origref);
@@ -469,7 +470,7 @@ sub save_objects {
 		} else {
 			if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
 				require "GenomeFileUtil/GenomeFileUtilClient.pm";
-				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
+				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"));
 				my $gaout = $ga->save_one_genome({
 					workspace => $array->[0],
 					name => $array->[1],

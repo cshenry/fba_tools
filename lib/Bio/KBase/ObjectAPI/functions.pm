@@ -2804,9 +2804,10 @@ sub func_build_metagenome_metabolic_model {
 		}
 	}
 	#Checking if it looks like this metagenome was annotated with RAST and if not - reannotating with RAST
+	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
+	print "SSO count:".$ssocount."\n";
 	if ($ssocount < 500) {
 		#Downloading assembly file from metagenome annotation
-		my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 		my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($object->{assembly_ref},$params->{input_workspace}));
 		Bio::KBase::kbaseenv::assembly_to_fasta({
 			"ref" => $assembly_object->{_reference},
@@ -2821,9 +2822,13 @@ sub func_build_metagenome_metabolic_model {
 		#Parsing protein sequences from metagenome assembly file
 		$function_hash = {};
 		(my $proteins,my $contig_list) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
+		print "Proteins:\n".$proteins->[0]."\n".$proteins->[1]."\n".$proteins->[2]."\n".$proteins->[3]."\n";
 		my $output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
 		my $function_list = $output->{functions};
 		for (my $i=0; $i < @{$function_list}; $i++) {
+			if ($i < 10) {
+				print $function_list->[$i]."\n";
+			}
 			my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$i]);
 			if (defined($template->roleSearchNameHash()->{$searchrole})) {
 				foreach my $roleid (keys(%{$template->roleSearchNameHash()->{$searchrole}})) {
@@ -2853,13 +2858,16 @@ sub func_build_metagenome_metabolic_model {
 		}
 	}
 	#Building model from functions
+	if (!defined($params->{fbamodel_output_id})) {
+		$params->{fbamodel_output_id} = $object->{_wsinfo}->[1].".mdl";
+	}
 	my $mdl = $template->NewBuildModel({
 		function_hash => $function_hash,
 		reaction_hash => $reaction_hash,
 		modelid => $params->{fbamodel_output_id}
 	});
 	$mdl->type("Metagenome");
-	$mdl->genome_ref("kbase/EmptyGenome");
+	$mdl->genome_ref("PlantSEED/Empty");
 	$mdl->EnsureProperATPProduction({
 		anaerobe => 0,
 		max_objective_limit => $params->{max_objective_limit}

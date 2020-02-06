@@ -14,7 +14,7 @@ Bio::KBase::ObjectAPI::functions::set_handler($impl);
 my $test_ws = "fba_tools_unittests";
 $test_ws = "chenry:narrative_1504151898593";
 
-my $start = 0;
+my $start = 16;
 if (defined($ARGV[0])) {
 	$start = $ARGV[0];
 }
@@ -217,10 +217,13 @@ if ($start < 17) {
 	lives_ok{	
 		$impl->build_metagenome_metabolic_model({
 			workspace => $test_ws,
-			input_ref => "MetagenomeAnnotation"
+			input_ref => "test_metagenome_annotation"
 		});
 	} "build_metagenome_metabolic_model";
 }
+
+done_testing();
+exit();
 
 if ($start < 18) {
 	print "Running test 17:\n";
@@ -251,7 +254,7 @@ if ($start < 20) {
 		fba_id => $test_ws."/test_minimal_fba",
 		fbapathwayanalysis_output_id => "test",
 		exp_threshold_percentile => 0.5,
-		expseries_id => $test_ws."/expression_matrix_test",
+		expseries_id => $test_ws."/test_expression_matrix",
 		workspace => $test_ws})
 	} "compare_flux_with_expression";
 }
@@ -341,7 +344,7 @@ if ($start < 23) {
 	print "Running test 22:\n";
 	lives_ok{
 	    $impl->excel_file_to_model({
-		model_file => {path => "/kb/module/test/data/test_model.xlsx"},
+		model_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/test_model.xlsx"},
 		model_name => "excel_import",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",
@@ -353,7 +356,7 @@ if ($start < 24) {
 	print "Running test 23:\n";
 	lives_ok{
 	    $impl->sbml_file_to_model({
-		model_file     => { path => "/kb/module/test/data/e_coli_core.xml" },
+		model_file     => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/e_coli_core.xml" },
 		model_name     => "sbml_test",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",
@@ -365,7 +368,7 @@ if ($start < 25) {
 	print "Running test 24:\n";
 	lives_ok{
 	    $impl->sbml_file_to_model({
-		model_file     => { path => "/kb/module/test/data/PUBLIC_150.xml" },
+		model_file     => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/PUBLIC_150.xml" },
 		model_name     => "sbml_test2",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",
@@ -377,7 +380,7 @@ if ($start < 26) {
 	print "Running test 25:\n";
 	lives_ok{
 	    $impl->sbml_file_to_model({
-		model_file       => { path => "/kb/module/test/data/Community_model.sbml" },
+		model_file       => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/Community_model.sbml" },
 		model_name       => "sbml_test3",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",
@@ -389,7 +392,7 @@ if ($start < 27) {
 	print "Running test 26:\n";
 	lives_ok{
 	    $impl->sbml_file_to_model({
-		model_file     => { path => "/kb/module/test/data/iYL1228.xml" },
+		model_file     => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/iYL1228.xml" },
 		model_name     => "sbml_test4",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",
@@ -401,7 +404,7 @@ if ($start < 28) {
 	print "Running test 27:\n";
 	lives_ok{
 	    $impl->sbml_file_to_model({
-		model_file     => { path => "/kb/module/test/data/Ec_iJR904.xml" },
+		model_file     => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/Ec_iJR904.xml" },
 		model_name     => "sbml_test5",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",
@@ -413,7 +416,7 @@ if ($start < 29) {
 	print "Running test 28:\n";
 	lives_ok{
 	    $impl->sbml_file_to_model({
-		model_file     => { path => "/kb/module/test/data/iMB155.xml" },
+		model_file     => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/iMB155.xml" },
 		model_name     => "sbml_test6",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",
@@ -425,7 +428,7 @@ if ($start < 30) {
 	print "Running test 29:\n";
 	dies_ok{
 	    $impl->sbml_file_to_model({
-		model_file     => { path => "/kb/module/test/data/PUBLIC_150.xml" },
+		model_file     => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/PUBLIC_150.xml" },
 		model_name     => "better_fail",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",
@@ -438,11 +441,11 @@ if ($start < 31) {
 	print "Running test 30:\n";
 	dies_ok{
 	    $impl->tsv_file_to_model({
-		model_file     => { path => "/kb/module/test/data/FBAModelReactions.tsv" },
+		model_file     => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/FBAModelReactions.tsv" },
 		model_name     => "Pickaxe",
 		workspace_name => $test_ws,
 		biomass        => [],
-		compounds_file => { path => "/kb/module/test/data/FBAModelCompounds.tsv" }})
+		compounds_file => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/FBAModelCompounds.tsv" }})
 	} 'TSV to Model: invalid compound identifier';
 	print $@."\n";
 }
@@ -451,12 +454,12 @@ if ($start < 32) {
 	print "Running test 31:\n";
 	lives_ok{
 	    $impl->tsv_file_to_model({
-		model_file     => { path => "/kb/module/test/data/test_model-reactions.tsv" },
+		model_file     => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/test_model-reactions.tsv" },
 		model_name     => "tsv_import",
 		workspace_name => $test_ws,
 		genome         => $test_ws."/Escherichia_coli",,
 		biomass        => ["bio1"],
-		compounds_file => { path => "/kb/module/test/data/test_model-compounds.tsv" }})
+		compounds_file => { path => Bio::KBase::utilities::conf("fba_tools","testdir")."/test_model-compounds.tsv" }})
 	} 'import model from tsv';
 }
 
@@ -504,7 +507,7 @@ if ($start < 38) {
 	print "Running test 37:\n";
 	lives_ok{
 	    $impl->tsv_file_to_media({
-		media_file => {path => "/kb/module/test/data/media_example.tsv"},
+		media_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/media_example.tsv"},
 		media_name => "tsv_media",
 		workspace_name => $test_ws})
 	} 'TSV to media';
@@ -514,7 +517,7 @@ if ($start < 39) {
 	print "Running test 38:\n";
 	lives_ok{
 	    $impl->tsv_file_to_media({
-		media_file => {path => "/kb/module/test/data/test_media.tsv"},
+		media_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/test_media.tsv"},
 		media_name => "tsv_media2",
 		workspace_name => $test_ws})
 	} 'TSV to media 2';
@@ -524,7 +527,7 @@ if ($start < 40) {
 	print "Running test 39:\n";
 	lives_ok{
 	    $impl->tsv_file_to_media({
-		media_file => {path => "/kb/module/test/data/medio.tsv"},
+		media_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/medio.tsv"},
 		media_name => "tsv_media3",
 		workspace_name => $test_ws})
 	} 'TSV to media: blank lines and trailing spaces';
@@ -534,7 +537,7 @@ if ($start < 41) {
 	print "Running test 40:\n";
 	lives_ok{
 	    $impl->excel_file_to_media({
-		media_file => {path => "/kb/module/test/data/media_example.xls"},
+		media_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/media_example.xls"},
 		media_name => "xls_media",
 		workspace_name => $test_ws})
 	} 'Excel to media';
@@ -544,7 +547,7 @@ if ($start < 42) {
 	print "Running test 41:\n";
 	lives_ok{
 	    $impl->excel_file_to_media({
-		media_file => {path => "/kb/module/test/data/test_media.xls"},
+		media_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/test_media.xls"},
 		media_name => "xls_media2",
 		workspace_name => $test_ws})
 	} 'Excel to media 2';
@@ -570,7 +573,7 @@ if ($start < 45) {
 	print "Running test 44:\n";
 	lives_ok{
 	    $impl->tsv_file_to_phenotype_set({
-		phenotype_set_file => {path => "/kb/module/test/data/JZ_UW_Phynotype_Set_test.txt"},
+		phenotype_set_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/JZ_UW_Phynotype_Set_test.txt"},
 		phenotype_set_name => "return_delimited",
 		workspace_name => $test_ws,
 		genome => $test_ws."/Escherichia_coli"})
@@ -581,7 +584,7 @@ if ($start < 46) {
 	print "Running test 45:\n";
 	lives_ok{
 	    $impl->tsv_file_to_phenotype_set({
-		phenotype_set_file => {path => "/kb/module/test/data/NewPhenotypeSet.tsv"},
+		phenotype_set_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/NewPhenotypeSet.tsv"},
 		phenotype_set_name => "test_phenotype_set",
 		workspace_name => $test_ws,
 		genome => $test_ws."/Escherichia_coli"})
@@ -592,7 +595,7 @@ if ($start < 47) {
 	print "Running test 46:\n";
 	dies_ok{
 	    $impl->tsv_file_to_phenotype_set({
-		phenotype_set_file => {path => "/kb/module/test/data/EmptyPhenotypeSet.tsv"},
+		phenotype_set_file => {path => Bio::KBase::utilities::conf("fba_tools","testdir")."/EmptyPhenotypeSet.tsv"},
 		phenotype_set_name => "test_phenotype_set",
 		workspace_name => $test_ws,
 		genome => $test_ws."/Escherichia_coli"})

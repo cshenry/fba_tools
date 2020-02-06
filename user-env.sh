@@ -21,10 +21,12 @@ ARCHNAME=`perl -V:archname`
 ARCHNAME=`echo $ARCHNAME | awk '{ print substr( $0, 11,length($0)-12 ) }'`
 set_script_dir
 export KB_DEPLOYMENT_CONFIG=$SCRIPT_DIR/localdeploy.cfg
+export KB_CLIENT_CONFIG=/Users/chenry/.kbase_config
 env_push PERL5LIB /kb/runtime/lib/perl5/$ARCHNAME
 env_push PERL5LIB /kb/runtime/lib/perl5/$ARCHNAME/auto
 env_push PERL5LIB /kb/runtime/lib/perl5
 env_push PERL5LIB $SCRIPT_DIR/../KBaseClient/lib
+env_push PERL5LIB $SCRIPT_DIR/../kb_pickaxe/lib
 env_push PERL5LIB $SCRIPT_DIR/../KBaseReport/lib
 env_push PERL5LIB $SCRIPT_DIR/../handle_service/lib
 env_push PERL5LIB $SCRIPT_DIR/lib

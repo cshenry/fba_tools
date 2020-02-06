@@ -289,7 +289,7 @@ sub new
 		filename => $ENV{KB_DEPLOYMENT_CONFIG},
 		service => "fba_tools"
 	});
-    Bio::KBase::utilities::setconf("fba_tools","call_back_url",$ENV{ SDK_CALLBACK_URL });
+    Bio::KBase::utilities::setconf("UtilConfig","call_back_url",$ENV{"SDK_CALLBACK_URL"});
     Bio::KBase::ObjectAPI::functions::set_handler($self);
     Bio::KBase::utilities::set_handler($self);
     #END_CONSTRUCTOR
