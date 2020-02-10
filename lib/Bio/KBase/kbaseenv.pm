@@ -99,6 +99,7 @@ sub create_context_from_client_config {
 		service => "authentication"
 	});
 	if (!defined($config->{authentication}->{token})) {
+		print "Setting token from environment variable\n";
 		$config->{authentication}->{token} = $ENV{'KB_AUTH_TOKEN'};
 	}
 	if (!defined($config->{authentication}->{user_id})) {
