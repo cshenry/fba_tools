@@ -2717,6 +2717,7 @@ sub func_build_metagenome_metabolic_model {
     my $ftrcount = 0;
     my $ssocount = 0;
     for (my $i=0; $i < @{$lines}; $i++) {
+		print "LINE ".$i.":".$lines->[$i]."\n";
 		my $array = [split(/\t/,$lines->[$i])];
 		my $contig = $array->[0];
 		if (!defined($contig_coverages->{$contig})) {
