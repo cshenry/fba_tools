@@ -5313,27 +5313,49 @@ sub annotate_proteins {
     my $inputgenome = {
     		features => []
     };
-    for (my $i=1; $i <= @{$params->{proteins}}; $i++) {
+    my $return = {};
+	$return->{functions} = [];
+	my $rast_client = Bio::KBase::kbaseenv::rast_client();
+    for (my $i=0; $i <= @{$params->{proteins}}; $i++) {
     		push(@{$inputgenome->{features}},{
     			id => "peg.".$i,
     			protein_translation => $params->{proteins}->[$i]
     		});
+    		if ($i > 0 && $i % 4000 == 0) {
+    			my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
+				{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
+				#{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
+				{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } }
+			]});
+			for (my $j=0; $j < @{$genome->{features}}; $j++) {
+				my $funcarray = [];
+				if (defined($genome->{features}->[$i]->{function})) {
+					$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
+				}
+				push(@{$return->{functions}},$funcarray);
+				my $inputgenome = {
+			    		features => []
+			    };
+			}
+    		}
     }
-    my $rast_client = Bio::KBase::kbaseenv::rast_client();
-    my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
-		{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
-		#{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
-		{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } }
-	]});
-	my $ftrs = $genome->{features};
-	my $return = {};
-	$return->{functions} = [];
-	for (my $i=0; $i < @{$genome->{features}}; $i++) {
-		$return->{functions}->[$i] = [];
-		if (defined($genome->{features}->[$i]->{function})) {
-			$return->{functions}->[$i] = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$i]->{function})];
+    if (@{$inputgenome->{features}} > 0) {
+    		my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
+			{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
+			#{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
+			{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } }
+		]});
+		for (my $j=0; $j < @{$genome->{features}}; $j++) {
+			my $funcarray = [];
+			if (defined($genome->{features}->[$i]->{function})) {
+				$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
+			}
+			push(@{$return->{functions}},$funcarray);
+			my $inputgenome = {
+		    		features => []
+		    };
 		}
-	}
+    }
 	return $return;
 }
 
