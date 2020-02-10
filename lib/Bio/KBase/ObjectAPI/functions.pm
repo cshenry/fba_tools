@@ -2807,7 +2807,7 @@ sub func_build_metagenome_metabolic_model {
 	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 	print "Feature count:".$ftrcount."\n";
 	print "SSO count:".$ssocount."\n";
-	if ($ftrcount > 0 && $ssocount/$ftrcount > 0.1) {
+	if ($ftrcount > 0 && $ssocount/$ftrcount < 0.1) {
 		print "Reannotating with RAST because SEED role count is below 500!\n\n";
 		#Downloading assembly file from metagenome annotation
 		my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($object->{assembly_ref},$params->{input_workspace}));
