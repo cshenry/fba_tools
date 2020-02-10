@@ -2717,7 +2717,7 @@ sub func_build_metagenome_metabolic_model {
     my $ftrcount = 0;
     my $ssocount = 0;
     for (my $i=0; $i < @{$lines}; $i++) {
-		print "LINE ".$i.":".$lines->[$i]."\n";
+		#print "LINE ".$i.":".$lines->[$i]."\n";
 		my $array = [split(/\t/,$lines->[$i])];
 		my $contig = $array->[0];
 		if (!defined($contig_coverages->{$contig})) {
@@ -2805,6 +2805,7 @@ sub func_build_metagenome_metabolic_model {
 	}
 	#Checking if it looks like this metagenome was annotated with RAST and if not - reannotating with RAST
 	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
+	print "Feature count:".$ftrcount."\n";
 	print "SSO count:".$ssocount."\n";
 	if ($ftrcount > 0 && $ssocount/$ftrcount > 0.1) {
 		print "Reannotating with RAST because SEED role count is below 500!\n\n";
@@ -2823,6 +2824,11 @@ sub func_build_metagenome_metabolic_model {
 		#Parsing protein sequences from metagenome assembly file
 		$function_hash = {};
 		(my $proteins,my $contig_list) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
+		print "PROTEINS:".$proteins->[0]."\n";
+		print "PROTEINS:".$proteins->[1]."\n";
+		print "PROTEINS:".$proteins->[2]."\n";
+		print "PROTEINS:".$proteins->[3]."\n";
+		print "PROTEINS:".$proteins->[4]."\n";
 		my $output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
 		my $function_list = $output->{functions};
 		for (my $i=0; $i < @{$function_list}; $i++) {
