@@ -5329,7 +5329,7 @@ sub annotate_proteins {
 			]});
 			for (my $j=0; $j < @{$genome->{features}}; $j++) {
 				my $funcarray = [];
-				if (defined($genome->{features}->[$i]->{function})) {
+				if (defined($genome->{features}->[$j]->{function})) {
 					$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
 				}
 				push(@{$return->{functions}},$funcarray);
@@ -5347,7 +5347,7 @@ sub annotate_proteins {
 		]});
 		for (my $j=0; $j < @{$genome->{features}}; $j++) {
 			my $funcarray = [];
-			if (defined($genome->{features}->[$i]->{function})) {
+			if (defined($genome->{features}->[$j]->{function})) {
 				$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
 			}
 			push(@{$return->{functions}},$funcarray);
