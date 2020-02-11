@@ -5348,6 +5348,7 @@ sub annotate_proteins {
 		]});
 		for (my $j=0; $j < @{$genome->{features}}; $j++) {
 			my $funcarray = [];
+			print Bio::KBase::ObjectAPI::utilities::TOJSON($genome->{features}->[$j])."\n";
 			if (defined($genome->{features}->[$j]->{function})) {
 				print $genome->{features}->[$j]->{function}."\n";
 				$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
