@@ -2824,34 +2824,31 @@ sub func_build_metagenome_metabolic_model {
 		#Parsing protein sequences from metagenome assembly file
 		$function_hash = {};
 		(my $proteins,my $contig_list) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
-		print "PROTEINS:".$proteins->[0]."\n";
-		print "PROTEINS:".$proteins->[1]."\n";
-		print "PROTEINS:".$proteins->[2]."\n";
-		print "PROTEINS:".$proteins->[3]."\n";
-		print "PROTEINS:".$proteins->[4]."\n";
 		my $output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
 		my $function_list = $output->{functions};
 		for (my $i=0; $i < @{$function_list}; $i++) {
-			my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$i]);
-			if (defined($template->roleSearchNameHash()->{$searchrole})) {
-				foreach my $roleid (keys(%{$template->roleSearchNameHash()->{$searchrole}})) {
-					if ($template->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
-						if (!defined($function_hash->{$roleid}->{u})) {
-							$function_hash->{$roleid}->{u} = {
-								hit_count => 0,
-								non_gene_probability => 0,
-								non_gene_coverage => 0,
-								sources => {},
-							};
+			for (my $j=0; $j < @{$function_list->[$i]}; $j++) {
+				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$i]->[$j]);
+				if (defined($template->roleSearchNameHash()->{$searchrole})) {
+					foreach my $roleid (keys(%{$template->roleSearchNameHash()->{$searchrole}})) {
+						if ($template->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+							if (!defined($function_hash->{$roleid}->{u})) {
+								$function_hash->{$roleid}->{u} = {
+									hit_count => 0,
+									non_gene_probability => 0,
+									non_gene_coverage => 0,
+									sources => {},
+								};
+							}
+							$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}*$function_hash->{$roleid}->{u}->{hit_count}+$params->{rast_probability};
+							$function_hash->{$roleid}->{u}->{hit_count}++;
+							$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}/$function_hash->{$roleid}->{u}->{hit_count};
+							$function_hash->{$roleid}->{u}->{non_gene_coverage} += $contig_coverages->{$contig_list->[$i]};
+							if (!defined($function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]->[$j]})) {
+								$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]->[$j]} = 0;
+							}
+							$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]->[$j]}++;
 						}
-						$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}*$function_hash->{$roleid}->{u}->{hit_count}+$params->{rast_probability};
-						$function_hash->{$roleid}->{u}->{hit_count}++;
-						$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}/$function_hash->{$roleid}->{u}->{hit_count};
-						$function_hash->{$roleid}->{u}->{non_gene_coverage} += $contig_coverages->{$contig_list->[$i]};
-						if (!defined($function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]})) {
-							$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]} = 0;
-						}
-						$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]}++;
 					}
 				}
 			}
@@ -5323,8 +5320,8 @@ sub annotate_proteins {
     		if ($i > 0 && $i % 4000 == 0) {
     			print "Annotating ".($i-4000)."-".$i."\n";
     			my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
-				{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
-				#{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
+				{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {min_hits => 5,annotate_hypothetical_only => 0} },
+				{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
 				{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } }
 			]});
 			for (my $j=0; $j < @{$genome->{features}}; $j++) {
@@ -5342,21 +5339,18 @@ sub annotate_proteins {
     if (@{$inputgenome->{features}} > 0) {
     		print "Final annotation\n";
     		my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
-			{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
-			#{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
+			{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {min_hits => 5,annotate_hypothetical_only => 0} },
+			{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
 			{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } }
 		]});
 		for (my $j=0; $j < @{$genome->{features}}; $j++) {
 			my $funcarray = [];
-			print Bio::KBase::ObjectAPI::utilities::TOJSON($genome->{features}->[$j])."\n";
 			if (defined($genome->{features}->[$j]->{function})) {
 				$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
 			}
 			push(@{$return->{functions}},$funcarray);
 		}
     }
-    print "PROTEIN ARRAY:".@{$params->{proteins}}."\n";
-    print "FUNCTION ARRAY:".@{$return->{functions}}."\n";
 	return $return;
 }
 
