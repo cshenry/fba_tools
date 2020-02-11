@@ -5322,6 +5322,7 @@ sub annotate_proteins {
     			protein_translation => $params->{proteins}->[$i]
     		});
     		if ($i > 0 && $i % 4000 == 0) {
+    			print "Annotating ".($i-4000)."-".$i."\n";
     			my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
 				{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
 				#{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
@@ -5340,6 +5341,7 @@ sub annotate_proteins {
     		}
     }
     if (@{$inputgenome->{features}} > 0) {
+    		print "Final annotation\n";
     		my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
 			{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
 			#{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
