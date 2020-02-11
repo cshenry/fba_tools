@@ -5313,8 +5313,7 @@ sub annotate_proteins {
     my $inputgenome = {
     		features => []
     };
-    my $return = {};
-	$return->{functions} = [];
+    my $return = {functions => []};
 	my $rast_client = Bio::KBase::kbaseenv::rast_client();
     for (my $i=0; $i <= @{$params->{proteins}}; $i++) {
     		push(@{$inputgenome->{features}},{
@@ -5350,13 +5349,11 @@ sub annotate_proteins {
 		for (my $j=0; $j < @{$genome->{features}}; $j++) {
 			my $funcarray = [];
 			if (defined($genome->{features}->[$j]->{function})) {
+				print $genome->{features}->[$j]->{function}."\n";
 				$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
 			}
 			push(@{$return->{functions}},$funcarray);
 		}
-		$inputgenome = {
-	    		features => []
-	    };
     }
     print "PROTEIN ARRAY:".@{$params->{proteins}}."\n";
     print "FUNCTION ARRAY:".@{$return->{functions}}."\n";
