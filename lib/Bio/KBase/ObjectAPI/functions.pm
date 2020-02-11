@@ -5334,10 +5334,10 @@ sub annotate_proteins {
 					$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
 				}
 				push(@{$return->{functions}},$funcarray);
-				my $inputgenome = {
-			    		features => []
-			    };
 			}
+			$inputgenome = {
+		    		features => []
+		    };
     		}
     }
     if (@{$inputgenome->{features}} > 0) {
@@ -5353,11 +5353,13 @@ sub annotate_proteins {
 				$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
 			}
 			push(@{$return->{functions}},$funcarray);
-			my $inputgenome = {
-		    		features => []
-		    };
 		}
+		$inputgenome = {
+	    		features => []
+	    };
     }
+    print "PROTEIN ARRAY:".@{$params->{proteins}}."\n";
+    print "FUNCTION ARRAY:".@{$return->{functions}}."\n";
 	return $return;
 }
 
