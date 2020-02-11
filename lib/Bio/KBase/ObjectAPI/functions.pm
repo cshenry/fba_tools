@@ -5350,7 +5350,6 @@ sub annotate_proteins {
 			my $funcarray = [];
 			print Bio::KBase::ObjectAPI::utilities::TOJSON($genome->{features}->[$j])."\n";
 			if (defined($genome->{features}->[$j]->{function})) {
-				print $genome->{features}->[$j]->{function}."\n";
 				$funcarray = [split(/\s*;\s+|\s+[\@\/]\s+/,$genome->{features}->[$j]->{function})];
 			}
 			push(@{$return->{functions}},$funcarray);
