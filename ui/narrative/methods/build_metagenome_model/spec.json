@@ -22,7 +22,7 @@
          ],
          "advanced" : false,
          "field_type" : "text",
-         "optional" : true,
+         "optional" : false,
          "allow_multiple" : false,
          "text_options" : {
             "valid_ws_types" : [
@@ -31,14 +31,18 @@
          }
       },
       {
-         "id" : "gff_file",
-         "default_values" : [ "" ],
-         "advanced" : true,
-         "field_type" : "file",
+         "id" : "reads_refs",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : false,
+         "field_type" : "text",
          "optional" : true,
-         "allow_multiple" : false,
+         "allow_multiple" : true,
          "text_options" : {
-            "valid_ws_types" : [ ]
+            "valid_ws_types" : [
+               "KBaseFile.PairedEndLibrary"
+            ]
          }
       },
       {
@@ -119,8 +123,8 @@
                "target_property" : "gapfill_model"
             },
             {
-               "input_parameter" : "gff_file",
-               "target_property" : "gff_file"
+               "input_parameter" : "reads_refs",
+               "target_property" : "reads_refs"
             }
          ],
          "output_mapping" : [

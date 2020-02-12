@@ -41,6 +41,7 @@ has type => (is => 'rw', isa => 'Str', printOrder => '5', default => 'Singlegeno
 has rxnprobs_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has deleted_reactions => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 has attributes => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has contig_coverages => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 has model_edits => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has delete_biomasses => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 has loops => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
@@ -245,10 +246,18 @@ my $attributes = [
             'default' => 'sub {return [];}',
             'type' => 'ArrayRef',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'contig_coverages',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {source => 0, template_refs => 1, ATPMaintenance => 2, ATPSynthaseStoichiometry => 3, id => 4, metagenome_ref => 5, genome_ref => 6, template_ref => 7, source_id => 8, name => 9, metagenome_otu_ref => 10, type => 11, rxnprobs_ref => 12,deleted_reactions => 13,model_edits => 14,delete_biomasses => 15,loops => 16,attributes => 17,other_genome_refs => 18};
+my $attribute_map = {source => 0, template_refs => 1, ATPMaintenance => 2, ATPSynthaseStoichiometry => 3, id => 4, metagenome_ref => 5, genome_ref => 6, template_ref => 7, source_id => 8, name => 9, metagenome_otu_ref => 10, type => 11, rxnprobs_ref => 12,deleted_reactions => 13,model_edits => 14,delete_biomasses => 15,loops => 16,attributes => 17,other_genome_refs => 18,contig_coverages => 19};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

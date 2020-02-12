@@ -2671,7 +2671,8 @@ sub func_build_metagenome_metabolic_model {
 		minimum_target_flux => undef,
 		contig_coverage_file => undef,
 		rast_probability => 1,
-		other_anno_probability => 0.5
+		other_anno_probability => 0.5,
+		reads_refs => []
 	});
 	my $RoleHash;
 	my $bin_ref;
@@ -2679,6 +2680,9 @@ sub func_build_metagenome_metabolic_model {
 	my $annotations;
 	my $htmlreport = "";
 	my $contig_coverages = {};
+	my $coverage_data = 0;
+	#Retrieving metagenome annotation object
+	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 	#Reading the contig coverage file if provided
 	if (defined($params->{contig_coverage_file})) {
 		my $lines;
@@ -2700,6 +2704,20 @@ sub func_build_metagenome_metabolic_model {
 				$contig_coverages->{$array->[0]} = $array->[1];
 			}
 		}
+		$coverage_data = 1;
+	} elsif (@{$params->{reads_refs}} > 0) {
+		my $params = {
+           reads => $params->{reads_refs},
+           assembly_ref => $object->{input_ref}.";".$object->{assembly_ref}
+        };
+        my $readmapper = Bio::KBase::kbaseenv::readmapper_client();
+   		my $result = $readmapper->readmapper($params);
+		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($result->{file_path});
+		for (my $i=0; $i < @{$lines}; $i++) {
+			my $array = [split(/\t/,$lines->[$i])];
+			$contig_coverages->{$array->[0]} = $array->[2];
+		}
+		$coverage_data = 1;
 	}
 	#Retreiving the metagenome annotation object
 	my $gfu = Bio::KBase::kbaseenv::gfu_client();
@@ -2804,13 +2822,12 @@ sub func_build_metagenome_metabolic_model {
 		}
 	}
 	#Checking if it looks like this metagenome was annotated with RAST and if not - reannotating with RAST
-	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 	print "Feature count:".$ftrcount."\n";
 	print "SSO count:".$ssocount."\n";
 	if ($ftrcount > 0 && $ssocount/$ftrcount < 0.1) {
 		print "Reannotating with RAST because SEED role count is below 500!\n\n";
 		#Downloading assembly file from metagenome annotation
-		my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($object->{assembly_ref},$params->{input_workspace}));
+		my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($object->{input_ref}.";".$object->{assembly_ref},$params->{input_workspace}));
 		Bio::KBase::kbaseenv::assembly_to_fasta({
 			"ref" => $assembly_object->{_reference},
 			path => Bio::KBase::utilities::conf("fba_tools","scratch"),
@@ -2866,6 +2883,9 @@ sub func_build_metagenome_metabolic_model {
 		reaction_hash => $reaction_hash,
 		modelid => $params->{fbamodel_output_id}
 	});
+	if ($coverage_data == 1) {
+		$mdl->contig_coverages($contig_coverages);
+	}
 	$mdl->type("Metagenome");
 	$mdl->genome_ref("PlantSEED/Empty");
 	$mdl->EnsureProperATPProduction({

@@ -522,7 +522,7 @@ module KBaseFBA {
     /* 
     	FBAModel object
     	
-    	@optional other_genomes attributes abstractreactions gapfilledcandidates metagenome_otu_ref metagenome_ref genome_ref template_refs ATPSynthaseStoichiometry ATPMaintenance quantopts
+    	@optional contig_coverages other_genomes attributes abstractreactions gapfilledcandidates metagenome_otu_ref metagenome_ref genome_ref template_refs ATPSynthaseStoichiometry ATPMaintenance quantopts
 		@metadata ws source_id as Source ID
 		@metadata ws source as Source
 		@metadata ws name as Name
@@ -565,6 +565,7 @@ module KBaseFBA {
 		list<ModelReaction> gapfilledcandidates;
 		
 		ComputedAttributes attributes;
+		mapping<string contigid,float coverage> contig_coverages;
     } FBAModel;
     
     /* 

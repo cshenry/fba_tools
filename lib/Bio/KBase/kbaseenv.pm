@@ -3,10 +3,6 @@ use strict;
 use warnings;
 use Bio::KBase::utilities;
 use Workspace::WorkspaceClient;
-#use kb_maxbin::kb_maxbinClient;
-#use MetagenomeUtils::MetagenomeUtilsClient;
-#use RAST_SDK::RAST_SDKClient;
-#use ProkkaAnnotation::ProkkaAnnotationClient;
 
 our $ws_client = undef;
 our $ga_client = undef;
@@ -19,6 +15,7 @@ our $data_file_client = undef;
 our $objects_created = [];
 our $ontology_hash = undef;
 our $sso_hash = undef;
+my $readmapper_client = undef;
 
 sub log {
 	my ($msg,$tag) = @_;
@@ -184,6 +181,18 @@ sub gfu_client {
 		$gfu_client = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $gfu_client;
+}
+
+sub readmapper_client {
+	my($parameters) = @_;
+	$parameters = Bio::KBase::utilities::args($parameters,[],{
+		refresh => 0
+	});
+	if ($parameters->{refresh} == 1 || !defined($readmapper_client)) {
+		require "kb_readmapper/kb_readmapperClient.pm";
+		$readmapper_client = new kb_readmapper::kb_readmapperClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+	}
+	return $readmapper_client;
 }
 
 sub handle_client {
