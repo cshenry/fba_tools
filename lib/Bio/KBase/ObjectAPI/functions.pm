@@ -2720,7 +2720,7 @@ sub func_build_metagenome_metabolic_model {
 		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($result->{file_name});
 		for (my $i=0; $i < @{$lines}; $i++) {
 			my $array = [split(/\t/,$lines->[$i])];
-			$contig_coverages->{$array->[0]} = $array->[2];
+			$contig_coverages->{$array->[0]} = $array->[2]+0;
 		}
 		$coverage_data = 1;
 	}
