@@ -145,17 +145,22 @@ sub compound_hash {
 sub pathway_hash {
 	if (!defined($pathway_hash)) {
 		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","kegg_pathways"));
-		for (my $i=1; $i < @{$lines}; $i++) {
-			my $array = [split(/\t/,$lines->[$i])];
-			my $id = $array->[1];
-			$id =~ s/map//;
-			$pathway_hash->{$id} = {
-				source => $array->[0],
-				name => $array->[2],
-				classes => [split(/;\s/,$array->[3])],
-				reactions => [split(/\|/,$array->[4])]
-			};
-		}
+
+        my ( $header, @pathways ) = @$lines;
+        for ( @pathways ) {
+            my ( $source, $id, $name, $classes, $reactions ) = split /\t/, $_;
+            $id =~ s/map//;
+            $pathway_hash->{ $id } = {
+                source      => $source,
+                name        => $name,
+                classes     => $classes
+                    ? [ split /;\s/, $classes ]
+                    : [],
+                reactions   => $reactions
+                    ? [ split /\|/, $reactions ]
+                    : [],
+            };
+        }
 	}
 	return $pathway_hash;
 }
@@ -284,7 +289,7 @@ sub to_json {
 
 Definition:
 	REF Bio::KBase::utilities::deep_copy(ref);
-Description:	
+Description:
 
 =cut
 
@@ -354,7 +359,7 @@ sub gapfilling_html_table {
 	return $gapfilltable;
 };
 
-sub build_report_from_template { 
+sub build_report_from_template {
 	my ($name,$hash) = @_;
 	my $filename = Bio::KBase::utilities::conf("ModelSEED","template_directory").$name.".html";
 	my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE($filename);
@@ -365,7 +370,7 @@ sub build_report_from_template {
 			my $replace = "";
 			if (defined($hash->{$name})) {
 				$replace = $hash->{$name};
-				
+
 			}
 			$data->[$i] =~ s/\|$name\|/$replace/;
 			} else {
@@ -569,7 +574,7 @@ sub args {
 	    $args = {};
 	}
 	if (ref($args) ne "HASH") {
-		Bio::KBase::utilities::error("Arguments not hash");	
+		Bio::KBase::utilities::error("Arguments not hash");
 	}
 	if (defined($substitutions) && ref($substitutions) eq "HASH") {
 		foreach my $original (keys(%{$substitutions})) {
@@ -592,7 +597,7 @@ sub args {
 			if (!defined($args->{$argument})) {
 				$args->{$argument} = $optionalArguments->{$argument};
 			}
-		}	
+		}
 	}
 	return $args;
 }
@@ -622,7 +627,7 @@ sub conf {
 }
 
 #error: prints an error message
-sub error {	
+sub error {
 	my ($message) = @_;
     if (defined($config) && Bio::KBase::utilities::utilconf("fulltrace") == 1) {
 		Carp::confess($message);
@@ -646,7 +651,7 @@ sub close_debug {
 	}
 }
 
-sub create_context {	
+sub create_context {
 	my($parameters) = @_;
 	$parameters = Bio::KBase::utilities::args($parameters,["token","user"],{
 		method => "unknown",
@@ -690,7 +695,7 @@ sub timestamp {
 	if (defined($reset) && $reset == 1) {
 		$timestamp = DateTime->now()->datetime();
 	}
-	return $timestamp;	
+	return $timestamp;
 }
 
 {
