@@ -60,13 +60,13 @@ parameters :
         placeholder : |
             Output metabolic model name
 
-    gff_file :
+    reads_refs :
         ui-name : |
-            GFF file of annotations
+            Reads for coverage
         short-hint : |
-            A GFF file containing externally generated metagenome annotations
+            Reads for computing coverage
         long-hint : |
-            A GFF file containing externally generated metagenome annotations
+            Reads for computing coverage
 
 
     input_ref :

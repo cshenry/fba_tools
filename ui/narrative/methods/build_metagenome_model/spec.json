@@ -124,7 +124,8 @@
             },
             {
                "input_parameter" : "reads_refs",
-               "target_property" : "reads_refs"
+               "target_property" : "reads_refs",
+               "target_type_transform": "resolved-ref"
             }
          ],
          "output_mapping" : [
