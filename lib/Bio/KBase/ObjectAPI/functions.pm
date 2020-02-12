@@ -2716,7 +2716,7 @@ sub func_build_metagenome_metabolic_model {
         };
         my $readmapper = Bio::KBase::kbaseenv::readmapper_client();
    		my $result = $readmapper->readmapper($params);
-   		print Bio::KBase::ObjectAPI::utilities::TOJSON($gff_result)."\n\n";
+   		print Bio::KBase::ObjectAPI::utilities::TOJSON($result)."\n\n";
 		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($result->{file_path});
 		for (my $i=0; $i < @{$lines}; $i++) {
 			my $array = [split(/\t/,$lines->[$i])];
