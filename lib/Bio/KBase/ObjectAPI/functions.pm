@@ -2684,6 +2684,9 @@ sub func_build_metagenome_metabolic_model {
 	#Retrieving metagenome annotation object
 	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 	#Reading the contig coverage file if provided
+	print "READS_REFS:".$params->{reads_refs}."\n";
+	print "READS_REFS_1:".$params->{reads_refs}->[0]."\n";
+	print "READS_REFS_2:".$params->{reads_refs}->[1]."\n";
 	if (defined($params->{contig_coverage_file})) {
 		my $lines;
 		if (ref($params->{contig_coverage_file}) eq "HASH") {
@@ -2706,6 +2709,7 @@ sub func_build_metagenome_metabolic_model {
 		}
 		$coverage_data = 1;
 	} elsif (@{$params->{reads_refs}} > 0) {
+		print "Reads files recieved\n";
 		my $params = {
            reads => $params->{reads_refs},
            assembly_ref => $object->{input_ref}.";".$object->{assembly_ref}

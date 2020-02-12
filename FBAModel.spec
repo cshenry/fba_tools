@@ -522,7 +522,7 @@ module KBaseFBA {
     /* 
     	FBAModel object
     	
-    	@optional contig_coverages other_genomes attributes abstractreactions gapfilledcandidates metagenome_otu_ref metagenome_ref genome_ref template_refs ATPSynthaseStoichiometry ATPMaintenance quantopts
+    	@optional contig_coverages other_genome_refs attributes abstractreactions gapfilledcandidates metagenome_ref genome_ref template_refs ATPSynthaseStoichiometry ATPMaintenance quantopts
 		@metadata ws source_id as Source ID
 		@metadata ws source as Source
 		@metadata ws name as Name
@@ -1948,7 +1948,7 @@ module KBaseFBA {
         string name;
         float label_x;
         float label_y;
-        boolean reversibility;
+        bool reversibility;
         string gene_reaction_rule;
         list<EscherMapLayoutReactionMetabolite> metabolites;
         mapping<string, EscherMapLayoutReactionSegment> segments;
@@ -1966,7 +1966,7 @@ module KBaseFBA {
         string name;
         float label_x;
         float label_y;
-        boolean node_is_primary;
+        bool node_is_primary;
     } EscherMapLayoutNode;
     
     typedef structure {
