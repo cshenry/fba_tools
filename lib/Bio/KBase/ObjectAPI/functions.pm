@@ -2712,7 +2712,7 @@ sub func_build_metagenome_metabolic_model {
 		print "Reads files recieved\n";
 		my $params = {
            reads => $params->{reads_refs},
-           assembly_ref => $object->{input_ref}.";".$object->{assembly_ref}
+           assembly_ref => $params->{input_ref}.";".$object->{assembly_ref}
         };
         my $readmapper = Bio::KBase::kbaseenv::readmapper_client();
    		my $result = $readmapper->readmapper($params);
@@ -3407,18 +3407,17 @@ sub func_run_pickaxe {
 			modelcompounds => [],
 			modelreactions => []
 		});
-    } 
-#    else {
-#    		#This is a second or greater generation run and we want to create pickaxe input from new compounds in the input model
-#    		my $cpds = $datachannel->{fbamodel}->modelcompounds();
-#    		my $rxns = $datachannel->{fbamodel}->modelreactions();
-#    		for (my $i=0; $i < @{$cpds}; $i++) {
-#    			if ($cpds->[$i]->numerical_attributes()->{generation} == ($datachannel->{currentgen}-1)) {
-#    				$input_compounds_with_structure++;
-#    				push(@{$input_model_array},$cpds->[$i]->id()."\t".$cpds->[$i]->smiles());
-#    			}
-#    		}
-#    }
+    } else {
+    		#This is a second or greater generation run and we want to create pickaxe input from new compounds in the input model
+    		my $cpds = $datachannel->{fbamodel}->modelcompounds();
+    		my $rxns = $datachannel->{fbamodel}->modelreactions();
+    		for (my $i=0; $i < @{$cpds}; $i++) {
+    			if ($cpds->[$i]->numerical_attributes()->{generation} == ($datachannel->{currentgen}-1)) {
+    				$input_compounds_with_structure++;
+    				push(@{$input_model_array},$cpds->[$i]->id()."\t".$cpds->[$i]->smiles());
+    			}
+    		}
+    }
     Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."/inputModel.tsv",$input_model_array);
     my $output;
     if ($input_compounds_with_structure == 0) {
