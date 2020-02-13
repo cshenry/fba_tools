@@ -2684,9 +2684,7 @@ sub func_build_metagenome_metabolic_model {
 	#Retrieving metagenome annotation object
 	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
 	#Reading the contig coverage file if provided
-	print "READS_REFS:".$params->{reads_refs}."\n";
-	print "READS_REFS_1:".$params->{reads_refs}->[0]."\n";
-	print "READS_REFS_2:".$params->{reads_refs}->[1]."\n";
+	my $totalcoverage = 0;
 	if (defined($params->{contig_coverage_file})) {
 		my $lines;
 		if (ref($params->{contig_coverage_file}) eq "HASH") {
@@ -2704,12 +2702,13 @@ sub func_build_metagenome_metabolic_model {
 		for (my $i=0; $i < @{$lines}; $i++) {
 			my $array = [split(/\t/,$lines->[$i])];
 			if (defined($array->[1])) {
+				$totalcoverage += $array->[1];
 				$contig_coverages->{$array->[0]} = $array->[1];
 			}
 		}
 		$coverage_data = 1;
 	} elsif (@{$params->{reads_refs}} > 0) {
-		print "Reads files recieved\n";
+		print "Reads files recieved: computing coverages!\n";
 		my $params = {
            reads => $params->{reads_refs},
            assembly_ref => $params->{input_ref}.";".$object->{assembly_ref}
@@ -2720,9 +2719,14 @@ sub func_build_metagenome_metabolic_model {
 		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($result->{file_name});
 		for (my $i=0; $i < @{$lines}; $i++) {
 			my $array = [split(/\t/,$lines->[$i])];
+			$totalcoverage += $array->[2];
 			$contig_coverages->{$array->[0]} = $array->[2]+0;
 		}
 		$coverage_data = 1;
+	}
+	#Normalizing contig coverages into relative coverages
+	foreach my $contig (keys(%{$contig_coverages})) {
+		$contig_coverages->{$contig} = $contig_coverages->{$contig}/$totalcoverage;
 	}
 	#Retreiving the metagenome annotation object
 	my $gfu = Bio::KBase::kbaseenv::gfu_client();
@@ -2739,6 +2743,7 @@ sub func_build_metagenome_metabolic_model {
 	my $sso_hash = Bio::KBase::kbaseenv::get_sso_hash();
     my $ftrcount = 0;
     my $ssocount = 0;
+    my $ftrids = [];
     for (my $i=0; $i < @{$lines}; $i++) {
 		#print "LINE ".$i.":".$lines->[$i]."\n";
 		my $array = [split(/\t/,$lines->[$i])];
@@ -2747,6 +2752,7 @@ sub func_build_metagenome_metabolic_model {
 			$contig_coverages->{$contig} = 1;
 		}
 		if ($array->[2] ne "region") {
+			push(@{$ftrids},$contig."_".$array->[3]."_".$array->[4]);
 			push(@{$gene_loci->{$contig}},[$array->[3],$array->[4],$array->[6]]);
 			$ftrcount++;
 		}
@@ -2770,8 +2776,6 @@ sub func_build_metagenome_metabolic_model {
 				} elsif ($subarray->[$j] =~ m/product[:=](\w+)/) {
 					$type = "SSO";
 					$term = $1;
-				} elsif ($subarray->[$j] =~ m/note[:\=]coverage:(\d+\.*\d*)/) {
-					$contig_coverages->{$contig} = $1;
 				}
 				if (defined($term) && defined($ontology_hash->{$term})) {
 					if ($type eq "SSO") {
@@ -2845,9 +2849,12 @@ sub func_build_metagenome_metabolic_model {
 		}
 		#Parsing protein sequences from metagenome assembly file
 		$function_hash = {};
-		(my $proteins,my $contig_list) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
+		(my $proteins,my $contig_list,my $idhash) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
 		my $output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
 		my $function_list = $output->{functions};
+		for (my $i=0; $i < 1000; $i++) {
+			print $ftrids->[$i]."\t".$idhash->{$ftrids->[$i]}->{protein}."\t".join("|",@{$function_list->[$idhash->{$ftrids->[$i]}->{index}]})."\n";
+		}
 		for (my $i=0; $i < @{$function_list}; $i++) {
 			for (my $j=0; $j < @{$function_list->[$i]}; $j++) {
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$i]->[$j]);

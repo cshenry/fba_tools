@@ -195,6 +195,7 @@ sub compute_proteins_from_fasta_gene_data {
 	my ($filename,$genes) = @_;
 	my $proteins = [];
 	my $contigs = [];
+	my $idhash = {};
 	open (my $fh, "<", $filename);
 	my $id;
 	my $curseq = "";
@@ -229,6 +230,7 @@ sub compute_proteins_from_fasta_gene_data {
 	        				}
 	        				my $prot = Bio::KBase::ObjectAPI::KBaseGenomes::Feature::translate_seq({},$dna);
 	        				$genecount++;
+	        				$idhash->{$id."_".$genes->{$id}->[$j]->[0]."_".$genes->{$id}->[$j]->[1]} = {protein => $prot,"index" => $genecount-1};
 	        				push(@{$proteins},$prot);
 	        				push(@{$contigs},$id);
 	        			}
@@ -244,7 +246,7 @@ sub compute_proteins_from_fasta_gene_data {
 	print "Gene count:".$genecount."\n";
 	print "Total length:".$totallength."\n";
 	print "Contig count:".$contigcount."\n";
-	return ($proteins,$contigs);
+	return ($proteins,$contigs,$idhash);
 }
 
 sub style {
