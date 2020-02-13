@@ -6,10 +6,9 @@ MAINTAINER KBase Developer
 # any required dependencies for your module.
 
 # RUN apt-get update
-RUN cpanm -i Config::IniFiles \
-    && cpanm -n Devel::Cover
-
-# -----------------------------------------
+COPY ./cpanfile /kb/module/
+WORKDIR /kb/module
+RUN cpanm --installdeps .
 
 COPY ./MFAToolkit /kb/module/MFAToolkit
 COPY ./Makefile /kb/module/
