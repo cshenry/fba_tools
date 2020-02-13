@@ -2852,9 +2852,9 @@ sub func_build_metagenome_metabolic_model {
 		(my $proteins,my $contig_list,my $idhash) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
 		my $output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
 		my $function_list = $output->{functions};
-		for (my $i=0; $i < 1000; $i++) {
-			print $ftrids->[$i]."\t".$idhash->{$ftrids->[$i]}->{protein}."\t".join("|",@{$function_list->[$idhash->{$ftrids->[$i]}->{index}]})."\n";
-		}
+		#for (my $i=0; $i < 1000; $i++) {
+			#print $ftrids->[$i]."\t".$idhash->{$ftrids->[$i]}->{protein}."\t".join("|",@{$function_list->[$idhash->{$ftrids->[$i]}->{index}]})."\n";
+		#}
 		for (my $i=0; $i < @{$function_list}; $i++) {
 			for (my $j=0; $j < @{$function_list->[$i]}; $j++) {
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$i]->[$j]);
