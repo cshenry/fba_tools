@@ -154,7 +154,7 @@ around BUILDARGS => sub {
     my $class = shift;
     my $hash = {};
     if ( ref $_[0] eq 'HASH' ) {
-        $hash = shift;    
+        $hash = shift;
     } elsif ( scalar @_ % 2 == 0 ) {
         my %h = @_;
         $hash = \%h;
@@ -170,7 +170,7 @@ around BUILDARGS => sub {
         } else {
             die "Invalid Object\n";
         }
-    }   
+    }
 
     my $sos = $class->_subobjects();
     foreach my $subobj (@{$sos}) {
@@ -279,7 +279,7 @@ sub fix_references {
 			} else {
 				$self->$att($self->fix_reference($self->$att()));
 			}
-		}	
+		}
 	}
 }
 
@@ -329,8 +329,10 @@ sub serializeToDB {
 				}
 			} elsif ($name =~ m/^parameters$/) {
 				$data->{$name} = {};
-				foreach my $key (keys(%{$self->$name()})) {
-					$data->{$name}->{$key} = $self->$name()->{$key}."";
+				for my $key ( keys %{ $self->$name() } ) {
+                    $data->{ $name }{ $key } = defined $self->$name()->{ $key }
+                        ? $self->$name()->{ $key } . ""
+                        : "";
 				}
 			} elsif ($name eq "annotations") {
 				my $dataitem = $self->$name();
@@ -357,7 +359,7 @@ sub serializeToDB {
 				}
 			} else {
     			$data->{$name} = $self->$name();
-			}	
+			}
     	}
     }
     my $subobjects = $self->_subobjects();
@@ -367,7 +369,7 @@ sub serializeToDB {
 		$data->{$item->{name}} = [];
 		foreach my $subobject (@{$arrayRef}) {
 		    if ($subobject->{created} == 1) {
-				push(@{$data->{$item->{name}}},$subobject->{object}->serializeToDB());	
+				push(@{$data->{$item->{name}}},$subobject->{object}->serializeToDB());
 		    } else {
 				my $newData;
 				foreach my $key (keys(%{$subobject->{data}})) {
@@ -430,7 +432,7 @@ sub export {
 =head3 print_html
 
 Definition:
-	
+
 Description:
 	Exports data to html format
 
@@ -444,7 +446,7 @@ sub print_html {
 =head3 print_readable
 
 Definition:
-	
+
 Description:
 	Exports data to readable format
 
@@ -458,7 +460,7 @@ sub print_readable {
 =head3 print_json
 
 Definition:
-	
+
 Description:
 	Exports data to json format
 
@@ -600,7 +602,7 @@ sub _createReadableData {
 	}
 	return $data;
  }
- 
+
 sub _getReadableAttributes {
 	my ($self) = @_;
 	my $priority = {};
@@ -792,7 +794,7 @@ sub removeLinkArrayItem {
 				$self->$clearer();
 			}
 		}
-    }	
+    }
 }
 
 sub addLinkArrayItem {
@@ -814,7 +816,7 @@ sub addLinkArrayItem {
 			$self->$clearer();
 			push(@{$data},$object->_reference());
     	}
-    }	
+    }
 }
 
 sub clearLinkArray {
@@ -826,7 +828,7 @@ sub clearLinkArray {
     	Bio::KBase::ObjectAPI::utilities::verbose("Clearing link array.");
     	my $clearer = "clear_".$link;
 		$self->$clearer();
-    }	
+    }
 }
 
 sub store {
@@ -858,7 +860,7 @@ sub _build_object {
     }
 	my $attInfo = $self->_subobjects($attribute);
     if (!defined($attInfo->{class})) {
-    	Bio::KBase::ObjectAPI::utilities::error("No class for attribute ".$attribute);	
+    	Bio::KBase::ObjectAPI::utilities::error("No class for attribute ".$attribute);
     }
     my $class = 'Bio::KBase::ObjectAPI::' . $attInfo->{module} . '::' . $attInfo->{class};
     Module::Load::load $class;
