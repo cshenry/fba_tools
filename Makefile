@@ -55,8 +55,10 @@ build-test-script:
 	echo 'export KB_DEPLOYMENT_CONFIG=$$script_dir/../deploy.cfg' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	echo 'export KB_AUTH_TOKEN=`cat /kb/module/work/token`' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	echo 'export PERL5LIB=$$script_dir/../$(LIB_DIR):$$PATH:$$PERL5LIB' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
-	echo 'cd $$script_dir/../$(TEST_DIR)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
-	echo "perl -e 'opendir my \$$dh, \".\"; my @l = grep { /\\\\.pl\$$/ } readdir \$$dh; foreach my \$$s (@l) { print(\"Running \".\$$s.\"\\n\"); system \"perl\", \$$s; }'" >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'cd $$script_dir/..' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'echo "running test scripts!"' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'prove -lvrm $(TEST_DIR)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'prove -lvm --ext pl $(TEST_DIR)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	chmod +x $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 
 deploy-mfatoolkit:
@@ -76,4 +78,3 @@ test:
 
 clean:
 	rm -rfv $(LBIN_DIR)
-	

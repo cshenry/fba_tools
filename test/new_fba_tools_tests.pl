@@ -184,7 +184,7 @@ if ($start < 14) {
 
 if ($start < 15) {
 	print "Running test 14:\n";
-	lives_ok{	
+	lives_ok{
 		my $output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 		 "omindirectional" => 0,
 		 "reaction_ko_list" => "",
@@ -204,7 +204,7 @@ if ($start < 15) {
 
 if ($start < 16) {
 	print "Running test 15:\n";
-	lives_ok{	
+	lives_ok{
 		$impl->characterize_genome_metabolism_using_model({
 			workspace => $test_ws,
 			genome_id => "Escherichia_coli"
@@ -214,7 +214,7 @@ if ($start < 16) {
 
 if ($start < 17) {
 	print "Running test 16:\n";
-	lives_ok{	
+	lives_ok{
 		$impl->build_metagenome_metabolic_model({
 			workspace => $test_ws,
 			input_ref => "test_metagenome_annotation"

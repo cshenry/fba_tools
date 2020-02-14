@@ -54,13 +54,13 @@ sub create_report {
 	my $kr;
 	if (Bio::KBase::utilities::utilconf("reportimpl") == 1) {
 		require "KBaseReport/KBaseReportImpl.pm";
-		$kr = new KBaseReport::KBaseReportImpl();
+		$kr = KBaseReport::KBaseReportImpl->new();
 		if (!defined($KBaseReport::KBaseReportServer::CallContext)) {
 			$KBaseReport::KBaseReportServer::CallContext = Bio::KBase::utilities::context();
 		}
 	} else {
 		require "KBaseReport/KBaseReportClient.pm";
-		$kr = new KBaseReport::KBaseReportClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+		$kr = KBaseReport::KBaseReportClient->new(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	if (defined(Bio::KBase::utilities::utilconf("debugging")) && Bio::KBase::utilities::utilconf("debugging") == 1) {
 		Bio::KBase::utilities::add_report_file({
@@ -212,7 +212,7 @@ sub assembly_to_fasta {
 	$parameters = Bio::KBase::utilities::args($parameters,["ref","path","filename"],{});
 	File::Path::mkpath($parameters->{path});
 	if (-e $parameters->{path}."/".$parameters->{filename}) {
-		unlink($parameters->{path}."/".$parameters->{filename});	
+		unlink($parameters->{path}."/".$parameters->{filename});
 	}
 	if (Bio::KBase::utilities::utilconf("use_assembly_utils") == 1) {
 		my $assutil = Bio::KBase::kbaseenv::ac_client();
@@ -224,7 +224,7 @@ sub assembly_to_fasta {
 			$output->[0]->{data}->{fasta_handle_info}->{handle},
 			$parameters->{path}."/".$parameters->{filename}
 		);
-	}		
+	}
 }
 
 sub get_object {
@@ -287,7 +287,7 @@ sub save_objects {
 				});
 			}
 		};
-		# If there is a network glitch, wait a second and try again. 
+		# If there is a network glitch, wait a second and try again.
 		if ($@) {
 			$retryCount--;
 			$error = $@;
