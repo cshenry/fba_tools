@@ -2796,8 +2796,8 @@ sub func_build_metagenome_metabolic_model {
 				}
 			}
 		}
-		if (defined($feature_data->[$i]->{function})) {
-			my $function_list = [split(/\s*;\s+|\s+[\@\/]\s+/,$feature_data->[$i]->{function})];
+		if (defined($feature_data->[$i]->{functions})) {
+			my $function_list = $feature_data->[$i]->{functions};
 			for (my $j=0; $j < @{$function_list}; $j++) {
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$j]);
 				if (defined($template->roleSearchNameHash()->{$searchrole})) {
