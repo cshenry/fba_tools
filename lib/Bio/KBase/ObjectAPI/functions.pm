@@ -2777,10 +2777,10 @@ sub func_build_metagenome_metabolic_model {
 					}
 				}
 
-                if ( $params->{ use_kegg } == 1
+                if ( $params->{ use_kegg }
                     && defined $type
                     && defined $ontology_hash->{ $term }
-                    && $type eq "KEGG_KO" || $type eq "KEGG_RXN" ) {
+                    && ( $type eq "KEGG_KO" || $type eq "KEGG_RXN" ) ) {
                     for my $rid ( keys %{ $ontology_hash->{ $term } } ) {
                         $reaction_hash->{ $rid }{ u } //= {
                             hit_count             => 0,
