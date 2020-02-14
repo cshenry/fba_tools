@@ -2,10 +2,12 @@ package Bio::KBase::ObjectAPI::functions;
 use strict;
 use warnings;
 use POSIX;
-use Data::Dumper;
+use Data::Dumper::Concise;
 use Data::UUID;
 use Bio::KBase::utilities;
 use Bio::KBase::constants;
+use XML::DOM;
+use Bio::KBase::Templater qw( render_template );
 
 our $handler;#Needs: log(string),save_object,get_object
 
@@ -58,7 +60,7 @@ sub util_build_fba {
 		expression_matrix => undef,
 		probanno => undef,
 		source_model => undef,
-		
+
 		target_reaction => "bio1",
 		thermodynamic_constraints => 0,
 		fva => 0,
@@ -77,7 +79,7 @@ sub util_build_fba {
 		steady_state_protein_fba => 0,
 		dynamic_fba => 0,
 		atp_production_check => 1,
-		
+
 		media_id_list => [],
 		feature_ko_list => [],
 		reaction_ko_list => [],
@@ -92,14 +94,14 @@ sub util_build_fba {
 		turnovers => undef,
 		kprimes => undef,
 		kmvalues => undef,
-		
+
 		expression_condition => undef,
 		metabolite_condition => undef,
 		exometabolite_condition => undef,
 		characteristic_flux_file => undef,
 		input_gene_parameter_file => undef,
 		input_reaction_parameter_file => undef,
-		
+
 		omega => 0,
 		activation_coefficient => 0,
 		exp_threshold_margin => 0.5,
@@ -131,7 +133,7 @@ sub util_build_fba {
 
 		notes => undef,
 	}, $params);
-	
+
 	#Making sure reaction KO list is an array
 	if (defined($params->{reaction_ko_list}) && ref($params->{reaction_ko_list}) ne "ARRAY") {
 		if (length($params->{reaction_ko_list}) > 0) {
@@ -274,7 +276,7 @@ sub util_build_fba {
 		}
 	}
 	$fbaobj->parent($handler->util_store());
-	
+
 	my $bio = $params->{model}->getObject("biomasses",$params->{target_reaction});
 	if (defined($bio)) {
 		$fbaobj->biomassflux_objterms()->{$bio->id()} = 1;
@@ -369,7 +371,7 @@ sub util_build_fba {
 		}
 		$fbaobj->PrepareForGapfilling($input);
 	}
-	
+
 	if (defined($params->{expression_matrix})) {
 		#$exphash = util_build_expression_hash($exp_matrix,$params->{expression_condition});
 		$fbaobj->process_expression_data({
@@ -407,7 +409,7 @@ sub util_build_fba {
 	} elsif (defined($params->{exometabolite_peak_string})) {
 		$fbaobj->parameters()->{"Exometabolite peak data"} = $params->{exometabolite_peak_string};
 	}
-	
+
 	if (defined($params->{input_gene_parameter_file})) {
 		my $file = Bio::KBase::ObjectAPI::utilities::LOADFILE($params->{input_gene_parameter_file});
 		my $headers = [split(/\t/,$file->[0])];
@@ -807,7 +809,7 @@ sub func_gapfill_metabolic_model {
 	}
 	my $gapfillnum = 0;
 	if (defined($fba->gapfillingSolutions()->[0]->{gapfillingSolutionReactions})) {
-		$gapfillnum = @{$fba->gapfillingSolutions()->[0]->{gapfillingSolutionReactions}};	
+		$gapfillnum = @{$fba->gapfillingSolutions()->[0]->{gapfillingSolutionReactions}};
 	}
 	$handler->util_log("Saving gapfilled model.");
 	# If the model is saved in the workspace, add it to the genome reference path
@@ -886,7 +888,7 @@ sub func_gapfill_metabolic_model {
 			$template_hash->{exodata} = Bio::KBase::ObjectAPI::utilities::TOJSON($exodata);
 			$template_hash->{tabone} = '<li class="active"><a href="#tab-table1" data-toggle="tab">Exometabolite results</a></li>';
 			$template_hash->{divone} = '<div class="tab-pane active" id="tab-table1"><table id="example" class="display" width="100%"></table></div>';
-		}	
+		}
 		if (defined($output->{met})) {
 			my $metadata = [];
 			$template_hash->{intradata} = Bio::KBase::ObjectAPI::utilities::TOJSON($metadata);
@@ -2208,7 +2210,7 @@ sub func_baseline_gapfilling {
 	#Determine how many reactions were gapfilled and what reactions were gapfilled
 	$datachannel->{fbamodel}->attributes()->{baseline_gapfilling} = 0;
 	if (defined($fba->gapfillingSolutions()->[0]->{gapfillingSolutionReactions})) {
-		$datachannel->{fbamodel}->attributes()->{baseline_gapfilling} = @{$fba->gapfillingSolutions()->[0]->{gapfillingSolutionReactions}};	
+		$datachannel->{fbamodel}->attributes()->{baseline_gapfilling} = @{$fba->gapfillingSolutions()->[0]->{gapfillingSolutionReactions}};
 	}
 	return $fba->gapfillingSolutions()->[0];
 }
@@ -2774,16 +2776,18 @@ sub func_build_metagenome_metabolic_model {
 						$term = $feature_data->[$i]->{db_xrefs}->[$j]->[1];
 					}
 				}
-				if ($params->{use_kegg} == 1 && defined($ontology_hash->{$term}) && ($type eq "KEGG_KO" || $type eq "KEGG_RXN")) {
-					foreach my $rid (keys(%{$ontology_hash->{$term}})) {
-						if (!defined($reaction_hash->{$rid}->{u})) {
-							$reaction_hash->{$rid}->{u} = {
-								hit_count => 0,
-    								non_gene_probability => 0,
-    								non_gene_coverage => 0,
-    								sources => {}
-							};
-						}
+
+                if ( $params->{ use_kegg }
+                    && defined $type
+                    && defined $ontology_hash->{ $term }
+                    && ( $type eq "KEGG_KO" || $type eq "KEGG_RXN" ) ) {
+                    for my $rid ( keys %{ $ontology_hash->{ $term } } ) {
+                        $reaction_hash->{ $rid }{ u } //= {
+                            hit_count             => 0,
+                            non_gene_probability  => 0,
+                            non_gene_coverage     => 0,
+                            sources               => {}
+                        };
 						$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}*$reaction_hash->{$rid}->{u}->{hit_count}+$params->{other_anno_probability};
 						$reaction_hash->{$rid}->{u}->{hit_count}++;
 						$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}/$reaction_hash->{$rid}->{u}->{hit_count};
@@ -2882,9 +2886,9 @@ sub func_build_metagenome_metabolic_model {
 		max_objective_limit => $params->{max_objective_limit}
 	});
 	#Gapfilling model if requested
-	my $output = {};
+	my $function_output = {};
 	if ($params->{gapfill_model} == 1) {
-		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+		$function_output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 			target_reaction => "bio1",
 			minimum_target_flux => $params->{minimum_target_flux},
 			workspace => $params->{workspace},
@@ -2894,17 +2898,17 @@ sub func_build_metagenome_metabolic_model {
 			media_id => $params->{media_id},
 			atp_production_check => 1
 		},{fbamodel => $mdl});
-		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
+		$htmlreport .= $function_output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
 	} else {
 		#If not gapfilling, then we just save the model directly
-		$output->{number_gapfilled_reactions} = 0;
-		$output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
-		my $wsmeta = $handler->util_save_object($mdl,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
+		$function_output->{number_gapfilled_reactions} = 0;
+		$function_output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
+		my $wsmeta = $handler->util_save_object($mdl,$function_output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
 		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p></div>"
 	}
 	$datachannel->{fbamodel} = $mdl;
 	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
-	return $output;
+	return $function_output;
 }
 
 sub func_model_based_genome_characterization {
@@ -2936,8 +2940,8 @@ sub func_model_based_genome_characterization {
 		workspace => $params->{workspace},
 		fbamodel_id => $params->{fbamodel_output_id}.".base",
 		fbamodel_output_id => $params->{fbamodel_output_id},
-	},$datachannel); 
-}	
+	},$datachannel);
+}
 
 sub func_run_model_chacterization_pipeline {
 	my ($params,$datachannel) = @_;
@@ -2948,6 +2952,7 @@ sub func_run_model_chacterization_pipeline {
 	if (!defined($datachannel->{fbamodel})) {
 		$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 	}
+
 	my $attributes = {
 		pathways => {},
 		auxotrophy => {},
@@ -2986,7 +2991,7 @@ sub func_run_model_chacterization_pipeline {
 		fva => 1,
 		minimize_flux => 1,
 		max_c_uptake => 30
-	},$datachannel);	
+	},$datachannel);
 	$attributes->{fbas}->{auxomedia}->{biomass} = $fba_output->{objective}+0;
 	$attributes->{fbas}->{auxomedia}->{fba_ref} = $datachannel->{fba}->_reference();
 	$attributes->{fbas}->{auxomedia}->{Blocked} = 0;
@@ -3011,7 +3016,7 @@ sub func_run_model_chacterization_pipeline {
 		fva => 1,
 		minimize_flux => 1,
 		max_c_uptake => 30
-	},$datachannel);		
+	},$datachannel);
 	$attributes->{fbas}->{complete}->{biomass} = $fba_output->{objective}+0;
 	$attributes->{fbas}->{complete}->{fba_ref} = $datachannel->{fba}->_reference();
 	$attributes->{fbas}->{complete}->{Blocked} = 0;
@@ -3036,7 +3041,7 @@ sub func_run_model_chacterization_pipeline {
 			compound_name => $auxo_output->{auxotrophy_data}->{$cpd}->{name},
 			reactions_required => $auxo_output->{auxotrophy_data}->{$cpd}->{totalrxn},
 			gapfilled_reactions => $auxo_output->{auxotrophy_data}->{$cpd}->{gfrxn},
-			is_auxotrophic => $auxo_output->{auxotrophy_data}->{$cpd}->{auxotrophic}	
+			is_auxotrophic => $auxo_output->{auxotrophy_data}->{$cpd}->{auxotrophic}
 		};
 		if ($auxo_output->{auxotrophy_data}->{$cpd}->{auxotrophic} == 1) {
 			$attributes->{auxotroph_count}++;
@@ -3044,7 +3049,20 @@ sub func_run_model_chacterization_pipeline {
 	}
 	$datachannel->{fbamodel}->attributes($attributes);
 	my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},Bio::KBase::utilities::buildref($params->{fbamodel_output_id}.".gapfilled",$params->{workspace}));
-	Bio::KBase::utilities::print_report_message({message => "<p>Model-based characterization of input genome complete. Examine model JSON file attributes values for output.</p>",append => 0,html => 1});
+
+    my $string;
+    Bio::KBase::Templater::render_template(
+        '/kb/module/templates/model_characterisation_pipeline.tt',
+        { template_data => $datachannel->{ fbamodel } },
+        \$string,
+    );
+
+    Bio::KBase::utilities::print_report_message( {
+        message => $string,
+        append  => 0,
+        html    => 1,
+    } );
+
 	return {
 		new_fbamodel_ref => $datachannel->{fbamodel}->_wsworkspace()."/".$datachannel->{fbamodel}->_wswsid(),
 		new_fba_ref => $datachannel->{fba}->_wsworkspace()."/".$datachannel->{fba}->_wswsid()
@@ -3245,7 +3263,7 @@ sub func_run_pickaxe {
 		$datachannel->{metabolomics_data} = {
 			formula_to_peaks => {},
 			inchikey_to_peaks => {},
-			smiles_to_peaks => {} 
+			smiles_to_peaks => {}
 		};
 		if (defined($params->{metabolomics_data})) {
 			my $data;
@@ -3330,7 +3348,7 @@ sub func_run_pickaxe {
 				} else {
 					$input_compounds_with_structure++;
 					push(@{$input_model_array},$cpd->{id}."\t".$cpd->{smiles});
-					$datachannel->{smileshash}->{$cpd->{smiles}}->{model}->{$cpd->{id}} = $cpd;					
+					$datachannel->{smileshash}->{$cpd->{smiles}}->{model}->{$cpd->{id}} = $cpd;
 				}
 			}
 	    } else {
@@ -3470,7 +3488,7 @@ sub func_run_pickaxe {
     					my $formula = $array->[3];
     					my $type = "pickax";
     					$formula =~ s/(\+|-)\d*$//;#Removing formula charge
-		    			#Check if the ID already exists in the output model	
+		    			#Check if the ID already exists in the output model
 		    			if (defined($datachannel->{fbamodel}->getObject("modelcompounds",$original_id))) {
 		    				next;#Do nothing... compound is already in output
 		    			#Check if the ID is in the input model submitted to start the app
@@ -3568,7 +3586,7 @@ sub func_run_pickaxe {
 			    			$datachannel->{fbamodel}->add("modelcompound",$cpddata);
 						#Checking that the generated compound if a metabolomics hit
     						Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,$datachannel->{currentgen},$ruleset,1);
-		    			}	
+		    			}
 		    		}
 		    		#Adding reactions to model
 		    		my $rxndarray = Bio::KBase::ObjectAPI::utilities::LOADFILE($rxnfilename);
@@ -3588,7 +3606,7 @@ sub func_run_pickaxe {
 		    				if (length($newequation) > 0) {
 	    						$newequation .= " ";
 	    					}
-		    				if (defined($cpdid_translation->{$eqarray->[$j]})) {	
+		    				if (defined($cpdid_translation->{$eqarray->[$j]})) {
 		    					$newequation .= $cpdid_translation->{$eqarray->[$j]};
 		    				} else {
 		    					$newequation .= $eqarray->[$j];
@@ -3606,7 +3624,7 @@ sub func_run_pickaxe {
 					$datachannel->{reaction_ids}->{$array->[5]}++;
 		    		}
 		    }
-	    }      
+	    }
 	    #If more generations are desired, call this function again recursively
 		if ($datachannel->{currentgen} < $params->{generation} && $cpdcount > 0) {
 			$output = Bio::KBase::ObjectAPI::functions::func_run_pickaxe($params,$datachannel);
@@ -5494,10 +5512,10 @@ sub check_for_peakmatch {
 					}
 					$peak_hit->{$ruleset}->{$generation}->{$peakid}->{$type}++;
 				}
-			}	
+			}
 		}
 	}
-	return $hit;	
+	return $hit;
 }
 
 1;

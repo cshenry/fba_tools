@@ -5,11 +5,11 @@
 # Development location: Mathematics and Computer Science Division, Argonne National Lab
 # Date of module creation: 2012-03-26T23:22:35
 ########################################################################
-use strict;
+package Bio::KBase::ObjectAPI::KBaseFBA::FBAModel;
+
 use YAML::XS;
 use File::Temp;
 use Bio::KBase::ObjectAPI::KBaseFBA::DB::FBAModel;
-package Bio::KBase::ObjectAPI::KBaseFBA::FBAModel;
 use Moose;
 use namespace::autoclean;
 use Class::Autouse qw(
@@ -355,7 +355,7 @@ sub ComputePathwayAttributes {
 		delete $attributes->{pathways}->{$pathid}->{featurehash};
 		delete $attributes->{pathways}->{$pathid}->{coverages};
 		delete $attributes->{pathways}->{$pathid}->{genecounts};
-	}	
+	}
 }
 
 sub gene_count {
@@ -543,7 +543,7 @@ Definition:
 	});
 Description:
 	Modifies the biomass reaction to adjust a compound, add a compound, or remove a compound
-	
+
 =cut
 #REFACTOR NEEDED HERE
 sub adjustBiomassReaction {
@@ -625,7 +625,7 @@ Definition:
 		reaction => string,
 	});
 Description:
-	
+
 =cut
 sub removeModelReaction {
     my $self = shift;
@@ -651,7 +651,7 @@ Definition:
     	reference => string
 	});
 Description:
-	
+
 =cut
 sub adjustModelReaction {
     my $self = shift;
@@ -705,7 +705,7 @@ Definition:
     	reference => string
 	});
 Description:
-	
+
 =cut
 
 #REFACTOR NEEDED HERE
@@ -766,7 +766,7 @@ sub addModelReaction {
     if (defined($self->getObject("modelreactions",$fullid))) {
     	Bio::KBase::ObjectAPI::utilities::error("Reaction with specified ID ".$rootid." already in model. Remove reaction before attempting to add again!");
     }
-    
+
     #Fetching or adding model compartment
     my $mdlcmp = $self->addCompartmentToModel({compartment => $cmp,pH => 7,potential => 0,compartmentIndex => $args->{compartmentIndex}});
 	#Finding reaction reference
@@ -821,7 +821,7 @@ sub addModelReaction {
 				coefficient => $coefhash->{$rgt},
 				modelcompound_ref => $rgt
 			});
-		}	
+		}
 	} else {
 		$self->LoadExternalReactionEquation({reaction => $mdlrxn,equation => $eq,compounds => $args->{compounds}});
 		if ($mdlrxn->id() =~ m/rxn\d+/) {
@@ -1036,7 +1036,7 @@ sub LoadExternalReactionEquation {
 	    		$compoundhash->{$mdlcpd->id()} += $coef;
 	    	}
     	}
-    } 
+    }
     if (defined($args->{biomass})) {
     	$args->{biomass}->ImportExternalEquation({reagents => $compoundhash});
     } elsif (defined($args->{reaction})) {
@@ -1268,7 +1268,7 @@ sub printSBML {
 		my $cpd = $cpds->[$i];
 		my $lb = -1000;
 		my $ub = 1000;
-		if ($cpd->modelCompartmentLabel() =~ m/^e/ || $cpd->msid() eq "cpd08636" || $cpd->msid() eq "cpd11416" || $cpd->msid() eq "cpd15302" || $cpd->msid() eq "cpd02701") {		
+		if ($cpd->modelCompartmentLabel() =~ m/^e/ || $cpd->msid() eq "cpd08636" || $cpd->msid() eq "cpd11416" || $cpd->msid() eq "cpd15302" || $cpd->msid() eq "cpd02701") {
 			push(@{$output},'<reaction '.$self->CleanNames("id",'EX_'.$cpd->id()).' '.$self->CleanNames("name",'EX_'.$cpd->name()).' reversible="true">');
 			push(@{$output},"\t".'<notes>');
 			push(@{$output},"\t\t".'<html:p>GENE_ASSOCIATION: </html:p>');
@@ -1474,7 +1474,7 @@ sub printTSV {
 sub printExcel {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef,fulldb => 0}, @_);
-	my $output = $self->printTSV({fulldb => $args->{fulldb}});	
+	my $output = $self->printTSV({fulldb => $args->{fulldb}});
 	require "Spreadsheet/WriteExcel.pm";
 	my $wkbk = Spreadsheet::WriteExcel->new($args->{path}."/".$self->id().".xls") or die "can not create workbook: $!";
 	my $sheet = $wkbk->add_worksheet("ModelCompounds");
@@ -1556,7 +1556,7 @@ Definition:
 	});
 Description:
 	Deletes a gapfilling solution in the model
-	
+
 =cut
 
 sub deleteGapfillSolution {
@@ -1582,7 +1582,7 @@ Definition:
 	});
 Description:
 	Unintegrates a gapfilling solution in the model
-	
+
 =cut
 
 sub unintegrateGapfillSolution {
@@ -1643,7 +1643,7 @@ Definition:
 	});
 Description:
 	Adds a gapfilling object
-	
+
 =cut
 
 sub add_gapfilling {
@@ -1802,7 +1802,7 @@ sub add_gapfilling {
 									maxuptake => $rgts->[$m]->modelcompound()->maxuptake(),
 									formula => $rgts->[$m]->modelcompound()->formula(),
 									modelcompartment_ref => "~/modelcompartments/id/".$mdlcmpdid,
-								});		
+								});
 							}
 						}
 						$mdlrxn->remove("modelReactionReagents",$rgts->[$m]);
@@ -1836,9 +1836,9 @@ sub add_gapfilling {
 					}
 				}
 			}
-		}	
+		}
 	}
-	
+
 	my $tbl = "<p>During gapfilling, ".$added." new reactions were added to the model, while ".$reversed." existing reactions were made reversible.";
 	if (@{$gfarray} > 0) {
 		$tbl .= " The reactions added and modified during gapfilling are listed below:</p><br>";
@@ -1859,7 +1859,7 @@ Definition:
 	Bio::KBase::ObjectAPI::KBaseFBA::ModelCompound Bio::KBase::ObjectAPI::KBaseFBA::ModelCompound->searchForCompound(string:id);
 Description:
 	Search for compound in model
-	
+
 =cut
 
 sub searchForCompound {
@@ -1907,7 +1907,7 @@ Definition:
 	Bio::KBase::ObjectAPI::KBaseFBA::Biomass Bio::KBase::ObjectAPI::KBaseFBA::Biomass->searchForBiomass(string:id);
 Description:
 	Search for biomass in model
-	
+
 =cut
 
 sub searchForBiomass {
@@ -1926,7 +1926,7 @@ Definition:
 	Bio::KBase::ObjectAPI::KBaseFBA::Biomass Bio::KBase::ObjectAPI::KBaseFBA::Biomass->searchForReaction(string:id);
 Description:
 	Search for reaction in model
-	
+
 =cut
 
 sub searchForReaction {
@@ -2164,9 +2164,9 @@ sub merge_models {
 				$bio->id("bio".$biocount);
 				$bio->name("bio".$biocount);
 			} elsif ($j == 0) {
-				for (my $k=0; $k < @{$bios->[$j]->biomasscompounds()}; $k++) {	
+				for (my $k=0; $k < @{$bios->[$j]->biomasscompounds()}; $k++) {
 					if (defined($biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}})) {
-						$biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}}->coefficient($biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}}->coefficient() + $bios->[$j]->biomasscompounds()->[$k]->coefficient()); 
+						$biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}}->coefficient($biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}}->coefficient() + $bios->[$j]->biomasscompounds()->[$k]->coefficient());
 					} else {
 						$biohash->{$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()}} = $primbio->add("biomasscompounds",{
 							modelcompound_ref => "~/modelcompounds/id/".$translation->{$bios->[$j]->biomasscompounds()->[$k]->modelcompound()->id()},
@@ -2186,7 +2186,7 @@ sub merge_models {
 		}
 	}
 	if ($parameters->{mixed_bag_model} == 1) {
-		for (my $k=0; $k < @{$primbio->biomasscompounds()}; $k++) {	
+		for (my $k=0; $k < @{$primbio->biomasscompounds()}; $k++) {
 			$primbio->biomasscompounds()->[$k]->coefficient($primbio->biomasscompounds()->[$k]->coefficient()/$totalAbundance);
 		}
 	}
@@ -2394,14 +2394,14 @@ sub edit_metabolic_model {
 							$biocpds->[$j]->coefficient($biocpd->{biomass_coefficient});
 						}
 					}
-				}	
+				}
 			}
 			if ($found == 0 && $biocpd->{biomass_coefficient} != 0) {
 				push(@{$output->{biomass_compounds_added}},$biocpd->{biomass_compound_id});
 				$bio->add("biomasscompounds",{
 					modelcompound_ref => "~/modelcompounds/id/".$biocpd->{biomass_compound_id},
 					coefficient => $biocpd->{biomass_coefficient}
-				});				
+				});
 			}
 		}
 	}
@@ -2616,7 +2616,7 @@ Description:
 sub undo_edit {
 	my ($params) = @_;
 	$params = Bio::KBase::ObjectAPI::utilities::args([], {}, @_);
-	
+
 }
 
 =head3 translate_model
@@ -2818,7 +2818,7 @@ sub update_from_old_versions {
 	if ($updated == 0) {
 		print "Updating model gapfilling data!\n";
 		for (my $i=0; $i < @{$gfs}; $i++) {
-			$self->remove("gapfillings",$gfs->[$i]);	
+			$self->remove("gapfillings",$gfs->[$i]);
 		}
 		for (my $i=0; $i < @{$gfs}; $i++) {
 			my $fbobj;
