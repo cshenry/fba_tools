@@ -2672,20 +2672,40 @@ sub func_build_metagenome_metabolic_model {
 		contig_coverage_file => undef,
 		rast_probability => 1,
 		other_anno_probability => 0.5,
+		use_kegg => 1,
 		reads_refs => []
 	});
-	my $RoleHash;
-	my $bin_ref;
-	my $assembly_ref;
-	my $annotations;
 	my $htmlreport = "";
 	my $contig_coverages = {};
 	my $coverage_data = 0;
 	#Retrieving metagenome annotation object
 	my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace}));
-	#Reading the contig coverage file if provided
+	my $dfu = Bio::KBase::kbaseenv::data_file_client();
+	my $output = $dfu->shock_to_file({handle_id => $object->{features_handle_ref},file_path => Bio::KBase::utilities::conf("fba_tools","scratch")});
+	system("gunzip --force ".$output->{file_path});
+	$output->{file_path} =~ s/.gz//;
+	my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($output->{file_path});
+	my $feature_data = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$lines}));
+	my $proteins = [];
+	my $contigs = [];
 	my $totalcoverage = 0;
+	for (my $i=0; $i < @{$feature_data}; $i++) {
+		if ($i < 100) {
+			print Bio::KBase::ObjectAPI::utilities::TOJSON($feature_data->[$i],1)."\n";
+		}
+		my $prot = Bio::KBase::ObjectAPI::KBaseGenomes::Feature::translate_seq({},$feature_data->[$i]->{dna_sequence});
+		push(@{$proteins},$prot);
+		if (defined($feature_data->[$i]->{location}->[0]->[0])) {
+			push(@{$contigs},$feature_data->[$i]->{location}->[0]->[0]);
+			$contig_coverages->{$feature_data->[$i]->{location}->[0]->[0]} = 1;
+			$totalcoverage++;
+		} else {
+			push(@{$contigs},"");
+		}
+	}
+	#Reading the contig coverage file if provided
 	if (defined($params->{contig_coverage_file})) {
+		$totalcoverage = 0;
 		my $lines;
 		if (ref($params->{contig_coverage_file}) eq "HASH") {
 			$params->{contig_coverage_file} = $handler->util_get_file_path($params->{contig_coverage_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
@@ -2708,6 +2728,7 @@ sub func_build_metagenome_metabolic_model {
 		}
 		$coverage_data = 1;
 	} elsif (@{$params->{reads_refs}} > 0) {
+		$totalcoverage = 0;
 		print "Reads files recieved: computing coverages!\n";
 		my $params = {
            reads => $params->{reads_refs},
@@ -2728,102 +2749,77 @@ sub func_build_metagenome_metabolic_model {
 	foreach my $contig (keys(%{$contig_coverages})) {
 		$contig_coverages->{$contig} = $contig_coverages->{$contig}/$totalcoverage;
 	}
-	#Retreiving the metagenome annotation object
-	my $gfu = Bio::KBase::kbaseenv::gfu_client();
-    my $gff_result = $gfu->metagenome_to_gff({"genome_ref" => Bio::KBase::utilities::buildref($params->{input_ref},$params->{input_workspace})});
-    my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($gff_result->{file_path});
-    #Loading metagenome template
+	#Loading metagenome template
 	my $template_trans = Bio::KBase::constants::template_trans();
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($template_trans->{metagenome},Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")));
-    #Parsing the GFF file
-    my $function_hash = {};
+	#Parsing through feature array
+	my $function_hash = {};
 	my $reaction_hash = {};
-	my $gene_loci = {};
 	my $ontology_hash = Bio::KBase::kbaseenv::get_ontology_hash();
 	my $sso_hash = Bio::KBase::kbaseenv::get_sso_hash();
-    my $ftrcount = 0;
+	my $ftrcount = 0;
     my $ssocount = 0;
-    my $ftrids = [];
-    for (my $i=0; $i < @{$lines}; $i++) {
-		#print "LINE ".$i.":".$lines->[$i]."\n";
-		my $array = [split(/\t/,$lines->[$i])];
-		my $contig = $array->[0];
-		if (!defined($contig_coverages->{$contig})) {
-			$contig_coverages->{$contig} = 1;
-		}
-		if ($array->[2] ne "region") {
-			push(@{$ftrids},$contig."_".$array->[3]."_".$array->[4]);
-			push(@{$gene_loci->{$contig}},[$array->[3],$array->[4],$array->[6]]);
-			$ftrcount++;
-		}
-		if (defined($array->[8])) {
-			my $subarray = [split(/;/,$array->[8])];
-			for (my $j=0; $j < @{$subarray}; $j++) {
+	for (my $i=0; $i < @{$feature_data}; $i++) {
+		$ftrcount++;
+		if (defined($feature_data->[$i]->{db_xrefs})) {
+			for (my $j=0; $j < @{$feature_data->[$i]->{db_xrefs}}; $j++) {
 				my $type;
 				my $term;
-				if ($subarray->[$j] =~ m/KEGG[:=](K\w+)/) {
-					$type = "KEGG_KO";
-					$term = $1;
-				} elsif ($subarray->[$j] =~ m/KEGG[:=](R\d+)/) {
-					$type = "KEGG_RXN";
-					$term = $1;
-				} elsif ($subarray->[$j] =~ m/eggNOG[:=](\w+)/) {
-					$type = "EGGNOG";
-					$term = $1;
-				} elsif ($subarray->[$j] =~ m/eC_number[:=](\w+)/) {
-					$type = "EC";
-					$term = $1;
-				} elsif ($subarray->[$j] =~ m/product[:=](\w+)/) {
-					$type = "SSO";
-					$term = $1;
+				if ($feature_data->[$i]->{db_xrefs}->[$j]->[0] eq "KEGG") {
+					if ($feature_data->[$i]->{db_xrefs}->[$j]->[1] =~ m/^K/) {
+						$type = "KEGG_KO";
+						$term = $feature_data->[$i]->{db_xrefs}->[$j]->[1];
+					} elsif ($feature_data->[$i]->{db_xrefs}->[$j]->[1] =~ m/^R/) {
+						$type = "KEGG_RXN";
+						$term = $feature_data->[$i]->{db_xrefs}->[$j]->[1];
+					}
 				}
-				if (defined($term) && defined($ontology_hash->{$term})) {
-					if ($type eq "SSO") {
-						my $function_list = [split(/\s*;\s+|\s+[\@\/]\s+/,$term)];
-						for (my $j=0; $j < @{$function_list}; $j++) {
-							my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$j]);
-							if (defined($template->roleSearchNameHash()->{$searchrole})) {
-								$ssocount++;
-								foreach my $roleid (keys(%{$template->roleSearchNameHash()->{$searchrole}})) {
-									if ($template->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
-										if (!defined($function_hash->{$roleid}->{u})) {
-											$function_hash->{$roleid}->{u} = {
-												hit_count => 0,
-												non_gene_probability => 0,
-												non_gene_coverage => 0,
-												sources => {},
-											};
-										}
-										$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}*$function_hash->{$roleid}->{u}->{hit_count}+$params->{rast_probability};
-										$function_hash->{$roleid}->{u}->{hit_count}++;
-										$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}/$function_hash->{$roleid}->{u}->{hit_count};
-										$function_hash->{$roleid}->{u}->{non_gene_coverage} += $contig_coverages->{$contig};
-										if (!defined($function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$j]})) {
-											$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$j]} = 0;
-										}
-										$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$j]}++;
-									}
-								}
-							}
+				if ($params->{use_kegg} == 1 && defined($ontology_hash->{$term}) && ($type eq "KEGG_KO" || $type eq "KEGG_RXN")) {
+					foreach my $rid (keys(%{$ontology_hash->{$term}})) {
+						if (!defined($reaction_hash->{$rid}->{u})) {
+							$reaction_hash->{$rid}->{u} = {
+								hit_count => 0,
+    								non_gene_probability => 0,
+    								non_gene_coverage => 0,
+    								sources => {}
+							};
 						}
-					} else {
-						foreach my $rid (keys(%{$ontology_hash->{$term}})) {
-							if (!defined($reaction_hash->{$rid}->{u})) {
-								$reaction_hash->{$rid}->{u} = {
+						$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}*$reaction_hash->{$rid}->{u}->{hit_count}+$params->{other_anno_probability};
+						$reaction_hash->{$rid}->{u}->{hit_count}++;
+						$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}/$reaction_hash->{$rid}->{u}->{hit_count};
+						$reaction_hash->{$rid}->{u}->{non_gene_coverage} += $contig_coverages->{$contigs->[$i]};
+						if (!defined($reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term})) {
+							$reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term} = 0;
+						}
+						$reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term}++;
+					}
+				}
+			}
+		}
+		if (defined($feature_data->[$i]->{function})) {
+			my $function_list = [split(/\s*;\s+|\s+[\@\/]\s+/,$feature_data->[$i]->{function})];
+			for (my $j=0; $j < @{$function_list}; $j++) {
+				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$j]);
+				if (defined($template->roleSearchNameHash()->{$searchrole})) {
+					$ssocount++;
+					foreach my $roleid (keys(%{$template->roleSearchNameHash()->{$searchrole}})) {
+						if ($template->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+							if (!defined($function_hash->{$roleid}->{u})) {
+								$function_hash->{$roleid}->{u} = {
 									hit_count => 0,
-    									non_gene_probability => 0,
-    									non_gene_coverage => 0,
-    									sources => {}
+									non_gene_probability => 0,
+									non_gene_coverage => 0,
+									sources => {},
 								};
 							}
-							$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}*$reaction_hash->{$rid}->{u}->{hit_count}+$params->{other_anno_probability};
-							$reaction_hash->{$rid}->{u}->{hit_count}++;
-							$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}/$reaction_hash->{$rid}->{u}->{hit_count};
-							$reaction_hash->{$rid}->{u}->{non_gene_coverage} += $contig_coverages->{$contig};
-							if (!defined($reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term})) {
-								$reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term} = 0;
+							$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}*$function_hash->{$roleid}->{u}->{hit_count}+$params->{rast_probability};
+							$function_hash->{$roleid}->{u}->{hit_count}++;
+							$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}/$function_hash->{$roleid}->{u}->{hit_count};
+							$function_hash->{$roleid}->{u}->{non_gene_coverage} += $contig_coverages->{$contigs->[$i]};
+							if (!defined($function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$j]})) {
+								$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$j]} = 0;
 							}
-							$reaction_hash->{$rid}->{u}->{sources}->{$type}->{$term}++;
+							$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$j]}++;
 						}
 					}
 				}
@@ -2835,26 +2831,10 @@ sub func_build_metagenome_metabolic_model {
 	print "SSO count:".$ssocount."\n";
 	if ($ftrcount > 0 && $ssocount/$ftrcount < 0.1) {
 		print "Reannotating with RAST because SEED role count is below 500!\n\n";
-		#Downloading assembly file from metagenome annotation
-		my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($object->{input_ref}.";".$object->{assembly_ref},$params->{input_workspace}));
-		Bio::KBase::kbaseenv::assembly_to_fasta({
-			"ref" => $assembly_object->{_reference},
-			path => Bio::KBase::utilities::conf("fba_tools","scratch"),
-			filename => "assembly.fasta"
-		});
-		foreach my $contig (keys(%{$assembly_object->{contigs}})) {
-			if (!defined($contig_coverages->{$contig})) {
-				$contig_coverages->{$contig} = 1;
-			}
-		}
 		#Parsing protein sequences from metagenome assembly file
 		$function_hash = {};
-		(my $proteins,my $contig_list,my $idhash) = Bio::KBase::utilities::compute_proteins_from_fasta_gene_data(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta",$gene_loci);
-		my $output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
+		$output = Bio::KBase::ObjectAPI::functions::annotate_proteins({proteins => $proteins});
 		my $function_list = $output->{functions};
-		#for (my $i=0; $i < 1000; $i++) {
-			#print $ftrids->[$i]."\t".$idhash->{$ftrids->[$i]}->{protein}."\t".join("|",@{$function_list->[$idhash->{$ftrids->[$i]}->{index}]})."\n";
-		#}
 		for (my $i=0; $i < @{$function_list}; $i++) {
 			for (my $j=0; $j < @{$function_list->[$i]}; $j++) {
 				my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function_list->[$i]->[$j]);
@@ -2872,7 +2852,7 @@ sub func_build_metagenome_metabolic_model {
 							$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}*$function_hash->{$roleid}->{u}->{hit_count}+$params->{rast_probability};
 							$function_hash->{$roleid}->{u}->{hit_count}++;
 							$function_hash->{$roleid}->{u}->{non_gene_probability} = $function_hash->{$roleid}->{u}->{non_gene_probability}/$function_hash->{$roleid}->{u}->{hit_count};
-							$function_hash->{$roleid}->{u}->{non_gene_coverage} += $contig_coverages->{$contig_list->[$i]};
+							$function_hash->{$roleid}->{u}->{non_gene_coverage} += $contig_coverages->{$contigs->[$i]};
 							if (!defined($function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]->[$j]})) {
 								$function_hash->{$roleid}->{u}->{sources}->{RAST}->{$function_list->[$i]->[$j]} = 0;
 							}
@@ -2881,9 +2861,6 @@ sub func_build_metagenome_metabolic_model {
 					}
 				}
 			}
-		}
-		if (-d Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta") {
-			unlink(Bio::KBase::utilities::conf("fba_tools","scratch")."/assembly.fasta");
 		}
 	}
 	#Building model from functions
