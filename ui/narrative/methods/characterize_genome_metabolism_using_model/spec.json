@@ -31,6 +31,50 @@
          }
       },
       {
+         "id" : "metagenome_model_id",
+         "default_values" : [
+            ""
+         ],
+         "advanced" : true,
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false,
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         }
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "mag",
+                  "display" : "Compute MAG level coverage",
+                  "ui_name" : "Compute MAG level coverage",
+                  "value" : "mag"
+               },
+               {
+                  "value" : "contig",
+                  "ui_name" : "Use contig coverage directly",
+                  "display" : "Use contig coverage directly",
+                  "id" : "contig"
+               }
+            ]
+         },
+         "id" : "coverage_propagation",
+         "advanced" : true,
+         "default_values" : [
+            "mag"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
          "text_options" : {
             "is_output_name" : true,
             "valid_ws_types" : [
@@ -168,6 +212,15 @@
                "input_parameter" : "genome_id",
                "target_property" : "genome_id",
                "target_type_transform": "resolved-ref"
+            },
+            {
+               "input_parameter" : "metagenome_model_id",
+               "target_property" : "metagenome_model_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "target_property" : "coverage_propagation",
+               "input_parameter" : "coverage_propagation"
             },
             {
                "target_property" : "fbamodel_output_id",

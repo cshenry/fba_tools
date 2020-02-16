@@ -32,12 +32,23 @@ parameters :
         short-hint : |
             Name of the model produced by the gapfill analysis.
 
-
     fbamodel_id :
         ui-name : |
             Input model
         short-hint : |
             The metabolic model consisting of a genome-wide set of stoichiometric reactions, compounds, and weighted components of the biomass needed for flux balance analysis (FBA).
+
+    metagenome_model_id :
+        ui-name : |
+            Metagenome model with coverages
+        short-hint : |
+            If this is a model of a metagenome assembled genome, a model of the metagenome with coverages computed can be supplied to propagate coverage data to this genome
+
+    coverage_propagation :
+        ui-name : |
+            Coverage propagation method
+        short-hint : |
+            This drop down enables specification of how coverages will be propageted from the metagenome model to the MAG
 
 icon: modelseed-teal.png
 

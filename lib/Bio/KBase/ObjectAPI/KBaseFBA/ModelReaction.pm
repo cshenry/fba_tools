@@ -886,5 +886,28 @@ sub gene_hash {
 	return $hash;
 }
 
+sub compute_reaction_coverage_from_gene_coverage {
+	my $self = shift;
+	my $genehash = shift;
+	my $prots = $self->modelReactionProteins();
+	my $coverage = 0;
+	for (my $i=0; $i < @{$prots}; $i++) {
+		my $protcoverage;
+		my $subunits = $prots->[$i]->modelReactionProteinSubunits();
+		for (my $j=0; $j < @{$subunits}; $j++) {
+			my $subunit_coverage = 0;
+			my $features = $subunits->[$j]->features();
+			for (my $k=0; $k < @{$features}; $k++) {
+				$subunit_coverage += $genehash->{$features->[$k]->id()};
+			}
+			if (!defined($protcoverage) || $protcoverage > $subunit_coverage) {
+				$protcoverage = $subunit_coverage;
+			}
+		}
+		$coverage += $protcoverage;
+	}
+	$self->coverage($coverage);
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

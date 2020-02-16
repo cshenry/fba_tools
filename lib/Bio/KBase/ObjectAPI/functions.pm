@@ -2920,7 +2920,9 @@ sub func_model_based_genome_characterization {
 		template_workspace => undef,
 		use_annotated_functions => 1,
         merge_all_annotations => 0,
-        source_ontology_list => []
+        source_ontology_list => [],
+        metagenome_model_id => undef,
+        coverage_propagation => "mag"
 	});
 	Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
 		workspace => $params->{workspace},
@@ -2940,6 +2942,7 @@ sub func_model_based_genome_characterization {
 		workspace => $params->{workspace},
 		fbamodel_id => $params->{fbamodel_output_id}.".base",
 		fbamodel_output_id => $params->{fbamodel_output_id},
+		metagenome_model_id => $params->{metagenome_model_id}
 	},$datachannel);
 }
 
@@ -2947,12 +2950,67 @@ sub func_run_model_chacterization_pipeline {
 	my ($params,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
 		fbamodel_workspace => $params->{workspace},
-		fbamodel_output_id => undef
+		fbamodel_output_id => undef,
+		metagenome_model_id => undef,
+        coverage_propagation => "mag"
 	});
 	if (!defined($datachannel->{fbamodel})) {
 		$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 	}
-
+	#Propagating coverage from input metagenome object
+	if (defined($params->{metagenome_model_id})) {
+		my $metamodel = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metagenome_model_id},$params->{fbamodel_workspace}));
+		if (!defined($metamodel->contig_coverages())) {
+			print "Input metagenome model does not include coverage information, so coverages cannot be computed for this metagenome assembled genome.\n";	
+		} else {
+			my $covhash = $metamodel->contig_coverages();
+			if ($params->{coverage_propagation} eq "mag") {
+				my $totallength = 0;
+				my $magcoverage = 0;
+				my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($datachannel->{fbamodel}->genome()->{assembly_ref},$params->{input_workspace}));
+				my $allfound = 1;
+				foreach my $contigid (keys(%{$assembly_object->{contigs}})) {
+					$totallength += $assembly_object->{contigs}->{$contigid}->{"length"};
+					if (defined($covhash->{$contigid})) {
+						$magcoverage += $assembly_object->{contigs}->{$contigid}->{"length"}*$covhash->{$contigid};
+					} else {
+						$allfound = 0;
+					}
+				}
+				if ($allfound == 1) {
+					$magcoverage = $magcoverage/$totallength;
+					my $rxns = $datachannel->{fbamodel}->modelreactions();
+					for (my $i=0; $i < @{$rxns}; $i++) {
+						my $proteins = $rxns->[$i]->modelReactionProteins();
+						my $count = @{$proteins};
+						$rxns->[$i]->coverage($count*$magcoverage);
+					}
+				} else {
+					print "MAG contains one or more contigs that are not included in the metagenome model!\n";
+				}
+			} else {
+				my $ftrs = $datachannel->{fbamodel}->genome()->features();
+				my $gene_coverages = {};
+				my $allfound = 1;
+				for (my $i=0; $i < @{$ftrs}; $i++) {
+					my $contig = $ftrs->[$i]->location()->[0]->[0];
+					if (defined($covhash->{$contig})) {
+						$gene_coverages->{$ftrs->[$i]->id()} = $covhash->{$contig};
+					} else {
+						$allfound = 0;
+					}
+				}
+				if ($allfound == 1) {
+					my $rxns = $datachannel->{fbamodel}->modelreactions();
+					for (my $i=0; $i < @{$rxns}; $i++) {
+						$rxns->[$i]->compute_reaction_coverage_from_gene_coverage($gene_coverages);
+					}
+				} else {
+					print "MAG contains one or more contigs that are not included in the metagenome model!\n";
+				}
+			}
+		}
+	}
 	my $attributes = {
 		pathways => {},
 		auxotrophy => {},
