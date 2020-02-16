@@ -7,7 +7,7 @@
    "contact" : "http://kbase.us/contact-us/",
    "visible" : true,
    "categories" : [
-      "active",
+      "inactive",
       "metabolic_modeling"
    ],
    "widgets" : {
