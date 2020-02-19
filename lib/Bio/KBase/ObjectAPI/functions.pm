@@ -3134,8 +3134,8 @@ sub func_run_model_chacterization_pipeline {
     } );
 
 	return {
-		new_fbamodel_ref => $datachannel->{fbamodel}->_wsworkspace()."/".$datachannel->{fbamodel}->_wswsid(),
-		new_fba_ref => $datachannel->{fba}->_wsworkspace()."/".$datachannel->{fba}->_wswsid()
+		new_fbamodel_ref => $datachannel->{fbamodel}->_wswsid()."/".$datachannel->{fbamodel}->_wsobjid()."/".$datachannel->{fbamodel}->_wsversion(),
+		new_fba_ref => $datachannel->{fba}->_wswsid()."/".$datachannel->{fba}->_wsobjid()."/".$datachannel->{fbamodel}->_wsversion()
 	};
 }
 
