@@ -309,6 +309,9 @@ sub new
 		service => "fba_tools"
 	});
     Bio::KBase::utilities::setconf("UtilConfig","call_back_url",$ENV{"SDK_CALLBACK_URL"});
+    if (Bio::KBase::utilities::conf("fba_tools","kbase-endpoint") =~ m/appdev\.kbase\.us/) {
+    		Bio::KBase::utilities::setconf("ModelSEED","ontology_map_workspace","janakakbase:narrative_1550174613022");
+    }
     Bio::KBase::ObjectAPI::functions::set_handler($self);
     Bio::KBase::utilities::set_handler($self);
     #END_CONSTRUCTOR
