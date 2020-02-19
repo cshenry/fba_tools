@@ -2950,12 +2950,15 @@ sub func_run_model_chacterization_pipeline {
 	my ($params,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{
 		fbamodel_workspace => $params->{workspace},
-		fbamodel_output_id => undef,
+		fbamodel_output_id => $params->{fbamodel_id},
 		metagenome_model_id => undef,
         coverage_propagation => "mag"
 	});
+	#Pulling and stashing original input model for the analysis
+	my $original_model;
 	if (!defined($datachannel->{fbamodel})) {
 		$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+		$original_model = $datachannel->{fbamodel};
 	}
 	#Propagating coverage from input metagenome object
 	if (defined($params->{metagenome_model_id})) {
@@ -2967,7 +2970,7 @@ sub func_run_model_chacterization_pipeline {
 			if ($params->{coverage_propagation} eq "mag") {
 				my $totallength = 0;
 				my $magcoverage = 0;
-				my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($datachannel->{fbamodel}->genome()->{assembly_ref},$params->{input_workspace}));
+				my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($datachannel->{fbamodel}->genome()->assembly_ref(),$params->{input_workspace}));
 				my $allfound = 1;
 				foreach my $contigid (keys(%{$assembly_object->{contigs}})) {
 					$totallength += $assembly_object->{contigs}->{$contigid}->{"length"};
@@ -3011,6 +3014,7 @@ sub func_run_model_chacterization_pipeline {
 			}
 		}
 	}
+	#Instantiating attribute data
 	my $attributes = {
 		pathways => {},
 		auxotrophy => {},
@@ -3018,34 +3022,42 @@ sub func_run_model_chacterization_pipeline {
 		gene_count => 0,
 		auxotroph_count => 0
 	};
-	if (defined($datachannel->{fbamodel}->attributes()->{base_atp})) {
-		$attributes->{base_atp} = $datachannel->{fbamodel}->attributes()->{base_atp};
-		$attributes->{initial_atp} = $datachannel->{fbamodel}->attributes()->{initial_atp};
-		$attributes->{base_rejected_reactions} = $datachannel->{fbamodel}->attributes()->{base_rejected_reactions};
-		$attributes->{core_gapfilling} = $datachannel->{fbamodel}->attributes()->{core_gapfilling};
+	#Cloning the original model and removing all gapfilled reactions to create a base model
+	my $clone_model = $original_model->cloneObject();
+	$clone_model->parent($original_model->parent());
+	$clone_model->remove_all_gapfilled_reactions();
+	#Computing base ATP and gapfilling attributes : only recomputed if original numbers didn't exist
+	if (!defined($clone_model->attributes()->{base_atp}) || $clone_model->attributes()->{base_atp} == 0) {
+		$clone_model->EnsureProperATPProduction();
 	}
-	if (!defined($params->{fbamodel_output_id})) {
-		$params->{fbamodel_output_id} = $datachannel->{fbamodel}->id();
-	}
+	$attributes->{base_atp} = $clone_model->attributes()->{base_atp};
+	$attributes->{initial_atp} = $clone_model->attributes()->{initial_atp};
+	$attributes->{base_rejected_reactions} = $clone_model->attributes()->{base_rejected_reactions};
+	$attributes->{core_gapfilling} = $clone_model->attributes()->{core_gapfilling};
+	#Predicting auxotrophy against using just the base model
+	$datachannel->{fbamodel} = $clone_model;
 	my $auxo_output = Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy_from_model({
 		workspace => $params->{workspace},
-		fbamodel_id => $params->{fbamodel_output_id}.".base",
+		fbamodel_id => $params->{fbamodel_output_id},
 	},$datachannel);
 	$attributes->{baseline_gapfilling} = $datachannel->{fbamodel}->attributes()->{baseline_gapfilling};
+	#This is weird, but now I am clearing the cache because the cloning process seems to corrupt the original model object somehow
 	$datachannel->{fbamodel}->parent()->cache({});
-	delete $datachannel->{fbamodel};
+	#Now gapfilling original model in auxotrophic media
+	$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+	Bio::KBase::ObjectAPI::functions::add_auxotrophy_transporters({fbamodel => $datachannel->{fbamodel}});
 	my $gapfill_output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 		workspace => $params->{workspace},
-		fbamodel_id => $params->{fbamodel_output_id}.".base",
-		media_id => $params->{fbamodel_output_id}.".base".".auxo_media",
-		fbamodel_output_id => $params->{fbamodel_output_id}.".gapfilled"
+		fbamodel_id => $params->{fbamodel_id},
+		media_id => $params->{fbamodel_output_id}.".auxo_media",
+		fbamodel_output_id => $params->{fbamodel_output_id}
 	},$datachannel);
 	$attributes->{auxotrophy_gapfilling} = $gapfill_output->{number_gapfilled_reactions};
 	my $fba_output = Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis({
 		workspace => $params->{workspace},
-		fbamodel_id => $params->{fbamodel_output_id}.".gapfilled",
+		fbamodel_id => $params->{fbamodel_output_id},
 		fba_output_id => $params->{fbamodel_output_id}.".fba",
-		media_id => $params->{fbamodel_output_id}.".base".".auxo_media",
+		media_id => $params->{fbamodel_output_id}.".auxo_media",
 		fva => 1,
 		minimize_flux => 1,
 		max_c_uptake => 30
@@ -3106,11 +3118,11 @@ sub func_run_model_chacterization_pipeline {
 		}
 	}
 	$datachannel->{fbamodel}->attributes($attributes);
-	my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},Bio::KBase::utilities::buildref($params->{fbamodel_output_id}.".gapfilled",$params->{workspace}));
+	my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}));
 
     my $string;
     Bio::KBase::Templater::render_template(
-        '/kb/module/templates/model_characterisation_pipeline.tt',
+		Bio::KBase::utilities::conf("fba_tools","model_characterisation_template"),
         { template_data => $datachannel->{ fbamodel } },
         \$string,
     );

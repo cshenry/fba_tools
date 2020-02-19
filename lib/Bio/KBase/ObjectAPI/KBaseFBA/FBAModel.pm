@@ -306,11 +306,13 @@ sub ComputePathwayAttributes {
 							$attributes->{pathways}->{$pathid}->{reactions}->{$rxnid} = "b";
 						}
 						if ($self->type() eq "Metagenome") {
-							$attributes->{pathways}->{$pathid}->{gene_count} += $rxns->[$i]->gene_count();
-							$attributes->{pathways}->{$pathid}->{average_genes_per_reaction} += $rxns->[$i]->gene_count();
-							$attributes->{pathways}->{$pathid}->{average_coverage_per_reaction} += $rxns->[$i]->coverage();
-							push(@{$attributes->{pathways}->{$pathid}->{genecounts}},$rxns->[$i]->gene_count());
-							push(@{$attributes->{pathways}->{$pathid}->{coverages}},$rxns->[$i]->coverage());
+							if (defined($rxns->[$i]->gene_count())) {
+								$attributes->{pathways}->{$pathid}->{gene_count} += $rxns->[$i]->gene_count();
+								$attributes->{pathways}->{$pathid}->{average_genes_per_reaction} += $rxns->[$i]->gene_count();
+								$attributes->{pathways}->{$pathid}->{average_coverage_per_reaction} += $rxns->[$i]->coverage();
+								push(@{$attributes->{pathways}->{$pathid}->{genecounts}},$rxns->[$i]->gene_count());
+								push(@{$attributes->{pathways}->{$pathid}->{coverages}},$rxns->[$i]->coverage());
+							}
 						} else {
 							my $ftrids = $rxns->[$i]->featureIDs();
 							$attributes->{pathways}->{$pathid}->{average_genes_per_reaction} += @{$ftrids};
@@ -415,6 +417,20 @@ sub gene_associated_reaction_count {
 		}
 	}
 	return $count;
+}
+
+sub remove_all_gapfilled_reactions {
+	my $self = shift;
+	my $reactions = $self->modelreactions();
+	my $removelist = [];
+	for (my $i=0; $i < @{$reactions}; $i++) {
+		if (length($reactions->[$i]->gapfillString()) > 0) {
+			push(@{$removelist},$reactions->[$i]);
+		}
+	}
+	for (my $i=0; $i < @{$removelist}; $i++) {
+		$self->remove("modelreactions",$removelist->[$i]);
+	}
 }
 
 sub biomass_compound_count {

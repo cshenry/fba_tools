@@ -1911,9 +1911,8 @@ module KBaseFBA {
         mapping<string role_id,mapping<string compartment,FunctionMappingData> > function_hash;
     } ModelReconstructionInput;
     
-    /* 
-    	Escher map object 
-    */
+    typedef int boolean;
+
     typedef structure {
         string map_name;
         string map_id;
@@ -1948,7 +1947,7 @@ module KBaseFBA {
         string name;
         float label_x;
         float label_y;
-        bool reversibility;
+        boolean reversibility;
         string gene_reaction_rule;
         list<EscherMapLayoutReactionMetabolite> metabolites;
         mapping<string, EscherMapLayoutReactionSegment> segments;
@@ -1966,7 +1965,7 @@ module KBaseFBA {
         string name;
         float label_x;
         float label_y;
-        bool node_is_primary;
+        boolean node_is_primary;
     } EscherMapLayoutNode;
     
     typedef structure {

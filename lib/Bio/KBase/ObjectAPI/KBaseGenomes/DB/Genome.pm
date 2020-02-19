@@ -23,6 +23,7 @@ has uuid => (is => 'rw', lazy => 1, isa => 'Str', type => 'msdata', metaclass =>
 has _reference => (is => 'rw', lazy => 1, isa => 'Str', type => 'msdata', metaclass => 'Typed',builder => '_build_reference');
 has source => (is => 'rw', isa => 'Str', printOrder => '1', required => 1, type => 'attribute', metaclass => 'Typed');
 has contigset_ref => (is => 'rw', isa => 'Str', printOrder => '11', type => 'attribute', metaclass => 'Typed');
+has assembly_ref => (is => 'rw', isa => 'Str', printOrder => '11', type => 'attribute', metaclass => 'Typed');
 has dna_size => (is => 'rw', isa => 'Int', printOrder => '6', type => 'attribute', metaclass => 'Typed');
 has domain => (is => 'rw', isa => 'Str', printOrder => '4', type => 'attribute', metaclass => 'Typed');
 has contig_lengths => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
@@ -196,10 +197,17 @@ my $attributes = [
             'name' => 'quality',
             'type' => 'HashRef',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => 3,
+            'name' => 'assembly_ref',
+            'type' => 'Str',
+            'perm' => 'rw'
           }
         ];
 
-my $attribute_map = {source => 0, contigset_ref => 1, dna_size => 2, domain => 3, contig_lengths => 4, contig_ids => 5, publications => 6, id => 7, num_contigs => 8, source_id => 9, gc_content => 10, taxonomy => 11, scientific_name => 12, genetic_code => 13, md5 => 14, complete => 15, quality => 16};
+my $attribute_map = {source => 0, contigset_ref => 1, dna_size => 2, domain => 3, contig_lengths => 4, contig_ids => 5, publications => 6, id => 7, num_contigs => 8, source_id => 9, gc_content => 10, taxonomy => 11, scientific_name => 12, genetic_code => 13, md5 => 14, complete => 15, quality => 16,assembly_ref => 17};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {
