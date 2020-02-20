@@ -3123,9 +3123,11 @@ sub func_run_model_chacterization_pipeline {
     my $string;
     Bio::KBase::Templater::render_template(
 		Bio::KBase::utilities::conf("fba_tools","model_characterisation_template"),
-        { template_data => $datachannel->{ fbamodel } },
+        { template_data => $datachannel->{ fbamodel }->serializeToDB() },
         \$string,
     );
+
+	print "TEMPLATE:".$string."\n\n";
 
     Bio::KBase::utilities::print_report_message( {
         message => $string,
