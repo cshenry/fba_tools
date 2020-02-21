@@ -91,6 +91,7 @@ sub metabolite_hash {
 			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{inchikey}}->{$cpdid.$suffix} = $priority;
 			my $array = [split(/[_-]/,$cpdhash->{$cpdid}->{inchikey})];
 			$args->{hashes}->{base_structures}->{$array->[0]}->{$cpdid.$suffix} = $priority;
+			$args->{hashes}->{nochargestructures}->{$array->[0]."-".$array->[1]}->{$cpdid.$suffix} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{smiles})) {
 			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{smiles}}->{$cpdid.$suffix} = $priority;

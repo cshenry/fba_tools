@@ -3153,11 +3153,19 @@ sub func_lookup_modelseed_ids {
 	my $attribute_hash = {};
 	my $count = 0;
 	for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
-		$attribute_hash->{$mapping->{attributes}->[$m]} = $m;
+		if ($mapping->{attributes}->[$m]->{attribute} eq "seed_id") {
+			$mapping->{attributes}->[$m]->{attribute} = "modelseed";
+		}
+		$attribute_hash->{$mapping->{attributes}->[$m]->{attribute}} = $m;
 		$count++;
 	}
 	if (!defined($attribute_hash->{modelseed})) {
-		push(@{$mapping->{attributes}},"modelseed");
+		push(@{$mapping->{attributes}},{
+			attribute => "modelseed",
+            attribute_ont_id => "Custom:Term",
+            attribute_ont_ref => "KbaseOntologies/Custom",
+            source => "ModelSEED"
+		});
 		$attribute_hash->{modelseed} = $count+1;
 	}
 	my $args = {
@@ -3166,13 +3174,16 @@ sub func_lookup_modelseed_ids {
 	};
 	Bio::KBase::utilities::metabolite_hash($args);
 	my $metabolite_hash = $args->{hashes};
-	my $seedhash = {};
 	foreach my $rowid (keys(%{$mapping->{instances}})) {
+		my $seedhash = {};
 		#First check if there is already a modelseed ID associated with the compound
 		if (defined($attribute_hash->{modelseed}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{modelseed}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{modelseed}]) > 0) {
-			#Don't do anything if a modelseed ID has already been set
-			next;
-		} elsif (defined($attribute_hash->{kegg}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{kegg}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{kegg}]) > 0) {
+			my $array = [split(/;\|/,$mapping->{instances}->{$rowid}->[$attribute_hash->{modelseed}])];
+			foreach my $item (@{$array}) {
+				$seedhash->{$item} = 1;
+			}
+		}
+		if (keys(%{$seedhash}) == 0 && defined($attribute_hash->{kegg}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{kegg}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{kegg}]) > 0) {
 			#Now check if there is a KEGG ID
 			my $array = [split(/[;\|]/,$mapping->{instances}->{$rowid}->[$attribute_hash->{kegg}])];
 			for (my $i=0; $i < @{$array}; $i++) {
@@ -3182,28 +3193,44 @@ sub func_lookup_modelseed_ids {
 					}
 				}
 			}
-		} elsif (defined($attribute_hash->{inchikey}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{inchikey}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{inchikey}]) > 0) {
+		}
+		if (keys(%{$seedhash}) == 0 && defined($attribute_hash->{inchikey}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{inchikey}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{inchikey}]) > 0) {
 			#Now check if there is an inchikey
-			if (defined($metabolite_hash->{structures}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{inchikey}]})) {
-				foreach my $seedid (keys(%{$metabolite_hash->{structures}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{inchikey}]}})) {
+			my $inchikey = $mapping->{instances}->{$rowid}->[$attribute_hash->{inchikey}];
+			my $found = 0;
+			if (defined($metabolite_hash->{structures}->{$inchikey})) {
+				foreach my $seedid (keys(%{$metabolite_hash->{structures}->{$inchikey}})) {
+					$found = 1;
 					$seedhash->{$seedid} = 1;
 				}
 			}
-		} elsif (defined($attribute_hash->{inchi}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{inchi}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{inchi}]) > 0) {
+			if ($found == 0) {
+				$inchikey =~ s/-.$//;
+				if (defined($metabolite_hash->{nochargestructures}->{$inchikey})) {
+					foreach my $seedid (keys(%{$metabolite_hash->{structures}->{$inchikey}})) {
+						$found = 1;
+						$seedhash->{$seedid} = 1;
+					}
+				}
+			}
+		}
+		if (keys(%{$seedhash}) == 0 && defined($attribute_hash->{inchi}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{inchi}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{inchi}]) > 0) {
 			#Now check if there is an inchi
 			if (defined($metabolite_hash->{structures}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{inchi}]})) {
 				foreach my $seedid (keys(%{$metabolite_hash->{structures}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{inchi}]}})) {
 					$seedhash->{$seedid} = 1;
 				}
 			}
-		} elsif (defined($attribute_hash->{smiles}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{smiles}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{smiles}]) > 0) {
+		}
+		if (keys(%{$seedhash}) == 0 && defined($attribute_hash->{smiles}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{smiles}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{smiles}]) > 0) {
 			#Now check if there is a smiles
 			if (defined($metabolite_hash->{structures}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{smiles}]})) {
 				foreach my $seedid (keys(%{$metabolite_hash->{structures}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{smiles}]}})) {
 					$seedhash->{$seedid} = 1;
 				}
 			}
-		} elsif (defined($attribute_hash->{name}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{name}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{name}]) > 0) {
+		}
+		if (keys(%{$seedhash}) == 0 && defined($attribute_hash->{name}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{name}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{name}]) > 0) {
 			#Now check if there is a name
 			my $searchname = Bio::KBase::utilities::nameToSearchname($mapping->{instances}->{$rowid}->[$attribute_hash->{name}]);
 			if (defined($metabolite_hash->{names}->{$searchname})) {
@@ -3211,7 +3238,25 @@ sub func_lookup_modelseed_ids {
 					$seedhash->{$seedid} = 1;
 				}
 			}
-		} elsif (defined($attribute_hash->{formula}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]) > 0) {
+		}
+		if (keys(%{$seedhash}) == 0) {
+			#Now check if the ID matches an ID
+			if (defined($metabolite_hash->{ids}->{$rowid})) {
+				foreach my $seedid (keys(%{$metabolite_hash->{ids}->{$rowid}})) {
+					$seedhash->{$seedid} = 1;
+				}
+			}
+		}
+		if (keys(%{$seedhash}) == 0) {
+			#Now check if the ID matches an ID
+			my $searchname = Bio::KBase::utilities::nameToSearchname($rowid);
+			if (defined($metabolite_hash->{names}->{$searchname})) {
+				foreach my $seedid (keys(%{$metabolite_hash->{names}->{$searchname}})) {
+					$seedhash->{$seedid} = 1;
+				}
+			}
+		}
+		if (keys(%{$seedhash}) == 0 && defined($attribute_hash->{formula}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]) > 0) {
 			#Now check if there is a formula
 			if (defined($metabolite_hash->{formula}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]})) {
 				foreach my $seedid (keys(%{$metabolite_hash->{formula}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]}})) {
@@ -3220,7 +3265,7 @@ sub func_lookup_modelseed_ids {
 			}
 		}
 		if (keys(%{$seedhash}) > 0) {
-			$mapping->{instances}->{$rowid}->[$attribute_hash->{modelseed}] = join("|",keys(%{$seedhash}));
+			$mapping->{instances}->{$rowid}->[$attribute_hash->{modelseed}] = join(";",keys(%{$seedhash}));
 		}
 	}
 #	my $string;
@@ -3230,9 +3275,9 @@ sub func_lookup_modelseed_ids {
 #        \$string,
 #    );
 #    Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
-	my $attmapping = $handler->util_save_object($mapping,Bio::KBase::utilities::buildref($params->{chemical_abundance_matrix_out_id}."AttMap",$params->{workspace}),{type => "KBaseExperiments.AttributeMapping"});
+	my $attmapping = $handler->util_save_object($mapping,Bio::KBase::utilities::buildref($params->{chemical_abundance_matrix_out_id}."AttMap",$params->{workspace}),{hash => 1,type => "KBaseExperiments.AttributeMapping"});
 	$object->{row_attributemapping_ref} = util_get_ref($attmapping);
-	my $wsmeta = $handler->util_save_object($object,Bio::KBase::utilities::buildref($params->{chemical_abundance_matrix_out_id},$params->{workspace}),{type => "KBaseMatrices.ChemicalAbundanceMatrix"});
+	my $wsmeta = $handler->util_save_object($object,Bio::KBase::utilities::buildref($params->{chemical_abundance_matrix_out_id},$params->{workspace}),{hash => 1,type => "KBaseMatrices.ChemicalAbundanceMatrix"});
 	return {
 		new_chemical_abundance_matrix_ref => util_get_ref($wsmeta)
 	};
