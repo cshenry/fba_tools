@@ -222,9 +222,6 @@ if ($start < 17) {
 	} "build_metagenome_metabolic_model";
 }
 
-done_testing();
-exit();
-
 if ($start < 18) {
 	print "Running test 17:\n";
 	lives_ok{
@@ -717,6 +714,17 @@ if ($start < 61) {
 	    $impl->export_phenotype_set_as_tsv_file({
 		input_ref => $test_ws."/test_phenotype_simset"})
 	} 'export phenotype sim set as tsv';
+}
+
+if ($start < 62) {
+	print "Running test 61:\n";
+	lives_ok{
+		my $output = Bio::KBase::ObjectAPI::functions::func_lookup_modelseed_ids({
+			workspace => $test_ws,
+			chemical_abundance_matrix_id => "exodata",
+			chemical_abundance_matrix_out_id => "exodata.new"
+		});
+	} "lookup_modelseed_ids";
 }
 
 done_testing();

@@ -2922,12 +2922,13 @@ sub func_model_based_genome_characterization {
         merge_all_annotations => 0,
         source_ontology_list => [],
         metagenome_model_id => undef,
+        metagenome_model_workspace => $params->{workspace},
         coverage_propagation => "mag"
 	});
 	Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
 		workspace => $params->{workspace},
 		genome_id => $params->{genome_id},
-		fbamodel_output_id => $params->{fbamodel_output_id}.".base",
+		fbamodel_output_id => $params->{genome_id}.".basemodel",
 		template_id => $params->{template_id},
 		genome_workspace => $params->{genome_workspace},
 		template_workspace => $params->{template_workspace},
@@ -2940,9 +2941,10 @@ sub func_model_based_genome_characterization {
 	},$datachannel);
 	return Bio::KBase::ObjectAPI::functions::func_run_model_chacterization_pipeline({
 		workspace => $params->{workspace},
-		fbamodel_id => $params->{fbamodel_output_id}.".base",
+		fbamodel_id => $params->{genome_id}.".basemodel",
 		fbamodel_output_id => $params->{fbamodel_output_id},
-		metagenome_model_id => $params->{metagenome_model_id}
+		metagenome_model_id => $params->{metagenome_model_id},
+		metagenome_model_workspace => $params->{metagenome_model_workspace}
 	},$datachannel);
 }
 
@@ -2952,17 +2954,16 @@ sub func_run_model_chacterization_pipeline {
 		fbamodel_workspace => $params->{workspace},
 		fbamodel_output_id => $params->{fbamodel_id},
 		metagenome_model_id => undef,
+		metagenome_model_workspace => $params->{workspace},
         coverage_propagation => "mag"
 	});
 	#Pulling and stashing original input model for the analysis
-	my $original_model;
 	if (!defined($datachannel->{fbamodel})) {
 		$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
-		$original_model = $datachannel->{fbamodel};
 	}
 	#Propagating coverage from input metagenome object
 	if (defined($params->{metagenome_model_id})) {
-		my $metamodel = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metagenome_model_id},$params->{fbamodel_workspace}));
+		my $metamodel = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metagenome_model_id},$params->{metagenome_model_workspace}));
 		if (!defined($metamodel->contig_coverages())) {
 			print "Input metagenome model does not include coverage information, so coverages cannot be computed for this metagenome assembled genome.\n";	
 		} else {
@@ -3023,8 +3024,8 @@ sub func_run_model_chacterization_pipeline {
 		auxotroph_count => 0
 	};
 	#Cloning the original model and removing all gapfilled reactions to create a base model
-	my $clone_model = $original_model->cloneObject();
-	$clone_model->parent($original_model->parent());
+	my $clone_model = $datachannel->{fbamodel}->cloneObject();
+	$clone_model->parent($datachannel->{fbamodel}->parent());
 	$clone_model->remove_all_gapfilled_reactions();
 	#Computing base ATP and gapfilling attributes : only recomputed if original numbers didn't exist
 	if (!defined($clone_model->attributes()->{base_atp}) || $clone_model->attributes()->{base_atp} == 0) {
@@ -3127,7 +3128,7 @@ sub func_run_model_chacterization_pipeline {
         \$string,
     );
 
-	print "TEMPLATE:".$string."\n\n";
+	#print "TEMPLATE:".$string."\n\n";
 
     Bio::KBase::utilities::print_report_message( {
         message => $string,
@@ -3212,8 +3213,8 @@ sub func_lookup_modelseed_ids {
 			}
 		} elsif (defined($attribute_hash->{formula}) && defined($mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]) && length($mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]) > 0) {
 			#Now check if there is a formula
-			if (defined($metabolite_hash->{names}->{$searchname})) {
-				foreach my $seedid (keys(%{$metabolite_hash->{names}->{$searchname}})) {
+			if (defined($metabolite_hash->{formula}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]})) {
+				foreach my $seedid (keys(%{$metabolite_hash->{formula}->{$mapping->{instances}->{$rowid}->[$attribute_hash->{formula}]}})) {
 					$seedhash->{$seedid} = 1;
 				}
 			}

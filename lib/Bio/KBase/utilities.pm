@@ -107,7 +107,7 @@ sub metabolite_hash {
 		}
 		if (defined($cpdhash->{$cpdid}->{formula})) {
 			if ($formula_adjusted == 0) {
-				$cpdhash->{$cpdid}->{formula} = Bio::KBase::utilities::neutralize_formula($cpdid}->{formula},$cpdid}->{charge});
+				$cpdhash->{$cpdid}->{formula} = Bio::KBase::utilities::neutralize_formula($cpdhash->{$cpdid}->{formula},$cpdhash->{$cpdid}->{charge});
 			}
 			$args->{hashes}->{formulas}->{$cpdhash->{$cpdid}->{formula}}->{$cpdid.$suffix} = $priority;
 		}
@@ -760,9 +760,6 @@ sub timestamp {
 sub neutralize_formula {
 	my ($formula,$charge) = @_;
 	my $diff = 0-$charge;
-	if ($self->id() eq "cpd00006" || $self->id() eq "cpd00003") {
-		$diff++;
-	}
 	if ($diff == 0) {
 		return $formula;
 	}
