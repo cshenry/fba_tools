@@ -90,36 +90,9 @@ sub _buildformula {
 }
 sub _buildneutral_formula {
 	my ($self) = @_;
-	my $formula = $self->formula();
-	my $charge = $self->charge();
-	my $diff = 0-$charge;
-	if ($self->id() eq "cpd00006" || $self->id() eq "cpd00003") {
-		$diff++;
-	}
-	if ($diff == 0) {
-		return $formula;
-	}
-	if ($formula =~ m/H(\d+)/) {
-		my $count = $1;
-		$count += $diff;
-		$formula =~ s/H(\d+)/H$count/;
-	} elsif ($formula =~ m/.H$/) {
-		if ($diff < 0) {
-			$formula =~ s/H$//;
-		} else {
-			$diff++;
-			$formula .= $diff;
-		}
-	} elsif ($formula =~ m/H[A-Z]/) {
-		if ($diff < 0) {
-			$formula =~ s/H([A-Z])/$1/;
-		} else {
-			$diff++;
-			$formula =~ s/H([A-Z])/H$diff$1/;
-		}
-	}
-	return $formula;
+	return Bio::KBase::utilities::neutralize_formula($self->formula(),$self->charge());
 }
+
 sub _buildmsid {
 	my ($self) = @_;
 	return $self->compound()->id();

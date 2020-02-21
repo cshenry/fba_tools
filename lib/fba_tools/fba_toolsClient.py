@@ -304,6 +304,25 @@ class fba_tools(object):
             'fba_tools.compare_fba_solutions',
             [params], self._service_ver, context)
 
+    def lookup_modelseed_ids(self, params, context=None):
+        """
+        Attempts to map peaks in the input metabolomics matrix to compounds in the ModelSEED database
+        :param params: instance of type "LookupModelSEEDIDsParams" ->
+           structure: parameter "workspace" of type "workspace_name" (A
+           string representing a workspace name.), parameter
+           "chemical_abundance_matrix_id" of type "metabolome_id" (A string
+           representing a metabolome matrix id.), parameter
+           "chemical_abundance_matrix_out_id" of type "metabolome_id" (A
+           string representing a metabolome matrix id.)
+        :returns: instance of type "LookupModelSEEDIDsResults" -> structure:
+           parameter "report_name" of String, parameter "report_ref" of type
+           "ws_report_id" (The workspace ID for a Report object @id ws
+           KBaseReport.Report)
+        """
+        return self._client.call_method(
+            'fba_tools.lookup_modelseed_ids',
+            [params], self._service_ver, context)
+
     def propagate_model_to_new_genome(self, params, context=None):
         """
         Translate the metabolic model of one organism to another, using a mapping of similar proteins between their genomes

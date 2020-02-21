@@ -308,6 +308,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: lookup_modelseed_ids</p>
+     * <pre>
+     * Attempts to map peaks in the input metabolomics matrix to compounds in the ModelSEED database
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.LookupModelSEEDIDsParams LookupModelSEEDIDsParams}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.LookupModelSEEDIDsResults LookupModelSEEDIDsResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public LookupModelSEEDIDsResults lookupModelseedIds(LookupModelSEEDIDsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<LookupModelSEEDIDsResults>> retType = new TypeReference<List<LookupModelSEEDIDsResults>>() {};
+        List<LookupModelSEEDIDsResults> res = caller.jsonrpcCall("fba_tools.lookup_modelseed_ids", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: propagate_model_to_new_genome</p>
      * <pre>
      * Translate the metabolic model of one organism to another, using a mapping of similar proteins between their genomes

@@ -356,6 +356,21 @@ module fba_tools {
     funcdef compare_fba_solutions(CompareFBASolutionsParams params) returns (CompareFBASolutionsResults results) authentication required;
 	
 	typedef structure {
+		workspace_name workspace;
+		metabolome_id chemical_abundance_matrix_id;
+		metabolome_id chemical_abundance_matrix_out_id;
+    } LookupModelSEEDIDsParams;
+    
+    typedef structure {
+        string report_name;
+		ws_report_id report_ref;
+    } LookupModelSEEDIDsResults;
+    /*
+        Attempts to map peaks in the input metabolomics matrix to compounds in the ModelSEED database
+    */
+    funcdef lookup_modelseed_ids(LookupModelSEEDIDsParams params) returns (LookupModelSEEDIDsResults results) authentication required;
+	
+	typedef structure {
 		fbamodel_id fbamodel_id;
 		workspace_name fbamodel_workspace;
 		proteincomparison_id proteincomparison_id;

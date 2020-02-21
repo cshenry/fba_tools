@@ -61,48 +61,65 @@ sub metabolite_hash {
 		}
 	});
 	my $cmp = $args->{compartment}.$args->{compartment_index};
+	my $suffix = "";
+	if (length($args->{compartment}) > 0) {
+		$suffix = "_".$cmp;
+	}
 	my $priority = $args->{priority};
 	my $cpdhash = Bio::KBase::utilities::compound_hash();
 	foreach my $cpdid (keys(%{$cpdhash})) {
 		my $data = $cpdhash->{$cpdid};
 		if ($cpdid =~ m/(cpd\d+)/) {
-			$args->{hashes}->{ids}->{$1}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{ids}->{$1}->{$cpdid.$suffix} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{kegg_aliases})) {
 			foreach my $newid (@{$cpdhash->{$cpdid}->{kegg_aliases}}) {
-				$args->{hashes}->{ids}->{$newid}->{$cpdid."_".$cmp} = $priority;
+				$args->{hashes}->{ids}->{$newid}->{$cpdid.$suffix} = $priority;
 			}
 		}
 		if (defined($cpdhash->{$cpdid}->{bigg_aliases})) {
 			foreach my $newid (@{$cpdhash->{$cpdid}->{bigg_aliases}}) {
-				$args->{hashes}->{ids}->{$newid}->{$cpdid."_".$cmp} = $priority;
+				$args->{hashes}->{ids}->{$newid}->{$cpdid.$suffix} = $priority;
 			}
 		}
 		if (defined($cpdhash->{$cpdid}->{metacyc_aliases})) {
 			foreach my $newid (@{$cpdhash->{$cpdid}->{metacyc_aliases}}) {
-				$args->{hashes}->{ids}->{$newid}->{$cpdid."_".$cmp} = $priority;
+				$args->{hashes}->{ids}->{$newid}->{$cpdid.$suffix} = $priority;
 			}
 		}
 		if (defined($cpdhash->{$cpdid}->{inchikey})) {
-			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{inchikey}}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{inchikey}}->{$cpdid.$suffix} = $priority;
 			my $array = [split(/[_-]/,$cpdhash->{$cpdid}->{inchikey})];
-			$args->{hashes}->{base_structures}->{$array->[0]}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{base_structures}->{$array->[0]}->{$cpdid.$suffix} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{smiles})) {
-			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{smiles}}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{smiles}}->{$cpdid.$suffix} = $priority;
+		}
+		my $formula_adjusted = 0;
+		if (defined($cpdhash->{$cpdid}->{structure})) {
+			if ($cpdhash->{$cpdid}->{structure} =~ m/InChI\=1S\/(.+)\//) {
+				my $formula = $1;
+				$formula =~ s/\.//g;
+				$cpdhash->{$cpdid}->{formula} = $formula;
+				$formula_adjusted = 1;
+			}
+			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{structure}}->{$cpdid.$suffix} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{formula})) {
-			$args->{hashes}->{formulas}->{$cpdhash->{$cpdid}->{formula}}->{$cpdid."_".$cmp} = $priority;
+			if ($formula_adjusted == 0) {
+				$cpdhash->{$cpdid}->{formula} = Bio::KBase::utilities::neutralize_formula($cpdid}->{formula},$cpdid}->{charge});
+			}
+			$args->{hashes}->{formulas}->{$cpdhash->{$cpdid}->{formula}}->{$cpdid.$suffix} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{name})) {
-			$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$cpdid}->{name})}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$cpdid}->{name})}->{$cpdid.$suffix} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{abbreviation})) {
-			$args->{hashes}->{names}->{$cpdhash->{$cpdid}->{abbreviation}}->{$cpdid."_".$cmp} = $priority;
+			$args->{hashes}->{names}->{$cpdhash->{$cpdid}->{abbreviation}}->{$cpdid.$suffix} = $priority;
 		}
 		if (defined($cpdhash->{$cpdid}->{names})) {
 			foreach my $name (@{$cpdhash->{$cpdid}->{names}}) {
-				$args->{hashes}->{names}->{$name}->{$cpdid."_".$cmp} = $priority;
+				$args->{hashes}->{names}->{$name}->{$cpdid.$suffix} = $priority;
 			}
 		}
 	}
@@ -738,6 +755,37 @@ sub timestamp {
         my($self,$msg) = @_;
         print STDERR $msg."\n";
     }
+}
+
+sub neutralize_formula {
+	my ($formula,$charge) = @_;
+	my $diff = 0-$charge;
+	if ($self->id() eq "cpd00006" || $self->id() eq "cpd00003") {
+		$diff++;
+	}
+	if ($diff == 0) {
+		return $formula;
+	}
+	if ($formula =~ m/H(\d+)/) {
+		my $count = $1;
+		$count += $diff;
+		$formula =~ s/H(\d+)/H$count/;
+	} elsif ($formula =~ m/.H$/) {
+		if ($diff < 0) {
+			$formula =~ s/H$//;
+		} else {
+			$diff++;
+			$formula .= $diff;
+		}
+	} elsif ($formula =~ m/H[A-Z]/) {
+		if ($diff < 0) {
+			$formula =~ s/H([A-Z])/$1/;
+		} else {
+			$diff++;
+			$formula =~ s/H([A-Z])/H$diff$1/;
+		}
+	}
+	return $formula;
 }
 
 sub nameToSearchname {

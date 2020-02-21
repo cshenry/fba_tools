@@ -2,10 +2,10 @@ package fba_tools::fba_toolsImpl;
 use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
-# http://semver.org
+# http://semver.org 
 our $VERSION = '1.7.8';
 our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = 'e348a4f9023ef30cec3b8044d98a615e1627ce28';
+our $GIT_COMMIT_HASH = '8ac05c39c662be1b2856a8af03f8a6be59581921';
 
 =head1 NAME
 
@@ -1416,6 +1416,99 @@ sub compare_fba_solutions
 	my $msg = "Invalid returns passed to compare_fba_solutions:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'compare_fba_solutions');
+    }
+    return($results);
+}
+
+
+
+
+=head2 lookup_modelseed_ids
+
+  $results = $obj->lookup_modelseed_ids($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.LookupModelSEEDIDsParams
+$results is a fba_tools.LookupModelSEEDIDsResults
+LookupModelSEEDIDsParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	chemical_abundance_matrix_id has a value which is a fba_tools.metabolome_id
+	chemical_abundance_matrix_out_id has a value which is a fba_tools.metabolome_id
+workspace_name is a string
+metabolome_id is a string
+LookupModelSEEDIDsResults is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.LookupModelSEEDIDsParams
+$results is a fba_tools.LookupModelSEEDIDsResults
+LookupModelSEEDIDsParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	chemical_abundance_matrix_id has a value which is a fba_tools.metabolome_id
+	chemical_abundance_matrix_out_id has a value which is a fba_tools.metabolome_id
+workspace_name is a string
+metabolome_id is a string
+LookupModelSEEDIDsResults is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Attempts to map peaks in the input metabolomics matrix to compounds in the ModelSEED database
+
+=back
+
+=cut
+
+sub lookup_modelseed_ids
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to lookup_modelseed_ids:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'lookup_modelseed_ids');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($results);
+    #BEGIN lookup_modelseed_ids
+    $params = $self->util_initialize_call($params,$ctx);
+	$results = Bio::KBase::ObjectAPI::functions::func_lookup_modelseed_ids($params);
+	$self->util_finalize_call({
+		output => $results,
+		workspace => $params->{workspace},
+		report_name => $params->{chemical_abundance_matrix_out_id}.".report",
+	});
+    #END lookup_modelseed_ids
+    my @_bad_returns;
+    (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to lookup_modelseed_ids:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'lookup_modelseed_ids');
     }
     return($results);
 }
@@ -5580,7 +5673,7 @@ sub run_fba_tools_tests
 
 
 
-=head2 status
+=head2 status 
 
   $return = $obj->status()
 
@@ -7146,6 +7239,72 @@ new_fbacomparison_ref has a value which is a fba_tools.ws_fbacomparison_id
 
 a reference to a hash where the following keys are defined:
 new_fbacomparison_ref has a value which is a fba_tools.ws_fbacomparison_id
+
+
+=end text
+
+=back
+
+
+
+=head2 LookupModelSEEDIDsParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+chemical_abundance_matrix_id has a value which is a fba_tools.metabolome_id
+chemical_abundance_matrix_out_id has a value which is a fba_tools.metabolome_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+chemical_abundance_matrix_id has a value which is a fba_tools.metabolome_id
+chemical_abundance_matrix_out_id has a value which is a fba_tools.metabolome_id
+
+
+=end text
+
+=back
+
+
+
+=head2 LookupModelSEEDIDsResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
 
 
 =end text
