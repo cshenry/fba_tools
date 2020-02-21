@@ -37,7 +37,7 @@
 				<tbody>
 					<tr>
 						<td>Reaction count</td>
-						<td>[% attr.modelreactions.size %]</td>
+						<td>[% template_data.modelreactions.size %]</td>
 					</tr>
 					<tr>
 						<td>Compound count</td>
@@ -299,7 +299,5 @@ $(document).ready(function() {
 
 } );
 </script>
-
-<pre>[% USE JSON ( allow_blessed => 1, convert_blessed => 1 ); template_data.json %]</pre>
 </body>
 </html>
