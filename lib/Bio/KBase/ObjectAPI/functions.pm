@@ -3166,7 +3166,7 @@ sub func_lookup_modelseed_ids {
             attribute_ont_ref => "KbaseOntologies/Custom",
             source => "ModelSEED"
 		});
-		$attribute_hash->{modelseed} = $count+1;
+		$attribute_hash->{modelseed} = $count;
 	}
 	my $args = {
 		priority => 0,
@@ -3266,6 +3266,8 @@ sub func_lookup_modelseed_ids {
 		}
 		if (keys(%{$seedhash}) > 0) {
 			$mapping->{instances}->{$rowid}->[$attribute_hash->{modelseed}] = join(";",keys(%{$seedhash}));
+		} else {
+			$mapping->{instances}->{$rowid}->[$attribute_hash->{modelseed}] = "";
 		}
 	}
 #	my $string;
