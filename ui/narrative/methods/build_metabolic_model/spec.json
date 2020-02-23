@@ -190,9 +190,8 @@
                   "ontology_events"
                ],
                "parameter_id" : "genome_id",
-               "selection_id" : "id",
+               "selection_id" : "description",
                "subdata_included" : [
-                  "ontology_events/[*]/id",
                   "ontology_events/[*]/description"
                ]
             },

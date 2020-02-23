@@ -3649,7 +3649,7 @@ sub parseMetaboliteInteraction {
 							$multiplier = -1;
 						}
 						$outputhash->{$cpd}->{totalrxn}++;
-						if ($rxnhash->{$rxnid.$comp}->gprString() eq "Unknown") {
+						if (length($rxnhash->{$rxnid.$comp}->gapfillString()) >  0) {
 							$outputhash->{$cpd}->{gfrxn}++;
 							$outputhash->{$cpd}->{rxns}->{$rxnid}->{gfrxn} = 1;
 						}

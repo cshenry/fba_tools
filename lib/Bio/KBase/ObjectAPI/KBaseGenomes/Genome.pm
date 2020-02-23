@@ -681,6 +681,27 @@ sub build_annotation_hashes {
 	} else {
 		$ftrs = $genes;
 	}
+	#Processing annotation sources
+	my $anno_ontology = [];
+	my $anno_event = [];
+	for (my $j=0; $j < @{$args->{annotation_sources}}; $j++) {
+		if ($args->{annotation_sources}->[$j] eq "_FUNCTION_" || $args->{annotation_sources}->[$j] eq "_SEED_") {
+			push(@{$anno_ontology},undef);
+			push(@{$anno_event},undef);
+		} else {
+			for (my $k=0; $k < @{$self->ontology_events()}; $k++) {
+				if (length($args->{annotation_sources}->[$j]) > 0) {
+					if ($self->ontology_events()->[$k]->{description} eq $args->{annotation_sources}->[$j]) {
+						push(@{$anno_ontology},$self->ontology_events()->[$k]->{id});
+						push(@{$anno_event},$k);
+					}
+				} elsif (!defined($self->ontology_events()->[$k]->{description})) {
+					push(@{$anno_ontology},$self->ontology_events()->[$k]->{id});
+					push(@{$anno_event},$k);
+				}
+			}
+		}
+	}
 	#Loading annotations from genes
 	for (my $i=0; $i < @{$ftrs}; $i++) {
 		my $compartments = $ftrs->[$i]->compartments();
@@ -722,33 +743,37 @@ sub build_annotation_hashes {
 						}
 					}
 				}
-			} elsif (defined($ontterms->{$args->{annotation_sources}->[$j]})) {
+			} elsif (defined($ontterms->{$anno_ontology->[$j]})) {
 				my $seedmatch = 0;
-				foreach my $oid (keys(%{$ontterms->{$args->{annotation_sources}->[$j]}})) {
-					if (defined($sso_hash->{$oid})) {
-						my $rolematch = $self->manage_sso_term({
-							function_hash => $output->{function_hash},
-							role => $oid,
-							feature => $ftrs->[$i],
-							template => $args->{template},
-							compartments => $compartments,
-							coverage => $args->{coverage},
-						});
-						if ($rolematch == 1) {
-							$match = 1;
-							$seedmatch = 1;
-						}
-					} elsif (defined($ontology_hash->{$oid})) {
-						my $reactionmatch = $self->manage_reaction_term({
-							reaction_hash => $output->{reaction_hash},
-							term => $oid,
-							feature => $ftrs->[$i],
-							template => $args->{template},
-							compartments => $compartments,
-							coverage => $args->{coverage},
-						});
-						if ($reactionmatch == 1) {
-							$match = 1;
+				foreach my $oid (keys(%{$ontterms->{$anno_ontology->[$j]}})) {
+					foreach my $event (@{$ontterms->{$anno_ontology->[$j]}->{$oid}}) {
+						if ($event == $anno_event->[$j]) {
+							if (defined($sso_hash->{$oid})) {
+								my $rolematch = $self->manage_sso_term({
+									function_hash => $output->{function_hash},
+									role => $oid,
+									feature => $ftrs->[$i],
+									template => $args->{template},
+									compartments => $compartments,
+									coverage => $args->{coverage},
+								});
+								if ($rolematch == 1) {
+									$match = 1;
+									$seedmatch = 1;
+								}
+							} elsif (defined($ontology_hash->{$oid})) {
+								my $reactionmatch = $self->manage_reaction_term({
+									reaction_hash => $output->{reaction_hash},
+									term => $oid,
+									feature => $ftrs->[$i],
+									template => $args->{template},
+									compartments => $compartments,
+									coverage => $args->{coverage},
+								});
+								if ($reactionmatch == 1) {
+									$match = 1;
+								}
+							}
 						}
 					}
 				}

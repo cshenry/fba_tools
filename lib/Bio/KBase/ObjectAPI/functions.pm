@@ -2955,7 +2955,8 @@ sub func_run_model_chacterization_pipeline {
 		fbamodel_output_id => $params->{fbamodel_id},
 		metagenome_model_id => undef,
 		metagenome_model_workspace => $params->{workspace},
-        coverage_propagation => "mag"
+        coverage_propagation => "mag",
+        predict_auxotrophy => 1
 	});
 	#Pulling and stashing original input model for the analysis
 	if (!defined($datachannel->{fbamodel})) {
@@ -3037,10 +3038,32 @@ sub func_run_model_chacterization_pipeline {
 	$attributes->{core_gapfilling} = $clone_model->attributes()->{core_gapfilling};
 	#Predicting auxotrophy against using just the base model
 	$datachannel->{fbamodel} = $clone_model;
-	my $auxo_output = Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy_from_model({
-		workspace => $params->{workspace},
-		fbamodel_id => $params->{fbamodel_output_id},
-	},$datachannel);
+	my $auxomedia = "Carbon-D-Glucose";
+	my $auxomedia_ws = "KBaseMedia";
+	if ($params->{predict_auxotrophy} == 1) {
+		my $auxo_output = Bio::KBase::ObjectAPI::functions::func_predict_auxotrophy_from_model({
+			workspace => $params->{workspace},
+			fbamodel_id => $params->{fbamodel_output_id},
+		},$datachannel);
+		foreach my $cpd (keys(%{$auxo_output->{auxotrophy_data}})) {
+			$attributes->{auxotrophy}->{$cpd} = {
+				compound_name => $auxo_output->{auxotrophy_data}->{$cpd}->{name},
+				reactions_required => $auxo_output->{auxotrophy_data}->{$cpd}->{totalrxn},
+				gapfilled_reactions => $auxo_output->{auxotrophy_data}->{$cpd}->{gfrxn},
+				is_auxotrophic => $auxo_output->{auxotrophy_data}->{$cpd}->{auxotrophic}
+			};
+			if ($auxo_output->{auxotrophy_data}->{$cpd}->{auxotrophic} == 1) {
+				$attributes->{auxotroph_count}++;
+			}
+		}
+		$auxomedia = $params->{fbamodel_output_id}.".auxo_media";
+		$auxomedia_ws = $params->{workspace};
+	} else {
+		my $baseline_solution = Bio::KBase::ObjectAPI::functions::func_baseline_gapfilling({
+			workspace => "NULL",
+			fbamodel_id => $params->{fbamodel_id},
+		},$datachannel);
+	}
 	$attributes->{baseline_gapfilling} = $datachannel->{fbamodel}->attributes()->{baseline_gapfilling};
 	#This is weird, but now I am clearing the cache because the cloning process seems to corrupt the original model object somehow
 	$datachannel->{fbamodel}->parent()->cache({});
@@ -3050,7 +3073,8 @@ sub func_run_model_chacterization_pipeline {
 	my $gapfill_output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 		workspace => $params->{workspace},
 		fbamodel_id => $params->{fbamodel_id},
-		media_id => $params->{fbamodel_output_id}.".auxo_media",
+		media_id => $auxomedia,
+		media_workspace => $auxomedia_ws,
 		fbamodel_output_id => $params->{fbamodel_output_id}
 	},$datachannel);
 	$attributes->{auxotrophy_gapfilling} = $gapfill_output->{number_gapfilled_reactions};
@@ -3058,7 +3082,8 @@ sub func_run_model_chacterization_pipeline {
 		workspace => $params->{workspace},
 		fbamodel_id => $params->{fbamodel_output_id},
 		fba_output_id => $params->{fbamodel_output_id}.".fba",
-		media_id => $params->{fbamodel_output_id}.".auxo_media",
+		media_id => $auxomedia,
+		media_workspace => $auxomedia_ws,
 		fva => 1,
 		minimize_flux => 1,
 		max_c_uptake => 30
@@ -3105,19 +3130,16 @@ sub func_run_model_chacterization_pipeline {
 		$attributes->{fbas}->{complete}->{$rxnvar->[$i]->{class}}++;
 	}
 	$attributes->{gene_count} = @{$datachannel->{fbamodel}->features()};
-	$datachannel->{fbamodel}->ComputePathwayAttributes($classhash);
-	$attributes->{pathways} = $datachannel->{fbamodel}->attributes()->{pathways};
-	foreach my $cpd (keys(%{$auxo_output->{auxotrophy_data}})) {
-		$attributes->{auxotrophy}->{$cpd} = {
-			compound_name => $auxo_output->{auxotrophy_data}->{$cpd}->{name},
-			reactions_required => $auxo_output->{auxotrophy_data}->{$cpd}->{totalrxn},
-			gapfilled_reactions => $auxo_output->{auxotrophy_data}->{$cpd}->{gfrxn},
-			is_auxotrophic => $auxo_output->{auxotrophy_data}->{$cpd}->{auxotrophic}
-		};
-		if ($auxo_output->{auxotrophy_data}->{$cpd}->{auxotrophic} == 1) {
-			$attributes->{auxotroph_count}++;
+	if ($attributes->{gene_count} == 0) {
+		my $mdlrxns = $datachannel->{fbamodel}->modelreactions();
+		foreach my $rxn (@{$mdlrxns}) {
+			if (defined($rxn->gene_count())) {
+				$attributes->{gene_count} += $rxn->gene_count();
+			}
 		}
 	}
+	$datachannel->{fbamodel}->ComputePathwayAttributes($classhash);
+	$attributes->{pathways} = $datachannel->{fbamodel}->attributes()->{pathways};
 	$datachannel->{fbamodel}->attributes($attributes);
 	my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}));
 
