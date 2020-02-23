@@ -750,10 +750,12 @@ sub build_annotation_hashes {
 					if (ref($ontterms->{$anno_ontology->[$j]}->{$oid}) eq  "ARRAY") {
 						foreach my $event (@{$ontterms->{$anno_ontology->[$j]}->{$oid}}) {
 							if ($event == $anno_event->[$j]) {
-								if (defined($sso_hash->{$oid})) {
+								my $term = $oid;
+								$term =~ s/^META://;
+								if (defined($sso_hash->{$term})) {
 									my $rolematch = $self->manage_sso_term({
 										function_hash => $output->{function_hash},
-										role => $oid,
+										role => $term,
 										feature => $ftrs->[$i],
 										template => $args->{template},
 										compartments => $compartments,
@@ -763,10 +765,10 @@ sub build_annotation_hashes {
 										$match = 1;
 										$seedmatch = 1;
 									}
-								} elsif (defined($ontology_hash->{$oid})) {
+								} elsif (defined($ontology_hash->{$term})) {
 									my $reactionmatch = $self->manage_reaction_term({
 										reaction_hash => $output->{reaction_hash},
-										term => $oid,
+										term => $term,
 										feature => $ftrs->[$i],
 										template => $args->{template},
 										compartments => $compartments,
