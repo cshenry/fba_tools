@@ -701,6 +701,7 @@ sub build_annotation_hashes {
 				}
 			}
 		}
+		print "ANNOTATION SOURCE:".$args->{annotation_sources}->[$j]."\t".$j."\tO:".$anno_ontology->[$j]."\tE:".$anno_event->[$j]."\n";
 	}
 	#Loading annotations from genes
 	for (my $i=0; $i < @{$ftrs}; $i++) {
@@ -747,36 +748,36 @@ sub build_annotation_hashes {
 				my $seedmatch = 0;
 				foreach my $oid (keys(%{$ontterms->{$anno_ontology->[$j]}})) {
 					if (ref($ontterms->{$anno_ontology->[$j]}->{$oid}) eq  "ARRAY") {
-					foreach my $event (@{$ontterms->{$anno_ontology->[$j]}->{$oid}}) {
-						if ($event == $anno_event->[$j]) {
-							if (defined($sso_hash->{$oid})) {
-								my $rolematch = $self->manage_sso_term({
-									function_hash => $output->{function_hash},
-									role => $oid,
-									feature => $ftrs->[$i],
-									template => $args->{template},
-									compartments => $compartments,
-									coverage => $args->{coverage},
-								});
-								if ($rolematch == 1) {
-									$match = 1;
-									$seedmatch = 1;
-								}
-							} elsif (defined($ontology_hash->{$oid})) {
-								my $reactionmatch = $self->manage_reaction_term({
-									reaction_hash => $output->{reaction_hash},
-									term => $oid,
-									feature => $ftrs->[$i],
-									template => $args->{template},
-									compartments => $compartments,
-									coverage => $args->{coverage},
-								});
-								if ($reactionmatch == 1) {
-									$match = 1;
+						foreach my $event (@{$ontterms->{$anno_ontology->[$j]}->{$oid}}) {
+							if ($event == $anno_event->[$j]) {
+								if (defined($sso_hash->{$oid})) {
+									my $rolematch = $self->manage_sso_term({
+										function_hash => $output->{function_hash},
+										role => $oid,
+										feature => $ftrs->[$i],
+										template => $args->{template},
+										compartments => $compartments,
+										coverage => $args->{coverage},
+									});
+									if ($rolematch == 1) {
+										$match = 1;
+										$seedmatch = 1;
+									}
+								} elsif (defined($ontology_hash->{$oid})) {
+									my $reactionmatch = $self->manage_reaction_term({
+										reaction_hash => $output->{reaction_hash},
+										term => $oid,
+										feature => $ftrs->[$i],
+										template => $args->{template},
+										compartments => $compartments,
+										coverage => $args->{coverage},
+									});
+									if ($reactionmatch == 1) {
+										$match = 1;
+									}
 								}
 							}
 						}
-					}
 					}
 				}
 			}
