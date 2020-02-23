@@ -3,8 +3,8 @@
    "name" : "run_flux_balance_analysis",
    "authors" : ["chenry"],
    "contact" : "http://kbase.us/contact-us/",
-   "visible" : true,
-   "categories" : ["active","metabolic_modeling"],
+   "visible" : false,
+   "categories" : ["inactive","metabolic_modeling"],
    "widgets" : {
       "input" : null,
       "output" : "kbaseTabTable"

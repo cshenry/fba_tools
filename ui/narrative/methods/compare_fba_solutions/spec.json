@@ -4,7 +4,7 @@
       "output" : "kbaseTabTable",
       "input" : null
    },
-   "visible" : true,
+   "visible" : false,
    "parameters" : [
       {
          "field_type" : "text",
@@ -90,8 +90,7 @@
       }
    },
    "categories" : [
-      "active",
-      "metabolic_modeling"
+      "inactive"
    ],
    "authors" : [
       "chenry"

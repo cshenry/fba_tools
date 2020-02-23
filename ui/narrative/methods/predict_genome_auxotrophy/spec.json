@@ -5,9 +5,9 @@
       "chenry"
    ],
    "contact" : "http://kbase.us/contact-us/",
-   "visible" : true,
+   "visible" : false,
    "categories" : [
-      "active",
+      "inactive",
       "metabolic_modeling"
    ],
    "widgets" : {
