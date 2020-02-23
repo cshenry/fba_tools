@@ -746,6 +746,7 @@ sub build_annotation_hashes {
 			} elsif (defined($ontterms->{$anno_ontology->[$j]})) {
 				my $seedmatch = 0;
 				foreach my $oid (keys(%{$ontterms->{$anno_ontology->[$j]}})) {
+					if (ref($ontterms->{$anno_ontology->[$j]}->{$oid}) eq  "ARRAY") {
 					foreach my $event (@{$ontterms->{$anno_ontology->[$j]}->{$oid}}) {
 						if ($event == $anno_event->[$j]) {
 							if (defined($sso_hash->{$oid})) {
@@ -775,6 +776,7 @@ sub build_annotation_hashes {
 								}
 							}
 						}
+					}
 					}
 				}
 			}
