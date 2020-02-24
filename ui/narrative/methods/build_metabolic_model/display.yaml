@@ -62,7 +62,7 @@ parameters :
 
     use_annotated_functions :
         ui-name : |
-            Use annotation functions
+            Use internal annotations
         short-hint : |
             Use the annotated functional roles in the genome as the primary annoation source (must be RAST annotations at this time).
 
