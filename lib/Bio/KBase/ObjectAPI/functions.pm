@@ -2962,6 +2962,11 @@ sub func_run_model_chacterization_pipeline {
 	if (!defined($datachannel->{fbamodel})) {
 		$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
 	}
+	if (defined($datachannel->{fbamodel}->attributes())) {
+		$datachannel->{fbamodel}->attributes()->{pathways} = {};
+		$datachannel->{fbamodel}->attributes()->{fba} = {};
+		$datachannel->{fbamodel}->attributes()->{auxotrophy} = {};
+	}
 	#Propagating coverage from input metagenome object
 	if (defined($params->{metagenome_model_id})) {
 		my $metamodel = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metagenome_model_id},$params->{metagenome_model_workspace}));
@@ -3069,6 +3074,11 @@ sub func_run_model_chacterization_pipeline {
 	$datachannel->{fbamodel}->parent()->cache({});
 	#Now gapfilling original model in auxotrophic media
 	$datachannel->{fbamodel} = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{fbamodel_id},$params->{fbamodel_workspace}));
+	if (defined($datachannel->{fbamodel}->attributes())) {
+		$datachannel->{fbamodel}->attributes()->{pathways} = {};
+		$datachannel->{fbamodel}->attributes()->{fba} = {};
+		$datachannel->{fbamodel}->attributes()->{auxotrophy} = {};
+	}
 	Bio::KBase::ObjectAPI::functions::add_auxotrophy_transporters({fbamodel => $datachannel->{fbamodel}});
 	my $gapfill_output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
 		workspace => $params->{workspace},
