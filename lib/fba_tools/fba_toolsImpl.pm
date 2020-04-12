@@ -953,11 +953,29 @@ sub build_multiple_metabolic_models
     #BEGIN build_multiple_metabolic_models
     $params = $self->util_initialize_call($params,$ctx);
 	my $orig_genome_workspace = $params->{genome_workspace};
-	my $genomes = $params->{genome_ids};
+	my $mixed_objects = $params->{genome_ids};
+	my $objects = [];
+	my $genomes = [];
+	for (my $i=0; $i < @{$mixed_objects}; $i++) {
+		push(@{$objects},{"ref" => Bio::KBase::utilities::buildref($mixed_objects->[$i],$params->{workspace})});
+	}
+	my $infos = Bio::KBase::kbaseenv::get_object_info($objects,0);
+	for (my $i=0; $i < @{$infos}; $i++) {
+		if ($infos->[$i]->[2] =~ m/\.GenomeSet/) {
+			my $genomesets = $self->util_get_object(Bio::KBase::utilities::buildref($mixed_objects->[$i],$params->{workspace}),{raw => 1});
+			foreach my $gsid (keys(%{$genomesets->{elements}})) {
+				push(@{$genomes},$genomesets->{elements}->{$gsid}->{"ref"});
+			}
+		} else {
+			push(@{$genomes},$mixed_objects->[$i]);
+		}
+	}
 	# If user provides a list of genomes in text form, append these to the existing gemome ids
-	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
-	for (my $i=0; $i < @{$new_genome_list}; $i++) {
-		push(@{$genomes},$new_genome_list->[$i]);
+	if (defined($params->{genome_text})) {
+		my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
+		for (my $i=0; $i < @{$new_genome_list}; $i++) {
+			push(@{$genomes},$new_genome_list->[$i]);
+		}
 	}
 	my $htmlmessage = "<p>";
     # run build metabolic model
