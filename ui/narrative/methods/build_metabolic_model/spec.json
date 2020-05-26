@@ -26,7 +26,7 @@
          "allow_multiple" : false,
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseGenomes.Genome","KBaseGenomeAnnotations.GenomeAnnotation"
+               "KBaseGenomes.Genome"
             ]
          }
       },
@@ -178,27 +178,24 @@
       },
       {
          "field_type" : "textsubdata",
-         "allow_multiple" : true,
+         "allow_multiple" : false,
          "optional" : true,
          "id" : "source_ontology_list",
-         "default_values" : [
-            ""
-         ],
          "advanced" : true,
          "textsubdata_options" : {
             "allow_custom" : false,
             "show_src_obj" : true,
             "subdata_selection" : {
                "path_to_subdata" : [
-                  "ontologies_present"
+                  "ontology_events"
                ],
                "parameter_id" : "genome_id",
-               "selection_id" : "id",
+               "selection_id" : "description",
                "subdata_included" : [
-                  "ontologies_present/[*]"
+                  "ontology_events/[*]/description"
                ]
             },
-            "multiselection" : false
+            "multiselection" : true
          },
          "text_options" : {
             "valid_ws_types" : []
@@ -263,7 +260,7 @@
          "id" : "minimum_target_flux",
          "advanced" : true
       }
-   ], 
+   ],
    "behavior" : {
       "service-mapping" : {
          "url" : "",

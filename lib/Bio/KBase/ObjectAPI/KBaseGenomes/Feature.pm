@@ -20,10 +20,12 @@ has compartments => ( is => 'rw',printOrder => -1, isa => 'ArrayRef', type => 'm
 has comment => ( is => 'rw',printOrder => 2, isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcomment' );
 has delimiter => ( is => 'rw',printOrder => 2, isa => 'Str', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_builddelimiter' );
 has roles  => ( is => 'rw', isa => 'ArrayRef',printOrder => -1, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildroles' );
+has functions => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has start  => ( is => 'rw', isa => 'Str',printOrder => 3, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstart' );
 has stop  => ( is => 'rw', isa => 'Str',printOrder => 4, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildstop' );
 has direction  => ( is => 'rw', isa => 'Str',printOrder => 5, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_builddirection' );
 has contig  => ( is => 'rw', isa => 'Str',printOrder => 6, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcontig' );
+has molecular_weight  => ( is => 'rw', isa => 'Num',printOrder => 6, type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmolecular_weight' );
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -117,11 +119,15 @@ sub _functionparse {
 	    unknown => "u"
 	};
 	if (!defined($self->function()) || length($self->function()) eq 0) {
-		$self->roles([]);
-		$self->compartments([]);
-		$self->delimiter(";");
-		$self->comment("No annotated function");
-		return;
+		if (defined($self->functions()->[0])) {
+			$self->function(join(" @ ",@{$self->functions()}));
+		} else {
+			$self->roles([]);
+			$self->compartments(["u"]);
+			$self->delimiter(";");
+			$self->comment("No annotated function");
+			return;
+		}
 	}
 	my $function = $self->function();
 	my $array = [split(/\#/,$function)];
@@ -138,6 +144,7 @@ sub _functionparse {
 	}
 	if (keys(%{$compHash}) > 0) {
 		$self->compartments([keys(%{$compHash})]);
+		print "TEST2:".$self->compartments()->[0]."\n";	
 	}
 	if ($function =~ /\s*;\s/) {
 		$self->delimiter(";");
@@ -149,6 +156,27 @@ sub _functionparse {
 		$self->delimiter("/");
 	}
 	$self->roles([split(/\s*;\s+|\s+[\@\/]\s+/,$function)]);
+}
+
+sub _buildmolecular_weight {
+	my ($self) = @_;
+	my $seq = $self->protein_translation();
+	my $mw = 18;
+	my $aa_trans = Bio::KBase::constants::aa_abbrev();
+	my $cpddbhash = Bio::KBase::utilities::compound_hash();
+	foreach my $aa (keys(%{$aa_trans})) {
+		my $count = length($seq);
+		$seq =~ s/$aa//g;
+		my $lcaa = lc($aa);
+		$seq =~ s/$lcaa//g;
+		$count = $count - length($seq);
+		if ($aa eq "M") {
+			$count--;
+		}
+		$mw += $count*$cpddbhash->{$aa_trans->{$aa}}->{mass};
+		$mw += -18*$count;
+	}
+	return $mw;
 }
 
 #***********************************************************************************************************

@@ -4,12 +4,9 @@
 name     : Build Metabolic Model
 
 tooltip  : |
-    Generate a draft metabolic model based on an annotated genome.
+    Construct a draft metabolic model based on an annotated genome.
 
-screenshots :
-
-    - build_metabolic_model_input.png
-    - build_metabolic_model_output.png
+screenshots : []
 
 
 #
@@ -37,24 +34,20 @@ parameters :
             Gapfill model?
         short-hint : |
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
-        long-hint : |
-            Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
+
 
     classic_mode :
         ui-name : |
             Classic mode?
         short-hint : |
-            Run the classic model reconstruction pipeline rather than the new pipeline that prevents the overproduction of ATP
-        long-hint : |
-            Run the classic model reconstruction pipeline rather than the new pipeline that prevents the overproduction of ATP
+            Run the classic model reconstruction pipeline rather than the new pipeline that prevents the overproduction of ATP.
+
 
     media_id :
         ui-name : |
             Gapfilling Media (defaults to complete media)
         short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used.
-        long-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth. In this function, the media is used as the growth condition for gapfilling, if gapfilling is performed. If none is specified complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run FBA with complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
+            Media specifies the set of chemical compounds the organism can use for its growth. If gapfilling is performed, this media is used as the growth condition for gapfilling. If no media is specified, complete media is used. The “Complete” media is an abstraction of what’s available in our biochemistry database. Every compound that can be transported into the extracellular compartment–or, in other words, for which a transport reaction is available–is used in the complete media. This list is built in real-time, meaning that whenever you run flux balance analysis (FBA) with complete media, the available transporters are parsed from the media database–and is therefore not stored permanently in any media object in the workspace.
         placeholder : |
             Growth condition for gapfilling
 
@@ -63,81 +56,59 @@ parameters :
         ui-name : |
             Output model
         short-hint : |
-            Enter a name for the metabolic model to be created
-        long-hint : |
-            Enter a name for the metabolic model to be created
+            Enter a name for the metabolic model to be created.
         placeholder : |
             Output metabolic model name
 
     use_annotated_functions :
         ui-name : |
-            Use annotation functions
+            Use internal annotations
         short-hint : |
-            Use the annotated functional roles in the genome as the primary annoation source (must be RAST annotations at this time)
-        long-hint : |
-            Use the annotated functional roles in the genome as the primary annoation source (must be RAST annotations at this time)
-    
+            Use the annotated functional roles in the genome as the primary annoation source (must be RAST annotations at this time).
+
     source_ontology_list :
         ui-name : |
             Prioritized annotation sources
         short-hint : |
-            Select the available annotation sources in this genome to use in model reconstruction in prioritized order
-        long-hint : |
-            Select the available annotation sources in this genome to use in model reconstruction in prioritized order
-            
+            Select the available annotation sources in this genome to use in model reconstruction in prioritized order.
+
     merge_all_annotations :
         ui-name : |
             Merge all selected annotations
         short-hint : |
-            Merge all selected annotations mapping all associated reactions to genes even if annotation sources disaggree on function
-        long-hint : |
-            Merge all selected annotations mapping all associated reactions to genes even if annotation sources disaggree on function
-            
+            Merge all selected annotations mapping all associated reactions to genes even if annotation sources disaggree on function.
+
     custom_bound_list :
         ui-name : |
             Custom flux bounds
         short-hint : |
-            Custom bounds on reaction or exchange flux (e.g., 0;rxn00001;5, 0;cpd00001_e0;5)
-        long-hint : |
-            Custom bounds on reaction or exchange flux (e.g., 0;rxn00001;5, 0;cpd00001_e0;5)
+            Custom bounds on reaction or exchange flux (e.g., 0;rxn00001;5, 0;cpd00001_e0;5 [lower bound;reaction/compound from the biochemistry;upper bound])).
         placeholder : |
             e.g. 0;rxn00001;5
-
 
     template_id :
         ui-name : |
             Template for reconstruction
         short-hint : |
-            Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope.
-        long-hint : |
-            Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
-
+            Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope.  KBase primarily uses four template models: (i) Gram positive microbe, (ii) Gram negative microbe, (iii) Core pathways microbe, and (iv) Plant. These template models differ from each other by biomass composition and biochemical reaction functional associations.
 
     media_supplement_list :
         ui-name : |
             Media supplement
         short-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-        long-hint : |
-            Specify additional compounds to add to media one at a time by using “add another media supplement” button
-
+            Specify additional compounds to add to media one at a time by using “add another media supplement” button.
 
     minimum_target_flux :
         ui-name : |
             Minimum reaction flux
         short-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-        long-hint : |
-            The minimum flux that the target reaction will have when the gapfilling is performed
-
+            The minimum flux that the target reaction will have when the gapfilling is performed.
 
     genome_id :
         ui-name : |
             Genome
         short-hint : |
-            A genome with functional annotations generated by KBase
-        long-hint : |
-            A genome with functional annotations generated by KBase (using one of the annotation apps)
+            A genome with functional annotations generated by RAST [2].
         placeholder : |
             Genome ID for modeling
 
@@ -146,31 +117,25 @@ icon: modelseed-teal.png
 
 description : |
 
-    <p>The Model SEED pipeline [1] was implemented within KBase to enable users to build genome-scale metabolic models (GEMs) using data they have imported or generated with other tools in the system. This overview of the Model SEED pipeline details the steps for automated reconstruction of GEMs using KBase.</p>
+    <p>The Build Metabolic Model App was implemented in KBase to enable users to build genome-scale metabolic models (GEMs) based on the ModelSEED Pipeline for  genomes they have imported or generated with other tools in the system. This overview of the ModelSEED pipeline [1] details the steps for automated reconstruction of GEMs using the Build Metabolic Model App in KBase.</p>
 
-    <p><b>Step 1 – Re-annotating Imported Genomes</b></p>
-
-    <p>Genomes imported into KBase must be re-annotated using the RAST functional ontology (<a href="https://narrative.kbase.us/#appcatalog/app/l.m/reannotate_microbial_genome">Annotate Microbial Genome</a>) before users can build a draft metabolic model for an organism. This step is necessary because the SEED functional annotations generated by RAST [2] are linked directly to the biochemical reactions in the <a href="https://github.com/ModelSEED/ModelSEEDDatabase/blob/master/Biochemistry/reactions.master.tsv">ModelSEED biochemistry database</a>, which is used by KBase for metabolic modeling.</p>
-
-    <p><b>Step 2 - Preliminary Reconstruction</b></p>
+    <p>To use the Build Metabolic Model App with a genome uploaded into KBase, the genome must first be annotated or re-annotated using the RAST functional ontology (<a href=”https://narrative.kbase.us/#catalog/apps/RAST_SDK/annotate_contigset/release”>Annotate Microbial Assembly”</a> or <a href="https://narrative.kbase.us/#catalog/apps/RAST_SDK/reannotate_microbial_genome/release">Annotate Microbial Genome</a>) before users can build a draft metabolic model for an organism. This is necessary because the SEED functional annotations generated by RAST [2] are linked directly to the biochemical reactions in the <a href="https://github.com/ModelSEED/ModelSEEDDatabase/blob/master/Biochemistry/">ModelSEED biochemistry database</a>, which is used by KBase for metabolic modeling.</p>
 
     <p>Once a genome has been annotated using the RAST functional ontology, it can be fed into the pipeline for preliminary reconstruction, wherein the RAST annotations are used to generate draft metabolic models. Draft metabolic models are comprised of a reaction network complete with gene-protein-reaction (GPR) associations, predicted Gibbs free energy of reaction values, and the biomass reaction. The biomass reaction includes non-universal cofactors, lipids, and cell wall components. The biomass reaction is organism-specific, based on a biomass reaction template, which uses the SEED subsystems and RAST functional annotations to assign non-universal (e.g., cofactors, cell wall components) biomass components that represent unique biological functions exhibited by a large set of organisms or specific to a small set of organisms. The biomass templates can be found on <a href="https://github.com/ModelSEED/ModelSEEDDatabase/tree/master/Templates">GitHub</a>.</p>
 
     <p>In order for an organism-specific biomass component to be added to the biomass reaction, its genome must contain the proper subsystems and annotations specified in the template. The GPR associations represent the mapping between the biochemical reactions and the standardized functional roles assigned to genes during the RAST annotation. This mapping allows the pipeline to differentiate between cases where protein products from multiple genes form a complex to catalyze a reaction, and cases where protein products from multiple genes can independently catalyze the same reaction. The draft model includes all reactions associated with one or more enzymes encoded in the genome that are identified in the annotations. Additionally, spontaneous reactions are added during this step.</p>
 
-    <p><b>Step 3 – Initial Gapfilling</p></b>
+    <p>Gapfilling is the process by which the App identifies the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media. This step is optional, but it is recommended and runs by default. A radio box in the advanced options of the Build Metabolic Model App can be unchecked to allow model reconstruction without gapfilling. Gapfilling can be done later if desired. To gapfill the draft metabolic model or to perform additional gapfilling analysis please see the <a href="https://narrative.kbase.us/#appcatalog/app/fba_tools/gapfill_metabolic_model/release">Gapfill Metabolic Model App</a>.</p>
 
-    <p>This step is optional, but it is recommended and runs by default. A radio box in the advanced options of the Build Metabolic Modeling App can be unchecked to allow model reconstruction without gapfilling. To gapfill the draft metabolic model or to perform additional gapfilling analysis please see the <a href="https://narrative.kbase.us/#appcatalog/app/fba_tools/gapfill_metabolic_model/release">Gapfill Metabolic Model App</a>.</p>
+    <p>The quality of a draft metabolic model depends on the completeness of the annotated genome used for the preliminary reconstruction. Due to the fact that most genomes are not completely annotated, draft metabolic models usually contain gaps preventing the production of some biomass components. In this step, an optimization algorithm identifies the minimal set of reactions that must be added to each model to fill these gaps [3, 4]. The gapfilling algorithm is described in detail in the <a href="https://narrative.kbase.us/#appcatalog/app/fba_tools/gapfill_metabolic_model/release">Gapfill Metabolic Model App page</a>. Reactions to be used by gapfilling are selected from the <a href="https://github.com/ModelSEED/ModelSEEDDatabase/tree/master/Biochemistry">ModelSEED biochemistry database</a>. This curated database contains mass and charge balanced reactions, standardized to aqueous conditions at neutral pH. The ModelSEED reaction database integrates biochemistry contained in KEGG, MetaCyc, EcoCyc, Plant BioCyc, Plant Metabolic Networks, and Gramene. This step is conducted to ensure that every model is capable of simulating cell growth.</p>
 
-    <p>The quality of draft metabolic model depends on the completeness of the annotated genome used for the preliminary reconstruction. Due to the fact that most genomes are not completely annotated, draft metabolic models usually contain gaps preventing the production of some biomass components. In this step, an optimization algorithm that identifies the minimal set of reactions that must be added to each model to fill these gaps [3, 4]. The gapfilling algorithm is described in detail <a href="https://narrative.kbase.us/#appcatalog/app/fba_tools/gapfill_metabolic_model/release">here</a>. Reactions to be used by gapfilling are selected from the <a href="https://github.com/ModelSEED/ModelSEEDDatabase/blob/master/Biochemistry/reactions.master.tsv">Model SEED biochemistry database</a>. This curated database contains mass and charge balanced reactions, standardized to aqueous conditions at neutral pH. The Model SEED reaction database integrates biochemistry contained KEGG, MetaCyc, EcoCyc, Plant BioCyc, Plant Metabolic Networks, and Gramene. This step is conducted to ensure that every model is capable of simulating cell growth.</p>
+    <p>Once model reconstruction is complete, <a href="https://narrative.kbase.us/#appcatalog/app/fba_tools/run_flux_balance_analysis/release">Flux Balance Analysis</a> (FBA) can be applied to assess the capacity of reactions to carry flux and reaction essentiality.<p>
 
-    <p><b>Step 4 – Flux Balance Analysis</p></b>
-
-    <p>Once model reconstruction is complete, the <a href="https://narrative.kbase.us/#appcatalog/app/fba_tools/run_flux_balance_analysis/release">Flux Balance Analysis</a> (FBA) can be applied to assess the capacity of reactions to carry flux and reaction essentiality. The Run FBA method uses Flux Variability Analysis (FVA) [5] to classify the reactions in the KBase models as essential, active or blocked. Reactions that must carry flux for growth to occur are classified as essential; reactions that only optionally carry flux are classified as active; and reactions that are unable to carry flux are classified as blocked. Genes encoding reactions that were classified as essential were subsequently classified as essential, as long as alternative isozymes did not exist for these genes. Additionally, FBA is used to iteratively assess which compounds in the <i>in silico</i> media formulation are essential for the metabolic model to be able to produce biomass. These results provide clues for additional manual curation efforts towards completely annotating the genome.</p>
-
+    <p>For additional information about metabolic modeling, visit the <a href="https://kbase.us/metabolic-modeling-faq/">Metabolic Modeling in KBase FAQ</a>.<p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry, Janaka Edirisinghe, Sam Seaver, Neal Conrad. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+    Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
 
 publications :
     -

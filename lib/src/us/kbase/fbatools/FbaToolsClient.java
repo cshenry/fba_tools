@@ -182,6 +182,42 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: characterize_genome_metabolism_using_model</p>
+     * <pre>
+     * Builds a model and characterizes an input genome using the model
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.CharacterizeGenomeUsingModelParams CharacterizeGenomeUsingModelParams}
+     * @return   instance of type {@link us.kbase.fbatools.CharacterizeGenomeUsingModelResults CharacterizeGenomeUsingModelResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public CharacterizeGenomeUsingModelResults characterizeGenomeMetabolismUsingModel(CharacterizeGenomeUsingModelParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<CharacterizeGenomeUsingModelResults>> retType = new TypeReference<List<CharacterizeGenomeUsingModelResults>>() {};
+        List<CharacterizeGenomeUsingModelResults> res = caller.jsonrpcCall("fba_tools.characterize_genome_metabolism_using_model", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: run_model_characterization</p>
+     * <pre>
+     * Builds a model and characterizes an input genome using the model
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.RunModelCharacterizationParams RunModelCharacterizationParams}
+     * @return   instance of type {@link us.kbase.fbatools.RunModelCharacterizationResults RunModelCharacterizationResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public RunModelCharacterizationResults runModelCharacterization(RunModelCharacterizationParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<RunModelCharacterizationResults>> retType = new TypeReference<List<RunModelCharacterizationResults>>() {};
+        List<RunModelCharacterizationResults> res = caller.jsonrpcCall("fba_tools.run_model_characterization", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: build_plant_metabolic_model</p>
      * <pre>
      * Build a genome-scale metabolic model based on annotations in an input genome typed object
@@ -268,6 +304,24 @@ public class FbaToolsClient {
         args.add(params);
         TypeReference<List<CompareFBASolutionsResults>> retType = new TypeReference<List<CompareFBASolutionsResults>>() {};
         List<CompareFBASolutionsResults> res = caller.jsonrpcCall("fba_tools.compare_fba_solutions", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: lookup_modelseed_ids</p>
+     * <pre>
+     * Attempts to map peaks in the input metabolomics matrix to compounds in the ModelSEED database
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.LookupModelSEEDIDsParams LookupModelSEEDIDsParams}
+     * @return   parameter "results" of type {@link us.kbase.fbatools.LookupModelSEEDIDsResults LookupModelSEEDIDsResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public LookupModelSEEDIDsResults lookupModelseedIds(LookupModelSEEDIDsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<LookupModelSEEDIDsResults>> retType = new TypeReference<List<LookupModelSEEDIDsResults>>() {};
+        List<LookupModelSEEDIDsResults> res = caller.jsonrpcCall("fba_tools.lookup_modelseed_ids", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -961,6 +1015,23 @@ public class FbaToolsClient {
         args.add(params);
         TypeReference<List<BulkExportObjectsResult>> retType = new TypeReference<List<BulkExportObjectsResult>>() {};
         List<BulkExportObjectsResult> res = caller.jsonrpcCall("fba_tools.bulk_export_objects", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: run_fba_tools_tests</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.RunFbaToolsTestsParams RunFbaToolsTestsParams}
+     * @return   parameter "output" of type {@link us.kbase.fbatools.RunFbaToolsTestsResult RunFbaToolsTestsResult}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public RunFbaToolsTestsResult runFbaToolsTests(RunFbaToolsTestsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<RunFbaToolsTestsResult>> retType = new TypeReference<List<RunFbaToolsTestsResult>>() {};
+        List<RunFbaToolsTestsResult> res = caller.jsonrpcCall("fba_tools.run_fba_tools_tests", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 

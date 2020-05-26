@@ -21,10 +21,14 @@ has modelCompartmentLabel => ( is => 'rw', isa => 'Str',printOrder => '3', type 
 has isBiomassCompound  => ( is => 'rw', isa => 'Bool',printOrder => '3', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildisBiomassCompound' );
 has mapped_uuid  => ( is => 'rw', isa => 'ModelSEED::uuid',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmapped_uuid' );
 has formula  => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildformula' );
+has neutral_formula  => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildneutral_formula' );
 has msid => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmsid' );
 has msname => ( is => 'rw', isa => 'Str',printOrder => '2', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildmsname' );
 has codeid  => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcodeid' );
 has compound => (is => 'rw', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_compound', clearer => 'clear_compound', isa => 'Ref', weak_ref => 1);
+has inchikey => (is => 'rw', type => 'Str', metaclass => 'Typed', lazy => 1, builder => '_build_inchikey');
+has smiles => (is => 'rw', type => 'Str', metaclass => 'Typed', lazy => 1, builder => '_build_smiles');
+has inchi => (is => 'rw', type => 'Str', metaclass => 'Typed', lazy => 1, builder => '_build_inchi');
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -84,6 +88,11 @@ sub _buildformula {
 	my ($self) = @_;
 	return $self->compound()->formula();
 }
+sub _buildneutral_formula {
+	my ($self) = @_;
+	return Bio::KBase::utilities::neutralize_formula($self->formula(),$self->charge());
+}
+
 sub _buildmsid {
 	my ($self) = @_;
 	return $self->compound()->id();
@@ -100,6 +109,36 @@ sub _buildcodeid {
 		return $1;
 	}
 	return $self->id();
+}
+sub _build_inchikey {
+	my ($self) = @_;
+	if ($self->compound_ref() =~ m/(cpd\d+)/) {
+		my $id = $1;
+		my $cpdhash = Bio::KBase::utilities::compound_hash();
+		if (defined($cpdhash->{$id}->{inchikey})) {
+			return $cpdhash->{$id}->{inchikey};
+		}
+	}
+}
+sub _build_inchi {
+	my ($self) = @_;
+	if ($self->compound_ref() =~ m/(cpd\d+)/) {
+		my $id = $1;
+		my $cpdhash = Bio::KBase::utilities::compound_hash();
+		if (defined($cpdhash->{$id}->{search_inchi})) {
+			return $cpdhash->{$id}->{search_inchi};
+		}
+	}
+}
+sub _build_smiles {
+	my ($self) = @_;
+	if ($self->compound_ref() =~ m/(cpd\d+)/) {
+		my $id = $1;
+		my $cpdhash = Bio::KBase::utilities::compound_hash();
+		if (defined($cpdhash->{$id}->{smiles})) {
+			return $cpdhash->{$id}->{smiles};
+		}
+	}
 }
 
 #***********************************************************************************************************

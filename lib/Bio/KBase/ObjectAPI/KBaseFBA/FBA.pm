@@ -98,7 +98,7 @@ sub _buildblacklistedrxns {
 		rxn11619 rxn11620 rxn11624 rxn11626 rxn11638 rxn11648 rxn11651
 		rxn11665 rxn11666 rxn11667 rxn11698 rxn11983 rxn11986 rxn11994
 		rxn12006 rxn12007 rxn12014 rxn12017 rxn12022 rxn12160 rxn12161
-		rxn01267 rxn05294
+		rxn01267 rxn05294 rxn04656
 	)];
 }
 sub _buildjobid {
@@ -238,8 +238,8 @@ sub _buildpromBounds {
 				foreach my $feature (@{$subunit->features()}) {
 					$geneReactions->{$feature->id()}->{$mdlrxn->id()} = 1;
 				}
-			}				
-		} 
+			}
+		}
 	}
 	my $promconstraint = $self->promconstraint();
 	my $genekos = $self->geneKOs();
@@ -262,7 +262,7 @@ sub _buildpromBounds {
 			last;
 		}
 		}
-	}	
+	}
 
 	return $final_bounds;
 }
@@ -323,7 +323,7 @@ Description:
 
 sub biochemistry {
 	my ($self) = @_;
-	$self->fbamodel()->template()->biochemistry();	
+	$self->fbamodel()->template()->biochemistry();
 }
 
 =head3 genome
@@ -337,7 +337,7 @@ Description:
 
 sub genome {
 	my ($self) = @_;
-	$self->fbamodel()->genome();	
+	$self->fbamodel()->genome();
 }
 
 =head3 mapping
@@ -351,7 +351,7 @@ Description:
 
 sub mapping {
 	my ($self) = @_;
-	$self->fbamodel()->template()->mapping();	
+	$self->fbamodel()->template()->mapping();
 }
 
 =head3 runFBA
@@ -404,21 +404,21 @@ sub runFBA {
 #	my ($self) = @_;
 #	my $model = $self->fbamodel();
 #	my $directory = $self->jobDirectory()."/";
-#	
+#
 #	my $output = [];
 #	my $variables = {};
 #	#Printing objective
 #	my $line = "";
 #	if () {
 #		#Minimizing deviation from proportional flux
-#		
+#
 #		#Maximizing change to conform with transcriptomics
-#		
+#
 #		#Minimizing deviation from identical ranking
 #	}
-#	
+#
 #	push(@{$output},$line);
-#	
+#
 #	#Printing mass balance constraints
 #	my $cpds = $model->modelcompounds();
 #	my $cpdrxns = {};
@@ -432,21 +432,21 @@ sub runFBA {
 #		push(@{$output},$line);
 #	}
 #	#Printing variable bounds
-#	
+#
 #	#Printing binary variables
-#	
+#
 #	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."Problem.lp",$output);
-#	
+#
 #	#Solve LP
-#	
+#
 #	#Parse solution
-#	
+#
 #}
 
 =head3 PrepareForGapfilling
 
 Definition:
-	
+
 Description:
 	Preparing FBA for gapfilling
 
@@ -463,7 +463,7 @@ sub PrepareForGapfilling {
 		source_model => undef,
 		timePerSolution => 43200,
 		totalTimeLimit => 45000,
-		target_reactions => [],		
+		target_reactions => [],
 		completeGapfill => 0,
 		solver => "SCIP",
 		fastgapfill => 1,
@@ -519,8 +519,8 @@ sub PrepareForGapfilling {
 		$self->fluxMinimization(1);
 		$self->findMinimalMedia(0);
 		$self->parameters()->{expression_threshold_percentile} = $args->{expression_threshold_percentile};
-		$self->parameters()->{kappa} = $args->{kappa};	
-		$self->parameters()->{booleanexp} = $args->{booleanexp};	
+		$self->parameters()->{kappa} = $args->{kappa};
+		$self->parameters()->{booleanexp} = $args->{booleanexp};
 		$self->parameters()->{"transcriptome analysis"} = 1;
 	}
 	$self->numberOfSolutions($args->{num_solutions});
@@ -529,8 +529,8 @@ sub PrepareForGapfilling {
 		my $rxnmdlrxnhash = {};
 		my $rxns = $self->fbamodel()->modelreactions();
 		for (my $i=0; $i < @{$rxns}; $i++) {
-			$rxnfoundhash->{$rxns->[$i]->reaction()->msid()} = 0;	
-			$rxnmdlrxnhash->{$rxns->[$i]->reaction()->msid()}->{$rxns->[$i]->id()} = 1;	
+			$rxnfoundhash->{$rxns->[$i]->reaction()->msid()} = 0;
+			$rxnmdlrxnhash->{$rxns->[$i]->reaction()->msid()}->{$rxns->[$i]->id()} = 1;
 		}
 		my $priorities = $self->reactionPriorities();
 		for (my $i=0; $i < @{$priorities}; $i++) {
@@ -544,7 +544,7 @@ sub PrepareForGapfilling {
 		for (my $i=0; $i < @{$rxns}; $i++) {
 			if ($rxnfoundhash->{$rxns->[$i]->reaction()->msid()} == 0) {
 				push(@{$args->{target_reactions}},$rxns->[$i]->id());
-			}	
+			}
 		}
 	}
 	if (@{$args->{target_reactions}} > 0) {
@@ -576,7 +576,7 @@ sub PrepareForGapfilling {
 #	if ($self->media()->name() eq "Complete") {
 #		if ($self->defaultMaxDrainFlux() < 10000) {
 #			$self->defaultMaxDrainFlux(10000);
-#		}	
+#		}
 #	} else {
 #		my $mediacpds = $self->media()->mediacompounds();
 #		foreach my $cpd (@{$mediacpds}) {
@@ -602,7 +602,7 @@ sub reactionPriorities {
 =head3 SetupApprovedCompartmentList
 
 Definition:
-	
+
 Description:
 	Setup compartment approval
 
@@ -614,13 +614,13 @@ sub SetupApprovedCompartmentList {
 	my $approvedHash = {};
 	my $cmps = $self->fbamodel()->modelcompartments();
 	for (my $i=0; $i < @{$cmps}; $i++) {
-		$approvedHash->{$cmps->[$i]->compartment()->id()} = 1;	
+		$approvedHash->{$cmps->[$i]->compartment()->id()} = 1;
 	}
 	$cmps = $self->fbamodel()->template()->compartments();
 	for (my $i=0; $i < @{$cmps}; $i++) {
 		if (!defined($approvedHash->{$cmps->[$i]->id()})) {
 			push(@{$badCompList},$cmps->[$i]->id());
-		}	
+		}
 	}
 	$self->parameters()->{"dissapproved compartments"} = join(";",@{$badCompList});
 }
@@ -854,7 +854,12 @@ sub createComponentObjectiveReactions {
 		}
 	}
 	#Adding reactions to reaction file list
+	$self->parameters()->{"component objective reactions"} = "";
 	foreach my $cpdid (keys(%{$comprxn})) {
+		if (length($self->parameters()->{"component objective reactions"}) > 0) {
+			$self->parameters()->{"component objective reactions"} .= ";";
+		}
+		$self->parameters()->{"component objective reactions"} .= $comprxn->{$cpdid}->{id};
 		push(@{$additionalrxn},$comprxn->{$cpdid}->{id}."\t>\t".$comprxn->{$cpdid}->{id});
 		push(@{$BioRxn},$comprxn->{$cpdid}->{id}."\t".$comprxn->{$cpdid}->{id}."\t0\t0\t".$comprxn->{$cpdid}->{rxn}."\t".$comprxn->{$cpdid}->{id}."\t=>\tOK\t=>");
 	}
@@ -905,7 +910,7 @@ sub createJobDirectory {
 					$exchangehash->{$cpd->id()}->{e} = $genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()};
 				} else {
 					$exchangehash->{$cpd->id()}->{c} = $genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()};
-				}				
+				}
 			}
 		}
 		my $name = $cpd->name();
@@ -916,6 +921,7 @@ sub createJobDirectory {
 		}
 	}
 	#We add all gapfill candidates to an input file
+	my $ATPFactor = 8;
 	my $actcoef = {};
 	my $gfcoef = {};
 	my $additionalrxn = ["id\tdirection\ttag"];
@@ -936,7 +942,7 @@ sub createJobDirectory {
 			cpd15668 => "cpd15666",
 			cpd15667 => "cpd15666",
 			cpd00002 => "cpd00012",
-			cpd00038 => "cpd00012",            
+			cpd00038 => "cpd00012",
 		    cpd00052 => "cpd00012",
 			cpd00062 => "cpd00012",
 			cpd00115 => "cpd00012",
@@ -1089,50 +1095,184 @@ sub createJobDirectory {
 		}
 	}
 	#Printing proteins for models
-	my $genelist = [];
-	if (defined($self->parameters()->{dynamic_protein_simulation}) && $self->parameters()->{dynamic_protein_simulation} == 1) {
-		my $genehash = {};
+	my $genehash = {};
+ 	my $genelist = [];
+	my $cpddbhash = Bio::KBase::utilities::compound_hash();
+	my $proteinvar;
+	if ((defined($self->parameters()->{"run dynamic FBA"}) && $self->parameters()->{"run dynamic FBA"} == 1) || (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1)) {
+		$proteinvar = {};
 		my $aa_trans = Bio::KBase::constants::aa_abbrev();
 		for (my $i=0; $i < @{$mdlrxn}; $i++) {
 			my $rxn = $mdlrxn->[$i];
+			my $rgts = $rxn->modelReactionReagents();
+			my $transported_cpd = {};
+			for (my $j=0; $j < @{$rgts}; $j++) {
+				if ($rgts->[$j]->modelcompound_ref() =~ m/(cpd\d+)(_e\d+)/) {
+					my $cpdid = $1;
+					my $fullid = $1.$2;
+					if ($cpdid ne "cpd00067" && $cpdid ne "cpd00001") {
+						$transported_cpd->{$fullid} = 1;
+					}
+				}
+			}
 			my $prots = $rxn->modelReactionProteins();
 			for (my $j=0; $j < @{$prots}; $j++) {
 				my $subunits = $prots->[$j]->modelReactionProteinSubunits();
 				for (my $k=0; $k < @{$subunits}; $k++) {
 					my $ftrs = $subunits->[$k]->features();
 					for (my $m=0; $m < @{$ftrs}; $m++) {
-						if (!defined($genehash->{$ftrs->[$i]->id()})) {
-							my $gpr = $ftrs->[$i]->id();
+						if (!defined($genehash->{$ftrs->[$m]->id()})) {
+							my $gpr = $ftrs->[$m]->id();
 							$gpr =~ s/\|/___/g;
-							my $ind = 0;
-							$genehash->{$ftrs->[$i]->id()} = 1;
-							my $id = "prot_".$ftrs->[$i]->id()."_c".$ind;
-							$id = s/[\s^\W]//g;
-							push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
-							my $seq = $ftrs->[$i]->protein_translation();
-							my $en = length($seq);
-							my $aacost = "cpd00017_c".$ind;
-							foreach my $aa (keys(%{$aa_trans})) {
-								my $count = length($seq);
-								$seq =~ s/$aa//g;
-								my $lcaa = lc($aa);
-								$seq =~ s/$lcaa//g;
-								$count = $count - length($seq);
-								if ($aa == "M") {
-									$count--;
+							if (!defined($genehash->{$gpr})) {
+								my $ind = 0;
+								my $geneobj = {
+									id => $gpr,
+									concentration => $self->parameters()->{default_concentration},
+									turnover => $self->parameters()->{default_turnover},
+									kprime => $self->parameters()->{default_kprime},
+									kmcpd => "none"
+								};
+								$genehash->{$gpr} = $geneobj;
+								my $id = "PROT_".$gpr;
+								push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
+								my $seq = $ftrs->[$m]->protein_translation();
+								if (length($seq) == 0) {
+									$seq = $self->parameters()->{default_protein_sequence};
 								}
-								if ($count > 0) {
-									$aacost .= " + (".$count.") ".$aa_trans->{$aa};
+								my $en = length($seq);
+								my $mw = 18;
+								my $aahash = {};
+								foreach my $aa (keys(%{$aa_trans})) {
+									my $count = length($seq);
+									$seq =~ s/$aa//g;
+									my $lcaa = lc($aa);
+									$seq =~ s/$lcaa//g;
+									$count = $count - length($seq);
+									if ($aa eq "M") {
+										$count--;
+									}
+									$mw += $count*$cpddbhash->{$aa_trans->{$aa}}->{mass};
+									$mw += -18*$count;
+									$aahash->{$aa_trans->{$aa}} = $count;
 								}
+								#Units on protein will be "g", but need to divide MW by 1000 because units on compounds is mmol
+								$mw = $mw/1000;
+								my $aacost = "(".(1/$mw).") cpd00017_c0";
+								foreach my $aa (keys(%{$aahash})) {
+									my $coef = $aahash->{$aa}/$mw;
+									if ($aahash->{$aa} > 0) {
+										$aacost .= " + (".$coef.") ".$aa."_c0";
+									}
+								}
+								$geneobj->{kmcpd} = "";
+								foreach my $transcpd (keys(%{$transported_cpd})) {
+									if (length($geneobj->{kmcpd}) > 0) {
+										$geneobj->{kmcpd} .= "|";
+									}
+									my $km = 0.001;
+									if (defined($self->parameters()->{kmvalues}->{$transcpd})) {
+										$km = $self->parameters()->{kmvalues}->{$transcpd};
+									}
+									$geneobj->{kmcpd} .= $transcpd.";".$km;
+								}
+								if (length($geneobj->{kmcpd}) == 0) {
+									$geneobj->{kmcpd} = "none";
+								}
+								if (defined($self->parameters()->{kprimes}->{$geneobj->{id}})) {
+									$geneobj->{turnover} = $self->parameters()->{turnovers}->{$geneobj->{id}};
+								}
+								if (defined($self->parameters()->{kprimes}->{$geneobj->{id}})) {
+									$geneobj->{kprime} = $self->parameters()->{kprimes}->{$geneobj->{id}};
+								}
+								if (defined($self->parameters()->{concentrations}->{$geneobj->{id}})) {
+									$geneobj->{concentration} = $self->parameters()->{concentrations}->{$geneobj->{id}};
+								}
+								$proteinvar->{$id} = {
+									compartment => "c",
+									min => -100,
+									max => 100,
+									concentration => $geneobj->{concentration}
+								};
+								push(@{$genelist},$geneobj);
+								my $syn_eq = $aacost." + (".$ATPFactor*$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$ATPFactor*$en/$mw.") cpd00008_c0 + (".$ATPFactor*$en/$mw.") cpd00009_c0 + (".$ATPFactor*$en/$mw.") cpd00067_c0 + ".$id;
+								my $deg_eq = $id." => ".$aacost;
+								push(@{$BioRxn},"PSYN_".$gpr."\t"."PSYN_".$gpr."\t0\t0\t".$syn_eq."\tPSYN_".$gpr."\t=>\tOK\t=>");
+								push(@{$BioRxn},"PDEG_".$gpr."\t"."PDEG_".$gpr."\t0\t0\t".$deg_eq."\tPDEG_".$gpr."\t=>\tOK\t=>");
+								push(@{$mdlData},"PSYN_".$gpr.";=>;c;".$gpr.";".$gpr);
+								push(@{$mdlData},"PDEG_".$gpr.";=>;c;".$gpr.";".$gpr);
 							}
-							push(@{$genelist},$id);
-							my $syn_eq = $aacost." (".$en.") cpd00002_c".$ind." + (".$en.") cpd00001_c".$ind." => (".$en.") cpd00008_c".$ind." + (".$en.") cpd00009_c".$ind." + (".$en.") cpd00067_c".$ind." + ".$id;
-							my $deg_eq = "(1) ".$id." => ".$aacost;
-							push(@{$BioRxn},"syn".$id."\t"."syn".$id."\t0\t0\t".$syn_eq."\tsyn".$id."\t=>\tOK\t=>");
-							push(@{$BioRxn},"deg".$id."\t"."deg".$id."\t0\t0\t".$deg_eq."\tdeg".$id."\t=>\tOK\t=>");
-							push(@{$mdlData},"syn".$id.";=>;c;".$gpr.";".$gpr.";1");
-							push(@{$mdlData},"deg".$id.";=>;c;".$gpr.";".$gpr.";1");
 						}
+					}
+				}
+			}
+			if (@{$prots} == 0 && defined($self->parameters()->{"run dynamic FBA"}) && $self->parameters()->{"run dynamic FBA"} == 1) {
+				my $conc = $self->parameters()->{default_concentration};
+				my $kprime = $self->parameters()->{default_kprime};
+				my $kmcpd = "none";
+				my $turnover = $self->parameters()->{default_turnover};
+				my $id = "PROT_".$rxn->id();
+				push(@{$BioCpd},$id."\t".$id."\t0\tNONE\t0\t".$id."\t0");
+				my $seq = $self->parameters()->{default_protein_sequence};
+				my $en = length($seq);
+				my $mw = 18;
+				my $aahash = {};
+				foreach my $aa (keys(%{$aa_trans})) {
+					my $count = length($seq);
+					$seq =~ s/$aa//g;
+					my $lcaa = lc($aa);
+					$seq =~ s/$lcaa//g;
+					$count = $count - length($seq);
+					if ($aa eq "M") {
+						$count--;
+					}
+					$mw += $count*$cpddbhash->{$aa_trans->{$aa}}->{mass};
+					$mw += -18;
+					$aahash->{$aa_trans->{$aa}} = $count;
+				}
+				my $aacost = "(".(1000/$mw).") cpd00017_c0";
+				foreach my $aa (keys(%{$aahash})) {
+					my $coef = $aahash->{$aa}/$mw;
+					if ($aahash->{$aa} > 0) {
+						$aacost .= " + (".$coef.") ".$aa."_c0";
+					}
+				}
+				if (keys(%{$transported_cpd}) > 0) {
+					$kmcpd = "";
+					foreach my $transcpd (keys(%{$transported_cpd})) {
+						if (length($kmcpd) > 0) {
+							$kmcpd .= "|";
+						}
+						my $km = $self->parameters()->{default_km};
+						if (defined($self->parameters()->{kmvalues}->{$transcpd})) {
+							$km = $self->parameters()->{kmvalues}->{$transcpd};
+						}
+						$kmcpd .= $transcpd.";".$km;
+					}
+				}
+				if (defined($self->parameters()->{kprimes}->{$rxn->id()})) {
+					$kprime = $self->parameters()->{kprimes}->{$rxn->id()};
+				}
+				if (defined($self->parameters()->{concentrations}->{$rxn->id()})) {
+					$conc = $self->parameters()->{concentrations}->{$rxn->id()};
+				}
+				$proteinvar->{$id} = {
+					compartment => "c",
+					min => -100,
+					max => 100,
+					concentration => $conc
+				};
+				my $syn_eq = $aacost." (".$ATPFactor*$en/$mw.") cpd00002_c0 + (".1/$mw.") cpd00001_c0 => (".$ATPFactor*$en/$mw.") cpd00008_c0 + (".$ATPFactor*$en/$mw.") cpd00009_c0 + (".$ATPFactor*$en/$mw.") cpd00067_c0 + ".$id;
+				my $deg_eq = $id." => ".$aacost;
+				push(@{$BioRxn},"PSYN_".$rxn->id()."\t"."PSYN_".$rxn->id()."\t0\t0\t".$syn_eq."\tPSYN_".$rxn->id()."\t=>\tOK\t=>");
+				push(@{$BioRxn},"PDEG_".$rxn->id()."\t"."PDEG_".$rxn->id()."\t0\t0\t".$deg_eq."\tPDEG_".$rxn->id()."\t=>\tOK\t=>");
+				push(@{$mdlData},"PSYN_".$rxn->id().";=>;c;Unknown;Unknown");
+				push(@{$mdlData},"PDEG_".$rxn->id().";=>;c;Unknown;Unknown");
+				my $search = $rxn->id()."\t";
+				for (my $j=0; $j < @{$BioRxn}; $j++) {
+					if (index($BioRxn->[$j],$search) == 0) {
+						$BioRxn->[$j] =~ s/\t1\tnone\t0.1\t1$//;
+						$BioRxn->[$j] .= "\t".$kprime."\t".$kmcpd."\t".$conc."\t".$turnover;
 					}
 				}
 			}
@@ -1141,7 +1281,7 @@ sub createJobDirectory {
 	my $final_gauranteed = [];
 	my $final_ko = [];
 	#Adding gapfilling candidates from template
-	if (defined($self->parameters()->{add_external_rxns}) && $self->parameters()->{add_external_rxns} == 1 && defined($self->parameters()->{"Perform gap filling"}) && $self->parameters()->{"Perform gap filling"} == 1) {	
+	if (defined($self->parameters()->{add_external_rxns}) && $self->parameters()->{add_external_rxns} == 1 && defined($self->parameters()->{"Perform gap filling"}) && $self->parameters()->{"Perform gap filling"} == 1) {
 		my $gauranteed = {};
 		my $rxnlist = $self->gauranteedrxns();
 		foreach my $rxn (@{$rxnlist}) {
@@ -1230,7 +1370,7 @@ sub createJobDirectory {
 					}
 					if (defined($tmprxn->status())) {
 						$st = $tmprxn->status();
-					}		
+					}
 					push(@{$BioRxn},$tmpid."\t".$tmpid."\t".$dg."\t".$dge."\t".$equation."\t".$tmpid."\t".$rxndir."\t".$st."\t".$rxndir);
 				}
 			}
@@ -1247,7 +1387,7 @@ sub createJobDirectory {
 								$exchangehash->{$cpdid}->{e} = $genex->{$cpd->id()}->{$comp};
 							} else {
 								$exchangehash->{$cpdid}->{c} = $genex->{$cpd->id()}->{$comp};
-							}				
+							}
 						}
 					}
 				}
@@ -1284,7 +1424,7 @@ sub createJobDirectory {
 									$exchangehash->{$trueid}->{e} = $genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()};
 								} else {
 									$exchangehash->{$trueid}->{c} = $genex->{$cpd->compound()->id()}->{$cpd->modelcompartment()->compartment()->id()};
-								}				
+								}
 							}
 						}
 						my $name = $cpd->name();
@@ -1332,7 +1472,7 @@ sub createJobDirectory {
 									$rgtid = $1."_".$2.$compindex;
 									if ($2 eq "e") {
 										$rgtid = $1."_".$2."0";
-									}	
+									}
 									my $suffix = "";
 									if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
 										$suffix = "[e]";
@@ -1384,56 +1524,107 @@ sub createJobDirectory {
 		}
 	}
 	if (defined($self->{_expsample})) {
-		my $coef = $self->process_expression_data();
-		foreach my $key (keys(%{$coef->{lowexp}})) {
-			delete $actcoef->{$key};
-			if (defined($coef->{lowexp}->{$key}->{forward})) {
-				$gfcoef->{$key}->{forward} = $coef->{lowexp}->{$key}->{forward};
-			}
-			if (defined($coef->{lowexp}->{$key}->{"reverse"})) {
-				$gfcoef->{$key}->{"reverse"} = $coef->{lowexp}->{$key}->{"reverse"};
-			}
-			$gfcoef->{$key}->{tag} = "MDLRXN";
-		}
-		foreach my $key (keys(%{$coef->{highexp}})) {
-			$actcoef->{$key} = $coef->{highexp}->{$key};
-		}
+		$self->createComponentObjectiveReactions({
+			biorxn => $BioRxn,
+			additionalrxn => $additionalrxn,
+			add_extracellular_compounds => 0
+		});
+		$self->process_expression_data();
+#		foreach my $key (keys(%{$coef->{lowexp}})) {
+#			delete $actcoef->{$key};
+#			if (defined($coef->{lowexp}->{$key}->{forward})) {
+#				$gfcoef->{$key}->{forward} = $coef->{lowexp}->{$key}->{forward};
+#			}
+#			if (defined($coef->{lowexp}->{$key}->{"reverse"})) {
+#				$gfcoef->{$key}->{"reverse"} = $coef->{lowexp}->{$key}->{"reverse"};
+#			}
+#			$gfcoef->{$key}->{tag} = "MDLRXN";
+#		}
+#		foreach my $key (keys(%{$coef->{highexp}})) {
+#			$actcoef->{$key} = $coef->{highexp}->{$key};
+#		}
 	}
 	my $atp_bio;
 	my $atp_rxn = 1;
 	my $atp_match_hash = Bio::KBase::constants::atp_hydrolysis_hash();
+	my $aahash = Bio::KBase::constants::amino_acids();
+	my $first = 1;
 	for (my $i=0; $i < @{$biomasses}; $i++) {
 		my $bio = $biomasses->[$i];
 		push(@{$mdlData},$bio->id().";=>;c;UNIVERSAL;;1");
 		my $reactants = "";
 		my $products = "";
 		my $rgts = $bio->biomasscompounds();
+		my $protein_mass = 0;
+		my $protein_mols = 0;
+		my $protein_rxn = "";
 		for (my $j=0;$j < @{$rgts}; $j++) {
 			my $rgt = $rgts->[$j];
-			if (!defined($atp_match_hash->{$rgt->modelcompound()->id()}) || $atp_match_hash->{$rgt->modelcompound()->id()} != $rgt->coefficient()) {
+			if (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1 && $rgt->modelcompound()->id() =~ m/(cpd\d+)/ && defined($aahash->{$1})) {
+				my $cpdid = $1;
+				$protein_mols += -1*$rgt->coefficient();
+				$protein_mass += -1*$rgt->coefficient()*$aahash->{$cpdid}/1000;
 				$atp_rxn = 0;
-			}
-			my $suffix = "";
-			if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
-				$suffix = "[e]";
-			}
-			if ($rgt->coefficient() < 0) {
-				if (length($reactants) > 0) {
-					$reactants .= " + ";
+				if (length($protein_rxn) > 0) {
+					$protein_rxn .= " + ";
 				}
-				$reactants .= "(".(-1*$rgt->coefficient()).") ".$rgt->modelcompound()->id().$suffix;
-			} elsif ($rgt->coefficient() > 0) {
-				if (length($products) > 0) {
-					$products .= " + ";
+				$protein_rxn .= "(".(-1*$rgt->coefficient()).") ".$rgt->modelcompound()->id();
+			} else {
+				if (!defined($atp_match_hash->{$rgt->modelcompound()->id()}) || $atp_match_hash->{$rgt->modelcompound()->id()} != $rgt->coefficient()) {
+					$atp_rxn = 0;
 				}
-				$products .= "(".$rgt->coefficient().") ".$rgt->modelcompound()->id().$suffix;
+				my $suffix = "";
+				if ($rgt->modelcompound()->modelcompartment()->compartment()->id() eq "e") {
+					$suffix = "[e]";
+				}
+				if ($rgt->coefficient() < 0) {
+					if (length($reactants) > 0) {
+						$reactants .= " + ";
+					}
+					$reactants .= "(".(-1*$rgt->coefficient()).") ".$rgt->modelcompound()->id().$suffix;
+				} elsif ($rgt->coefficient() > 0) {
+					my $coef = $rgt->coefficient();
+					if (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1 && $rgt->modelcompound()->id() =~ m/cpd00001_/) {
+						$coef += -1*$protein_mols;
+					}
+					if (length($products) > 0) {
+						$products .= " + ";
+					}
+					$products .= "(".$coef.") ".$rgt->modelcompound()->id().$suffix;
+				}
 			}
 		}
 		if ($atp_rxn == 1) {
 			$atp_bio = $bio->id();
+		} elsif (defined($self->parameters()->{"steady state protein fba"}) && $self->parameters()->{"steady state protein fba"} == 1) {
+			$protein_mass += -1*0.018*$protein_mols;
+			$self->parameters()->{"protein biomass fraction"} = $protein_mass;
+			if ($first == 1) {
+				push(@{$BioRxn},"ProteinBiomass\tProteinBiomass\t0\t0".$protein_rxn." + (".($ATPFactor-1)*$protein_mols.") cpd00001_c0 + (".$ATPFactor*$protein_mols.") cpd00002_c0 => (".$ATPFactor*$protein_mols.") cpd00067_c0 + (".$ATPFactor*$protein_mols.") cpd00008_c0 + (".$ATPFactor*$protein_mols.") cpd00009_c0");
+				push(@{$mdlData},"ProteinBiomass;=>;c;UNIVERSAL;;1");
+			}
+			my $list = ["cpd00002","cpd00001"];
+			for (my $j=0; $j < @{$list}; $j++) {
+				my $cpdid = $list->[$j];
+				if ($reactants =~ m/\((\d+\.*\d+)\)\s$cpdid/) {
+					my $newcoef = $1-$ATPFactor*$protein_mols;
+					my $newvalue = "(".$newcoef.") ".$cpdid;
+					$reactants =~ s/\(\d+\.*\d+\)\s$cpdid/$newvalue/;
+				}
+			}
+			$list = ["cpd00008","cpd00009","cpd00067"];
+			for (my $j=0; $j < @{$list}; $j++) {
+				my $cpdid = $list->[$j];
+				if ($products =~ m/\((\d+\.*\d+)\)\s$cpdid/) {
+					my $newcoef = $1-$ATPFactor*$protein_mols;
+					my $newvalue = "(".$newcoef.") ".$cpdid;
+					$products =~ s/\(\d+\.*\d+\)\s$cpdid/$newvalue/;
+				}
+			}
 		}
 		my $rxnline = $bio->id()."\t".$bio->id()."\t0\t0\t".$reactants." => ".$products."\tBiomass\t=>\tOK\t=>";
 		push(@{$BioRxn},$rxnline);
+		$first = 0;
 	}
 	if (!defined($atp_bio)) {
 		$atp_bio = @{$biomasses};
@@ -1498,12 +1689,13 @@ sub createJobDirectory {
 	if ($self->fluxUseVariables() == 1 || $self->drainfluxUseVariables() == 1 || $self->findMinimalMedia() || defined $self->{_expsample}) {
 		$solver = "SCIP" if $solver ne "CPLEX";
 	}
+	#$solver = "CPLEX";
 	#Setting gene KO
 	my $geneKO = "none";
 	for (my $i=0; $i < @{$self->geneKOs()}; $i++) {
 		my $gene = $self->geneKOs()->[$i];
 		if ($i == 0) {
-			$geneKO = $gene->id();	
+			$geneKO = $gene->id();
 		} else {
 			$geneKO .= ";".$gene->id();
 		}
@@ -1514,7 +1706,7 @@ sub createJobDirectory {
 	for (my $i=0; $i < @{$self->reactionKOs()}; $i++) {
 		my $rxn = $self->reactionKOs()->[$i];
 		if ($i == 0) {
-			$rxnKO = $rxn->id();	
+			$rxnKO = $rxn->id();
 		} else {
 			$rxnKO .= ";".$rxn->id();
 		}
@@ -1587,6 +1779,7 @@ sub createJobDirectory {
 		$self->decomposeReversibleFlux(1);
 	}
 	my $parameters = {
+		"biomass variable" => "bio1",
 		"fit phenotype data" => 0,
 		"deltagslack" => 10,
 		"maximize active reactions" => 0,
@@ -1617,7 +1810,7 @@ sub createJobDirectory {
 		"objective" => $objective,
 		"atp objective" => "MAX;FLUX;".$atp_bio.";c;1",
 		"find tight bounds" => $self->fva(),
-		"flux minimization" => $self->fluxMinimization(), 
+		"flux minimization" => $self->fluxMinimization(),
 		"uptake limits" => $uptakeLimits,
 		"optimize metabolite production if objective is zero" => $optMetabolite,
 		"metabolites to optimize" => $metToOpt,
@@ -1719,13 +1912,16 @@ sub createJobDirectory {
 				$exchangehash->{$cpdbnds->[$i]->modelcompound()->id()}->{c} = [$cpdbnds->[$i]->lowerBound(),$cpdbnds->[$i]->upperBound()];
 			}
 		}
-		for (my $i=0; $i < @{$genelist}; $i++) {
-			$userBounds->{$genelist->[$i]}->{c}->{"DRAIN_FLUX"} = {
-				max => 1,
-				min => 1,
-				conc => 0
-			};
-		}	
+		if (defined($proteinvar)) {
+			foreach my $prot (keys(%{$proteinvar})) {
+				$userBounds->{$prot}->{"c"}->{"DRAIN_FLUX"} = {
+					max => $proteinvar->{$prot}->{max},
+					min => $proteinvar->{$prot}->{min},
+					conc => $proteinvar->{$prot}->{concentration}
+				};
+				$exchangehash->{$prot}->{c} = [$proteinvar->{$prot}->{min},$proteinvar->{$prot}->{max}];
+			}
+		}
 		for (my $i=0; $i < @{$modelbounds}; $i++) {
 			$userBounds->{$modelbounds->[$i]->{id}}->{c}->{$modelbounds->[$i]->{vartype}} = {
 				max => $modelbounds->[$i]->{upperbound},
@@ -1755,7 +1951,10 @@ sub createJobDirectory {
 		}
 		my $newLine = $media->name()."\t".$media->name()."\t";
 		if (defined($dataArrays->{var}) && @{$dataArrays->{var}} > 0) {
-			$newLine .= 
+			if (!defined($dataArrays->{conc})) {
+				$dataArrays->{conc} = 0.001;
+			}
+			$newLine .=
 				join("|",@{$dataArrays->{var}})."\t".
 				join("|",@{$dataArrays->{type}})."\t".
 				join("|",@{$dataArrays->{max}})."\t".
@@ -1787,6 +1986,16 @@ sub createJobDirectory {
 				for (my $m=0; $m < @{$tfs}; $m++) {
 					if ($tfs->[$m]->locus_tag() ne "RNA") {
 						$found = 1;
+						if (!defined($genehash->{$tfs->[$m]->locus_tag()})) {
+							$genehash->{$tfs->[$m]->locus_tag()} = {
+								id => $tfs->[$m]->locus_tag(),
+								concentration => 0.2,
+								turnover => 0.1,
+								kprime => 10,
+								kmcpd => ""
+							};
+							push(@{$genelist},$genehash->{$tfs->[$m]->locus_tag()});
+						}
 						for (my $n=0; $n < @{$effectors}; $n++) {
 							if ($effectors->[$n]->effector_class() =~ m/(.+)b$/) {
 								my $sign = $1;
@@ -1800,23 +2009,33 @@ sub createJobDirectory {
 								my $comp = $self->template()->searchForCompound($compname);
 								if (!defined($comp)) {
 									print STDERR "Could not find compound stimuli ".$compname."!\n";
-									$genereg->{$tfs->[$m]->locus_tag()}->{stimuli}->{$compname} = $sign;
+									$genehash->{$tfs->[$m]->locus_tag()}->{stimuli}->{$compname} = $sign;
 								} else {
-									$genereg->{$tfs->[$m]->locus_tag()}->{compounds}->{$comp->id()} = [$sign,$type];
+									$genehash->{$tfs->[$m]->locus_tag()}->{compounds}->{$comp->id()} = [$sign,$type];
 								}
 							} elsif ($effectors->[$n]->effector_class() =~ m/(.+)[a-z]$/) {
 								my $sign = $1;
-								$genereg->{$tfs->[$m]->locus_tag()}->{stimuli}->{$effectors->[$n]->effector_name()} = $sign;
+								$genehash->{$tfs->[$m]->locus_tag()}->{stimuli}->{$effectors->[$n]->effector_name()} = $sign;
 							}
 						}
 					}
 				}
 				for (my $k=0; $k < @{$genes}; $k++) {
+					if (!defined($genehash->{$genes->[$k]->locus_tag()})) {
+						$genehash->{$genes->[$k]->locus_tag()} = {
+							id => $genes->[$k]->locus_tag(),
+							concentration => 0.2,
+							turnover => 0.1,
+							kprime => 10,
+							kmcpd => ""
+						};
+						push(@{$genelist},$genehash->{$genes->[$k]->locus_tag()});
+					}
 					for (my $m=0; $m < @{$tfs}; $m++) {
 						if ($tfs->[$m]->locus_tag() eq "RNA") {
-							$genereg->{$genes->[$k]->locus_tag()}->{stimuli}->{$tfs->[$m]->locus_tag()} = $sign;
+							$genehash->{$genes->[$k]->locus_tag()}->{stimuli}->{$tfs->[$m]->locus_tag()} = $sign;
 						} else {
-							$genereg->{$genes->[$k]->locus_tag()}->{tfs}->{$tfs->[$m]->locus_tag()} = $sign;
+							$genehash->{$genes->[$k]->locus_tag()}->{tfs}->{$tfs->[$m]->locus_tag()} = $sign;
 						}
 					}
 					if ($found == 0) {
@@ -1833,66 +2052,57 @@ sub createJobDirectory {
 								my $comp = $self->template()->searchForCompound($compname);
 								if (!defined($comp)) {
 									print STDERR "Could not find compound stimuli ".$compname."!\n";
-									$genereg->{$genes->[$k]->locus_tag()}->{stimuli}->{$compname} = $esign*$sign;
+									$genehash->{$genes->[$k]->locus_tag()}->{stimuli}->{$compname} = $esign*$sign;
 								} else {
-									$genereg->{$genes->[$k]->locus_tag()}->{compounds}->{$comp->id()} = [$esign*$sign,$type];
+									$genehash->{$genes->[$k]->locus_tag()}->{compounds}->{$comp->id()} = [$esign*$sign,$type];
 								}
 							} elsif ($effectors->[$n]->effector_class() =~ m/(.+)[a-z]$/) {
 								my $esign = $1;
-								$genereg->{$genes->[$k]->locus_tag()}->{stimuli}->{$effectors->[$n]->effector_name()} = $esign*$sign;
+								$genehash->{$genes->[$k]->locus_tag()}->{stimuli}->{$effectors->[$n]->effector_name()} = $esign*$sign;
 							}
 						}
-					}	
+					}
 				}
 			}
 		}
 	}
 	my $genedata = ["ID\tTFS\tSTIMULI\tCOMPOUNDS"];
-	if (keys(%{$genereg}) > 0) {
-		$parameters->{"gene list"} = join(";",keys(%{$genereg}));
-		foreach my $gene (keys(%{$genereg})) {
-			my $line = $gene."\t";
-			if (defined($genereg->{$gene}->{tfs})) {
-				my $item = "";
-				foreach my $stim (keys(%{$genereg->{$gene}->{tfs}})) {
-					if (length($item)) {
-						$item .= "|";
-					}
-					$item .= $stim.":".$genereg->{$gene}->{tfs}->{$stim}.":1";
-				}
-				$line .= $item;
-			}
-			$line .= "\t";
-			if (defined($genereg->{$gene}->{stimuli})) {
-				my $item = "";
-				foreach my $stim (keys(%{$genereg->{$gene}->{stimuli}})) {
-					if (length($item)) {
-						$item .= "|";
-					}
-					$item .= $stim.":".$genereg->{$gene}->{stimuli}->{$stim}.":1";
-				}
-				$line .= $item;
-			}
-			$line .= "\t";
-			if (defined($genereg->{$gene}->{compounds})) {
-				my $item = "";
-				foreach my $stim (keys(%{$genereg->{$gene}->{compounds}})) {
-					if (length($item)) {
-						$item .= "|";
-					}
-					$item .= $stim.":".$genereg->{$gene}->{compounds}->{$stim}->[0];
-					if ($genereg->{$gene}->{compounds}->{$stim}->[1] eq "standard") {
-						$item .= ":1:1:1";
-					} elsif ($genereg->{$gene}->{compounds}->{$stim}->[1] eq "stress") {
-						$item .= ":0.5:0:1";
-					} elsif ($genereg->{$gene}->{compounds}->{$stim}->[1] eq "extracellular") {
-						$item .= ":1:0:0";
-					}
-				}
-				$line .= $item;
-			}
-			push(@{$genedata},$line);
+	$parameters->{"gene list"} = "";
+	for (my $i=0; $i < @{$genelist}; $i++) {
+		if (length($parameters->{"gene list"}) > 0) {
+			$parameters->{"gene list"} .= ";";
 		}
+		$parameters->{"gene list"} .= $genelist->[$i]->{id};
+		my $line = $genelist->[$i]->{id}."\t";
+		if (defined($genelist->[$i]->{tfs})) {
+			my $item = "";
+			foreach my $stim (keys(%{$genelist->[$i]->{tfs}})) {
+				if (length($item)) {
+					$item .= "|";
+				}
+				$item .= $stim.":".$genelist->[$i]->{tfs}->{$stim}.":1";
+			}
+			$line .= $item;
+		}
+		$line .= "\t";
+		if (defined($genelist->[$i]->{compounds})) {
+			my $item = "";
+			foreach my $stim (keys(%{$genelist->[$i]->{compounds}})) {
+				if (length($item)) {
+					$item .= "|";
+				}
+				$item .= $stim.":".$genelist->[$i]->{compounds}->{$stim}->[0];
+				if ($genelist->[$i]->{compounds}->{$stim}->[1] eq "standard") {
+					$item .= ":1:1:1";
+				} elsif ($genelist->[$i]->{compounds}->{$stim}->[1] eq "stress") {
+					$item .= ":0.5:0:1";
+				} elsif ($genelist->[$i]->{compounds}->{$stim}->[1] eq "extracellular") {
+					$item .= ":1:0:0";
+				}
+			}
+			$line .= $item;
+		}
+		push(@{$genedata},$line);
 	}
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."genes.tbl",$genedata);
 	#Printing parameter file
@@ -1909,11 +2119,16 @@ sub createJobDirectory {
 		}
 	}
 	$parameters->{"exchange species"} = $exchange;
-	my $paramData = [];
-	foreach my $param (keys(%{$parameters})) {
-		push(@{$paramData},$param."|".$parameters->{$param}."|Specialized parameters");
-	}
-	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."SpecializedParameters.txt",$paramData);
+
+    my @paramData = map {
+            join "|", $_, ( $parameters->{ $_ } // "" ), "Specialized parameters"
+        } keys %$parameters;
+
+    Bio::KBase::ObjectAPI::utilities::PRINTFILE(
+        $directory . "SpecializedParameters.txt",
+        \@paramData
+    );
+
 	#Set StringDBFile.txt
 	my $mfatkdir = $self->mfatoolkitDirectory();
 	my $stringdb = [
@@ -1922,9 +2137,9 @@ sub createJobDirectory {
 		"reaction\tid\tSINGLEFILE\t".$directory."reaction/\t".$directory."Reactions.tbl\tTAB\t|\tid",
 		"cue\tNAME\tSINGLEFILE\t\t".$mfatkdir."../etc/MFAToolkit/cueTable.txt\tTAB\t|\tNAME",
 		"media\tID\tSINGLEFILE\t".$directory."media/\t".$directory."media.tbl\tTAB\t|\tID;NAMES",
-		"gene\tID\tSINGLEFILE\t".$directory."gene/\t".$directory."genes.tbl\tTAB\t|\tID;NAMES"		
+		"gene\tID\tSINGLEFILE\t".$directory."gene/\t".$directory."genes.tbl\tTAB\t|\tID;NAMES"
 	];
-	
+
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."StringDBFile.txt",$stringdb);
 	#Write shell script
 	my $exec = [
@@ -1946,18 +2161,44 @@ Description:
 
 sub process_expression_data {
 	my ($self) = @_;
-	my $booleanexp = $self->parameters()->{booleanexp};
-	my $sample = $self->{_expsample};
-	my $exphash = $sample;
-	my $exp_scores = {};
-	my $max_exp_score = 0;
-	my $min_exp_score = -1;
+	my $exphash = $self->{_expsample};
+	if ($self->parameters()->{normalization} eq "none") {
+		#Computing the average and stddev
+		my $average = 0;
+		my $count = 0;
+		foreach my $ftr (keys(%{$exphash})) {
+			$count++;
+			$average += $exphash->{$ftr};
+		}
+		$average = $average/$count;
+		my $stddev = 0;
+		foreach my $ftr (keys(%{$exphash})) {
+			$stddev += ($exphash->{$ftr} - $average)*($exphash->{$ftr} - $average);
+		}
+		$stddev = sqrt($stddev/$count);
+		#Finding the highest scores discounting outlying values
+		my $highest = 0;
+		foreach my $ftr (keys(%{$exphash})) {
+			if ($exphash->{$ftr} < ($average+2*$stddev)) {
+				if ($exphash->{$ftr} > $highest) {
+					$highest = $exphash->{$ftr};
+				}
+			}
+		}
+		#Normalizing
+		foreach my $ftr (keys(%{$exphash})) {
+			if ($exphash->{$ftr} >= ($average+2*$stddev)) {
+				$exphash->{$ftr} = 1;
+			} else {
+				$exphash->{$ftr} = $exphash->{$ftr}/$highest;
+			}
+		}
+	}
 	my $mdlrxns = $self->fbamodel()->modelreactions();
-	my $inactiveList = ["bio1"];
 	my $rxnhash = {};
+	my $exp_scores = {};
 	foreach my $mdlrxn (@{$mdlrxns}) {
 		$rxnhash->{$mdlrxn->id()} = $mdlrxn;
-		push(@{$inactiveList},$mdlrxn->id());
 		# Maximal gene expression for a reaction
 		my $rxn_score;
 		foreach my $prot (@{$mdlrxn->modelReactionProteins()}) {
@@ -1973,12 +2214,6 @@ sub process_expression_data {
 					my $ftr_id = $feature->id();
 					if (defined($exphash->{$feature->id()})) {
 						my $ftr_score = $exphash->{$feature->id};
-						if ($ftr_score > $max_exp_score) {
-							$max_exp_score = $ftr_score;
-						}
-						if ($min_exp_score >= 0 && $ftr_score < $min_exp_score) {
-						$min_exp_score = $ftr_score;
-						}
 						if (!defined($subunit_score) || $subunit_score <  $ftr_score) {
 							$subunit_score = $ftr_score;
 						}
@@ -1997,60 +2232,291 @@ sub process_expression_data {
 			}
 		}
 		if (defined($rxn_score)) {
-			$mdlrxn->{raw_exp_score} = $rxn_score;
+			$mdlrxn->{norm_exp_score} = $rxn_score;
 			$exp_scores->{$mdlrxn->id()} = $rxn_score;
 		}
 	}
-	# don't scale probabilities - they are already on a 0 to 1 scale
-	if ($booleanexp eq "absolute") {
-		my $sortedrxns = [keys(%{$exp_scores})];
-		$sortedrxns = [sort { $exp_scores->{$a} <=> $exp_scores->{$b} } @{$sortedrxns}];
-		my $multiple = @{$sortedrxns};
-		if ($multiple > 0) {
-			$multiple = 1/$multiple;
-			for (my $i=0; $i < @{$sortedrxns}; $i++) {
-				$exp_scores->{$sortedrxns->[$i]} = $i*$multiple;
-				$rxnhash->{$sortedrxns->[$i]}->{norm_exp_score} = $exp_scores->{$sortedrxns->[$i]};
-			}
-		}
-	}
-	
-	my $coef = {
-		highexp => {},
-		lowexp => {}
-	};
-	my $threshold = $self->parameters()->{expression_threshold_percentile};
-	my $kappa = $self->parameters()->{kappa};
-	my $high_expression_threshold = $threshold+$kappa;
-	my $low_expression_threshold = $threshold-$kappa;
-
-	for (my $i=0; $i < @{$inactiveList}; $i++) {
-		if($inactiveList->[$i] eq "bio1"){
-			$coef->{highexp}->{bio1} = 1;
-		} elsif(exists($exp_scores->{$inactiveList->[$i]})){
-			if($exp_scores->{$inactiveList->[$i]} <= $low_expression_threshold) {
-				$rxnhash->{$inactiveList->[$i]}->{exp_state} = "off";
-				my $penalty = ($threshold-$exp_scores->{$inactiveList->[$i]})/$threshold;
-				if ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq "=") {
-					$coef->{lowexp}->{$inactiveList->[$i]}->{forward} = $penalty;
-					$coef->{lowexp}->{$inactiveList->[$i]}->{"reverse"} = $penalty;
-				} elsif ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq ">") {
-					$coef->{lowexp}->{$inactiveList->[$i]}->{forward} = $penalty;
-				} elsif ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq "<") {
-					$coef->{lowexp}->{$inactiveList->[$i]}->{"reverse"} = $penalty;
+	$self->parameters()->{"reaction flux target"} = "";
+	$self->parameters()->{"fit flux vector"} = 1;
+	if (defined($self->parameters()->{"characteristic flux file"}) && -e $self->parameters()->{"characteristic flux file"}) {
+		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($self->parameters()->{"characteristic flux file"});
+		for (my $i=0; $i < @{$lines}; $i++) {
+			my $array = [split(/\t/,$lines->[$i])];
+			if (defined($exp_scores->{$array->[0]})) {
+				my $fluxarray = [split(/;/,$array->[1])];
+				my $ave = 0;
+				my $count = @{$fluxarray};
+				for (my $j=0; $j < @{$fluxarray}; $j++) {
+					$ave += $fluxarray->[$j];
 				}
-			} elsif ($exp_scores->{$inactiveList->[$i]} > $high_expression_threshold) {
-				$rxnhash->{$inactiveList->[$i]}->{exp_state} = "on";
-				my $penalty = ($exp_scores->{$inactiveList->[$i]}-$threshold)/$threshold;
-				$coef->{highexp}->{$inactiveList->[$i]} = $penalty;
+				$ave = $ave/$count;
+				$self->parameters()->{"reaction flux target"} .= $array->[0].":".$exp_scores->{$array->[0]}*$ave;
 			}
 		}
 	}
-	push(@{$self->{outputfiles}->{gapfillrxns}},"Lowexp reactions:".join("|",keys(%{$coef->{lowexp}})));
-	push(@{$self->{outputfiles}->{gapfillrxns}},"Highexp reactions:".join("|",keys(%{$coef->{highexp}})));
-	push(@{$self->{outputfiles}->{gapfillstats}},"Lowexp reactions:".keys(%{$coef->{lowexp}}));
-	push(@{$self->{outputfiles}->{gapfillstats}},"Highexp reactions:".keys(%{$coef->{highexp}}));
-	return $coef;
+
+
+	# don't scale probabilities - they are already on a 0 to 1 scale
+#	if ($booleanexp eq "absolute") {
+#		my $sortedrxns = [keys(%{$exp_scores})];
+#		$sortedrxns = [sort { $exp_scores->{$a} <=> $exp_scores->{$b} } @{$sortedrxns}];
+#		my $multiple = @{$sortedrxns};
+#		if ($multiple > 0) {
+#			$multiple = 1/$multiple;
+#			for (my $i=0; $i < @{$sortedrxns}; $i++) {
+#				$exp_scores->{$sortedrxns->[$i]} = $i*$multiple;
+#				$rxnhash->{$sortedrxns->[$i]}->{norm_exp_score} = $exp_scores->{$sortedrxns->[$i]};
+#			}
+#		}
+#	}
+
+#	my $coef = {
+#		highexp => {},
+#		lowexp => {}
+#	};
+#	my $threshold = $self->parameters()->{expression_threshold_percentile};
+#	my $kappa = $self->parameters()->{kappa};
+#	my $high_expression_threshold = $threshold+$kappa;
+#	my $low_expression_threshold = $threshold-$kappa;
+#
+#	for (my $i=0; $i < @{$inactiveList}; $i++) {
+#		if($inactiveList->[$i] eq "bio1"){
+#			$coef->{highexp}->{bio1} = 1;
+#		} elsif(exists($exp_scores->{$inactiveList->[$i]})){
+#			if($exp_scores->{$inactiveList->[$i]} <= $low_expression_threshold) {
+#				$rxnhash->{$inactiveList->[$i]}->{exp_state} = "off";
+#				my $penalty = ($threshold-$exp_scores->{$inactiveList->[$i]})/$threshold;
+#				if ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq "=") {
+#					$coef->{lowexp}->{$inactiveList->[$i]}->{forward} = $penalty;
+#					$coef->{lowexp}->{$inactiveList->[$i]}->{"reverse"} = $penalty;
+#				} elsif ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq ">") {
+#					$coef->{lowexp}->{$inactiveList->[$i]}->{forward} = $penalty;
+#				} elsif ($self->fbamodel()->getObject("modelreactions",$inactiveList->[$i])->direction() eq "<") {
+#					$coef->{lowexp}->{$inactiveList->[$i]}->{"reverse"} = $penalty;
+#				}
+#			} elsif ($exp_scores->{$inactiveList->[$i]} > $high_expression_threshold) {
+#				$rxnhash->{$inactiveList->[$i]}->{exp_state} = "on";
+#				my $penalty = ($exp_scores->{$inactiveList->[$i]}-$threshold)/$threshold;
+#				$coef->{highexp}->{$inactiveList->[$i]} = $penalty;
+#			}
+#		}
+#	}
+#	push(@{$self->{outputfiles}->{gapfillrxns}},"Lowexp reactions:".join("|",keys(%{$coef->{lowexp}})));
+#	push(@{$self->{outputfiles}->{gapfillrxns}},"Highexp reactions:".join("|",keys(%{$coef->{highexp}})));
+#	push(@{$self->{outputfiles}->{gapfillstats}},"Lowexp reactions:".keys(%{$coef->{lowexp}}));
+#	push(@{$self->{outputfiles}->{gapfillstats}},"Highexp reactions:".keys(%{$coef->{highexp}}));
+#	return $coef;
+}
+
+=head3 process_metabolomic_data
+
+Definition:
+	process_metabolomic_data());
+Description:
+	Function for processing metabolomics data
+
+=cut
+
+sub process_metabolomic_data {
+	my ($self,$args) = @_;
+	$args = Bio::KBase::ObjectAPI::utilities::args(["matrix","condition"],{
+		type => "logp"
+	}, $args);
+	#Retrieving metabolite matrix
+	my $matrix = $args->{matrix};
+	my $col_index;
+	my $values = [];
+	for (my $i=0; $i < @{$matrix->{col_ids}}; $i++) {
+		if ($matrix->{col_ids}->[$i] eq $args->{condition}) {
+			$col_index = $i;
+			for (my $j=0; $j < @{$matrix->{row_ids}}; $j++) {
+				push(@{$values},$matrix->{data}->[$j]->[$i]);
+			}
+		}
+	}
+	#Normalizing values if the type is "abundance"
+	if ($args->{type} eq "abundance" && $matrix->{highest}->[$col_index] > 0) {
+		print "Normalizing values by dividing by highest value:".$matrix->{highest}->[$col_index].". Lowest value was ".$matrix->{lowest}->[$col_index]."\n";
+		for (my $i=0; $i < @{$values}; $i++) {
+			$values->[$i] = $values->[$i]/$matrix->{highest}->[$col_index];
+		}
+	}
+	if (!defined($col_index)) {
+		Bio::KBase::ObjectAPI::utilities::error("Specified condition ".$args->{condition}." not found in metabolite matrix!");
+	}
+	#Now attempting to map the rows to entities in the model
+	my $peak_hash = {};
+	my $peak_string = "";
+	#Retrieving data hashes for all compounds in model, database, and source model
+	my $input = {
+		priority => 1,
+		compartment => "e",
+		compartment_index => 0,
+		hashes => {
+			ids => {},
+			names => {},
+			structures => {},
+			base_structures => {},
+			formulas => {}
+		}
+	};
+	if ($args->{type} eq "exo") {
+		$self->fbamodel()->load_metabolite_hashes($input);
+		$input->{priority} = 2;
+		$self->fbamodel()->template()->load_metabolite_hashes($input);
+		if (defined($self->{_source_model})) {
+			$input->{priority} = 3;
+			$self->{_source_model}->load_metabolite_hashes($input);
+		}
+		$input->{compartment} = "c";
+		$input->{priority} = 4;
+		$self->fbamodel()->load_metabolite_hashes($input);
+		$input->{priority} = 5;
+		$self->fbamodel()->template()->load_metabolite_hashes($input);
+		if (defined($self->{_source_model})) {
+			$input->{priority} = 6;
+			$self->{_source_model}->load_metabolite_hashes($input);
+		}
+		$input->{priority} = 7;
+		Bio::KBase::utilities::metabolite_hash($input);
+	} else {
+		$input->{compartment} = "c";
+		$self->fbamodel()->load_metabolite_hashes($input);
+		$input->{priority} = 2;
+		$self->fbamodel()->template()->load_metabolite_hashes($input);
+		if (defined($self->{_source_model})) {
+			$input->{priority} = 3;
+			$self->{_source_model}->load_metabolite_hashes($input);
+		}
+		$input->{priority} = 7;
+		Bio::KBase::utilities::metabolite_hash($input);
+		$input->{compartment} = "e";
+		$input->{priority} = 4;
+		$self->fbamodel()->load_metabolite_hashes($input);
+		$input->{priority} = 5;
+		$self->fbamodel()->template()->load_metabolite_hashes($input);
+		if (defined($self->{_source_model})) {
+			$input->{priority} = 6;
+			$self->{_source_model}->load_metabolite_hashes($input);
+		}
+	}
+	my $hashes = $input->{hashes};
+	#Scanning all peak IDs and metadata for matches
+	my $matchtype_count = {
+		id => [0,0],
+		name => [0,0],
+		structure => [0,0],
+		formula => [0,0]
+	};
+	my $idhash;
+	for (my $j=0; $j < @{$matrix->{row_ids}}; $j++) {
+		my $match = 0;
+		#First checking ID and all attributes for SEED ID match
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{ids},$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
+			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{ids},$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
+			}
+		}
+		if ($match > 0) {
+			$matchtype_count->{id}->[0]++;
+			$matchtype_count->{id}->[1] += $match;
+			$match = 0;
+		}
+		#Now checking ID and all attributes for structure match
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{structures},$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
+			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{structures},$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
+			}
+		}
+		if ($match > 0) {
+			$matchtype_count->{structure}->[0]++;
+			$matchtype_count->{structure}->[1] += $match;
+			$match = 0;
+		}
+		#Now checking ID and all attributes for name match
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{names},$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
+			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{names},$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
+			}
+		}
+		if ($match > 0) {
+			$matchtype_count->{name}->[0]++;
+			$matchtype_count->{name}->[1] += $match;
+			$match = 0;
+		}
+		#Now checking ID and all attributes for formula match
+		$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{formulas},$matrix->{row_ids}->[$j],$matrix->{row_ids}->[$j]);
+		for (my $m=0; $m < @{$matrix->{attributes}}; $m++) {
+			if (defined($matrix->{attribute_values}->[$j]->[$m])) {
+				$match += Bio::KBase::utilities::find_matching_metabolite($peak_hash,$hashes->{formu},$matrix->{row_ids}->[$j],$matrix->{attribute_values}->[$j]->[$m]);
+			}
+		}
+		if ($match > 0) {
+			$matchtype_count->{formula}->[0]++;
+			$matchtype_count->{formula}->[1] += $match;
+			$match = 0;
+		}
+		#Adding peak data to peak string
+		if (defined($peak_hash->{$matrix->{row_ids}->[$j]})) {
+			if (defined($values->[$j]) && $values->[$j] != 0) {
+				if (length($peak_string) > 0) {
+					$peak_string .= ";";
+				}
+				$peak_string .= "peak.".$j.":".$values->[$j];
+				#Making sure we only have one compartment for each compound
+				my $cpds = [keys(%{$peak_hash->{$matrix->{row_ids}->[$j]}})];
+				my $deletehash = {};
+				for (my $i=0; $i < @{$cpds}; $i++) {
+					for (my $j=$i+1; $j < @{$cpds}; $j++) {
+						my $idone = $cpds->[$i];
+						$idone =~ s/_([a-z])\d+//;
+						my $compone = $1;
+						my $idtwo = $cpds->[$j];
+						$idtwo =~ s/_([a-z])\d+//;
+						my $comptwo = $1;
+						if ($idone eq $idtwo) {
+							if ($args->{type} eq "exo") {
+								if ($compone eq "e") {
+									$deletehash->{$cpds->[$j]} = 1;
+								} elsif ($comptwo eq "e") {
+									$deletehash->{$cpds->[$i]} = 1;
+								}
+							} else {
+								if ($compone eq "e") {
+									$deletehash->{$cpds->[$i]} = 1;
+								} elsif ($comptwo eq "e") {
+									$deletehash->{$cpds->[$j]} = 1;
+								}
+							}
+						}
+					}
+				}
+				foreach my $cpdid (keys(%{$deletehash})) {
+					delete $peak_hash->{$matrix->{row_ids}->[$j]}->{$cpdid};
+				}
+				foreach my $cpdid (keys(%{$peak_hash->{$matrix->{row_ids}->[$j]}})) {
+					$peak_string .= ":".$cpdid;
+				}
+			}
+		}
+	}
+	foreach my $type (keys(%{$matchtype_count})) {
+		print $type." used to match ".$matchtype_count->{$type}->[0]." peaks with ".$matchtype_count->{$type}->[1]." compounds.\n";
+	}
+	if (length($peak_string) == 0) {
+		Bio::KBase::ObjectAPI::utilities::error("Failed to match any peaks to the model or biochemistry database or source model!");
+	}
+	if ($args->{type} eq "exo") {
+		$self->parameters()->{"Exometabolite peak data"} = $peak_string;
+		#print "Exo:".$peak_string."\n";
+	} else {
+		$self->parameters()->{"Intrametabolite peak data"} = $peak_string;
+		#print "Met".$peak_string."\n";
+	}
+	$self->{_metabolite_matrix_obj} = $matrix;
 }
 
 =head3 setupFBAExperiments
@@ -2103,33 +2569,52 @@ sub setupFBAExperiments {
 			$phenoko =~ s/\|/___/g;
 			push(@{$phenoData},$pheno->id()."\t".$phenoko."\t".$media."\t".$pheno->normalizedGrowth());
 		}
-		foreach my $key (keys(%{$mediaHash})) {
-			push(@{$medialist},$mediaHash->{$key});
-		}
-		Bio::KBase::ObjectAPI::utilities::PRINTFILE($self->jobDirectory()."/".$fbaExpFile,$phenoData);
-	} elsif (length($self->mediaset_ref()) > 0 || @{$self->media_list()} > 0) {
-		$self->parameters()->{"phenotype analysis"} = 1;
-		$self->parameters()->{"save phenotype simulation fluxes"} = 1;
-		$fbaExpFile = "FBAExperiment.txt";
-		my $mediaHash = {};
-		if (length($self->mediaset_ref()) > 0) {
-			my $mediaset = $self->mediaset();
-			for (my $i=0; $i < @{$mediaset->{elements}}; $i++) {
-				push(@{$self->media_list_refs()},$mediaset->{elements}->[$i]->{"ref"});
-			}
-		}
-		my $inmedialist = $self->media_list();
-		for (my $i=0; $i < @{$inmedialist}; $i++) {
-			$mediaHash->{$inmedialist->[$i]->name()} = $inmedialist->[$i];
-			push(@{$phenoData},$inmedialist->[$i]->name()."\tnone\t".$inmedialist->[$i]->name()."\t1");
-		}
-		foreach my $key (keys(%{$mediaHash})) {
-			push(@{$medialist},$mediaHash->{$key});
-		}
-		Bio::KBase::ObjectAPI::utilities::PRINTFILE($self->jobDirectory()."/".$fbaExpFile,$phenoData);
+
+        push @$medialist, values %$mediaHash;
+
+        Bio::KBase::ObjectAPI::utilities::PRINTFILE(
+            $self->jobDirectory() . "/" . $fbaExpFile,
+            $phenoData
+        );
+
+        return $fbaExpFile;
+
 	}
+
+    if ( $self->mediaset_ref && length( $self->mediaset_ref ) > 0
+        || @{ $self->media_list } ) {
+
+        $self->parameters()->{ "phenotype analysis" } = 1;
+        $self->parameters()->{ "save phenotype simulation fluxes" } = 1;
+        $fbaExpFile = "FBAExperiment.txt";
+
+        if ( $self->mediaset_ref && length( $self->mediaset_ref ) ) {
+            my $mediaset = $self->mediaset();
+            if ( $mediaset->{ elements } && @{ $mediaset->{ elements } } ) {
+                push @{ $self->media_list_refs() },
+                    map { $_->{ 'ref' } } @{ $mediaset->{ elements } };
+            }
+        }
+
+        if ( @{ $self->media_list } ) {
+            my %mediaHash;
+            for my $medium ( @{ $self->media_list } ) {
+                push @$phenoData, join "\t",
+                    $medium->name, "none", $medium->name, 1;
+                $mediaHash{ $medium->name } = $medium;
+            }
+            push @$medialist, values %mediaHash;
+        }
+
+        Bio::KBase::ObjectAPI::utilities::PRINTFILE(
+            $self->jobDirectory() . "/" . $fbaExpFile,
+            $phenoData
+        );
+    }
+
 	return $fbaExpFile;
 }
+
 
 =head3 createTemporaryMedia
 
@@ -2187,7 +2672,7 @@ sub createTemporaryMedia {
 		}
 	}
 	foreach my $cpd (keys(%{$cpdHash})) {
-		$newMedia->add("mediacompounds",$cpdHash->{$cpd});	
+		$newMedia->add("mediacompounds",$cpdHash->{$cpd});
 	}
 	return $newMedia;
 }
@@ -2248,7 +2733,7 @@ sub printTSV {
 sub printExcel {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([], {file => 0,path => undef}, @_);
-	my $output = $self->printTSV();	
+	my $output = $self->printTSV();
 	require "Spreadsheet/WriteExcel.pm";
 	my $wkbk = Spreadsheet::WriteExcel->new($args->{path}."/".$self->id().".xls") or die "can not create workbook: $!";
 	my $sheet = $wkbk->add_worksheet("ModelCompounds");
@@ -2309,7 +2794,7 @@ sub buildFromOptSolution {
 		} elsif ($type eq "drainflux" || $type eq "fordrainflux" || $type eq "revdrainflux" || $type eq "drainfluxuse" || $type eq "fordrainfluxuse" || $type eq "revdrainfluxuse") {
 			$self->integrateCompoundFluxRawData($var);
 		}
-	}	
+	}
 }
 
 =head3 integrateReactionFluxRawData
@@ -2330,7 +2815,7 @@ sub integrateReactionFluxRawData {
 	if ($var->type() =~ m/use$/) {
 		$max = 1;
 		$min = -1;
-		$type = "fluxuse";	
+		$type = "fluxuse";
 	}
 	my $fbavar = $self->queryObject("FBAReactionVariables",{
 		modelreaction_ref => $var->entity_ref(),
@@ -2355,7 +2840,7 @@ sub integrateReactionFluxRawData {
 		$fbavar->value($solVar->value());
 	} elsif ($var->type() eq "for".$type) {
 		if ($var->upperBound() > 0) {
-			$fbavar->upperBound($var->upperBound());	
+			$fbavar->upperBound($var->upperBound());
 		}
 		if ($var->lowerBound() > 0) {
 			$fbavar->lowerBound($var->lowerBound());
@@ -2406,7 +2891,7 @@ sub integrateCompoundFluxRawData {
 	if ($var->type() =~ m/use$/) {
 		$max = 1;
 		$min = -1;
-		$type = "drainfluxuse";	
+		$type = "drainfluxuse";
 	}
 	my $fbavar = $self->queryObject("FBACompoundVariables",{
 		modelcompound_ref => $var->entity_ref(),
@@ -2431,7 +2916,7 @@ sub integrateCompoundFluxRawData {
 		$fbavar->value($solVar->value());
 	} elsif ($var->type() eq "for".$type) {
 		if ($var->upperBound() > 0) {
-			$fbavar->upperBound($var->upperBound());	
+			$fbavar->upperBound($var->upperBound());
 		}
 		if ($var->lowerBound() > 0) {
 			$fbavar->lowerBound($var->lowerBound());
@@ -2453,7 +2938,7 @@ sub integrateCompoundFluxRawData {
 			$fbavar->upperBound((-1*$var->lowerBound()));
 		}
 		if ($solVar->max() > 0) {
-			$fbavar->min((-1*$solVar->max()));	
+			$fbavar->min((-1*$solVar->max()));
 		}
 		if ($solVar->min() > 0) {
 			$fbavar->max((-1*$solVar->min()));
@@ -2491,7 +2976,9 @@ sub loadMFAToolkitResults {
 	$self->parseMetaboliteInteraction();
 	$self->parseReactionAdditionAnalysis();
 	$self->parseSSCommunityFluxAnalysis();
-	$self->parseExometaboiteResults();
+	$self->parseMetabolomicsFittingResults();
+	$self->parseLoopResults();
+	$self->add_LP_file();
 }
 
 =head3 parseBiomassRemovals
@@ -2782,6 +3269,9 @@ sub parseFluxFiles {
 			}
 		}
 	}
+	if (-e $directory."/MFAOutput/RawData/RawSolutions.txt") {
+		$self->outputfiles()->{raw_solutions} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/RawData/RawSolutions.txt");
+	}
 }
 
 =head3 parseFBAPhenotypeOutput
@@ -2807,7 +3297,7 @@ sub parseFBAPhenotypeOutput {
 				if (defined($row->[6])) {
 					#Setting objective to WTGrowth first, then standard growth - should always be the same
 					if ($row->[5] < 1e-7) {
-						push(@{$self->other_objectives()},0);	
+						push(@{$self->other_objectives()},0);
 					} else {
 						push(@{$self->other_objectives()},$row->[5]+0);
 					}
@@ -2863,12 +3353,12 @@ sub parseFBAPhenotypeOutput {
 				if (defined($row->[5])) {
 					my $fraction = 0;
 					if ($row->[5] < 1e-7) {
-						$row->[5] = 0;	
+						$row->[5] = 0;
 					}
 					if ($row->[4] < 1e-7) {
-						$row->[4] = 0;	
+						$row->[4] = 0;
 					} else {
-						$fraction = $row->[5]/$row->[4];	
+						$fraction = $row->[5]/$row->[4];
 					}
 					$phenoOutputHash->{$row->[0]} = {
 						simulatedGrowth => $row->[5],
@@ -2886,7 +3376,7 @@ sub parseFBAPhenotypeOutput {
 							$phenoOutputHash->{$row->[0]}->{gapfilledReactions} = [split(/;/,$row->[9])];
 							$phenoOutputHash->{$row->[0]}->{numGapfilledReactions} = @{$phenoOutputHash->{$row->[0]}->{gapfilledReactions}};
 						}
-					}	
+					}
 					if (defined($row->[6]) && length($row->[6]) > 0) {
 						chomp($row->[6]);
 						$phenoOutputHash->{$row->[0]}->{noGrowthCompounds} = [split(/;/,$row->[6])];
@@ -2927,7 +3417,7 @@ sub parseFBAPhenotypeOutput {
 							}
 						}
 					}
-					$self->{_tempphenosim}->add("phenotypeSimulations",$phenoOutputHash->{$pheno->id()});	
+					$self->{_tempphenosim}->add("phenotypeSimulations",$phenoOutputHash->{$pheno->id()});
 				}
 			}
 		}
@@ -2995,19 +3485,106 @@ sub parseSSCommunityFluxAnalysis {
 	}
 }
 
-=head3 parseExometaboiteResults
+=head3 parseLoopResults
 Definition:
-	void ModelSEED::MS::Model->parseExometaboiteResults();
+	void ModelSEED::MS::Model->parseLoopResults();
 Description:
-	Parsing exometabolite analysis output
-	
+	Parses loop results
+
 =cut
 
-sub parseExometaboiteResults {
+sub parseLoopResults {
 	my ($self) = @_;
 	my $directory = $self->jobDirectory();
-	if (-e $directory."/ExometaboliteOutput.txt") {
-		$self->outputfiles()->{ExometaboliteOutput} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/ExometaboliteOutput.txt");
+	if (-e $directory."/MFAOutput/FluxLoops.txt") {
+		$self->outputfiles()->{FluxLoops} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/FluxLoops.txt");
+	}
+}
+
+=head3 add_LP_file
+Definition:
+	void ModelSEED::MS::Model->add_LP_file();
+Description:
+	Adds characteristic LP file to FBA object
+
+=cut
+
+sub add_LP_file {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/CurrentProblem.lp100000") {
+		my $array = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/CurrentProblem.lp100000");
+		$self->outputfiles()->{LP_file} = [join("\n",@{$array})];
+		$array = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/PrimaryVariableKey.txt");
+		$self->outputfiles()->{variable_key} = [join("\n",@{$array})];
+	}
+}
+
+=head3 parseMetabolomicsFittingResults
+Definition:
+	void ModelSEED::MS::Model->parseMetabolomicsFittingResults();
+Description:
+	Parsing exometabolite and intrametabolite analysis output
+
+=cut
+
+sub parseMetabolomicsFittingResults {
+	my ($self) = @_;
+	my $directory = $self->jobDirectory();
+	if (-e $directory."/MetabolomicsDependencyOutput.txt") {
+		my $data = {};
+		my $rxnhash = {};
+		my $gfrxnhash = {};
+		my $biopeaks = {};
+		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MetabolomicsDependencyOutput.txt");
+		for (my $i=1; $i < @{$lines}; $i++) {
+			my $array = [split(/\t/,$lines->[$i])];
+			$data->{$array->[0]}->{$array->[1]} = {
+				metabolite => [split(/;/,$array->[2])],
+				gapfillrxn => [split(/;/,$array->[3])],
+				rxn => [split(/;/,$array->[4])]
+			};
+			for (my $j=0; $j < @{$data->{$array->[0]}->{$array->[1]}->{rxn}}; $j++) {
+				if ($data->{$array->[0]}->{$array->[1]}->{rxn}->[$j] eq "+bio1") {
+					$biopeaks->{$array->[0]}->{$array->[1]} = 1;
+					for (my $k=0; $k < @{$data->{$array->[0]}->{$array->[1]}->{rxn}}; $k++) {
+						if (!defined($rxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{rxn}->[$k]})) {
+							$rxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{rxn}->[$k]} = 0;
+						}
+						$rxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{rxn}->[$k]}++;
+					}
+					for (my $k=0; $k < @{$data->{$array->[0]}->{$array->[1]}->{gapfillrxn}}; $k++) {
+						if (!defined($gfrxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{gapfillrxn}->[$k]})) {
+							$gfrxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{gapfillrxn}->[$k]} = 0;
+						}
+						$gfrxnhash->{$array->[0]}->{$data->{$array->[0]}->{$array->[1]}->{gapfillrxn}->[$k]}++;
+					}
+				}
+			}
+		}
+		#Cleaning up universal reactions
+		foreach my $type (keys(%{$data})) {
+			foreach my $peak (keys(%{$data->{$type}})) {
+				if (defined($biopeaks->{$type}->{$peak})) {
+					my $newlist = [];
+					for (my $k=0; $k < @{$data->{$type}->{$peak}->{rxn}}; $k++) {
+						if ($rxnhash->{$type}->{$data->{$type}->{$peak}->{rxn}->[$k]} < $rxnhash->{$type}->{"+bio1"}) {
+							push(@{$newlist},$data->{$type}->{$peak}->{rxn}->[$k]);
+						}
+					}
+					$data->{$type}->{$peak}->{rxn} = $newlist;
+					$newlist = [];
+					for (my $k=0; $k < @{$data->{$type}->{$peak}->{gapfillrxn}}; $k++) {
+						if ($gfrxnhash->{$type}->{$data->{$type}->{$peak}->{gapfillrxn}->[$k]} < $rxnhash->{$type}->{"+bio1"}) {
+							push(@{$newlist},$data->{$type}->{$peak}->{gapfillrxn}->[$k]);
+						}
+					}
+					$data->{$type}->{$peak}->{gapfillrxn} = $newlist;
+				}
+			}
+		}
+		$self->outputfiles()->{MetabolomicsFittingResults} = [Bio::KBase::utilities::to_json($data,1)];
+		print $self->outputfiles()->{MetabolomicsFittingResults}->[0];
 	}
 }
 
@@ -3023,7 +3600,131 @@ sub parseMetaboliteInteraction {
 	my ($self) = @_;
 	my $directory = $self->jobDirectory();
 	if (-e $directory."/MFAOutput/MetaboliteProductionResults.txt") {
-		$self->outputfiles()->{MetaboliteProductionResults} = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/MetaboliteProductionResults.txt");
+		my $outputhash = {};
+		my $cpddatahash = Bio::KBase::utilities::compound_hash();
+		my $filedata = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/MFAOutput/MetaboliteProductionResults.txt");
+		my $cofactors = Bio::KBase::constants::cofactors();
+		my $cofactor_hash = {};
+		for (my $k=0; $k < @{$cofactors}; $k++) {
+			$cofactor_hash->{$cofactors->[$k]} = 1;
+		}
+		for (my $k=1; $k < @{$filedata}; $k++) {
+			my $array = [split(/\t/,$filedata->[$k])];
+			my $cpd = $array->[1];
+			$cpd =~ s/_c0//;
+			if ($array->[2] ne "none") {
+				$outputhash->{$cpd} = {
+					totalrxn => 0,
+					gfrxn => 0,
+					rxns => {},
+					auxotrophic => 0,
+					cofactor_reactants => [],
+					main_reactants => [],
+					cofactor_products => [],
+					main_products => [],
+					name => $cpddatahash->{$cpd}->{name}
+				};
+				my $rxnhash;
+				my $rxns = $self->fbamodel()->modelreactions();
+				for (my $i=0; $i < @{$rxns}; $i++) {
+					$rxnhash->{$rxns->[$i]->id()} = $rxns->[$i];
+				}
+				$rxns = [split(/;/,$array->[2])];
+				my $rxncpdhash = {};
+				for (my $m=0; $m < @{$rxns}; $m++) {
+					if ($rxns->[$m] =~ m/(.)(.+)(_[a-zA-Z]\d):(.+)/) {
+						my $rxnid = $2;
+						my $comp = $3;
+						$outputhash->{$cpd}->{rxns}->{$rxnid} = {
+							gpr => $rxnhash->{$rxnid.$comp}->gprString(),
+							flux => $4,
+							cofactor_reactants => [],
+							main_reactants => [],
+							cofactor_products => [],
+							main_products => [],
+							gfrxn => 0
+						};
+						my $multiplier = 1;
+						if ($outputhash->{$cpd}->{rxns}->{$rxnid}->{flux} < 0) {
+							$multiplier = -1;
+						}
+						$outputhash->{$cpd}->{totalrxn}++;
+						if (length($rxnhash->{$rxnid.$comp}->gapfillString()) >  0) {
+							$outputhash->{$cpd}->{gfrxn}++;
+							$outputhash->{$cpd}->{rxns}->{$rxnid}->{gfrxn} = 1;
+						}
+						my $rgts = $rxnhash->{$rxnid.$comp}->modelReactionReagents();
+						#Populating data for reaction stoichiometry
+						for (my $n=0; $n < @{$rgts}; $n++) {
+							my $coreid = $rgts->[$n]->modelcompound()->id();
+							$coreid =~ s/_[a-zA-Z]\d+//;
+							if (!defined($rxncpdhash->{$rgts->[$n]->modelcompound()->id()})) {
+								$rxncpdhash->{$rgts->[$n]->modelcompound()->id()} = 0;
+							}
+							$rxncpdhash->{$rgts->[$n]->modelcompound()->id()} += $rgts->[$n]->coefficient()*$outputhash->{$cpd}->{rxns}->{$rxnid}->{flux};
+							if (defined($cofactor_hash->{$coreid})) {
+								if ($rgts->[$n]->coefficient()*$multiplier < 0) {
+									push(@{$outputhash->{$cpd}->{rxns}->{$rxnid}->{cofactor_reactants}},[$rgts->[$n]->coefficient()*$multiplier,$rgts->[$n]->modelcompound()->id(),$cpddatahash->{$coreid}->{name}]);
+								} else {
+									push(@{$outputhash->{$cpd}->{rxns}->{$rxnid}->{cofactor_products}},[$rgts->[$n]->coefficient()*$multiplier,$rgts->[$n]->modelcompound()->id(),$cpddatahash->{$coreid}->{name}]);
+								}
+							} else {
+								if ($rgts->[$n]->coefficient()*$multiplier < 0) {
+									push(@{$outputhash->{$cpd}->{rxns}->{$rxnid}->{main_reactants}},[$rgts->[$n]->coefficient()*$multiplier,$rgts->[$n]->modelcompound()->id(),$cpddatahash->{$coreid}->{name}]);
+								} else {
+									push(@{$outputhash->{$cpd}->{rxns}->{$rxnid}->{main_products}},[$rgts->[$n]->coefficient()*$multiplier,$rgts->[$n]->modelcompound()->id(),$cpddatahash->{$coreid}->{name}]);
+								}
+							}
+						}
+					}
+				}
+
+				my $thresholds = Bio::KBase::constants::auxotrophy_thresholds()->{$cpd};
+
+                if ( $thresholds && @$thresholds ) {
+
+                    my $fraction = $outputhash->{ $cpd }{ gfrxn } / $outputhash->{ $cpd }{ totalrxn };
+
+                    $outputhash->{ $cpd }{ auxotrophic } = 1
+                        if $outputhash->{ $cpd }{ gfrxn } >= $thresholds->[ 0 ]
+                        or $fraction >= $thresholds->[ 1 ];
+                }
+				#Populating data for overall reaction for metabolite
+				my $finalflux = 0;
+				foreach my $overcpd (keys(%{$rxncpdhash})) {
+					my $coreid = $overcpd;
+					$coreid =~ s/_[a-zA-Z]\d+//;
+					if ($coreid eq $cpd) {
+						$finalflux += $rxncpdhash->{$overcpd};
+					}
+					if (defined($cofactor_hash->{$coreid})) {
+						if ($rxncpdhash->{$overcpd} < -0.0000001) {
+							push(@{$outputhash->{$cpd}->{cofactor_reactants}},[$rxncpdhash->{$overcpd},$overcpd,$cpddatahash->{$coreid}->{name}]);
+						} elsif ($rxncpdhash->{$overcpd} > 0.0000001) {
+							push(@{$outputhash->{$cpd}->{cofactor_products}},[$rxncpdhash->{$overcpd},$overcpd,$cpddatahash->{$coreid}->{name}]);
+						}
+					} else {
+						if ($rxncpdhash->{$overcpd} < -0.0000001) {
+							push(@{$outputhash->{$cpd}->{main_reactants}},[$rxncpdhash->{$overcpd},$overcpd,$cpddatahash->{$coreid}->{name}]);
+						} elsif ($rxncpdhash->{$overcpd} > 0.0000001) {
+							push(@{$outputhash->{$cpd}->{main_products}},[$rxncpdhash->{$overcpd},$overcpd,$cpddatahash->{$coreid}->{name}]);
+						}
+					}
+				}
+				if ($finalflux != 0) {
+					my $list = [qw(cofactor_reactants cofactor_products main_reactants main_products)];
+					for (my $m=0; $m < @{$list}; $m++) {
+						for (my $n=0; $n < @{$outputhash->{$cpd}->{$list->[$m]}}; $n++) {
+							$outputhash->{$cpd}->{$list->[$m]}->[$n]->[0] = $outputhash->{$cpd}->{$list->[$m]}->[$n]->[0]/$finalflux;
+						}
+					}
+					foreach my $rxnid (keys(%{$outputhash->{$cpd}->{rxns}})) {
+						$outputhash->{$cpd}->{rxns}->{$rxnid}->{flux} = $outputhash->{$cpd}->{rxns}->{$rxnid}->{flux}/$finalflux;
+					}
+				}
+			}
+		}
+		$self->outputfiles()->{MetaboliteProductionResults} = [Bio::KBase::utilities::to_json($outputhash,1)];
 	}
 }
 
@@ -3087,7 +3788,7 @@ sub parseMinimalMediaResults {
 				if (defined($cpd)) {
 					print "\t",$cpd->id(), "\t", $cpd->name(), "\n";
 					push(@{$essCpds},$cpd);
-					push(@{$essuuids},$cpd->_reference());	
+					push(@{$essuuids},$cpd->_reference());
 				}
 				else {
 					print "\t", $essIDs->[$i], "\n";
@@ -3115,7 +3816,7 @@ sub parseMinimalMediaResults {
 						my $cpd = $self->template()->biochemistry()->getObject("compounds",$group->[$k]);
 						if (defined($cpd)) {
 							print "\t",$cpd->id(), "\t", $cpd->name(), "\n";
-							$group->[$k] = $cpd->_reference();	
+							$group->[$k] = $cpd->_reference();
 						}
 						else {
 							print "\t", $group->[$k], "\t", $group->[$k], "\n";
@@ -3165,7 +3866,7 @@ sub parseCombinatorialDeletionResults {
 					$geneID =~ s/___/|/;
 					my $gene = $self->genome()->getObject("features",$geneID);
 					if (defined($gene)) {
-						push(@{$geneArray},$gene->_reference());	
+						push(@{$geneArray},$gene->_reference());
 					}
 				}
 				if (@{$geneArray} > 0) {
@@ -3236,10 +3937,10 @@ sub parseFVAResults {
 									my $min = $row->[$vartrans->{$vartype}->[1]];
 									my $max = $row->[$vartrans->{$vartype}->[2]];
 									if (abs($min) < 0.000000001) {
-										$min = 0;	
+										$min = 0;
 									}
 									if (abs($max) < 0.000000001) {
-										$max = 0;	
+										$max = 0;
 									}
 									my $fbaRxnVar = $self->queryObject("FBAReactionVariables",{
 										modelreaction_ref => "~/fbamodel/modelreactions/id/".$mdlrxn->id(),
@@ -3252,7 +3953,7 @@ sub parseFVAResults {
 												upperBound => 0.0,
 												lowerBound => 0.0,
 												value => 0.0
-										});	
+										});
 									}
 									$fbaRxnVar->min($min);
 									$fbaRxnVar->max($max);
@@ -3333,10 +4034,10 @@ sub parseFVAResults {
 									my $max = $row->[$vartrans->{$vartype}->[2]];
 									if ($min != 10000000) {
 										if (abs($min) < 0.000000001) {
-											$min = 0;	
+											$min = 0;
 										}
 										if (abs($max) < 0.000000001) {
-											$max = 0;	
+											$max = 0;
 										}
 										my $fbaCpdVar = $self->queryObject("FBACompoundVariables",{
 											modelcompound_ref => "~/fbamodel/modelcompounds/id/".$mdlcpd->id(),
@@ -3403,8 +4104,8 @@ sub parsePROMResult {
 		foreach my $row (@{$data}) {
 			my @line = split /\t/, $row;
 			$promOutputHash->{$line[0]} = $line[1] if ($line[0] =~ /alpha|beta|objectFraction/);
-		}		
-		$self->add("FBAPromResults",$promOutputHash);				   
+		}
+		$self->add("FBAPromResults",$promOutputHash);
 		return 1;
 	}
 	return 0;
@@ -3437,14 +4138,14 @@ sub parseTintleResult {
 					$tintleOutputHash->{"conflicts"}->{$1} = "InactiveOn";
 				} else {
 					# Case1: the gene was likely to be off, but actually active.
-					$tintleOutputHash->{"conflicts"}->{$row->[0]} = "ActiveOff";				
+					$tintleOutputHash->{"conflicts"}->{$row->[0]} = "ActiveOff";
 				}
 			} else {
 				$tintleOutputHash->{$row->[0]} = $row->[1];
 			}
 		}
 		$self->add("FBATintleResults",$tintleOutputHash);
-		# debug	
+		# debug
 		my $ftrhash = {};
 		my $rxns = $self->fbamodel()->modelreactions();
 		for (my $i=0; $i < @{$rxns};$i++) {
@@ -3491,7 +4192,7 @@ sub parseQuantOptResult {
 					$tintleOutputHash->{"conflicts"}->{$1} = "InactiveOn";
 				} else {
 					# Case1: the gene was likely to be off, but actually active.
-					$tintleOutputHash->{"conflicts"}->{$row->[0]} = "ActiveOff";				
+					$tintleOutputHash->{"conflicts"}->{$row->[0]} = "ActiveOff";
 				}
 			} else {
 				$tintleOutputHash->{$row->[0]} = $row->[1];
@@ -3560,7 +4261,7 @@ sub parseGapfillingOutput {
 		my $rxnhash;
 		for (my $i=0; $i < @{$rxns}; $i++) {
 			$rxnhash->{$rxns->[$i]->id()} = $rxns->[$i];
-		}	
+		}
 		my $tbl = Bio::KBase::ObjectAPI::utilities::LOADTABLE($directory."/GapfillingOutput.txt","\t");
 		my $solution;
 		my $round = 0;
@@ -3674,7 +4375,7 @@ sub parseGapfillingOutput {
 							}
 							if (!defined $rxn) {
 								print "Skipping gapfilling ".$array->[$i]."\n";
-								next;	
+								next;
 							}
 						}
 					}
@@ -3724,7 +4425,7 @@ sub parseGapfillingOutput {
 						$rxn = $self->fbamodel()->searchForReaction($2."_".$3.$4);
 						if (!defined $rxn) {
 							#print "Skipping candidate ".$array->[$i]."\n";
-							next;	
+							next;
 						}
 					}
 					push(@{$solution->{rejectedCandidates}},{
@@ -3761,10 +4462,10 @@ sub parseGapfillingOutput {
 			$self->fbamodel()->add_gapfilling($input);
 		}
 	}
-	
+
 	if (-e $directory."/log.txt") {
 		my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE($directory."/log.txt");
-		for (my $i=0; $i < @{$data}; $i++) {	
+		for (my $i=0; $i < @{$data}; $i++) {
 			if ($data->[$i] =~ m/biomass\sflux\swith\sexpression\sconstraints:\s(.+)/) {
 				$self->parameters()->{growth} = $1;
 			} elsif ($data->[$i] =~ m/Retained\s([^\s]+)\s/) {
@@ -3791,7 +4492,7 @@ sub parseMFALog {
 	    $self->MFALog($loglines);
 	}
 	else {
-	    $self->MFALog("Couldn't open MFALog.txt\n");	    
+	    $self->MFALog("Couldn't open MFALog.txt\n");
 	}
 }
 
@@ -3917,7 +4618,7 @@ sub parseOutputFiles {
 Definition:
 	void buildLPProblem();
 Description:
-	
+
 
 =cut
 
@@ -3926,11 +4627,11 @@ sub buildLPProblem {
 #	my $model = $self->fbamodel();
 #	my $variables;
 #	my $constraints;
-#	
+#
 #	for (my $i=0; $i < @{$variables}; $i++) {
-#		
+#
 #	}
-#	
+#
 #	#Creating mass balance constraints
 #	my $mdlrxns = $model->modelreactions();
 #	my $mbconsts = {};
@@ -3939,8 +4640,8 @@ sub buildLPProblem {
 #		my $rxn = $mdlrxns->[$i];
 #		$fluxvar->{$rxn->id()} = {
 #			type => "for_flux",
-#			objectid => 
-#			
+#			objectid =>
+#
 #		}
 #		my $rgts = $rxn->modelReactionReagents();
 #		for (my $j=0; $j < @{$rgts}; $j++) {
@@ -3948,7 +4649,7 @@ sub buildLPProblem {
 #			$mbconsts->{$cpd->id()}
 #		}
 #	}
-	
+
 }
 
 sub translate_to_localrefs {
@@ -4085,7 +4786,7 @@ sub translate_to_localrefs {
 				$gfrxns->[$k] = "~/fbamodel/modelreactions/id/".$1;
 			}
 		}
-	}					
+	}
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -40,8 +40,12 @@ has metagenome_otu_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type =>
 has type => (is => 'rw', isa => 'Str', printOrder => '5', default => 'Singlegenome', type => 'attribute', metaclass => 'Typed');
 has rxnprobs_ref => (is => 'rw', isa => 'Str', printOrder => '-1', type => 'attribute', metaclass => 'Typed');
 has deleted_reactions => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has attributes => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has contig_coverages => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
 has model_edits => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 has delete_biomasses => (is => 'rw', isa => 'HashRef', printOrder => '-1', default => sub {return {};}, type => 'attribute', metaclass => 'Typed');
+has loops => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
+has other_genome_refs => (is => 'rw', isa => 'ArrayRef', printOrder => '-1', default => sub {return [];}, type => 'attribute', metaclass => 'Typed');
 
 # SUBOBJECTS:
 has biomasses => (is => 'rw', isa => 'ArrayRef[HashRef]', default => sub { return []; }, type => 'child(Biomass)', metaclass => 'Typed', reader => '_biomasses', printOrder => '0');
@@ -56,15 +60,18 @@ has gapfilledcandidates => (is => 'rw', isa => 'ArrayRef[HashRef]', default => s
 
 # LINKS:
 has templates => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::Util::KBaseStore,ModelTemplate,template_refs)', metaclass => 'Typed', lazy => 1, builder => '_build_templates', clearer => 'clear_templates', isa => 'ArrayRef');
+has other_genomes => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::Util::KBaseStore,ModelTemplate,other_genome_refs)', metaclass => 'Typed', lazy => 1, builder => '_build_other_genomes', clearer => 'clear_other_genomes', isa => 'ArrayRef');
 has metagenome => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,MetagenomeAnnotation,metagenome_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_metagenome', clearer => 'clear_metagenome', isa => 'Bio::KBase::ObjectAPI::KBaseGenomes::MetagenomeAnnotation', weak_ref => 1);
 has genome => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,Genome,genome_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_genome', clearer => 'clear_genome', isa => 'Bio::KBase::ObjectAPI::KBaseGenomes::Genome', weak_ref => 1);
 has template => (is => 'rw', type => 'link(Bio::KBase::ObjectAPI::KBaseStore,ModelTemplate,template_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_template', clearer => 'clear_template', isa => 'Bio::KBase::ObjectAPI::KBaseFBA::ModelTemplate', weak_ref => 1);
-has metagenome_otu => (is => 'rw', type => 'link(MetagenomeAnnotation,otus,metagenome_otu_ref)', metaclass => 'Typed', lazy => 1, builder => '_build_metagenome_otu', clearer => 'clear_metagenome_otu', isa => 'Bio::KBase::ObjectAPI::KBaseGenomes::MetagenomeAnnotationOTU', weak_ref => 1);
-
 
 # BUILDERS:
 sub _build_reference { my ($self) = @_;return $self->uuid(); }
 sub _build_uuid { return Data::UUID->new()->create_str(); }
+sub _build_other_genomes {
+	 my ($self) = @_;
+	 return $self->getLinkedObjectArray($self->other_genome_refs());
+}
 sub _build_templates {
 	 my ($self) = @_;
 	 return $self->getLinkedObjectArray($self->template_refs());
@@ -81,11 +88,6 @@ sub _build_template {
 	 my ($self) = @_;
 	 return $self->getLinkedObject($self->template_ref());
 }
-sub _build_metagenome_otu {
-	 my ($self) = @_;
-	 return $self->getLinkedObject($self->metagenome_otu_ref());
-}
-
 
 # CONSTANTS:
 sub __version__ { return $VERSION; }
@@ -220,11 +222,42 @@ my $attributes = [
             'default' => 'sub {return {};}',
             'type' => 'HashRef',
             'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'loops',
+            'default' => 'sub {return [];}',
+            'type' => 'ArrayRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'attributes',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'other_genome_refs',
+            'default' => 'sub {return [];}',
+            'type' => 'ArrayRef',
+            'perm' => 'rw'
+          },
+          {
+            'req' => 0,
+            'printOrder' => -1,
+            'name' => 'contig_coverages',
+            'default' => 'sub {return {};}',
+            'type' => 'HashRef',
+            'perm' => 'rw'
           }
-          
         ];
 
-my $attribute_map = {source => 0, template_refs => 1, ATPMaintenance => 2, ATPSynthaseStoichiometry => 3, id => 4, metagenome_ref => 5, genome_ref => 6, template_ref => 7, source_id => 8, name => 9, metagenome_otu_ref => 10, type => 11, rxnprobs_ref => 12,deleted_reactions => 13,model_edits => 14,delete_biomasses => 15};
+my $attribute_map = {source => 0, template_refs => 1, ATPMaintenance => 2, ATPSynthaseStoichiometry => 3, id => 4, metagenome_ref => 5, genome_ref => 6, template_ref => 7, source_id => 8, name => 9, metagenome_otu_ref => 10, type => 11, rxnprobs_ref => 12,deleted_reactions => 13,model_edits => 14,delete_biomasses => 15,loops => 16,attributes => 17,other_genome_refs => 18,contig_coverages => 19};
 sub _attributes {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {
@@ -278,18 +311,18 @@ my $links = [
             'module' => 'KBaseFBA'
           },
           {
-            'parent' => 'MetagenomeAnnotation',
-            'name' => 'metagenome_otu',
-            'attribute' => 'metagenome_otu_ref',
-            'clearer' => 'clear_metagenome_otu',
-            'class' => 'Bio::KBase::ObjectAPI::KBaseGenomes::MetagenomeAnnotationOTU',
-            'method' => 'otus',
-            'module' => 'KBaseGenomes',
-            'field' => 'id'
+            'parent' => 'Bio::KBase::ObjectAPI::Util::KBaseStore',
+            'name' => 'other_genomes',
+            'attribute' => 'other_genome_refs',
+            'array' => 1,
+            'clearer' => 'clear_other_genomes',
+            'class' => 'Bio::KBase::ObjectAPI::KBaseGenomes::Genome',
+            'method' => 'other_genomes',
+            'module' => 'KBaseGenomes'
           }
         ];
 
-my $link_map = {templates => 0, metagenome => 1, genome => 2, template => 3, metagenome_otu => 4};
+my $link_map = {templates => 0, metagenome => 1, genome => 2, template => 3,other_genomes => 5};
 sub _links {
 	 my ($self, $key) = @_;
 	 if (defined($key)) {

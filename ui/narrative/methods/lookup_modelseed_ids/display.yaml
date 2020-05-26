@@ -1,0 +1,48 @@
+#
+# Define basic display information
+#
+name     : Lookup Metabolites in ModelSEED
+tooltip  : |
+    Attempt to find ModelSEED IDs for metabolites in ChenmicalAbundanceMatrix based on attribute values.
+
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            [run_flux_balance_analysis]
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    chemical_abundance_matrix_id :
+        ui-name : |
+            Input Chemical Abundance Matrix
+        short-hint : |
+            Chemical Abundance Matrix to look up ModelSEED IDs for
+
+    chemical_abundance_matrix_out_id :
+        ui-name : |
+            Output Chemical Abundance Matrix
+        short-hint : |
+            Output name to save Chemical Abundance Matrix with ModelSEED IDs
+
+icon: modelseed-teal.png
+
+description : |
+    <p></p>
+
+publications :
+    []

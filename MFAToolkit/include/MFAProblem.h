@@ -53,6 +53,11 @@ private:
 	double CurrentOptimum;
 	LinEquation* MinFluxConstraint;
 	LinEquation* ObjectiveConstraint;
+	LinEquation* ExometaboliteObjective;
+	LinEquation* MetaboliteObjective;
+
+	vector<vector<MFAVariable*> > MetDrains;
+	vector<vector<MFAVariable*> > ExoDrains;
 public:
 	MFAProblem();
 	~MFAProblem();
@@ -73,7 +78,7 @@ public:
 	void ClearVariables(bool DeleteThem = true);
 	void DetermineProbType();
 	LinEquation* AddSumObjective(int VarType, bool Quadratic, bool Append, double Coeff, bool ForeignOnly,LinEquation* InObjective = NULL);
-	void AddMassBalanceConstraints(Data* InData);
+	void AddMassBalanceConstraints(Data* InData,bool DilutionConstraints = false);
 	LinEquation* AddSumConstraint(int VarType, bool Quadratic, double Coeff, double RHS, int EqualityType);
 	LinEquation* AddUseSolutionConst(OptSolutionData* SolutionData, vector<int> VariableTypes, OptimizationParameter* InParameters);
 	void EnforceIntergerSolution(OptSolutionData* SolutionData, vector<int> VariableTypes, bool ForeignOnly, bool RefreshSolver);
@@ -132,12 +137,15 @@ public:
 	map<int , vector<double> , std::less<int> >* CalcConcMeanIonicStrength();
 	void ProcessSolution(OptSolutionData* InSolution);
 	int FindTightBounds(Data* InData,OptimizationParameter*& InParameters, bool SaveSolution, bool UseSpecifiedSearchTypes = false);
+	int CatalogueFluxLoops(Data* InData,OptimizationParameter*& InParameters);
 	int FindTightBounds(Data* InData,OptimizationParameter*& InParameters,string Note);
 	int AlternativeSolutionExploration(OptimizationParameter* InParameters,string Filename,OptSolutionData* InitialSolution = NULL,bool clearmarks = true);
 	int RecursiveMILP(Data* InData,OptimizationParameter*& InParameters, vector<int> VariableTypes,bool PrintSolutions);
 	vector<OptSolutionData*> RecursiveMILP(OptimizationParameter* InParameters, string ProblemNote,bool ForeignOnly,vector<int> VariableTypes,double MinSolution,int ClockIndex,LinEquation* OriginalObjective);
 	MFAVariable* CreateOrGetDrainVariable(Species* CurrentSpecies, int compartment,bool reversed = false,int type = DRAIN_FLUX);
 	vector<MFAVariable*>* CreateMetaboliteVariables(Data* InData, string InMetaboliteList);
+	int PerturbMinSolution(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution,map<MFAVariable*,vector<double>,std::less<MFAVariable*> >* CharacteristicFluxes,bool Subsample);
+	int CalculateCharacteristicFlux(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
 	int ComputeOptimalDeadends(Data* InData);
 	int CheckIndividualMetaboliteProduction(Data* InData, OptimizationParameter* InParameters, string InMetaboliteList, bool DoFindTightBounds, bool MinimizeForeignReactions, string Note, bool SubProblem);
 	vector<vector<MFAVariable*>*>* RecursiveObjectiveReduction(MFAVariable* InVariable,double MinObjective,double MaxObjective,LinEquation* MinDeviationObjective,OptSolutionData* PreviousSolution,int depth,vector<bool> blacklist);
@@ -163,7 +171,10 @@ public:
 	int IdentifyReactionLoops(Data* InData, OptimizationParameter* InParameters);
 	int LoadBiomassDrainReactions(Data* InData, OptimizationParameter* InParameters);
 	int LoadGapFillingReactions(Data* InData, OptimizationParameter* InParameters);
+	int MetabolomicsSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution);
+	int CreateMetabolomicsVariablesConstraints(Data* InData, string PeakData, bool ExometabolomicData);
 	int GapFilling(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
+	int BinaryReactionDeactivationSearch(vector<MFAVariable*> variables,vector<double> lower_bounds,vector<double> upper_bounds);
 	vector<MFAVariable*> BiomassSensitivityAnalysis(OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
 	int ReactionSensitivityAnalysis(Data* InData,OptSolutionData*& CurrentSolution,OptimizationParameter* InParameters);
 	int RunImplementedGapfillingSolution(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
@@ -181,6 +192,8 @@ public:
 	void AddVariableToRegulationConstraint(LinEquation* InEquation,double Coefficient,string VariableName,Data* InData,OptimizationParameter* InParameters);
 	int CalculateFluxSensitivity(Data* InData,vector<MFAVariable*> variables,double objective);
 	double optimizeVariable(MFAVariable* currentVariable,bool maximize);
+	int PrepProteinEnabledFBAFormulation(Data* InData, OptimizationParameter* InParameters);
+	int SteadyStateProteinFBA(Data* InData, OptimizationParameter* InParameters);
 	int DynamicFBA(Data* InData, OptimizationParameter* InParameters);
 	
 	int AddPROMConstraints(Data* InData, OptimizationParameter* InParameters,OptSolutionData*& CurrentSolution);
@@ -201,7 +214,7 @@ public:
 	int LoadTightBounds(Data* InData, bool SetBoundToTightBounds);
 	void SaveTightBounds();
 	void PrintSolutions(int StartIndex, int EndIndex,bool tightbounds = false);
-	void PrintVariableKey();
+	void PrintVariableKey(string InFilename = "",bool override = false);
 	void WriteLPFile();
 	void WriteMFALog();
 };

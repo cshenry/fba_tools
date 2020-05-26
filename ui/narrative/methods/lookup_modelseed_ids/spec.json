@@ -1,0 +1,91 @@
+{
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "input_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "workspace"
+            },
+            {
+               "target_property" : "chemical_abundance_matrix_id",
+               "input_parameter" : "chemical_abundance_matrix_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "target_property" : "chemical_abundance_matrix_out_id",
+               "input_parameter" : "chemical_abundance_matrix_out_id"
+            }
+         ],
+         "method" : "lookup_modelseed_ids",
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			},
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            }
+         ],
+         "name" : "fba_tools"
+      }
+   },
+   "authors" : [
+      "chenry"
+   ],
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "name" : "lookup_modelseed_ids",
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker",
+   "contact" : "help@kbase.us",
+   "widgets" : {
+      "output" : "no-display",
+      "input" : null
+   },
+   "parameters" : [
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseMatrices.ChemicalAbundanceMatrix"
+            ]
+         },
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "chemical_abundance_matrix_id",
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseMatrices.ChemicalAbundanceMatrix"
+            ],
+            "is_output_name" : true
+         },
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "chemical_abundance_matrix_out_id",
+         "advanced" : false
+      }
+   ],
+   "visible" : true
+}

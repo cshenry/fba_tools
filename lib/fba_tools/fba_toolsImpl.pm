@@ -4,8 +4,8 @@ use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
 our $VERSION = '1.7.8';
-our $GIT_URL = 'https://github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = 'e445caf84edc20738d49de61c7f96a0b783f9644';
+our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
+our $GIT_COMMIT_HASH = '8ac05c39c662be1b2856a8af03f8a6be59581921';
 
 =head1 NAME
 
@@ -19,6 +19,7 @@ This module contains the implementation for the primary methods in KBase for met
 =cut
 
 #BEGIN_HEADER
+use warnings;
 use Bio::KBase::AuthToken;
 use Bio::KBase::ObjectAPI::KBaseStore;
 use Bio::KBase::ObjectAPI::functions;
@@ -28,37 +29,61 @@ use DataFileUtil::DataFileUtilClient;
 use Bio::KBase::HandleService;
 use Archive::Zip;
 use Data::Dumper;
+use Ref::Util qw( is_arrayref is_hashref );
 
 #Initialization function for call
 sub util_initialize_call {
-	my ($self,$params,$ctx) = @_;
-	print "Import parameters:".Bio::KBase::ObjectAPI::utilities::TOJSON($params,1);
-	if (defined($ctx)) {
-		Bio::KBase::kbaseenv::initialize_call($ctx);
-	}
-	delete($self->{_kbase_store});
-	return $params;
+    my ( $self, $params, $ctx ) = @_;
+
+    my $copied_params = ( is_arrayref( $params ) || is_hashref( $params ) )
+        ? Bio::KBase::utilities::deep_copy( $params )
+        : $params;
+
+    my $verbocity = Bio::KBase::utilities::conf( "fba_tools", "verbocity" );
+
+    print "Receiving method call parameters:\n"
+        . Bio::KBase::ObjectAPI::utilities::TOJSON( $copied_params, 1 )
+        if $verbocity && $verbocity > 1;
+
+    Bio::KBase::kbaseenv::initialize_call( $ctx ) if defined $ctx;
+
+	delete $self->{ _kbase_store };
+	return $copied_params;
 }
 
 sub util_finalize_call {
-	my ($self,$params) = @_;
-	$params = Bio::KBase::utilities::args($params,["workspace","report_name"],{
-		output => {},
-		direct_html_link_index => undef,
-	});
-	if ((!defined(Bio::KBase::utilities::report_html()) || length(Bio::KBase::utilities::report_html()) == 0) && defined(Bio::KBase::utilities::report_message()) && length(Bio::KBase::utilities::report_message()) > 0) {
-		Bio::KBase::utilities::print_report_message({message => "<p>".Bio::KBase::utilities::report_message()."</p>",append => 1,html => 1});
-	}
-	my $reportout = Bio::KBase::kbaseenv::create_report({
-    	workspace_name => $params->{workspace},
-    	report_object_name => $params->{report_name},
-    	direct_html_link_index => $params->{direct_html_link_index}
-    });
-    $params->{output}->{report_ref} = $reportout->{"ref"};
-	$params->{output}->{report_name} = $params->{report_name};
-	if (defined($params->{output}->{new_fbamodel})) {
-		delete $params->{output}->{new_fbamodel};
-	}
+    my ( $self, $params ) = @_;
+
+    $params = Bio::KBase::utilities::args(
+        $params,
+        [ "workspace", "report_name" ],
+        {
+            output                  => {},
+            direct_html_link_index  => undef,
+        }
+    );
+
+    my $report_html    = Bio::KBase::utilities::report_html()    // "";
+    my $report_message = Bio::KBase::utilities::report_message() // "";
+
+    Bio::KBase::utilities::print_report_message( {
+        message => "<p>" . $report_message . "</p>",
+        append  => 1,
+        html    => 1,
+    } ) if length $report_message > 0 && length $report_html == 0;
+
+    my $report = Bio::KBase::kbaseenv::create_report( {
+        workspace_name         => $params->{ workspace },
+        report_object_name     => $params->{ report_name },
+        direct_html_link_index => $params->{ direct_html_link_index },
+    } );
+    $params->{ output }{ report_ref }  = $report->{ ref };
+    $params->{ output }{ report_name } = $params->{ report_name };
+
+    delete $params->{ output }{ new_fbamodel };
+
+    return $params;
+
 }
 
 sub util_store {
@@ -115,9 +140,9 @@ sub util_file_to_shock {
 sub util_get_file_path {
 	my($self,$file,$target_dir) = @_;
     if(exists $file->{shock_id} && $file->{shock_id} ne "") {
-        # file has a shock id, so try to fetch it 
+        # file has a shock id, so try to fetch it
         my $dataUtil = Bio::KBase::kbaseenv::data_file_client();
-        my $f = $dataUtil->shock_to_file({ 
+        my $f = $dataUtil->shock_to_file({
 			shock_id=>$file->{shock_id},
 			file_path=>$target_dir,
 			unpack=>0
@@ -231,7 +256,7 @@ sub util_parse_excel {
     }else{
     	require "Spreadsheet/ParseExcel.pm";
 		$excel = Spreadsheet::ParseExcel->new();
-    }	
+    }
 
     my $workbook = $excel->parse($filename);
     if(!defined $workbook){
@@ -257,14 +282,14 @@ sub util_parse_excel {
 		    }
 		    $File .= join("\t",@$rowData)."\n";
 		}
-	
+
 		$Filename.="_".$sheet->{Name};
 		$Filename.="_".join("",localtime()).".txt";
-	
+
 		open(OUT, "> $Filename");
 		print OUT $File;
 		close(OUT);
-	
+
 		$sheets->{$sheet->{Name}}=$Filename;
     }
     return $sheets;
@@ -283,7 +308,10 @@ sub new
 		filename => $ENV{KB_DEPLOYMENT_CONFIG},
 		service => "fba_tools"
 	});
-    Bio::KBase::utilities::setconf("fba_tools","call_back_url",$ENV{ SDK_CALLBACK_URL });
+    Bio::KBase::utilities::setconf("UtilConfig","call_back_url",$ENV{"SDK_CALLBACK_URL"});
+    if (Bio::KBase::utilities::conf("fba_tools","kbase-endpoint") =~ m/appdev\.kbase\.us/) {
+    		Bio::KBase::utilities::setconf("ModelSEED","ontology_map_workspace","janakakbase:narrative_1550174613022");
+    }
     Bio::KBase::ObjectAPI::functions::set_handler($self);
     Bio::KBase::utilities::set_handler($self);
     #END_CONSTRUCTOR
@@ -431,7 +459,7 @@ sub build_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $return,
@@ -445,6 +473,220 @@ sub build_metabolic_model
 	my $msg = "Invalid returns passed to build_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'build_metabolic_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 characterize_genome_metabolism_using_model
+
+  $return = $obj->characterize_genome_metabolism_using_model($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.CharacterizeGenomeUsingModelParams
+$return is a fba_tools.CharacterizeGenomeUsingModelResults
+CharacterizeGenomeUsingModelParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+	use_annotated_functions has a value which is a fba_tools.bool
+	merge_all_annotations has a value which is a fba_tools.bool
+	source_ontology_list has a value which is a reference to a list where each element is a string
+genome_id is a string
+workspace_name is a string
+fbamodel_id is a string
+template_id is a string
+bool is an int
+CharacterizeGenomeUsingModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.CharacterizeGenomeUsingModelParams
+$return is a fba_tools.CharacterizeGenomeUsingModelResults
+CharacterizeGenomeUsingModelParams is a reference to a hash where the following keys are defined:
+	genome_id has a value which is a fba_tools.genome_id
+	genome_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+	use_annotated_functions has a value which is a fba_tools.bool
+	merge_all_annotations has a value which is a fba_tools.bool
+	source_ontology_list has a value which is a reference to a list where each element is a string
+genome_id is a string
+workspace_name is a string
+fbamodel_id is a string
+template_id is a string
+bool is an int
+CharacterizeGenomeUsingModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Builds a model and characterizes an input genome using the model
+
+=back
+
+=cut
+
+sub characterize_genome_metabolism_using_model
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to characterize_genome_metabolism_using_model:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'characterize_genome_metabolism_using_model');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN characterize_genome_metabolism_using_model
+
+    $params = $self->util_initialize_call( $params, $ctx );
+    $return = Bio::KBase::ObjectAPI::functions::func_model_based_genome_characterization( $params );
+    $self->util_finalize_call( {
+		output => $return,
+        workspace   => $params->{ workspace},
+        report_name => $params->{ fbamodel_output_id } . ".report",
+    } );
+
+    #END characterize_genome_metabolism_using_model
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to characterize_genome_metabolism_using_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'characterize_genome_metabolism_using_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 run_model_characterization
+
+  $return = $obj->run_model_characterization($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.RunModelCharacterizationParams
+$return is a fba_tools.RunModelCharacterizationResults
+RunModelCharacterizationParams is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+fbamodel_id is a string
+workspace_name is a string
+RunModelCharacterizationResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.RunModelCharacterizationParams
+$return is a fba_tools.RunModelCharacterizationResults
+RunModelCharacterizationParams is a reference to a hash where the following keys are defined:
+	fbamodel_id has a value which is a fba_tools.fbamodel_id
+	fbamodel_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	workspace has a value which is a fba_tools.workspace_name
+fbamodel_id is a string
+workspace_name is a string
+RunModelCharacterizationResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Builds a model and characterizes an input genome using the model
+
+=back
+
+=cut
+
+sub run_model_characterization
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to run_model_characterization:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_model_characterization');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN run_model_characterization
+    $params = $self->util_initialize_call( $params, $ctx );
+    $return = Bio::KBase::ObjectAPI::functions::func_run_model_chacterization_pipeline( $params );
+
+    $self->util_finalize_call( {
+		output => $return,
+        workspace   => $params->{ workspace },
+        report_name => $params->{ fbamodel_output_id } . ".report",
+    } );
+
+    #END run_model_characterization
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to run_model_characterization:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_model_characterization');
     }
     return($return);
 }
@@ -532,7 +774,7 @@ sub build_plant_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_plant_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 
     #Getting genome
     $self->util_log("Getting genome: ".$params->{genome_workspace}."/".$params->{genome_id}."\n");
@@ -709,13 +951,31 @@ sub build_multiple_metabolic_models
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_multiple_metabolic_models
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	my $orig_genome_workspace = $params->{genome_workspace};
-	my $genomes = $params->{genome_ids};
+	my $mixed_objects = $params->{genome_ids};
+	my $objects = [];
+	my $genomes = [];
+	for (my $i=0; $i < @{$mixed_objects}; $i++) {
+		push(@{$objects},{"ref" => Bio::KBase::utilities::buildref($mixed_objects->[$i],$params->{workspace})});
+	}
+	my $infos = Bio::KBase::kbaseenv::get_object_info($objects,0);
+	for (my $i=0; $i < @{$infos}; $i++) {
+		if ($infos->[$i]->[2] =~ m/\.GenomeSet/) {
+			my $genomesets = $self->util_get_object(Bio::KBase::utilities::buildref($mixed_objects->[$i],$params->{workspace}),{raw => 1});
+			foreach my $gsid (keys(%{$genomesets->{elements}})) {
+				push(@{$genomes},$genomesets->{elements}->{$gsid}->{"ref"});
+			}
+		} else {
+			push(@{$genomes},$mixed_objects->[$i]);
+		}
+	}
 	# If user provides a list of genomes in text form, append these to the existing gemome ids
-	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
-	for (my $i=0; $i < @{$new_genome_list}; $i++) {
-		push(@{$genomes},$new_genome_list->[$i]);
+	if (defined($params->{genome_text})) {
+		my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
+		for (my $i=0; $i < @{$new_genome_list}; $i++) {
+			push(@{$genomes},$new_genome_list->[$i]);
+		}
 	}
 	my $htmlmessage = "<p>";
     # run build metabolic model
@@ -892,7 +1152,7 @@ sub gapfill_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN gapfill_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1065,7 +1325,7 @@ sub run_flux_balance_analysis
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN run_flux_balance_analysis
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_run_flux_balance_analysis($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1160,7 +1420,7 @@ sub compare_fba_solutions
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN compare_fba_solutions
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_compare_fba_solutions($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1174,6 +1434,99 @@ sub compare_fba_solutions
 	my $msg = "Invalid returns passed to compare_fba_solutions:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'compare_fba_solutions');
+    }
+    return($results);
+}
+
+
+
+
+=head2 lookup_modelseed_ids
+
+  $results = $obj->lookup_modelseed_ids($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.LookupModelSEEDIDsParams
+$results is a fba_tools.LookupModelSEEDIDsResults
+LookupModelSEEDIDsParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	chemical_abundance_matrix_id has a value which is a fba_tools.metabolome_id
+	chemical_abundance_matrix_out_id has a value which is a fba_tools.metabolome_id
+workspace_name is a string
+metabolome_id is a string
+LookupModelSEEDIDsResults is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.LookupModelSEEDIDsParams
+$results is a fba_tools.LookupModelSEEDIDsResults
+LookupModelSEEDIDsParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	chemical_abundance_matrix_id has a value which is a fba_tools.metabolome_id
+	chemical_abundance_matrix_out_id has a value which is a fba_tools.metabolome_id
+workspace_name is a string
+metabolome_id is a string
+LookupModelSEEDIDsResults is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Attempts to map peaks in the input metabolomics matrix to compounds in the ModelSEED database
+
+=back
+
+=cut
+
+sub lookup_modelseed_ids
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to lookup_modelseed_ids:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'lookup_modelseed_ids');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($results);
+    #BEGIN lookup_modelseed_ids
+    $params = $self->util_initialize_call($params,$ctx);
+	$results = Bio::KBase::ObjectAPI::functions::func_lookup_modelseed_ids($params);
+	$self->util_finalize_call({
+		output => $results,
+		workspace => $params->{workspace},
+		report_name => $params->{chemical_abundance_matrix_out_id}.".report",
+	});
+    #END lookup_modelseed_ids
+    my @_bad_returns;
+    (ref($results) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"results\" (value was \"$results\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to lookup_modelseed_ids:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'lookup_modelseed_ids');
     }
     return($results);
 }
@@ -1313,7 +1666,7 @@ sub propagate_model_to_new_genome
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN propagate_model_to_new_genome
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_propagate_model_to_new_genome($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1444,7 +1797,7 @@ sub simulate_growth_on_phenotype_data
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN simulate_growth_on_phenotype_data
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_simulate_growth_on_phenotype_data($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1541,7 +1894,7 @@ sub merge_metabolic_models_into_community_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN merge_metabolic_models_into_community_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_merge_metabolic_models_into_community_model($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1632,7 +1985,7 @@ sub view_flux_network
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN view_flux_network
-	$self->util_initialize_call($params,$ctx);
+	$params = $self->util_initialize_call($params,$ctx);
 	my $output = Bio::KBase::ObjectAPI::functions::func_view_flux_network($params);
 	my $path = Bio::KBase::utilities::conf("ModelSEED","fbajobdir")."zippedhtml";
 	my $zip = Archive::Zip->new();
@@ -1779,7 +2132,7 @@ sub compare_flux_with_expression
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN compare_flux_with_expression
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_compare_flux_with_expression($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -1870,7 +2223,7 @@ sub check_model_mass_balance
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN check_model_mass_balance
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = {};
 	my $model_name = Bio::KBase::ObjectAPI::functions::func_check_model_mass_balance($params);
 	$params->{fbamodel_id} =~ s/\//-/g;
@@ -1963,7 +2316,7 @@ sub predict_auxotrophy
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN predict_auxotrophy
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$params = Bio::KBase::utilities::args($params,[],{genome_workspace => $params->{workspace}});
 	my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
 	for (my $i=0; $i < @{$new_genome_list}; $i++) {
@@ -2107,7 +2460,7 @@ sub predict_metabolite_biosynthesis_pathway
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN predict_metabolite_biosynthesis_pathway
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$results = Bio::KBase::ObjectAPI::functions::func_predict_metabolite_biosynthesis_pathway($params);
 	$self->util_finalize_call({
 		output => $results,
@@ -2149,6 +2502,7 @@ BuildMetagenomeMetabolicModelParams is a reference to a hash where the following
 	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 	workspace has a value which is a fba_tools.workspace_name
 	gapfill_model has a value which is a fba_tools.bool
+	gff_file has a value which is a string
 workspace_name is a string
 media_id is a string
 fbamodel_id is a string
@@ -2177,6 +2531,7 @@ BuildMetagenomeMetabolicModelParams is a reference to a hash where the following
 	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 	workspace has a value which is a fba_tools.workspace_name
 	gapfill_model has a value which is a fba_tools.bool
+	gff_file has a value which is a string
 workspace_name is a string
 media_id is a string
 fbamodel_id is a string
@@ -2218,7 +2573,7 @@ sub build_metagenome_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN build_metagenome_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_build_metagenome_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $return,
@@ -2355,8 +2710,8 @@ sub fit_exometabolite_data
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($results);
     #BEGIN fit_exometabolite_data
-    $self->util_initialize_call($params,$ctx);
-	$results = Bio::KBase::ObjectAPI::functions::func_fit_exometabolite_data($params);
+    $params = $self->util_initialize_call($params,$ctx);
+	$results = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model($params);
 	$self->util_finalize_call({
 		output => $results,
 		workspace => $params->{workspace},
@@ -2458,7 +2813,7 @@ sub compare_models
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN compare_models
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$return = Bio::KBase::ObjectAPI::functions::func_compare_models($params);
 	$self->util_finalize_call({
 		output => $return,
@@ -2571,7 +2926,7 @@ sub edit_metabolic_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN edit_metabolic_model
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     print Bio::KBase::utilities::to_json($params,1);
 	$return = Bio::KBase::ObjectAPI::functions::func_edit_metabolic_model($params);
 	$self->util_finalize_call({
@@ -2707,7 +3062,7 @@ sub edit_media
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN edit_media
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	print Bio::KBase::utilities::to_json($params,1);
 	$return = Bio::KBase::ObjectAPI::functions::func_create_or_edit_media($params);
 	$self->util_finalize_call({
@@ -2805,7 +3160,7 @@ sub excel_file_to_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN excel_file_to_model
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $input = {
 		model_name => $p->{model_name},
 		workspace_name => $p->{workspace_name},
@@ -2930,7 +3285,7 @@ sub sbml_file_to_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN sbml_file_to_model
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $file_path = $self->util_get_file_path($p->{model_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $input = {
 		sbml => "",
@@ -3052,7 +3407,7 @@ sub tsv_file_to_model
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN tsv_file_to_model
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $input = {
 		model_name => $p->{model_name},
 		workspace_name => $p->{workspace_name},
@@ -3172,7 +3527,7 @@ sub model_to_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN model_to_excel_file
-    $self->util_initialize_call($model,$ctx);
+    $model = $self->util_initialize_call($model,$ctx);
     my $input = {
 		object => "model",
 		format => "excel",
@@ -3268,7 +3623,7 @@ sub model_to_sbml_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN model_to_sbml_file
-    $self->util_initialize_call($model,$ctx);
+    $model = $self->util_initialize_call($model,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($model,{
 		object => "model",
 		format => "sbml",
@@ -3366,7 +3721,7 @@ sub model_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($files);
     #BEGIN model_to_tsv_file
-    $self->util_initialize_call($model,$ctx);
+    $model = $self->util_initialize_call($model,$ctx);
     my $input = {
 		object => "model",
 		format => "tsv",
@@ -3450,7 +3805,7 @@ sub export_model_as_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_model_as_excel_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     my $input = {
 		object => "model",
 		format => "excel"
@@ -3533,7 +3888,7 @@ sub export_model_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_model_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     my $input = {
 		object => "model",
 		format => "tsv"
@@ -3616,7 +3971,7 @@ sub export_model_as_sbml_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_model_as_sbml_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "model",
 		format => "sbml"
@@ -3703,7 +4058,7 @@ sub fba_to_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN fba_to_excel_file
-    $self->util_initialize_call($fba,$ctx);
+    $fba = $self->util_initialize_call($fba,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($fba,{
 		object => "fba",
 		format => "excel",
@@ -3797,7 +4152,7 @@ sub fba_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($files);
     #BEGIN fba_to_tsv_file
-    $self->util_initialize_call($fba,$ctx);
+    $fba = $self->util_initialize_call($fba,$ctx);
     $files = Bio::KBase::ObjectAPI::functions::func_export($fba,{
 		object => "fba",
 		format => "tsv",
@@ -3877,7 +4232,7 @@ sub export_fba_as_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_fba_as_excel_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "fba",
 		format => "excel"
@@ -3956,7 +4311,7 @@ sub export_fba_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_fba_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "fba",
 		format => "tsv"
@@ -4045,7 +4400,7 @@ sub tsv_file_to_media
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN tsv_file_to_media
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $mediadata = $self->util_parse_input_table($file_path,[
 		["compounds",1],
@@ -4145,7 +4500,7 @@ sub excel_file_to_media
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN excel_file_to_media
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $file_path = $self->util_get_file_path($p->{media_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $sheets = $self->util_parse_excel($file_path);
 	my $Media = (grep { $_ =~ /[Mm]edia/ } keys %$sheets)[0];
@@ -4245,7 +4600,7 @@ sub media_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN media_to_tsv_file
-    $self->util_initialize_call($media,$ctx);
+    $media = $self->util_initialize_call($media,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($media,{
 		object => "media",
 		format => "tsv",
@@ -4333,7 +4688,7 @@ sub media_to_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN media_to_excel_file
-    $self->util_initialize_call($media,$ctx);
+    $media = $self->util_initialize_call($media,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($media,{
 		object => "media",
 		format => "excel",
@@ -4413,7 +4768,7 @@ sub export_media_as_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_media_as_excel_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "media",
 		format => "excel"
@@ -4492,7 +4847,7 @@ sub export_media_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_media_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
     $output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "media",
 		format => "tsv"
@@ -4583,7 +4938,7 @@ sub tsv_file_to_phenotype_set
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($return);
     #BEGIN tsv_file_to_phenotype_set
-    $self->util_initialize_call($p,$ctx);
+    $p = $self->util_initialize_call($p,$ctx);
     my $file_path = $self->util_get_file_path($p->{phenotype_set_file},Bio::KBase::utilities::conf("fba_tools","scratch"));
     my $phenodata = $self->util_parse_input_table($file_path,[
 		["geneko",0,"",";"],
@@ -4692,7 +5047,7 @@ sub phenotype_set_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN phenotype_set_to_tsv_file
-    $self->util_initialize_call($phenotype_set,$ctx);
+    $phenotype_set = $self->util_initialize_call($phenotype_set,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($phenotype_set,{
 		object => "phenotype",
 		format => "tsv",
@@ -4772,7 +5127,7 @@ sub export_phenotype_set_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_phenotype_set_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "phenotype",
 		format => "tsv"
@@ -4859,7 +5214,7 @@ sub phenotype_simulation_set_to_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN phenotype_simulation_set_to_excel_file
-    $self->util_initialize_call($pss,$ctx);
+    $pss = $self->util_initialize_call($pss,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($pss,{
 		object => "phenosim",
 		format => "excel",
@@ -4947,7 +5302,7 @@ sub phenotype_simulation_set_to_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($f);
     #BEGIN phenotype_simulation_set_to_tsv_file
-    $self->util_initialize_call($pss,$ctx);
+    $pss = $self->util_initialize_call($pss,$ctx);
     $f = Bio::KBase::ObjectAPI::functions::func_export($pss,{
 		object => "phenosim",
 		format => "tsv",
@@ -5027,7 +5382,7 @@ sub export_phenotype_simulation_set_as_excel_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_phenotype_simulation_set_as_excel_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "phenosim",
 		format => "excel"
@@ -5106,7 +5461,7 @@ sub export_phenotype_simulation_set_as_tsv_file
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN export_phenotype_simulation_set_as_tsv_file
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$output = Bio::KBase::ObjectAPI::functions::func_export($params,{
 		object => "phenosim",
 		format => "tsv"
@@ -5217,7 +5572,7 @@ sub bulk_export_objects
     my $ctx = $fba_tools::fba_toolsServer::CallContext;
     my($output);
     #BEGIN bulk_export_objects
-    $self->util_initialize_call($params,$ctx);
+    $params = $self->util_initialize_call($params,$ctx);
 	$output = Bio::KBase::ObjectAPI::functions::func_bulk_export($params,{});
 	Bio::KBase::utilities::add_report_file({
 		path => $output->{path},
@@ -5245,6 +5600,90 @@ sub bulk_export_objects
 	my $msg = "Invalid returns passed to bulk_export_objects:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'bulk_export_objects');
+    }
+    return($output);
+}
+
+
+
+
+=head2 run_fba_tools_tests
+
+  $output = $obj->run_fba_tools_tests($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.RunFbaToolsTestsParams
+$output is a fba_tools.RunFbaToolsTestsResult
+RunFbaToolsTestsParams is a reference to a hash where the following keys are defined:
+	test_metagenomes has a value which is a fba_tools.bool
+	workspace has a value which is a string
+bool is an int
+RunFbaToolsTestsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.RunFbaToolsTestsParams
+$output is a fba_tools.RunFbaToolsTestsResult
+RunFbaToolsTestsParams is a reference to a hash where the following keys are defined:
+	test_metagenomes has a value which is a fba_tools.bool
+	workspace has a value which is a string
+bool is an int
+RunFbaToolsTestsResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a fba_tools.ws_report_id
+	ref has a value which is a string
+ws_report_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub run_fba_tools_tests
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to run_fba_tools_tests:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_fba_tools_tests');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($output);
+    #BEGIN run_fba_tools_tests
+    #END run_fba_tools_tests
+    my @_bad_returns;
+    (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to run_fba_tools_tests:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'run_fba_tools_tests');
     }
     return($output);
 }
@@ -6190,6 +6629,152 @@ number_removed_biomass_compounds has a value which is an int
 
 
 
+=head2 CharacterizeGenomeUsingModelParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+genome_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+use_annotated_functions has a value which is a fba_tools.bool
+merge_all_annotations has a value which is a fba_tools.bool
+source_ontology_list has a value which is a reference to a list where each element is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+genome_id has a value which is a fba_tools.genome_id
+genome_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+use_annotated_functions has a value which is a fba_tools.bool
+merge_all_annotations has a value which is a fba_tools.bool
+source_ontology_list has a value which is a reference to a list where each element is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 CharacterizeGenomeUsingModelResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+
+
+=end text
+
+=back
+
+
+
+=head2 RunModelCharacterizationParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+fbamodel_id has a value which is a fba_tools.fbamodel_id
+fbamodel_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+workspace has a value which is a fba_tools.workspace_name
+
+
+=end text
+
+=back
+
+
+
+=head2 RunModelCharacterizationResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+new_fba_ref has a value which is a fba_tools.ws_fba_id
+
+
+=end text
+
+=back
+
+
+
 =head2 BuildPlantMetabolicModelParams
 
 =over 4
@@ -6672,6 +7257,72 @@ new_fbacomparison_ref has a value which is a fba_tools.ws_fbacomparison_id
 
 a reference to a hash where the following keys are defined:
 new_fbacomparison_ref has a value which is a fba_tools.ws_fbacomparison_id
+
+
+=end text
+
+=back
+
+
+
+=head2 LookupModelSEEDIDsParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+chemical_abundance_matrix_id has a value which is a fba_tools.metabolome_id
+chemical_abundance_matrix_out_id has a value which is a fba_tools.metabolome_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+chemical_abundance_matrix_id has a value which is a fba_tools.metabolome_id
+chemical_abundance_matrix_out_id has a value which is a fba_tools.metabolome_id
+
+
+=end text
+
+=back
+
+
+
+=head2 LookupModelSEEDIDsResults
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
 
 
 =end text
@@ -7339,6 +7990,7 @@ media_workspace has a value which is a fba_tools.workspace_name
 fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 gapfill_model has a value which is a fba_tools.bool
+gff_file has a value which is a string
 
 </pre>
 
@@ -7354,6 +8006,7 @@ media_workspace has a value which is a fba_tools.workspace_name
 fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 gapfill_model has a value which is a fba_tools.bool
+gff_file has a value which is a string
 
 
 =end text
@@ -8317,6 +8970,72 @@ report_workspace has a value which is a string
 
 
 =head2 BulkExportObjectsResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a fba_tools.ws_report_id
+ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 RunFbaToolsTestsParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+test_metagenomes has a value which is a fba_tools.bool
+workspace has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+test_metagenomes has a value which is a fba_tools.bool
+workspace has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 RunFbaToolsTestsResult
 
 =over 4
 

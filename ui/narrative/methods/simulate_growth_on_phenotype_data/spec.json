@@ -106,8 +106,7 @@
                "path_to_subdata" : [
                   "modelreactions"
                ],
-               "parameter_id" : "fbamodel_id",
-               "description_template" : "- {{name}}"
+               "parameter_id" : "fbamodel_id"
             }
          },
          "text_options" : {
@@ -169,16 +168,32 @@
          "id" : "add_positive_transporters"
       },
       {
-         "field_type" : "text",
-         "optional" : true,
-         "allow_multiple" : true,
-         "default_values" : [
-            ""
-         ],
-         "advanced" : true,
          "id" : "feature_ko_list",
-         "text_options" : {
-            "valid_ws_types" : []
+         "field_type" : "textsubdata",
+         "allow_multiple" : false,
+         "optional" : true,
+         "advanced" : true,
+         "textsubdata_options" : {
+            "show_src_obj" : true,
+            "allow_custom" : true,
+            "multiselection" : true,
+            "subdata_selection" : {
+               "subdata_included" : [
+                  "features/[*]/id",
+                  "features/[*]/functions",
+                  "genome_ref"
+               ],
+               "selection_description" : [
+                  "functions"
+               ],
+               "selection_id" : "id",
+               "path_to_subdata" : [
+                 "genome_ref",
+                 "<WSREF>",
+                 "features"
+               ],
+               "parameter_id" : "fbamodel_id"
+            }
          }
       },
       {
@@ -202,8 +217,7 @@
                ],
                "selection_description" : [
                   "name"
-               ],
-               "description_template" : "- {{name}}"
+               ]
             }
          },
          "text_options" : {
@@ -246,8 +260,7 @@
                "subdata_included" : [
                   "modelcompounds/[*]/id",
                   "modelcompounds/[*]/name"
-               ],
-               "description_template" : "- {{name}}"
+               ]
             },
             "multiselection" : false
          },

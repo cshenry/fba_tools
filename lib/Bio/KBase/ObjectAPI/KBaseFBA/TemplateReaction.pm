@@ -363,11 +363,306 @@ sub compute_penalties {
 	$self->base_cost($coefficient);
 }
 
-sub addRxnToModel {
+sub ProcessAnnotationData {
+	my $self = shift;
+	my $args = shift;
+	$args = Bio::KBase::ObjectAPI::utilities::args(["data"],{
+		probability => 0,
+		coverage => 0,
+		gene_count => 0,
+		proteins => [],
+		reaction_hash => 0,
+		non_gene_probability => 0,
+		non_gene_coverage => 0
+	}, $args);
+	#If features are not provided, load probability, coverage, and counts from base data
+	if (!defined($args->{data}->{features})) {
+		$args->{probability} = ($args->{gene_count}*$args->{probability}+$args->{data}->{hit_count}*$args->{data}->{non_gene_probability});
+		$args->{gene_count} += $args->{data}->{hit_count};
+		if ($args->{gene_count} > 0) {
+			$args->{probability} = $args->{probability}/$args->{gene_count};
+		}
+		$args->{coverage} += $args->{data}->{non_gene_coverage};
+		return;
+	}
+	if ($args->{reaction_hash} == 1) {
+		foreach my $ftr (keys(%{$args->{data}->{features}})) {
+			my $ftrdata = $args->{data}->{features}->{$ftr};
+			my $anno_name = $self->msid();
+			if (defined($ftrdata->{sources})) {
+				$anno_name = "";
+				foreach my $source (keys(%{$ftrdata->{sources}})) {
+					if (length($anno_name) > 0) {
+						$anno_name .= ";";
+					}
+					$anno_name .= $source.":".$ftrdata->{sources}->{$source};
+				}
+			}
+			push(@{$args->{proteins}},{
+				subunits => {
+					$anno_name => {
+						triggering => 1,
+						optionalSubunit => 1,
+						genes => {
+							$ftrdata->{feature_ref} => {
+								probability => $ftrdata->{probability},
+								coverage => $ftrdata->{coverage}
+							}
+						}
+					}
+				},
+				cpx => undef,
+				note => ""
+			});
+		}
+	} else {
+		#Go through the complexes associated with this template reaciton
+		my $cpxs = $self->templatecomplexs();
+		for (my $i=0; $i < @{$cpxs}; $i++) {
+			#For each complex, see if it contains the role associated with the input data
+			my $cpx = $cpxs->[$i];
+			my $complexroles = $cpx->complexroles();
+			for (my $j=0; $j < @{$complexroles}; $j++) {
+				my $cpxrole = $complexroles->[$j];
+				if ($args->{role} eq $cpxrole->templaterole()->id()) {
+					#The complex includes the role associated with the input data
+					#Now let's see if this complex has already been added to the protein list for this reaction
+					my $found = 0;
+					for (my $k=0; $k < @{$args->{proteins}}; $k++) {
+						if ($args->{proteins}->[$k]->{cpx} == $cpx) {
+							$found = 1;
+							#The complex has been found - if the role has not been captured already then add a subunit
+							if (!defined($args->{proteins}->[$k]->{subunits}->{$args->{role}})) {
+								#The role has not been captured yet. We now add it to the protein structure
+								$args->{proteins}->[$k]->{subunits}->{$args->{role}} = {
+									triggering => $cpxrole->triggering(),
+									optionalSubunit => $cpxrole->optional_role(),
+									genes => {}
+								};
+							}
+							#Now populate the genes attribute in the subunit
+							foreach my $ftr (keys(%{$args->{data}->{features}})) {
+								my $ftrdata = $args->{data}->{features}->{$ftr};
+								$args->{proteins}->[$k]->{subunits}->{$args->{role}}->{genes}->{$ftrdata->{feature_ref}} = {
+									probability => $ftrdata->{probability},
+									coverage => $ftrdata->{coverage}
+								};
+							}
+							last;
+						}
+					}
+					#If a protein has not already been added for this complex, then we add it now
+					if ($found == 0) {
+						my $new_protein = {
+							subunits => {
+								$args->{role} => {
+									triggering => $cpxrole->triggering(),
+									optionalSubunit => $cpxrole->optional_role(),
+									genes => {}
+								}
+							},
+							cpx => $cpx,
+							note => ""
+						};
+						foreach my $ftr (keys(%{$args->{data}->{features}})) {
+							my $ftrdata = $args->{data}->{features}->{$ftr};
+							$new_protein->{subunits}->{$args->{role}}->{genes}->{$ftrdata->{feature_ref}} = {
+								probability => $ftrdata->{probability},
+								coverage => $ftrdata->{coverage}
+							};
+						}
+						push(@{$args->{proteins}},$new_protein);
+					}
+					last;
+				}
+			}	
+		}
+	}
+}
+
+sub AddRxnToModelFromAnnotations {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["model"],{
+		no_features => 0,
+		fulldb => 0,
+		function_hash => {},
+		reaction_hash => {}
+	}, @_);
+	my $anno_args = {proteins => []};
+	#Checking function hash for additional gene associations to add
+	my $cpxs = $self->templatecomplexs();
+	for (my $i=0; $i < @{$cpxs}; $i++) {
+		my $complexroles = $cpxs->[$i]->complexroles();
+		for (my $j=0; $j < @{$complexroles}; $j++) {
+			my $cpxrole = $complexroles->[$j];
+			my $roleid = $cpxrole->templaterole()->id();
+			if (defined($args->{function_hash}->{$roleid})) {
+				foreach my $compartment (keys(%{$args->{function_hash}->{$roleid}})) {
+					if ($compartment eq "u" || $compartment eq $self->templatecompartment()->id()) {
+						$anno_args->{role} = $roleid;
+						$anno_args->{data} = $args->{function_hash}->{$roleid}->{$compartment};
+					
+					}
+				}
+				if (defined($anno_args->{data})) {
+					$self->ProcessAnnotationData($anno_args);
+					delete $anno_args->{data};
+				}
+			}	
+		}
+	}
+	#Checking reaction hash for additional gene associations to add
+	if (defined($args->{reaction_hash}->{$self->msid()})) {
+		foreach my $compartment (keys(%{$args->{reaction_hash}->{$self->msid()}})) {
+			if ($compartment eq "u" || $compartment eq $self->templatecompartment()->id()) {
+				$anno_args->{data} = $args->{reaction_hash}->{$self->msid()}->{$compartment};
+				last;
+			}
+		}
+	}
+	if (defined($anno_args->{data})) {
+		$anno_args->{reaction_hash} = 1;
+		$self->ProcessAnnotationData($anno_args);
+	}
+	#Removing proteins that don't include triggering subunits
+	my $genehash = {};
+	my $protein_count = 0;
+	for (my $i=0; $i < @{$anno_args->{proteins}}; $i++) {
+		my $probabilty = 0;
+		my $coverage = 0;
+		my $found = 0;
+		foreach my $role (keys(%{$anno_args->{proteins}->[$i]->{subunits}})) {
+			if ($anno_args->{proteins}->[$i]->{subunits}->{$role}->{triggering} == 1) {
+				$found = 1;
+				last;
+			}
+		}
+		if ($found == 1 || !defined($anno_args->{proteins}->[$i]->{cpx})) {
+			$protein_count++;
+			my $protein_gene_count = 0;
+			my $subunit_count = 0;
+			my $protein_coverage = 0;
+			my $protein_probability = 0;
+			foreach my $role (keys(%{$anno_args->{proteins}->[$i]->{subunits}})) {
+				$subunit_count++;
+				my $subunit_probability = 0;
+				my $subunit_genecount = 0;
+				foreach my $generef (keys(%{$anno_args->{proteins}->[$i]->{subunits}->{$role}->{genes}})) {
+					$protein_gene_count++;
+					$genehash->{$generef} = 1;
+					$subunit_genecount++;
+					$protein_coverage += $anno_args->{proteins}->[$i]->{subunits}->{$role}->{genes}->{$generef}->{coverage};
+					$subunit_probability += $anno_args->{proteins}->[$i]->{subunits}->{$role}->{genes}->{$generef}->{probability};
+				}
+				if ($subunit_genecount > 0) {
+					$subunit_probability = $subunit_probability/$subunit_genecount;
+				}
+				$protein_probability += $subunit_probability;
+			}
+			if ($subunit_count > 0) {
+				$protein_coverage = $protein_coverage/$subunit_count;
+				$protein_probability = $protein_probability/$subunit_count;
+			}
+			if ($protein_gene_count > 0) {
+				$anno_args->{coverage} += $protein_coverage;
+				$anno_args->{probability} += $protein_probability;
+			}
+		} else {
+			splice(@{$anno_args->{proteins}}, $i, 1);
+		}
+	}
+	my $total_protein_gene_count = keys(%{$genehash});
+	if ($protein_count > 0 && $total_protein_gene_count > 0) {
+		$anno_args->{probability} = $anno_args->{probability}/$protein_count;
+		$anno_args->{gene_count} += $total_protein_gene_count;
+	}
+	#Now adding reaction to model if it meets the necessary criteria
+	if ((!defined($anno_args->{proteins}) || @{$anno_args->{proteins}} == 0) && 
+		(!defined($anno_args->{gene_count}) || $anno_args->{gene_count} == 0) && 
+		$self->type() ne "universal" && 
+		$self->type() ne "spontaneous" && 
+		$args->{fulldb} == 0) {
+		return undef;
+	}
+	return $self->AddReactionToModel({
+		model => $args->{model},
+		proteins => $anno_args->{proteins},
+		probability => $anno_args->{probability},
+		gene_count => $anno_args->{gene_count},
+		coverage => $anno_args->{coverage}
+	});
+}
+
+sub AddReactionToModel {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["model"],{
+		proteins => [],
+		probability => 1,
+		gene_count => 0,
+		coverage => 0
+	}, @_);
+	#print $args->{probability}."\t".$args->{gene_count}."\t".$args->{coverage}."\n";
+	my $mdlcmp = $args->{model}->addCompartmentToModel({compartment => $self->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
+    my $mdlrxn = $args->{model}->getObject("modelreactions", $self->msid()."_".$mdlcmp->id());
+    if(!$mdlrxn) {
+		$mdlrxn = $args->{model}->add("modelreactions",{
+			id => $self->msid()."_".$mdlcmp->id(),
+			probability => $args->{probability},
+			gene_count => $args->{gene_count},
+			coverage => $args->{coverage},
+			reaction_ref => "~/template/reactions/id/".$self->id(),
+			direction => $self->direction(),
+			modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
+			modelReactionReagents => [],
+			modelReactionProteins => []
+		});
+		my $rgts = $self->templateReactionReagents();
+		for (my $i=0; $i < @{$rgts}; $i++) {
+			my $rgt = $rgts->[$i];
+			my $rgtcmp = $args->{model}->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
+			my $coefficient = $rgt->coefficient();
+			my $mdlcpd = $args->{model}->addCompoundToModel({
+				compound => $rgt->templatecompcompound()->templatecompound(),
+				modelCompartment => $rgtcmp,
+			});
+			$mdlrxn->addReagentToReaction({
+				coefficient => $coefficient,
+				modelcompound_ref => "~/modelcompounds/id/".$mdlcpd->id()
+			});
+		}
+	} else {
+		$mdlrxn->coverage($args->{coverage});
+		$mdlrxn->probability($args->{probability});
+		$mdlrxn->gene_count($args->{gene_count});
+	}
+    if (@{$args->{proteins}} > 0 && scalar(@{$mdlrxn->modelReactionProteins()})==0) {
+		foreach my $protein (@{$args->{proteins}}) {
+	    		if (defined($protein->{cpx})) {
+		    		$mdlrxn->addModelReactionProtein({
+					proteinDataTree => $protein,
+					complex_ref => "~/template/complexes/id/".$protein->{cpx}->id()
+				});
+	    		} else {
+	    			$mdlrxn->addModelReactionProtein({
+					proteinDataTree => $protein,
+					complex_ref => "~/template/complexes/id/cpx00000"
+				});
+	    		}
+		}
+    } elsif (scalar(@{$mdlrxn->modelReactionProteins()})==0) {
+		$mdlrxn->addModelReactionProtein({
+	    		proteinDataTree => {note => $self->type()},
+		});
+    }
+    return $mdlrxn;
+}
+
+sub OldAddRxnToModel {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["role_features","model"],{
 		fulldb => 0,
-		probabilities => {}
+		probabilities => {},
+		reaction_hash => {}
 	}, @_);
 	my $mdl = $args->{model};
 	#Gathering roles from annotation
@@ -397,15 +692,15 @@ sub addRxnToModel {
 						}
 					}
 				    if($role_cpt_present == 1){
-					$subunits->{$cpxrole->templaterole()->name()}->{triggering} = $cpxrole->triggering();
-					$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
-					if (!defined($roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0]) || $roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0] eq "Role-based-annotation") {
-						$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
-					} else {
-						foreach my $feature (@{$roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}}) {
-							$subunits->{$cpxrole->templaterole()->name()}->{genes}->{"~/genome/features/id/".$feature->id()} = $feature;	
+						$subunits->{$cpxrole->templaterole()->name()}->{triggering} = $cpxrole->triggering();
+						$subunits->{$cpxrole->templaterole()->name()}->{optionalSubunit} = $cpxrole->optional_role();
+						if (!defined($roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0]) || $roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}->[0] eq "Role-based-annotation") {
+							$subunits->{$cpxrole->templaterole()->name()}->{note} = "Role-based-annotation";
+						} else {
+							foreach my $feature (@{$roleFeatures->{$cpxrole->templaterole()->id()}->{$compartment}}) {
+								$subunits->{$cpxrole->templaterole()->name()}->{genes}->{"~/genome/features/id/".$feature->id()} = $feature;	
+							}
 						}
-					}
 				    }
 				}
 			}
@@ -419,56 +714,60 @@ sub addRxnToModel {
 					$subunits->{$cpxrole->templaterole()->name()}->{note} = "Complex-based-gapfilling";
 				}
 			}
-			push(@{$proteins},{subunits => $subunits,cpx => $cpx});
+			if (defined($subunits)) {
+				push(@{$proteins},{subunits => $subunits,cpx => $cpx});
+			}
+		}
+	}
+	#Checking reaction hash for additional gene associations to add
+	if (defined($args->{reaction_hash}->{$self->msid()})) {
+		my $anno_source_hash = {};
+		foreach my $geneid (keys(%{$args->{reaction_hash}->{$self->msid()}})) {
+			if (!defined($anno_source_hash->{join(";",keys(%{$args->{reaction_hash}->{$self->msid()}->{$geneid}}))}->{$geneid})) {
+				#Checking if gene is already included in an existing complex
+				my $found = 0;
+				for (my $i=0; $i < @{$proteins}; $i++) {
+					foreach my $name (keys($proteins->[$i]->{subunits})) {
+						foreach my $gene (keys(%{$proteins->[$i]->{subunits}->{$name}->{genes}})) {
+							if ($proteins->[$i]->{subunits}->{$name}->{genes}->{$gene}->id() eq $geneid) {
+								$found = 1;
+							}	
+						}
+					}
+				}
+				if ($found == 0) {
+					$anno_source_hash->{join(";",keys(%{$args->{reaction_hash}->{$self->msid()}->{$geneid}}))}->{$geneid} = 1;
+				}
+			}
+		}
+		foreach my $anno_name (keys(%{$anno_source_hash})) {
+			my $genehash = {};
+			my $all_anno_sources = {};
+			foreach my $gene (keys(%{$anno_source_hash->{$anno_name}})) {
+				my $ftr = $args->{model}->genome()->getObject("features",$gene);
+				if (defined($ftr)) {
+					$genehash->{"~/genome/features/id/".$ftr->id()} = $ftr;
+				}
+			}
+			push(@{$proteins},{
+				subunits => {
+					$anno_name => {
+						triggering => 1,
+						optionalSubunit => 1,
+						genes => $genehash
+					}
+				},
+				cpx => undef,
+				note => ""
+			});
 		}
 	}
 	#Adding reaction
 	if (@{$proteins} == 0 && $self->type() ne "universal" && $self->type() ne "spontaneous" && $args->{fulldb} == 0) {
 		return;
 	}
-    my $mdlcmp = $mdl->addCompartmentToModel({compartment => $self->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
-    my $mdlrxn = $mdl->getObject("modelreactions", $self->msid()."_".$mdlcmp->id());
-    if(!$mdlrxn) {
-		$mdlrxn = $mdl->add("modelreactions",{
-			id => $self->msid()."_".$mdlcmp->id(),
-			probability => $probability,
-			reaction_ref => "~/template/reactions/id/".$self->id(),
-			direction => $self->direction(),
-			modelcompartment_ref => "~/modelcompartments/id/".$mdlcmp->id(),
-			modelReactionReagents => [],
-			modelReactionProteins => []
-		});
-		my $rgts = $self->templateReactionReagents();
-		for (my $i=0; $i < @{$rgts}; $i++) {
-			my $rgt = $rgts->[$i];
-			my $rgtcmp = $mdl->addCompartmentToModel({compartment => $rgt->templatecompcompound()->templatecompartment(),pH => 7,potential => 0,compartmentIndex => 0});
-			my $coefficient = $rgt->coefficient();
-			my $mdlcpd = $mdl->addCompoundToModel({
-				compound => $rgt->templatecompcompound()->templatecompound(),
-				modelCompartment => $rgtcmp,
-			});
-			$mdlrxn->addReagentToReaction({
-				coefficient => $coefficient,
-				modelcompound_ref => "~/modelcompounds/id/".$mdlcpd->id()
-			});
-		}
-    }
-    if (@{$proteins} > 0 && scalar(@{$mdlrxn->modelReactionProteins()})==0) {
-		foreach my $protein (@{$proteins}) {
-	    	$mdlrxn->addModelReactionProtein({
-				proteinDataTree => $protein,
-				complex_ref => "~/template/complexes/id/".$protein->{cpx}->id()
-			});
-		}
-    } elsif (scalar(@{$mdlrxn->modelReactionProteins()})==0) {
-		$mdlrxn->addModelReactionProtein({
-	    	proteinDataTree => {note => $self->type()},
-		});
-    }
-    return $mdlrxn;
+    
 }
-
-
 
 __PACKAGE__->meta->make_immutable;
 1;

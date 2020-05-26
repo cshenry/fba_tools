@@ -1,0 +1,46 @@
+#
+# Define basic display information
+#
+name     : Run fba_tools tests
+
+tooltip  : |
+    Run FBA tools tests
+
+screenshots :
+    []
+
+#
+# Define the set of other narrative methods that should be suggested to the user.
+#
+suggestions :
+    apps:
+        related :
+            []
+        next :
+            []
+    methods:
+        related :
+            []
+        next :
+            []
+
+#
+# Configure the display and description of the parameters
+#
+parameters :
+    test_metagenomes :
+        ui-name : |
+            Test parameter
+        short-hint : |
+            Test parameter
+
+
+icon: fba-teal.png
+
+description : |
+
+    <p>This app is designed to enable the running of tests fully integrated with Narrative.</p>
+
+
+publications :
+    []

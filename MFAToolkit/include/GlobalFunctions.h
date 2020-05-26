@@ -332,11 +332,15 @@ struct OptimizationParameter {
 	bool DynamicFBA;
 	bool MinDevCurrSol;
 	bool SteadyStateCommunityModeling;
+	bool ExcludeSimultaneousReversibleFlux;
+	bool SteadyStateProteinFBA;
+	bool CatalogueFluxLoops;
 	double DeadEndCoefficient;
 
 	bool AddLumpedReactions;
 	bool AllDrainUse;
 	bool DrainUseVar;
+	bool DilutionConstraints;
 	bool DecomposeDrain;
 	bool AllReversible;
 	bool OptimizeMetabolitesWhenZero;

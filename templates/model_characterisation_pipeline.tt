@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+	<title>Metabolic Model Overview</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+	<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.3.1.js">
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+	</script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+	</script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js">
+	</script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js">
+	</script>
+</head>
+<body class="container">
+<div>
+    <h1>Metabolic Model Overview</h1>
+	<ul class="nav nav-tabs" id="nav-tab" role="tablist">
+		<li><a class="nav-item nav-link active" id="nav-model-tab" data-toggle="tab" href="#nav-model" role="tab" aria-controls="nav-model" aria-selected="true">Model Statistics</a> </li>
+		<li><a class="nav-item nav-link" id="nav-pathway-tab" data-toggle="tab" href="#nav-pathway" role="tab" aria-controls="nav-pathway" aria-selected="false">Pathway Statistics</a> </li>
+		<li><a class="nav-item nav-link" id="nav-auxotrophy-tab" data-toggle="tab" href="#nav-auxotrophy" role="tab" aria-controls="nav-auxotrophy" aria-selected="false">Auxotrophy Statistics</a> </li>
+	</ul>
+	<div class="tab-content" id="nav-tabContent">
+		<div class="tab-pane fade show active" id="nav-model" role="tabpanel" aria-labelledby="nav-model-tab">
+			<h3>
+				Model Statistics
+			</h3>
+[%  attr = template_data.attributes;
+    fbas = attr.fbas;
+%]
+			<table class="table table-striped table-bordered">
+				<tbody>
+					<tr>
+						<td>Reaction count</td>
+						<td>[% template_data.modelreactions.size %]</td>
+					</tr>
+					<tr>
+						<td>Compound count</td>
+						<td>[% attr.auxotrophy.keys.size %]</td>
+					</tr>
+					<tr>
+						<td>Gene count</td>
+						<td>[% attr.gene_count %]</td>
+					</tr>
+					<tr>
+						<td>Core gapfilling</td>
+						<td>[% attr.core_gapfilling %]</td>
+					</tr>
+					<tr>
+						<td>Base gapfilling</td>
+						<td>[% attr.baseline_gapfilling %]</td>
+					</tr>
+					<tr>
+						<td>Defined gapfilling</td>
+						<td>[% attr.auxotrophy_gapfilling %]</td>
+					</tr>
+					<tr>
+						<td>Auxotrophy count</td>
+						<td>[% attr.auxotroph_count %]</td>
+					</tr>
+					<tr>
+						<td>Base ATP production</td>
+						<td>[% attr.base_atp %]</td>
+					</tr>
+					<tr>
+						<td>Defined biomass</td>
+						<td>[% fbas.auxomedia.biomass %]</td>
+					</tr>
+					<tr>
+						<td>Rich biomass</td>
+						<td>[% fbas.complete.biomass %]</td>
+					</tr>
+					<tr>
+						<td>Defined essential reactions</td>
+						<td>[% fbas.auxomedia.Positive + fbas.auxomedia.Negative %]</td>
+					</tr>
+					<tr>
+						<td>Defined optional reactions</td>
+						<td>[% fbas.auxomedia.PositiveVariable + fbas.auxomedia.NegativeVariable + fbas.auxomedia.Variable %]</td>
+					</tr>
+					<tr>
+						<td>Defined blocked reactions</td>
+						<td>[% fbas.auxomedia.Blocked %]</td>
+					</tr>
+					<tr>
+						<td>Rich essential reactions</td>
+						<td>[% fbas.complete.Positive + fbas.complete.Negative %]</td>
+					</tr>
+					<tr>
+						<td>Rich optional reactions</td>
+						<td>[% fbas.complete.PositiveVariable + fbas.complete.NegativeVariable + fbas.complete.Variable %]</td>
+					</tr>
+					<tr>
+						<td>Rich blocked reactions</td>
+						<td>[% fbas.complete.Blocked %]</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="tab-pane fade" id="nav-pathway" role="tabpanel" aria-labelledby="nav-pathway-tab">
+			<h3>
+				Pathway Statistics
+			</h3>
+			<table id="table-pathway" class="table table-striped table-bordered" width="100%">
+			</table>
+<!--
+This table should be searchable, sortable, and TSV printable. Rows should be all the pathways listed under the key “Pathways”. Columns should be:
+-->
+		</div>
+		<div class="tab-pane fade" id="nav-auxotrophy" role="tabpanel" aria-labelledby="nav-auxotrophy-tab">
+			<h3>
+				Auxotrophy Statistics
+			</h3>
+			<table id="table-auxotrophy" class="table table-striped table-bordered" width="100%">
+			</table>
+<!--
+This table should be searchable, sortable, and TSV printable. Rows should be compounds listed under the auxotrophy key. Columns should be:
+
+    Compound: <name> (<id>)
+    Reactions required:
+    Gapfilled reactions:
+    Is auxotrophic? (yes/no)
+
+-->
+		</div>
+	</div>
+</div>
+<script>
+$(document).ready(function() {
+    "use strict";
+[%  USE JSON;
+    FOR cpd_id IN attr.auxotrophy.keys;
+        attr.auxotrophy.$cpd_id.id = cpd_id;
+    END;
+%]
+    var pathway = {
+        data: [% attr.pathways.json %],
+        cols: {
+            class: {
+                title: "Class",
+                render: ( data, type, d, meta ) => {
+                    return d.classes[ d.classes.length - 1 ]
+                }
+            },
+            // pathway names
+            name: {
+                title: "Pathway",
+                data:   d => d.name,
+                render: ( data, type, d, meta ) => {
+                    return type === 'display'
+                    ? '<a href="https://www.kegg.jp/kegg-bin/show_pathway?map' + d.id + '">' + d.name + '</a>'
+                    : d.name
+                }
+            },
+            //  Reaction count: (total/functional/gapfilled)
+            reactions: {
+                title: "Reactions",
+                render: ( data, type, d, meta ) => {
+                    const total = d.functional_rxn + d.gapfilled_rxn + d.nonfunctional_rxn;
+                    if ( type === 'display' ) {
+                        return total
+                        + "<br>(functional: " + d.functional_rxn
+                        + "; gap-filled: " + d.gapfilled_rxn + ")"
+                    }
+                    return total
+                },
+            },
+            //  Gene count: pathway.gene_count
+            gene_count: {
+                title: "Gene count",
+                data:   d => d.gene_count
+            },
+            //  Genes per reaction
+            genes_per_rxn: {
+                title: "Average genes per reaction",
+                render: ( data, type, d, meta ) => {
+                    return type !== 'display'
+                        ? d.average_genes_per_reaction
+                        : d.average_genes_per_reaction + " (&sigma;: "
+                            + d.stddev_genes_per_reaction
+                            + ")"
+                },
+            },
+            present: {
+                title: "Present?",
+                render: ( data, type, d, meta ) => {
+                    return type === 'display'
+                        ? d.is_present
+                            ? "Yes"
+                            : "No"
+                        : d.is_present
+                },
+            },
+            fraction_complete: {
+                title: "Fraction complete",
+                render: ( data, type, d, meta ) => {
+                    const percentage = d.functional_rxn / d.pathway_size * 100;
+                    return type === 'display'
+                        ? d.functional_rxn + " / " + d.pathway_size +
+                            " (" +
+                                ( d.functional_rxn === 0
+                                    ? 0
+                                    : percentage.toFixed(1) + "%"
+                                )
+                            + ")"
+                        : d.functional_rxn / d.pathway_size
+                }
+            },
+            //  Coverage: (only show if this key is present in the data)
+            coverage: {
+                title: "Coverage",
+                data:   d => {
+                    if ( d.average_coverage_per_reaction === 0 ) {
+                        return 0;
+                    }
+                    return d.average_coverage_per_reaction
+                        + " (&sigma;: " + d.stddev_coverage_per_reaction + ")"
+                }
+            }
+        },
+        colOrder: [
+            "class",
+            "name",
+            "reactions",
+            "gene_count",
+            "genes_per_rxn",
+            "present",
+            "fraction_complete",
+            "coverage",
+        ],
+    },
+    auxotrophy = {
+        data: [% attr.auxotrophy.json %],
+        cols: {
+            compound_name: {
+                title: "Compound",
+                data:   d => d.compound_name,
+                render: ( data, type, d, meta ) => {
+                    return type === 'display'
+                        ? '<a href="http://modelseed.org/biochem/compounds/' + d.id + '">' + d.compound_name + '</a>'
+                        :   d.compound_name;
+                }
+            },
+            reactions_required: {
+                title: "Reactions required",
+                data:   d => d.reactions_required,
+
+            },
+            gapfilled_reactions: {
+                title: "Gap-filled reactions",
+                data:   d => d.gapfilled_reactions,
+
+            },
+            is_auxotrophic: {
+                title: "Auxotrophic",
+                data:   d => d.is_auxotrophic,
+                render: ( data, type, d, meta ) => {
+                    return type === 'display'
+                        ? d.is_auxotrophic
+                            ? "Yes"
+                            : "No"
+                        : d.is_auxotrophic
+                }
+            }
+        },
+        colOrder: [
+            'compound_name',
+            'reactions_required',
+            'gapfilled_reactions',
+            'is_auxotrophic',
+        ],
+    }
+
+    $('#nav-tab a').on('click', function (e) {
+      e.preventDefault()
+      $(this).tab('show')
+    })
+
+    $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
+        $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust();
+    } );
+
+    $('#table-pathway').DataTable( {
+        buttons: [ 'copy', 'csv', 'excel' ],
+        data: Object.values( pathway.data ),
+        columns: pathway.colOrder.map( e => pathway.cols[ e ] ),
+    } );
+
+    $('#table-auxotrophy').DataTable( {
+        buttons: [ 'copy', 'csv', 'excel' ],
+        data: Object.values( auxotrophy.data ),
+        columns: auxotrophy.colOrder.map( e => auxotrophy.cols[ e ] ),
+    } );
+
+} );
+</script>
+</body>
+</html>

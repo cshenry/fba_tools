@@ -4,9 +4,11 @@ use warnings;
 use Carp qw(cluck);
 use Config::Simple;
 use DateTime;
+use Bio::KBase::ObjectAPI::KBaseGenomes::Feature;
 
 our $reaction_hash;
 our $compound_hash;
+our $pathway_hash;
 our $kegg_hash;
 our $config = undef;
 our $ctx = undef;
@@ -44,15 +46,231 @@ sub reaction_hash {
 	return $reaction_hash;
 };
 
+sub metabolite_hash {
+	my ($args) = @_;
+	$args = Bio::KBase::utilities::args($args,["priority"],{
+		compartment => "c",
+		compartment_index => 0,
+		priority => 0,
+		hashes => {
+			ids => {},
+			names => {},
+			structures => {},
+			base_structures => {},
+			formulas => {}
+		}
+	});
+	my $cmp = $args->{compartment}.$args->{compartment_index};
+	my $suffix = "";
+	if (length($args->{compartment}) > 0) {
+		$suffix = "_".$cmp;
+	}
+	my $priority = $args->{priority};
+	my $cpdhash = Bio::KBase::utilities::compound_hash();
+	foreach my $cpdid (keys(%{$cpdhash})) {
+		my $data = $cpdhash->{$cpdid};
+		if ($cpdid =~ m/(cpd\d+)/) {
+			$args->{hashes}->{ids}->{$1}->{$cpdid.$suffix} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{kegg_aliases})) {
+			foreach my $newid (@{$cpdhash->{$cpdid}->{kegg_aliases}}) {
+				$args->{hashes}->{ids}->{$newid}->{$cpdid.$suffix} = $priority;
+			}
+		}
+		if (defined($cpdhash->{$cpdid}->{bigg_aliases})) {
+			foreach my $newid (@{$cpdhash->{$cpdid}->{bigg_aliases}}) {
+				$args->{hashes}->{ids}->{$newid}->{$cpdid.$suffix} = $priority;
+			}
+		}
+		if (defined($cpdhash->{$cpdid}->{metacyc_aliases})) {
+			foreach my $newid (@{$cpdhash->{$cpdid}->{metacyc_aliases}}) {
+				$args->{hashes}->{ids}->{$newid}->{$cpdid.$suffix} = $priority;
+			}
+		}
+		if (defined($cpdhash->{$cpdid}->{inchikey})) {
+			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{inchikey}}->{$cpdid.$suffix} = $priority;
+			my $array = [split(/[_-]/,$cpdhash->{$cpdid}->{inchikey})];
+			$args->{hashes}->{base_structures}->{$array->[0]}->{$cpdid.$suffix} = $priority;
+			$args->{hashes}->{nochargestructures}->{$array->[0]."-".$array->[1]}->{$cpdid.$suffix} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{smiles})) {
+			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{smiles}}->{$cpdid.$suffix} = $priority;
+		}
+		my $formula_adjusted = 0;
+		if (defined($cpdhash->{$cpdid}->{structure})) {
+			if ($cpdhash->{$cpdid}->{structure} =~ m/InChI\=1S\/(.+)\//) {
+				my $formula = $1;
+				$formula =~ s/\.//g;
+				$cpdhash->{$cpdid}->{formula} = $formula;
+				$formula_adjusted = 1;
+			}
+			$args->{hashes}->{structures}->{$cpdhash->{$cpdid}->{structure}}->{$cpdid.$suffix} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{formula})) {
+			if ($formula_adjusted == 0) {
+				$cpdhash->{$cpdid}->{formula} = Bio::KBase::utilities::neutralize_formula($cpdhash->{$cpdid}->{formula},$cpdhash->{$cpdid}->{charge});
+			}
+			$args->{hashes}->{formulas}->{$cpdhash->{$cpdid}->{formula}}->{$cpdid.$suffix} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{name})) {
+			$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$cpdid}->{name})}->{$cpdid.$suffix} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{abbreviation})) {
+			$args->{hashes}->{names}->{$cpdhash->{$cpdid}->{abbreviation}}->{$cpdid.$suffix} = $priority;
+		}
+		if (defined($cpdhash->{$cpdid}->{names})) {
+			foreach my $name (@{$cpdhash->{$cpdid}->{names}}) {
+				$args->{hashes}->{names}->{$name}->{$cpdid.$suffix} = $priority;
+			}
+		}
+	}
+}
+
+sub find_matching_metabolite {
+	my ($peak_hash,$search_hash,$id,$query) = @_;
+	my $matches = 0;
+	if (!defined($peak_hash->{$id})) {
+		my $querylist = [split(/;/,$query)];
+		for (my $j=0; $j < @{$querylist}; $j++) {
+			#for (my $i=1; $i < 10; $i++) {
+				#if (!defined($peak_hash->{$id}) && defined($search_hash->{$querylist->[$j]})) {
+					foreach my $cpdid (keys(%{$search_hash->{$querylist->[$j]}})) {
+						#if ($search_hash->{$querylist->[$j]}->{$cpdid} == $i) {
+							$matches++;
+							$peak_hash->{$id}->{$cpdid} = $search_hash->{$querylist->[$j]};
+						#}
+					}
+				#}
+			#}
+		}
+	}
+	return $matches;
+}
+
 sub compound_hash {
-	if (!defined($reaction_hash)) {
+	if (!defined($compound_hash)) {
 		my $cpddata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","compounds_json"))}));
 		for (my $i=0; $i < @{$cpddata}; $i++) {
 			$compound_hash->{$cpddata->[$i]->{id}} = $cpddata->[$i];
+			if (defined($cpddata->[$i]->{formula}) && defined($cpddata->[$i]->{charge})) {
+				$compound_hash->{$cpddata->[$i]->{id}}->{neutral_formula} = Bio::KBase::utilities::compute_neutral_formula($cpddata->[$i]->{formula},$cpddata->[$i]->{charge},$cpddata->[$i]->{id});
+			}
 		}
 	}
 	return $compound_hash;
-};
+}
+
+sub pathway_hash {
+	if (!defined($pathway_hash)) {
+		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE(Bio::KBase::utilities::conf("ModelSEED","kegg_pathways"));
+
+        my ( $header, @pathways ) = @$lines;
+        for ( @pathways ) {
+            my ( $source, $id, $name, $classes, $reactions ) = split /\t/, $_;
+            $id =~ s/map//;
+            $pathway_hash->{ $id } = {
+                source      => $source,
+                name        => $name,
+                classes     => $classes
+                    ? [ split /;\s/, $classes ]
+                    : [],
+                reactions   => $reactions
+                    ? [ split /\|/, $reactions ]
+                    : [],
+            };
+        }
+	}
+	return $pathway_hash;
+}
+
+sub compute_neutral_formula {
+	my ($formula,$charge,$id) = @_;
+	my $diff = 0-$charge;
+	if ($id eq "cpd00006" || $id eq "cpd00003") {
+		$diff++;
+	}
+	if ($diff == 0) {
+		return $formula;
+	}
+	if ($formula =~ m/H(\d+)/) {
+		my $count = $1;
+		$count += $diff;
+		$formula =~ s/H(\d+)/H$count/;
+	} elsif ($formula =~ m/.H$/) {
+		if ($diff < 0) {
+			$formula =~ s/H$//;
+		} else {
+			$diff++;
+			$formula .= $diff;
+		}
+	} elsif ($formula =~ m/H[A-Z]/) {
+		if ($diff < 0) {
+			$formula =~ s/H([A-Z])/$1/;
+		} else {
+			$diff++;
+			$formula =~ s/H([A-Z])/H$diff$1/;
+		}
+	}
+	return $formula;
+}
+
+sub compute_proteins_from_fasta_gene_data {
+	my ($filename,$genes) = @_;
+	my $proteins = [];
+	my $contigs = [];
+	my $idhash = {};
+	open (my $fh, "<", $filename);
+	my $id;
+	my $curseq = "";
+	my $contigcount = 0;
+	my $genecount = 0;
+	my $totallength = 0;
+	while (my $line = <$fh>) {
+    		$line =~ s/\r//;
+        chomp($line);
+        if ($line =~ m/\>([^\s]+)/) {
+	        	my $newid = $1;
+	        	if (defined($id) && length($curseq) > 0) {
+	        		$contigcount++;
+	        		$totallength += length($curseq);
+	        		if (defined($genes->{$id})) {
+	        			for (my $j=0; $j < @{$genes->{$id}}; $j++) {
+	        				my $dna = substr($curseq,$genes->{$id}->[$j]->[0]-1,$genes->{$id}->[$j]->[1]-$genes->{$id}->[$j]->[0]);
+	        				if ($genes->{$id}->[$j]->[0] == -1) {
+	        					$dna = scalar reverse $dna;
+	        					$dna =~ s/A/M/g;
+							$dna =~ s/a/m/g;
+							$dna =~ s/T/A/g;
+							$dna =~ s/t/a/g;
+							$dna =~ s/M/T/g;
+							$dna =~ s/m/t/g;
+							$dna =~ s/G/M/g;
+							$dna =~ s/g/m/g;
+							$dna =~ s/C/G/g;
+							$dna =~ s/c/g/g;
+							$dna =~ s/M/C/g;
+							$dna =~ s/m/c/g;
+	        				}
+	        				my $prot = Bio::KBase::ObjectAPI::KBaseGenomes::Feature::translate_seq({},$dna);
+	        				$genecount++;
+	        				$idhash->{$id."_".$genes->{$id}->[$j]->[0]."_".$genes->{$id}->[$j]->[1]} = {protein => $prot,"index" => $genecount-1};
+	        				push(@{$proteins},$prot);
+	        				push(@{$contigs},$id);
+	        			}
+	        		}
+	        	}
+        		$curseq = "";
+        		$id = $newid;
+        	} else {
+        		$curseq .= $line;
+        	}
+	}
+	close($fh);
+	print "Gene count:".$genecount."\n";
+	print "Total length:".$totallength."\n";
+	print "Contig count:".$contigcount."\n";
+	return ($proteins,$contigs,$idhash);
+}
 
 sub style {
 	return "	<style>
@@ -83,6 +301,20 @@ sub to_json {
 		$JSON->pretty(1);
     }
     return $JSON->encode($ref);
+}
+
+=head3 deep_copy
+
+Definition:
+	REF Bio::KBase::utilities::deep_copy(ref);
+Description:
+
+=cut
+
+sub deep_copy {
+	my ($ref) = @_;
+	my $serialized = Bio::KBase::ObjectAPI::utilities::TOJSON($ref);
+	return Bio::KBase::ObjectAPI::utilities::FROMJSON($serialized);
 }
 
 sub arguments {
@@ -144,6 +376,28 @@ sub gapfilling_html_table {
 	}
 	return $gapfilltable;
 };
+
+sub build_report_from_template {
+	my ($name,$hash) = @_;
+	my $filename = Bio::KBase::utilities::conf("ModelSEED","template_directory").$name.".html";
+	my $data = Bio::KBase::ObjectAPI::utilities::LOADFILE($filename);
+	for (my $i=0; $i < @{$data}; $i++) {
+		while (1) {
+			if ($data->[$i] =~ m/\|([^\|]+)\|/) {
+			my $name = $1;
+			my $replace = "";
+			if (defined($hash->{$name})) {
+				$replace = $hash->{$name};
+
+			}
+			$data->[$i] =~ s/\|$name\|/$replace/;
+			} else {
+				last;
+			}
+		}
+	}
+	return join("\n",@{$data});
+}
 
 sub print_report_message {
 	my ($args) = @_;
@@ -338,7 +592,7 @@ sub args {
 	    $args = {};
 	}
 	if (ref($args) ne "HASH") {
-		Bio::KBase::utilities::error("Arguments not hash");	
+		Bio::KBase::utilities::error("Arguments not hash");
 	}
 	if (defined($substitutions) && ref($substitutions) eq "HASH") {
 		foreach my $original (keys(%{$substitutions})) {
@@ -361,7 +615,7 @@ sub args {
 			if (!defined($args->{$argument})) {
 				$args->{$argument} = $optionalArguments->{$argument};
 			}
-		}	
+		}
 	}
 	return $args;
 }
@@ -391,7 +645,7 @@ sub conf {
 }
 
 #error: prints an error message
-sub error {	
+sub error {
 	my ($message) = @_;
     if (defined($config) && Bio::KBase::utilities::utilconf("fulltrace") == 1) {
 		Carp::confess($message);
@@ -415,7 +669,7 @@ sub close_debug {
 	}
 }
 
-sub create_context {	
+sub create_context {
 	my($parameters) = @_;
 	$parameters = Bio::KBase::utilities::args($parameters,["token","user"],{
 		method => "unknown",
@@ -459,7 +713,7 @@ sub timestamp {
 	if (defined($reset) && $reset == 1) {
 		$timestamp = DateTime->now()->datetime();
 	}
-	return $timestamp;	
+	return $timestamp;
 }
 
 {
@@ -502,6 +756,63 @@ sub timestamp {
         my($self,$msg) = @_;
         print STDERR $msg."\n";
     }
+}
+
+sub neutralize_formula {
+	my ($formula,$charge) = @_;
+	my $diff = 0-$charge;
+	if ($diff == 0) {
+		return $formula;
+	}
+	if ($formula =~ m/H(\d+)/) {
+		my $count = $1;
+		$count += $diff;
+		$formula =~ s/H(\d+)/H$count/;
+	} elsif ($formula =~ m/.H$/) {
+		if ($diff < 0) {
+			$formula =~ s/H$//;
+		} else {
+			$diff++;
+			$formula .= $diff;
+		}
+	} elsif ($formula =~ m/H[A-Z]/) {
+		if ($diff < 0) {
+			$formula =~ s/H([A-Z])/$1/;
+		} else {
+			$diff++;
+			$formula =~ s/H([A-Z])/H$diff$1/;
+		}
+	}
+	return $formula;
+}
+
+sub nameToSearchname {
+	my ($InName) = @_;
+	my $OriginalName = $InName;
+	my $ending = "";
+	if ($InName =~ m/-$/) {
+		$ending = "-";
+	}
+	$InName = lc($InName);
+	$InName =~ s/\s//g;
+	$InName =~ s/,//g;
+	$InName =~ s/-//g;
+	$InName =~ s/_//g;
+	$InName =~ s/\(//g;
+	$InName =~ s/\)//g;
+	$InName =~ s/\{//g;
+	$InName =~ s/\}//g;
+	$InName =~ s/\[//g;
+	$InName =~ s/\]//g;
+	$InName =~ s/\://g;
+	$InName =~ s/�//g;
+	$InName =~ s/'//g;
+	$InName .= $ending;
+	$InName =~ s/icacid/ate/g;
+	if($OriginalName =~ /^an? /){
+		$InName =~ s/^an?(.*)$/$1/;
+	}
+	return $InName;
 }
 
 1;

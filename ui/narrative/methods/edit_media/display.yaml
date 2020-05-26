@@ -2,12 +2,10 @@
 # Define basic display information
 #
 name     : Edit Media
-subtitle : |
-    Edit an existing media formulation.
+
 tooltip  : |
-    Edit an existing media formulation.
-screenshots :
-    []
+    Curate/edit an existing media formulation.
+screenshots : []
 
 icon: fba-teal.png
 
@@ -35,120 +33,109 @@ parameters :
         ui-name : |
             Media to edit
         short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth
-        long-hint  : |
-            Media specifies the set of chemical compounds organism can use for its growth
+            Media formulation specifies the set of chemical compounds organisms can use for growth, e.g. glucose, oxygen, etc.
+
     compounds_to_remove :
         ui-name : |
             Compounds to remove
         short-hint : |
-            Compounds to remove
-        long-hint  : |
-            Compounds to remove
+            Chemical compounds to remove from the existing media formulation.
+
     change_id :
         ui-name : |
             Compound ID
         short-hint : |
-            ID of compound to change
-        long-hint  : |
-            ID of compound to change
+            Chemical compound ID to change from the existing media formulation.
+
     change_concentration :
         ui-name : |
             Concentration
         short-hint : |
-            Concentration in mmol
-        long-hint  : |
-            Concentration in mmol
+            Change chemcial compound concentration in mmol.
+
     change_minflux :
         ui-name : |
             Min flux
         short-hint : |
-            Min flux in mmol/gm CDW hr
-        long-hint  : |
-            Min flux in mmol/gm CDW hr
+            Change chemical compound minimum flux in mmol/g/CDW hour. Note that CDW stands for cell dry weight. Positive values indicate the uptake rate and negative values indicate the excretion rate.
+
     change_maxflux :
         ui-name : |
             Max flux
         short-hint : |
-            Max flux in mmol/gm CDW hr
-        long-hint  : |
-            Max flux in mmol/gm CDW hr
+            Change the chemical compound maximum flux in mmol/g/CDW hour. Positive values indicate the uptake rate and negative values indicate the excretion rate.
+
     add_id :
         ui-name : |
             Compound ID
         short-hint : |
-            ID of compound to add
-        long-hint  : |
-            ID of compound to add
+            ID of the chemical compound to add to selected media formulation.
+
     add_concentration :
         ui-name : |
             Concentration
         short-hint : |
-            Concentration in mmol
-        long-hint  : |
-            Concentration in mmol
+            Chemical compound concentration in mmol.
+
     add_minflux :
         ui-name : |
             Min flux
         short-hint : |
-            Min flux in mmol/gm CDW hr
-        long-hint  : |
-            Min flux in mmol/gm CDW hr
+            Change the chemical compound minimum flux in mmol/g/CDW hour. Positive values indicate the uptake rate and negative values indicate the excretion rate.
+
     add_maxflux :
         ui-name : |
             Max flux
         short-hint : |
-            Max flux in mmol/gm CDW hr
-        long-hint  : |
-            Max flux in mmol/gm CDW hr
+            Change the chemical compound minimum flux in mmol/g/CDW hour. Positive values indicate the uptake rate and negative values indicate the excretion rate.
+
     media_output_id :
         ui-name : |
             Output media ID
         short-hint : |
-            Media specifies the set of chemical compounds organism can use for its growth
-        long-hint  : |
-            Media specifies the set of chemical compounds organism can use for its growth
+            Media formulation specifies the set of chemical compounds organisms can use for growth, e.g. glucose, oxygen, etc.
+
     pH_data :
         ui-name : |
             pH
         short-hint : |
-            pH of media
-        long-hint  : |
-            pH of media
+            Media formulation pH.
+
     temperature :
         ui-name : |
             Temperature
         short-hint : |
-            Temperature of media
-        long-hint  : |
-            Temperature of media
+            Media formulation tmperature.
+
     isDefined :
         ui-name : |
             Defined media
         short-hint : |
-            Check if media is defined
-        long-hint  : |
-            Check if media is defined
+            Check if media formulation is defined.
+
     type :
         ui-name : |
             Type of media
         short-hint : |
-            Type of media
-        long-hint  : |
-            Type of media
+            Type of media formulation (Biolog, Defined, or Undefined)
+
 parameter-groups:
   compounds_to_change:
     ui-name: |
       Compounds to change in media
     short-hint: |
-      Compounds to change in media
+      Compounds to change in the media.
   compounds_to_add:
     ui-name: |
       Compounds to add to media
     short-hint: |
-      Compounds to add to media
+      Compounds to add to the media.
 description : |
-    <p>Edit a media formulation by adding or removing compounds, changing concentrations, or adjusting flux bounds.</p>
+    <p>Media formulations often require custom curation in order to address individual scientific objectives.  The Edit Media App allows curation of media formulations by addition or removal of compounds, modification of compound concentrations, and/or flux bound adjustments. By adjusting flux bounds, the minimum and maximum uptake/excretion rates for each compound can be constrained for model simulation. Flux balance analysis (FBA) can be done in KBase via the <a href=“https://narrative.kbase.us/#catalog/apps/fba_tools/run_flux_balance_analysis/release”>Run Flux Balance Analysis App</a>. Adjusting the flux bound is especially useful if one wants to <a href=”https://narrative.kbase.us/#catalog/apps/fba_tools/gapfill_metabolic_model/release”> gapfill a metabolic model</a> and needs to constrain compound excretion by the model (e.g., draft metabolic models should not excrete oxygen when deriving a gapfill solution).</p>
+
+    <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
+    Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
 
 publications :
     -

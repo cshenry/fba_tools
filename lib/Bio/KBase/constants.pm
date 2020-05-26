@@ -168,6 +168,20 @@ our $compartment_trans = {
 	"Extracellular" => "e",
 	"Extra_organism" => "e",
 	"Cytosol" => "c",
+	extracellular => "e",
+    cellwall => "w",
+    periplasm => "p",
+    cytosol => "c",
+    golgi => "g",
+    endoplasm => "r",
+    lysosome => "l",
+    nucleus => "n",
+    chloroplast => "h",
+    mitochondria => "m",
+    peroxisome => "x",
+    vacuole => "v",
+    plastid => "d",
+    unknown => "u"
 };
 
 sub compartment_trans {
@@ -292,43 +306,371 @@ sub aa_abbrev {
 		
 sub auxotrophy_thresholds {
 	return {
-		cpd00065 => [9,3,32,"L-Tryptophan"],
-		cpd00069 => [9,3,31,"L-Tyrosine"],
-		cpd00066 => [9,3,30,"L-Phenylalanine"],
-		cpd00156 => [4,3,29,"L-Valine"],
-		cpd00322 => [9,3,28,"L-Isoleucine"],
-		cpd00107 => [9,3,27,"L-Leucine"],
-		cpd00035 => [7,3,26,"L-Alanine"],
-		cpd00041 => [7,3,25,"L-Aspartate"],
-		cpd00132 => [9,3,24,"L-Asparagine"],
-		cpd00023 => [8,3,23,"L-Glutamate"],
-		cpd00053 => [9,3,22,"L-Glutamine"],
-		cpd00054 => [9,3,21,"L-Serine"],
-		cpd00161 => [7,3,20,"L-Threonine"],
-		cpd00033 => [6,3,19,"Glycine"],
-		cpd00060 => [9,2,18,"L-Methionine"],
-		cpd00017 => [9,2,-1,"S-Adenosyl-L-methionine"],
-		cpd00084 => [6,3,17,"L-Cysteine"],
-		cpd00039 => [8,4,16,"L-Lysine"],
-		cpd00119 => [7,3,15,"L-Histidine"],
-		cpd00051 => [9,3,14,"L-Arginine"],
-		cpd00129 => [7,3,13,"L-Proline"],
-		cpd00118 => [8,3,12,"Putrescine"],
-		cpd00264 => [10,3,11,"Spermidine"],
-		cpd00028 => [8,5,10,"Heme"],
-		cpd00557 => [7,8,-1,"Siroheme"],
-		cpd00635 => [7,6,-1,"Cbl"],
-#		cpd00166 => [7,6,-1,"Calomide"],
-		cpd00218 => [6,3,8,"Niacin"],
+		cpd00065 => [4,0.3,"L-Tryptophan"],
+		cpd00069 => [3,0.3,"L-Tyrosine"],
+		cpd00066 => [3,0.3,"L-Phenylalanine"],
+		cpd00156 => [2,0.3,"L-Valine"],
+		cpd00322 => [3,0.3,"L-Isoleucine"],
+		cpd00107 => [2,0.3,"L-Leucine"],
+		cpd00035 => [1,0.3,"L-Alanine"],#*
+		cpd00041 => [1,0.3,"L-Aspartate"],#*
+		cpd00132 => [1,0.3,"L-Asparagine"],
+		cpd00023 => [2,0.3,"L-Glutamate"],#*
+		cpd00053 => [2,0.3,"L-Glutamine"],#*
+		cpd00054 => [3,0.3,"L-Serine"],
+		cpd00161 => [2,0.3,"L-Threonine"],
+		cpd00033 => [2,0.3,"Glycine"],
+		cpd00060 => [3,0.3,"L-Methionine"],
+		cpd00017 => [3,0.3,"S-Adenosyl-L-methionine"],
+		cpd00084 => [4,0.3,"L-Cysteine"],
+		cpd00039 => [4,0.3,"L-Lysine"],
+		cpd00119 => [4,0.3,"L-Histidine"],
+		cpd00051 => [3,0.3,"L-Arginine"],
+		cpd00129 => [1,0.3,"L-Proline"],
+		cpd00118 => [2,0.3,"Putrescine"],
+		cpd00264 => [3,0.3,"Spermidine"],
+		cpd00028 => [7,0.3,"Heme"],
+		cpd00557 => [8,0.3,"Siroheme"],
+		cpd00635 => [2,0.3,"Cbl"],#*
+#		cpd00166 => [2,0.3,"Calomide"],
+		cpd00218 => [2,0.3,"Niacin"],
 #		cpd00003 => [6,3,8,"Niacin"],
-		cpd00220 => [5,3,7,"Riboflavin"],
-		cpd00644 => [10,3,6,"PAN"],
-		cpd00393 => [5,3,5,"Folate"],
-		cpd00305 => [2,2,4,"Thiamin"],
-#		cpd00056 => [2,2,4,"Thiamin"],
-		cpd00104 => [1,3,-1,"Biotin"],
-		cpd00215 => [2,3,2,"Pyridoxal"],
-		cpd00042 => [7,3,1,"GSH"]
+		cpd00220 => [2,0.3,"Riboflavin"],
+		cpd00644 => [2,0.3,"PAN"],
+		cpd00393 => [4,0.3,"Folate"],#*
+		cpd00305 => [3,0.3,"Thiamin"],#*
+#		cpd00056 => [2,0.3,"Thiamin"],
+		cpd00104 => [3,0.3,"Biotin"],#*
+		cpd00215 => [1,0.3,"Pyridoxal"],
+		cpd00042 => [2,0.3,"GSH"]
+	};
+}
+
+sub biomass_hash {
+	return {
+		cpd00002 => 1,
+		cpd00038 => 1,
+		cpd00052 => 1,
+		cpd00062 => 1,
+		cpd00115 => 1,
+		cpd00241 => 1,
+		cpd00356 => 1,
+		cpd00357 => 1,
+		cpd00023 => 1,
+		cpd00033 => 1,
+		cpd00035 => 1,
+		cpd00039 => 1,
+		cpd00041 => 1,
+		cpd00051 => 1,
+		cpd00053 => 1,
+		cpd00054 => 1,
+		cpd00060 => 1,
+		cpd00065 => 1,
+		cpd00066 => 1,
+		cpd00069 => 1,
+		cpd00084 => 1,
+		cpd00107 => 1,
+		cpd00119 => 1,
+		cpd00129 => 1,
+		cpd00132 => 1,
+		cpd00156 => 1,
+		cpd00161 => 1,
+		cpd00322 => 1,
+		cpd11416 => 1,
+		cpd17041 => 1,
+		cpd17042 => 1,
+		cpd17043 => 1,
+		cpd00010 => 1,
+		cpd11493 => 1,
+		cpd00003 => 1,
+		cpd00006 => 1,
+		cpd00205 => 1,
+		cpd00254 => 1,
+		cpd10516 => 1,
+		cpd00063 => 1,
+		cpd00009 => 1,
+		cpd00099 => 1,
+		cpd00149 => 1,
+		cpd00058 => 1,
+		cpd00015 => 1,
+		cpd10515 => 1,
+		cpd00030 => 1,
+		cpd00048 => 1,
+		cpd00034 => 1,
+		cpd00016 => 1,
+		cpd00220 => 1,
+		cpd00017 => 1,
+		cpd00201 => 1,
+		cpd00087 => 1,
+		cpd00345 => 1,
+		cpd00042 => 1,
+		cpd00028 => 1,
+		cpd00557 => 1,
+		cpd00264 => 1,
+		cpd00118 => 1,
+		cpd00056 => 1,
+		cpd15560 => 1,
+		cpd15352 => 1,
+		cpd15500 => 1,
+		cpd00166 => 1,
+		cpd15793 => 1,
+		cpd15794 => 1,
+		cpd15795 => 1,
+		cpd15722 => 1,
+		cpd15723 => 1,
+		cpd15540 => 1,
+		cpd15533 => 1,
+		cpd15695 => 1,
+		cpd15696 => 1,
+		cpd15432 => 1,
+		cpd02229 => 1,
+		cpd15665 => 1,
+		cpd00104 => 1,
+		cpd00037 => 1,
+		cpd00050 => 1,
+		cpd15748 => 1,
+		cpd15757 => 1,
+		cpd15766 => 1,
+		cpd15775 => 1,
+		cpd15749 => 1,
+		cpd15758 => 1,
+		cpd15767 => 1,
+		cpd15776 => 1,
+		cpd15750 => 1,
+		cpd15759 => 1,
+		cpd15768 => 1,
+		cpd15777 => 1,
+		cpd15667 => 1,
+		cpd15668 => 1,
+		cpd15669 => 1,
+		cpd11459 => 1
+	};
+}
+
+sub amino_acids {
+	return {
+		cpd00065 => 204,
+		cpd00069 => 181,
+		cpd00066 => 165,
+		cpd00156 => 117,
+		cpd00322 => 131,
+		cpd00107 => 131,
+		cpd00035 => 89,
+		cpd00041 => 132,
+		cpd00132 => 132,
+		cpd00023 => 146,
+		cpd00053 => 146,
+		cpd00054 => 105,
+		cpd00161 => 119,
+		cpd00033 => 75,
+		cpd00060 => 149,
+		cpd00084 => 121,
+		cpd00039 => 147,
+		cpd00119 => 155,
+		cpd00051 => 175,
+		cpd00129 => 114
+	};	
+}
+
+sub cofactors {
+	return [qw(
+		cpd00062
+		cpd00014
+		cpd00091
+		cpd00052
+		cpd00096
+		cpd00046
+		cpd00038
+		cpd00031
+		cpd00126
+		cpd00002
+		cpd00008
+		cpd00018
+		cpd00097
+		cpd00986
+		cpd00109
+		cpd00110
+		cpd11620
+		cpd11621
+		cpd00228
+		cpd00823
+		cpd11665
+		cpd11669
+		cpd00733
+		cpd00734
+		cpd11807
+		cpd11808
+		cpd00364
+		cpd00415
+		cpd12505
+		cpd12576
+		cpd12669
+		cpd12694
+		cpd00003
+		cpd00004
+		cpd00005
+		cpd00006
+		cpd00074
+		cpd03422
+		cpd01997
+		cpd12370
+		cpd15666
+		cpd11574
+		cpd10516
+		cpd10515
+		cpd00971
+		cpd00254
+		cpd00244
+		cpd00205
+		cpd00149
+		cpd00063
+		cpd00058
+		cpd00048
+		cpd00034
+		cpd00030
+		cpd00047
+		cpd15560
+		cpd00001
+		cpd00009
+		cpd00010
+		cpd00011
+		cpd00012
+		cpd00013
+		cpd00015
+		cpd11609
+		cpd11610
+		cpd00067
+		cpd00099
+		cpd12713
+		cpd00242
+		cpd00007
+		cpd00025	
+	)];
+}
+
+sub class_abbreviations {
+	return {
+		Positive => "P",
+		Negative => "N",
+		Variable => "V",
+		"Positive variable" => "PV",
+		"Negative variable" => "NV",
+		Blocked => "B"
+	}
+}
+
+sub coupled_biomass_compounds {
+	return {
+		cpd11493 => ["cpd12370"],
+		cpd00166	 => ["cpd01997","cpd03422"],
+		cpd15665	 => ["cpd15666"]
+	};
+}
+
+sub gene_annotation_pipeline {
+	return  [
+		#{ name => 'call_features_rRNA_SEED' },
+		#{ name => 'call_features_tRNA_trnascan' },
+		#{ name => 'call_features_repeat_region_SEED',repeat_region_SEED_parameters => { } },
+		#{ name => 'call_selenoproteins', failure_is_not_fatal => 1 },
+		#{ name => 'call_pyrrolysoproteins', failure_is_not_fatal => 1 },
+		#{ name => 'call_features_strep_suis_repeat',condition => '$genome->{scientific_name} =~ /^Streptococcus\s/' },
+		#{ name => 'call_features_strep_pneumo_repeat',condition => '$genome->{scientific_name} =~ /^Streptococcus\s/' },
+		#{ name => 'call_features_crispr', failure_is_not_fatal => 1 },
+		#{ name => 'call_features_CDS_prodigal' },
+		#{ name => 'call_features_CDS_glimmer3', failure_is_not_fatal => 1, glimmer3_parameters => {} },
+		{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
+		{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
+		#{ name => 'annotate_proteins_phage', phage_parameters => { annotate_hypothetical_only => 1 } },
+		{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } },
+		#{ name => 'propagate_genbank_feature_metadata', propagate_genbank_feature_metadata_parameters => {} },
+		#{ name => 'resolve_overlapping_features', resolve_overlapping_features_parameters => {} },
+		#{ name => 'classify_amr', failure_is_not_fatal => 1 },
+		#{ name => 'renumber_features' },
+		#{ name => 'annotate_special_proteins', failure_is_not_fatal => 1 },
+		#{ name => 'annotate_families_figfam_v1', failure_is_not_fatal => 1 },
+		#{ name => 'annotate_families_patric', failure_is_not_fatal => 1 },
+		#{ name => 'annotate_null_to_hypothetical' },
+		#{ name => 'find_close_neighbors', failure_is_not_fatal => 1 },
+		#{ name => 'annotate_strain_type_MLST', failure_is_not_fatal => 1  },
+	];
+}
+
+sub read_annotation_pipeline {
+	return  [
+		#{ name => 'call_features_rRNA_SEED' },
+		#{ name => 'call_features_tRNA_trnascan' },
+		#{ name => 'call_features_repeat_region_SEED',repeat_region_SEED_parameters => { } },
+		#{ name => 'call_selenoproteins', failure_is_not_fatal => 1 },
+		#{ name => 'call_pyrrolysoproteins', failure_is_not_fatal => 1 },
+		#{ name => 'call_features_strep_suis_repeat',condition => '$genome->{scientific_name} =~ /^Streptococcus\s/' },
+		#{ name => 'call_features_strep_pneumo_repeat',condition => '$genome->{scientific_name} =~ /^Streptococcus\s/' },
+		#{ name => 'call_features_crispr', failure_is_not_fatal => 1 },
+		#{ name => 'call_features_CDS_prodigal' },
+		#{ name => 'call_features_CDS_glimmer3', failure_is_not_fatal => 1, glimmer3_parameters => {} },
+		{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
+		{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
+		#{ name => 'annotate_proteins_phage', phage_parameters => { annotate_hypothetical_only => 1 } },
+		{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } },
+		#{ name => 'propagate_genbank_feature_metadata', propagate_genbank_feature_metadata_parameters => {} },
+		#{ name => 'resolve_overlapping_features', resolve_overlapping_features_parameters => {} },
+		#{ name => 'classify_amr', failure_is_not_fatal => 1 },
+		#{ name => 'renumber_features' },
+		#{ name => 'annotate_special_proteins', failure_is_not_fatal => 1 },
+		#{ name => 'annotate_families_figfam_v1', failure_is_not_fatal => 1 },
+		#{ name => 'annotate_families_patric', failure_is_not_fatal => 1 },
+		#{ name => 'annotate_null_to_hypothetical' },
+		#{ name => 'find_close_neighbors', failure_is_not_fatal => 1 },
+		#{ name => 'annotate_strain_type_MLST', failure_is_not_fatal => 1  },
+	];
+}
+
+sub auxotrophy_transports {
+	return {
+		rxn00068 => "",
+		rxn09693 => "",
+		rxn05663 => "",
+		rxn05301 => "",
+		rxn05306 => "",
+		rxn05669 => "",
+		rxn05244 => "",
+		rxn05243 => "",
+		rxn05496 => "",
+		rxn05217 => "",
+		rxn05508 => "",
+		rxn05307 => "",
+		rxn05300 => "",
+		rxn05582 => "",
+		rxn09672 => "",
+		rxn09696 => "",
+		rxn09690 => "",
+		rxn05297 => "",
+		rxn09678 => "",
+		rxn05305 => "",
+		rxn05299 => "",
+		rxn05303 => "",
+		rxn05638 => "",
+		rxn05687 => "",
+		rxn05652 => "",
+		rxn12666 => "",
+		rxn10147 => "",
+		rxn05310 => "",
+		rxn05645 => "",
+		rxn05308 => "",
+		rxn05255 => "",
+		rxn09657 => "",
+		rxn05148 => ""
+	};
+}
+
+sub atomic_masses {
+	return {
+		C => 12,
+		H => 1.007825,
+		N => 14.003074,
+		O => 15.994915,
+		P => 30.973763,
+		S => 31.972072
 	};
 }
 
@@ -521,142 +863,6 @@ sub core_reactions {
 		['rxn14426','>'],
 		['rxn14427','>'],
 		['rxn14428','>']
-	];
-}
-
-sub cofactors {
-	return [qw(
-		cpd00047
-		cpd15560
-		cpd12370
-		cpd00001
-		cpd00009
-		cpd00010
-		cpd00011
-		cpd00012
-		cpd00013
-		cpd00015
-		cpd11609
-		cpd11610
-		cpd00067
-		cpd00099
-		cpd12713
-		cpd00242
-		cpd00007
-		cpd00025
-		cpd00062
-		cpd00014
-		cpd00091
-		cpd00052
-		cpd00096
-		cpd00046
-		cpd00038
-		cpd00031
-		cpd00126
-		cpd00002
-		cpd00008
-		cpd00018
-		cpd00097
-		cpd00986
-		cpd00109
-		cpd00110
-		cpd11620
-		cpd11621
-		cpd00228
-		cpd00823
-		cpd11665
-		cpd11669
-		cpd00733
-		cpd00734
-		cpd11807
-		cpd11808
-		cpd00364
-		cpd00415
-		cpd12505
-		cpd12576
-		cpd12669
-		cpd12694
-		cpd00003
-		cpd00004
-		cpd00005
-		cpd00006	
-	)];
-}
-
-sub class_abbreviations {
-	return {
-		Positive => "P",
-		Negative => "N",
-		Variable => "V",
-		"Positive variable" => "PV",
-		"Negative variable" => "NV",
-		Blocked => "B"
-	}
-}
-
-sub coupled_biomass_compounds {
-	return {
-		cpd11493 => ["cpd12370"],
-		cpd00166	 => ["cpd01997","cpd03422"],
-		cpd15665	 => ["cpd15666"]
-	};
-}
-
-sub gene_annotation_pipeline {
-	return  [
-		#{ name => 'call_features_rRNA_SEED' },
-		#{ name => 'call_features_tRNA_trnascan' },
-		#{ name => 'call_features_repeat_region_SEED',repeat_region_SEED_parameters => { } },
-		#{ name => 'call_selenoproteins', failure_is_not_fatal => 1 },
-		#{ name => 'call_pyrrolysoproteins', failure_is_not_fatal => 1 },
-		#{ name => 'call_features_strep_suis_repeat',condition => '$genome->{scientific_name} =~ /^Streptococcus\s/' },
-		#{ name => 'call_features_strep_pneumo_repeat',condition => '$genome->{scientific_name} =~ /^Streptococcus\s/' },
-		#{ name => 'call_features_crispr', failure_is_not_fatal => 1 },
-		#{ name => 'call_features_CDS_prodigal' },
-		#{ name => 'call_features_CDS_glimmer3', failure_is_not_fatal => 1, glimmer3_parameters => {} },
-		{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
-		{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
-		#{ name => 'annotate_proteins_phage', phage_parameters => { annotate_hypothetical_only => 1 } },
-		{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } },
-		#{ name => 'propagate_genbank_feature_metadata', propagate_genbank_feature_metadata_parameters => {} },
-		#{ name => 'resolve_overlapping_features', resolve_overlapping_features_parameters => {} },
-		#{ name => 'classify_amr', failure_is_not_fatal => 1 },
-		#{ name => 'renumber_features' },
-		#{ name => 'annotate_special_proteins', failure_is_not_fatal => 1 },
-		#{ name => 'annotate_families_figfam_v1', failure_is_not_fatal => 1 },
-		#{ name => 'annotate_families_patric', failure_is_not_fatal => 1 },
-		#{ name => 'annotate_null_to_hypothetical' },
-		#{ name => 'find_close_neighbors', failure_is_not_fatal => 1 },
-		#{ name => 'annotate_strain_type_MLST', failure_is_not_fatal => 1  },
-	];
-}
-
-sub read_annotation_pipeline {
-	return  [
-		#{ name => 'call_features_rRNA_SEED' },
-		#{ name => 'call_features_tRNA_trnascan' },
-		#{ name => 'call_features_repeat_region_SEED',repeat_region_SEED_parameters => { } },
-		#{ name => 'call_selenoproteins', failure_is_not_fatal => 1 },
-		#{ name => 'call_pyrrolysoproteins', failure_is_not_fatal => 1 },
-		#{ name => 'call_features_strep_suis_repeat',condition => '$genome->{scientific_name} =~ /^Streptococcus\s/' },
-		#{ name => 'call_features_strep_pneumo_repeat',condition => '$genome->{scientific_name} =~ /^Streptococcus\s/' },
-		#{ name => 'call_features_crispr', failure_is_not_fatal => 1 },
-		#{ name => 'call_features_CDS_prodigal' },
-		#{ name => 'call_features_CDS_glimmer3', failure_is_not_fatal => 1, glimmer3_parameters => {} },
-		{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {} },
-		{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
-		#{ name => 'annotate_proteins_phage', phage_parameters => { annotate_hypothetical_only => 1 } },
-		{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } },
-		#{ name => 'propagate_genbank_feature_metadata', propagate_genbank_feature_metadata_parameters => {} },
-		#{ name => 'resolve_overlapping_features', resolve_overlapping_features_parameters => {} },
-		#{ name => 'classify_amr', failure_is_not_fatal => 1 },
-		#{ name => 'renumber_features' },
-		#{ name => 'annotate_special_proteins', failure_is_not_fatal => 1 },
-		#{ name => 'annotate_families_figfam_v1', failure_is_not_fatal => 1 },
-		#{ name => 'annotate_families_patric', failure_is_not_fatal => 1 },
-		#{ name => 'annotate_null_to_hypothetical' },
-		#{ name => 'find_close_neighbors', failure_is_not_fatal => 1 },
-		#{ name => 'annotate_strain_type_MLST', failure_is_not_fatal => 1  },
 	];
 }
 

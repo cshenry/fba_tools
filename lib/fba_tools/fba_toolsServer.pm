@@ -29,11 +29,14 @@ our $CallContext;
 
 our %return_counts = (
         'build_metabolic_model' => 1,
+        'characterize_genome_metabolism_using_model' => 1,
+        'run_model_characterization' => 1,
         'build_plant_metabolic_model' => 1,
         'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
         'run_flux_balance_analysis' => 1,
         'compare_fba_solutions' => 1,
+        'lookup_modelseed_ids' => 1,
         'propagate_model_to_new_genome' => 1,
         'simulate_growth_on_phenotype_data' => 1,
         'merge_metabolic_models_into_community_model' => 1,
@@ -74,16 +77,20 @@ our %return_counts = (
         'export_phenotype_simulation_set_as_excel_file' => 1,
         'export_phenotype_simulation_set_as_tsv_file' => 1,
         'bulk_export_objects' => 1,
+        'run_fba_tools_tests' => 1,
         'status' => 1,
 );
 
 our %method_authentication = (
         'build_metabolic_model' => 'required',
+        'characterize_genome_metabolism_using_model' => 'required',
+        'run_model_characterization' => 'required',
         'build_plant_metabolic_model' => 'required',
         'build_multiple_metabolic_models' => 'required',
         'gapfill_metabolic_model' => 'required',
         'run_flux_balance_analysis' => 'required',
         'compare_fba_solutions' => 'required',
+        'lookup_modelseed_ids' => 'required',
         'propagate_model_to_new_genome' => 'required',
         'simulate_growth_on_phenotype_data' => 'required',
         'merge_metabolic_models_into_community_model' => 'required',
@@ -124,6 +131,7 @@ our %method_authentication = (
         'export_phenotype_simulation_set_as_excel_file' => 'required',
         'export_phenotype_simulation_set_as_tsv_file' => 'required',
         'bulk_export_objects' => 'required',
+        'run_fba_tools_tests' => 'required',
 );
 
 sub _build_valid_methods
@@ -131,11 +139,14 @@ sub _build_valid_methods
     my($self) = @_;
     my $methods = {
         'build_metabolic_model' => 1,
+        'characterize_genome_metabolism_using_model' => 1,
+        'run_model_characterization' => 1,
         'build_plant_metabolic_model' => 1,
         'build_multiple_metabolic_models' => 1,
         'gapfill_metabolic_model' => 1,
         'run_flux_balance_analysis' => 1,
         'compare_fba_solutions' => 1,
+        'lookup_modelseed_ids' => 1,
         'propagate_model_to_new_genome' => 1,
         'simulate_growth_on_phenotype_data' => 1,
         'merge_metabolic_models_into_community_model' => 1,
@@ -176,6 +187,7 @@ sub _build_valid_methods
         'export_phenotype_simulation_set_as_excel_file' => 1,
         'export_phenotype_simulation_set_as_tsv_file' => 1,
         'bulk_export_objects' => 1,
+        'run_fba_tools_tests' => 1,
         'status' => 1,
     };
     return $methods;

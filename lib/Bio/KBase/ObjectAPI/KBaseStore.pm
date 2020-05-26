@@ -150,7 +150,7 @@ sub write_object_to_file_cache {
 
 #This function writes data to file cache if it's been flagged for local file caching
 sub read_object_from_file_cache {
-	my ($self,$ref,$options) = @_;
+	my ($self,$ref,$options,$original_ref) = @_;
 	my $cache_dir = Bio::KBase::utilities::conf("ModelSEED","kbase_file_cache");
 	if ($self->is_a_cache_target($ref) == 1) {
 		#Get WS metadata
@@ -167,7 +167,7 @@ sub read_object_from_file_cache {
 			my $meta = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
 			$filearray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cache_dir."/KBCache/".$info->[6]."/".$info->[0]."/".$info->[4]."/data");
 			my $data = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{$filearray}));
-			$self->process_object($meta,$data,$ref,$options);
+			$self->process_object($meta,$data,$original_ref,$options);
 			return 1;
 		}
 	}
@@ -187,7 +187,7 @@ sub process_object {
 		my $class = "Bio::KBase::ObjectAPI::".$module."::".$type;
 		if (($type eq "Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) || ($type eq "GenomeAnnotation")) {
 			require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
+			my $ga = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"));
 			my $gaoutput = $ga->get_genome_v1({
 				genomes       => [ {
 					"ref" => $origref
@@ -199,12 +199,36 @@ sub process_object {
 			});
 			$data = $gaoutput->{genomes}->[0]->{data};
 			$class = "Bio::KBase::ObjectAPI::KBaseGenomes::Genome";
+		} elsif ($type eq "Genome") {
+			if (defined($data->{cdss})) {
+				for (my $i = 0; $i < @{$data->{cdss}}; $i++) {
+					$data->{cdss}->[$i]->{type} = "CDS";
+					push(@{$data->{features}},$data->{cdss}->[$i]);
+				}
+			}
+			if (defined($data->{mrnas})) {
+				for (my $i = 0; $i < @{$data->{mrnas}}; $i++) {
+					$data->{mrnas}->[$i]->{type} = "CDS";
+					push(@{$data->{features}},$data->{mrnas}->[$i]);
+				}
+			}
+			if (defined($data->{non_coding_features})) {
+				for (my $i = 0; $i < @{$data->{non_coding_features}}; $i++) {
+					push(@{$data->{features}},$data->{non_coding_features}->[$i]);
+				}
+			}
+			for (my $i=0; $i < @{$data->{features}}; $i++) {
+				if (!defined($data->{features}->[$i]->{function}) && defined($data->{features}->[$i]->{functions}->[0])) {
+					$data->{features}->[$i]->{function} = join(" @ ",@{$data->{features}->[$i]->{functions}});
+				}
+			}
 		}
-		if ($type eq "AttributeMapping" || $type eq "MetaboliteMatrix" || $type eq "BinnedContigs" || $type eq "Assembly" || $type eq "MediaSet" || $type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
+		if ($type eq "GenomeSet" || $type eq "AttributeMapping" || $type eq "AnnotatedMetagenomeAssembly" || $type eq "ChemicalAbundanceMatrix" || $type eq "BinnedContigs" || $type eq "Assembly" || $type eq "MediaSet" || $type eq "ExpressionMatrix" || $type eq "ProteomeComparison" || $options->{raw} == 1) {
 			$self->cache()->{$ref} = $data;
 			$self->cache()->{$ref}->{_reference} = $info->[6]."/".$info->[0]."/".$info->[4];
 			$self->cache()->{$ref}->{_type} = $type;
 			$self->cache()->{$ref}->{_ref_chain} = $origref;
+			$self->cache()->{$ref}->{_wsinfo} = $info;
 		} else {
 			$self->cache()->{$ref} = $class->new($data);
 			$self->cache()->{$ref}->ref_chain($origref);
@@ -325,7 +349,7 @@ sub get_objects {
 			$refs->[$i] = $options->{parent}->{_ref_chain}.";".$refs->[$i];
 		}
 		if (!defined($self->cache()->{$finalref}) || $options->{refreshcache} == 1) {
-			if ($self->read_object_from_file_cache($finalref,$options) == 0) {
+			if ($self->read_object_from_file_cache($finalref,$options,$refs->[$i]) == 0) {
 				push(@{$newrefs},$refs->[$i]);
 			}
 		}
@@ -397,27 +421,27 @@ sub save_objects {
 	my $wsdata;
 	my $output = {};
 	foreach my $ref (keys(%{$refobjhash})) {
-			my $obj = $refobjhash->{$ref};
-			my $objdata = {
-				provenance => Bio::KBase::utilities::provenance()
-			};
-			if (defined($obj->{hash}) && $obj->{hash} == 1) {
-				$objdata->{type} = $obj->{type};
-				$objdata->{data} = $obj->{object};
-			} else {
-				$objdata->{type} = $obj->{object}->_type();
-				$objdata->{data} = $obj->{object}->serializeToDB();	
-			}
-			if (defined($obj->{hidden})) {
-				$objdata->{hidden} = $obj->{hidden};
-			}
-			if (defined($obj->{meta})) {
-				$objdata->{meta} = $obj->{meta};
-			}
-			if (defined($objdata->{provenance}->[0]->{method_params}->[0]->{notes})) {
-				$objdata->{meta}->{notes} = $objdata->{provenance}->[0]->{method_params}->[0]->{notes};
-			}
-			my $array = [split(/\//,$ref)];
+		my $obj = $refobjhash->{$ref};
+		my $objdata = {
+			provenance => Bio::KBase::utilities::provenance()
+		};
+		if (defined($obj->{hash}) && $obj->{hash} == 1) {
+			$objdata->{type} = $obj->{type};
+			$objdata->{data} = $obj->{object};
+		} else {
+			$objdata->{type} = $obj->{object}->_type();
+			$objdata->{data} = $obj->{object}->serializeToDB();	
+		}
+		if (defined($obj->{hidden})) {
+			$objdata->{hidden} = $obj->{hidden};
+		}
+		if (defined($obj->{meta})) {
+			$objdata->{meta} = $obj->{meta};
+		}
+		if (defined($objdata->{provenance}->[0]->{method_params}->[0]->{notes})) {
+			$objdata->{meta}->{notes} = $objdata->{provenance}->[0]->{method_params}->[0]->{notes};
+		}
+		my $array = [split(/\//,$ref)];
 		if (@{$array} < 2) {
 			Bio::KBase::ObjectAPI::utilities->error("Invalid reference:".$ref);
 		}
@@ -446,7 +470,7 @@ sub save_objects {
 		} else {
 			if ($objdata->{type} eq "KBaseGenomes.Genome" && Bio::KBase::utilities::conf("fba_tools","use_data_api") == 1) {
 				require "GenomeFileUtil/GenomeFileUtilClient.pm";
-				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::conf("fba_tools","call_back_url"));
+				my $ga = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"));
 				my $gaout = $ga->save_one_genome({
 					workspace => $array->[0],
 					name => $array->[1],
@@ -478,22 +502,22 @@ sub save_objects {
 		}
 	}
 	foreach my $ws (keys(%{$wsdata})) {
-			my $input = {objects => $wsdata->{$ws}->{objects}};
-			if ($ws  =~ m/^\d+$/) {
-				$input->{id} = $ws;
-			} else {
-				$input->{workspace} = $ws;
-			}
-			my $listout;
-			if (defined($self->user_override()) && length($self->user_override()) > 0) {
-				$listout = Bio::KBase::utilities::administer({
-					"command" => "saveObjects",
-					"user" => $self->user_override(),
-					"params" => $input
-				});
-			} else {
-				$listout = Bio::KBase::kbaseenv::save_objects($input);
-			}		
+		my $input = {objects => $wsdata->{$ws}->{objects}};
+		if ($ws  =~ m/^\d+$/) {
+			$input->{id} = $ws;
+		} else {
+			$input->{workspace} = $ws;
+		}
+		my $listout;
+		if (defined($self->user_override()) && length($self->user_override()) > 0) {
+			$listout = Bio::KBase::utilities::administer({
+				"command" => "saveObjects",
+				"user" => $self->user_override(),
+				"params" => $input
+			});
+		} else {
+			$listout = Bio::KBase::kbaseenv::save_objects($input);
+		}		
 		#Placing output into a hash of references pointing to object infos
 		for (my $i=0; $i < @{$listout}; $i++) {
 			$self->cache()->{$listout->[$i]->[6]."/".$listout->[$i]->[0]."/".$listout->[$i]->[4]} = $refobjhash->{$wsdata->{$ws}->{refs}->[$i]}->{object};

@@ -33,8 +33,7 @@
       }
    },
    "categories" : [
-      "active",
-      "metabolic_modeling"
+      "inactive"
    ],
    "authors" : [
       "chenry"
@@ -44,7 +43,7 @@
       "output" : "no-display"
    },
    "contact" : "http://kbase.us/contact-us/",
-   "visible" : true,
+   "visible" : false,
    "parameters" : [
       {
          "default_values" : [

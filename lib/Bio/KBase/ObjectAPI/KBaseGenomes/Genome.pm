@@ -647,5 +647,240 @@ sub add_gene {
 		locations => $parameters->{locations},
 	})
 }
+
+sub build_annotation_hashes {
+	my($self,$args) = @_;
+	$args = Bio::KBase::ObjectAPI::utilities::args(["template"],{
+		annotation_sources => ["_FUNCTION_","_SEED_"],
+		merge => 0,
+		coverage => 1
+	},$args);
+	my $output = {reaction_hash => {},function_hash => {}};
+	my $ontology_hash = Bio::KBase::kbaseenv::get_ontology_hash();
+	my $sso_hash = Bio::KBase::kbaseenv::get_sso_hash();
+	if (@{$args->{annotation_sources}} == 0) {
+		$args->{annotation_sources} = ["_FUNCTION_","_SEED_"];
+	}
+	my $ftr_match_count = 0;
+	my $seed_count = 0;
+	#Managing CDS vs genes
+	my $cds = [];
+	my $genes = [];
+	my $ftrs = $self->features();
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		if (lc($ftrs->[$i]->type()) eq "cds") {
+			push(@{$cds},$ftrs->[$i]);
+		} elsif (lc($ftrs->[$i]->type()) ne "mrna") {
+			push(@{$genes},$ftrs->[$i]);
+		}
+	}
+	my $numcds = @{$cds};
+	my $numgenes = @{$genes};
+	if ($numcds >= 2*$numgenes) {
+		$ftrs = $cds;
+	} else {
+		$ftrs = $genes;
+	}
+	#Processing annotation sources
+	my $anno_ontology = [];
+	my $anno_event = [];
+	for (my $j=0; $j < @{$args->{annotation_sources}}; $j++) {
+		if ($args->{annotation_sources}->[$j] eq "_FUNCTION_" || $args->{annotation_sources}->[$j] eq "_SEED_") {
+			push(@{$anno_ontology},undef);
+			push(@{$anno_event},undef);
+		} else {
+			for (my $k=0; $k < @{$self->ontology_events()}; $k++) {
+				if (length($args->{annotation_sources}->[$j]) > 0) {
+					if ($self->ontology_events()->[$k]->{description} eq $args->{annotation_sources}->[$j]) {
+						push(@{$anno_ontology},$self->ontology_events()->[$k]->{id});
+						push(@{$anno_event},$k);
+					}
+				} elsif (!defined($self->ontology_events()->[$k]->{description})) {
+					push(@{$anno_ontology},$self->ontology_events()->[$k]->{id});
+					push(@{$anno_event},$k);
+				}
+			}
+		}
+		print "ANNOTATION SOURCE:".$args->{annotation_sources}->[$j]."\t".$j."\tO:".$anno_ontology->[$j]."\tE:".$anno_event->[$j]."\n";
+	}
+	#Loading annotations from genes
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		my $compartments = $ftrs->[$i]->compartments();
+		my $ontterms = $ftrs->[$i]->ontology_terms();
+		my $match = 0;
+		my $seedmatch = 0;
+		for (my $j=0; $j < @{$args->{annotation_sources}}; $j++) {
+			if ($args->{annotation_sources}->[$j] eq "_FUNCTION_") {
+				my $roles = $ftrs->[$i]->roles();
+				for (my $m=0; $m < @{$roles}; $m++) {
+					my $rolematch = $self->manage_sso_term({
+						function_hash => $output->{function_hash},
+						role => $roles->[$m],
+						feature => $ftrs->[$i],
+						template => $args->{template},
+						compartments => $compartments,
+						coverage => $args->{coverage},
+					});
+					if ($rolematch == 1) {
+						$match = 1;
+						$seedmatch = 1;
+					}
+				}
+			} elsif ($args->{annotation_sources}->[$j] eq "_SEED_") {
+				#Scan through all ontology terms looking for SEED functional roles
+				foreach my $ont (keys(%{$ontterms})) {
+					foreach my $oid (keys(%{$ontterms->{$ont}})) {
+						my $rolematch = $self->manage_sso_term({
+							function_hash => $output->{function_hash},
+							role => $oid,
+							feature => $ftrs->[$i],
+							template => $args->{template},
+							compartments => $compartments,
+							coverage => $args->{coverage},
+						});
+						if ($rolematch == 1) {
+							$match = 1;
+							$seedmatch = 1;
+						}
+					}
+				}
+			} elsif (defined($ontterms->{$anno_ontology->[$j]})) {
+				my $seedmatch = 0;
+				foreach my $oid (keys(%{$ontterms->{$anno_ontology->[$j]}})) {
+					if (ref($ontterms->{$anno_ontology->[$j]}->{$oid}) eq  "ARRAY") {
+						foreach my $event (@{$ontterms->{$anno_ontology->[$j]}->{$oid}}) {
+							if ($event == $anno_event->[$j]) {
+								my $term = $oid;
+								$term =~ s/^META://;
+								if (defined($sso_hash->{$term})) {
+									my $rolematch = $self->manage_sso_term({
+										function_hash => $output->{function_hash},
+										role => $term,
+										feature => $ftrs->[$i],
+										template => $args->{template},
+										compartments => $compartments,
+										coverage => $args->{coverage},
+									});
+									if ($rolematch == 1) {
+										$match = 1;
+										$seedmatch = 1;
+									}
+								} elsif (defined($ontology_hash->{$term})) {
+									my $reactionmatch = $self->manage_reaction_term({
+										reaction_hash => $output->{reaction_hash},
+										term => $term,
+										feature => $ftrs->[$i],
+										template => $args->{template},
+										compartments => $compartments,
+										coverage => $args->{coverage},
+									});
+									if ($reactionmatch == 1) {
+										$match = 1;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if ($match == 1 && $args->{merge} == 0) {
+				last;
+			}
+		}
+		if ($match == 1) {
+			$ftr_match_count++;
+		}
+		if ($seedmatch == 1) {
+			$seed_count++;
+		}
+	}
+	return $output;
+}
+
+sub manage_sso_term {
+	my($self,$args) = @_;
+	$args = Bio::KBase::ObjectAPI::utilities::args(["function_hash","role","feature","template"],{
+		compartments => ["u"],
+		coverage => 1,
+		probability => 1
+	}, $args);
+	my $compartments = $args->{compartments};
+	my $cmpTranslation = Bio::KBase::constants::compartment_trans();
+	my $match = 0;
+	for (my $k=0; $k < @{$compartments}; $k++) {
+		my $abbrev = $compartments->[$k];
+		if (length($compartments->[$k]) > 1 && defined($cmpTranslation->{$compartments->[$k]})) {
+			$abbrev = $cmpTranslation->{$compartments->[$k]};
+		} elsif (length($compartments->[$k]) > 1 && !defined($cmpTranslation->{$compartments->[$k]})) {
+			print STDERR "Compartment ".$compartments->[$k]." not found!\n";
+		}
+		my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($args->{role});
+		if (defined($args->{template}->roleSearchNameHash()->{$searchrole})) {
+			foreach my $roleid (keys(%{$args->{template}->roleSearchNameHash()->{$searchrole}})) {
+				if ($args->{template}->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+					$match = 1;
+					if (!defined($args->{function_hash}->{$roleid}->{$abbrev})) {
+						$args->{function_hash}->{$roleid}->{$abbrev} = {
+							hit_count => 0,
+							non_gene_probability => 0,
+							non_gene_coverage => 0,
+							sources => {},
+							features => {}
+						};
+					}
+					$args->{function_hash}->{$roleid}->{$abbrev}->{features}->{$args->{feature}->id()} = {
+						feature_ref => "~/genome/features/id/".$args->{feature}->id(),
+						probability => $args->{probability},
+						coverage => $args->{coverage},
+						sources => {function => $args->{role}}
+					};
+				}
+			}
+		}
+	}
+	return $match;
+}
+
+sub manage_reaction_term {
+	my($self,$args) = @_;
+	my $ontology_hash = Bio::KBase::kbaseenv::get_ontology_hash();
+	$args = Bio::KBase::ObjectAPI::utilities::args(["reaction_hash","term","feature","template"],{
+		compartments => ["u"],
+		coverage => 1,
+		probability => 1
+	}, $args);
+	if (!defined($ontology_hash->{$args->{term}})) {
+		return 0;
+	}
+	my $compartments = $args->{compartments};
+	my $cmpTranslation = Bio::KBase::constants::compartment_trans();
+	for (my $k=0; $k < @{$compartments}; $k++) {
+		my $abbrev = $compartments->[$k];
+		if (length($compartments->[$k]) > 1 && defined($cmpTranslation->{$compartments->[$k]})) {
+			$abbrev = $cmpTranslation->{$compartments->[$k]};
+		} elsif (length($compartments->[$k]) > 1 && !defined($cmpTranslation->{$compartments->[$k]})) {
+			print STDERR "Compartment ".$compartments->[$k]." not found!\n";
+		}
+		foreach my $rid (keys(%{$ontology_hash->{$args->{term}}})) {
+			if (!defined($args->{reaction_hash}->{$rid}->{$abbrev})) {
+				$args->{reaction_hash}->{$rid}->{$abbrev} = {
+					hit_count => 0,
+					non_gene_probability => 0,
+					non_gene_coverage => 0,
+					sources => {},
+					features => {}
+				};
+			}
+			$args->{reaction_hash}->{$rid}->{$abbrev}->{features}->{$args->{feature}->id()} = {
+				feature_ref => "~/genome/features/id/".$args->{feature}->id(),
+				probability => $args->{probability},
+				coverage => $args->{coverage},
+				sources => {function => $args->{term}}
+			};
+		}
+	}
+	return 1;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

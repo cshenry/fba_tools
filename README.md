@@ -10,6 +10,13 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
+### VERSION: 2.0.0 (Released 2/23/2020)
+- Further improving model reconstruction and gapfilling to prevent overproduction ATP
+- Adding support for building models from multiple annotation sources (with LLNL team)
+- Adding support for metagenome model reconstruction
+- Adding model characterization tools to support pathway analysis, auxotrophy prediction, and reaction classification
+- Removing outdated, obfuscated, and nonfunctional apps
+
 ### VERSION: 1.7.8 (Released 10/16/2018)
 ------------------------------------------
 #### UPDATED FEATURES

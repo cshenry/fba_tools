@@ -25,9 +25,9 @@ package Bio::KBase::ObjectAPI::BaseObject;
 
 =head4 new
 
-    my $obj = Bio::KBase::ObjectAPI::Object->new();   # Initialize object with default parameters
-    my $obj = Bio::KBase::ObjectAPI::Object->new(\%); # Initialize object with hashref of parameters
-    my $obj = Bio::KBase::ObjectAPI::Object->new(%);  # Initialize object with hash of parameters
+	my $obj = Bio::KBase::ObjectAPI::Object->new();   # Initialize object with default parameters
+	my $obj = Bio::KBase::ObjectAPI::Object->new(\%); # Initialize object with hashref of parameters
+	my $obj = Bio::KBase::ObjectAPI::Object->new(%);  # Initialize object with hash of parameters
 
 =head3 Serialization
 
@@ -35,11 +35,11 @@ package Bio::KBase::ObjectAPI::BaseObject;
 
 Return a simple perl hash that can be passed to a JSON serializer.
 
-    my $data = $object->serializeToDB();
+	my $data = $object->serializeToDB();
 
 =head4 toJSON
 
-    my $string = $object->toJSON(\%);
+	my $string = $object->toJSON(\%);
 
 Serialize object to JSON. A hash reference of options may be passed
 as the first argument. Currently only one option is available C<pp>
@@ -47,13 +47,13 @@ which will pretty-print the ouptut.
 
 =head4 createHTML
 
-    my $string = $object->createHTML();
+	my $string = $object->createHTML();
 
 Returns an HTML document for the object.
 
 =head4 toReadableString
 
-    my $string = $object->toReadableString();
+	my $string = $object->toReadableString();
 
 =head3 Object Traversal
 
@@ -112,18 +112,18 @@ my $htmlheader = <<HEADER;
 <script type="text/javascript" charset="utf8" src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.js"></script>
 <script type="text/javascript">
   \$(document).ready(function() {
-    \$('#tab-header a').click(function (e) {
-      e.preventDefault();
-      \$(this).tab('show');
-    });
+	\$('#tab-header a').click(function (e) {
+	  e.preventDefault();
+	  \$(this).tab('show');
+	});
 
-    \$('.data-table').dataTable();
+	\$('.data-table').dataTable();
   });
 </script>
 <style type="text/css">
-    #tabs {
-        margin: 20px 50px;
-    }
+	#tabs {
+		margin: 20px 50px;
+	}
 </style>
 </head>
 HEADER
@@ -150,76 +150,82 @@ my $htmltail = <<TAIL;
 TAIL
 
 around BUILDARGS => sub {
-    my $orig  = shift;
-    my $class = shift;
-    my $hash = {};
-    if ( ref $_[0] eq 'HASH' ) {
-        $hash = shift;    
-    } elsif ( scalar @_ % 2 == 0 ) {
-        my %h = @_;
-        $hash = \%h;
-    }
-    my $objVersion = $hash->{__VERSION__};
-    my $classVersion = $class->__version__;
-    if (!defined($objVersion) && defined($hash->{parent})) {
-    	$objVersion = 1;
-    }
-    if (defined $objVersion && defined($classVersion) && $objVersion != $classVersion) {
-        if (defined(my $fn = $class->__upgrade__($objVersion))) {
-            $hash = $fn->($hash);
-        } else {
-            die "Invalid Object\n";
-        }
-    }   
+	my $orig  = shift;
+	my $class = shift;
+	my $hash = {};
+	if ( ref $_[0] eq 'HASH' ) {
+		$hash = shift;
+	} elsif ( scalar @_ % 2 == 0 ) {
+		my %h = @_;
+		$hash = \%h;
+	}
+	my $objVersion = $hash->{__VERSION__};
+	my $classVersion = $class->__version__;
+	if (!defined($objVersion) && defined($hash->{parent})) {
+		$objVersion = 1;
+	}
+	if (defined $objVersion && defined($classVersion) && $objVersion != $classVersion) {
+		if (defined(my $fn = $class->__upgrade__($objVersion))) {
+			$hash = $fn->($hash);
+		} else {
+			die "Invalid Object\n";
+		}
+	}
 
-    my $sos = $class->_subobjects();
-    foreach my $subobj (@{$sos}) {
-        if (defined($subobj->{singleton}) && $subobj->{singleton} == 1) {
-	    if (defined $hash->{$subobj->{name}}) {
+	my $sos = $class->_subobjects();
+	foreach my $subobj (@{$sos}) {
+		if (defined($subobj->{singleton}) && $subobj->{singleton} == 1) {
+		if (defined $hash->{$subobj->{name}}) {
 		$hash->{$subobj->{name}} = [$hash->{$subobj->{name}}];
-	    }
-	    else {
+		}
+		else {
 		$hash->{$subobj->{name}} = [];
-	    }
-        }
-    }
+		}
+		}
+	}
 
-    return $class->$orig($hash);
+	return $class->$orig($hash);
 };
 
 
 sub BUILD {
-    my ($self,$params) = @_;
-    # replace subobject data with info hash
-    foreach my $subobj (@{$self->_subobjects}) {
-        my $name = $subobj->{name};
-        my $class = $subobj->{class};
-        my $method = "_$name";
-        my $subobjs = $self->$method();
+	my ($self,$params) = @_;
+	# replace subobject data with info hash
+	foreach my $subobj (@{$self->_subobjects}) {
+		my $name = $subobj->{name};
+		my $class = $subobj->{class};
+		my $method = "_$name";
+		my $subobjs = $self->$method();
 
-        for (my $i=0; $i<scalar @$subobjs; $i++) {
-            my $data = $subobjs->[$i];
-            # create the info hash
-            my $info = {
-                created => 0,
-                class   => $class,
-                data    => $data
-            };
+		for (my $i=0; $i<scalar @$subobjs; $i++) {
+			my $data = $subobjs->[$i];
+			# create the info hash
+			my $info = {
+				created => 0,
+				class   => $class,
+				data	=> $data
+			};
 
-            $data->{parent} = $self; # set the parent
-            weaken($data->{parent}); # and make it weak
-            $subobjs->[$i] = $info; # reset the subobject with info hash
-        }
-    }
+			$data->{parent} = $self; # set the parent
+			weaken($data->{parent}); # and make it weak
+			$subobjs->[$i] = $info; # reset the subobject with info hash
+		}
+	}
 }
 
 sub ref_chain {
 	my ($self,$ref) = @_;
-	if (defined($ref)) {
-		$self->{_ref_chain} = $ref;
-	}
 	if (!defined($self->{_ref_chain})) {
-		$self->{_ref_chain} = "";
+		if (defined($ref)) {
+			$self->{_ref_chain} = $ref;
+		}
+		if (!defined($self->{_ref_chain})) {
+			if (defined($self->topparent()->{_ref_chain})) {
+				$self->{_ref_chain} = $self->topparent()->{_ref_chain};
+			} else {
+				$self->{_ref_chain} = "";
+			}
+		}
 	}
 	return $self->{_ref_chain};
 }
@@ -238,7 +244,8 @@ sub fix_reference {
 		}
 		my $newref = $self->store()->uuid_to_ref($uuid);
 		if (!defined($newref)) {
-			Bio::KBase::ObjectAPI::utilities::error("Attempting to save object with references to unsaved object:".$uuid);
+			#Bio::KBase::ObjectAPI::utilities::error("Attempting to save object with references to unsaved object:".$uuid);
+			return $uuid;
 		}
 		$ref =~ s/$uuid/$newref/;
 		return $ref;
@@ -272,27 +279,27 @@ sub fix_references {
 			} else {
 				$self->$att($self->fix_reference($self->$att()));
 			}
-		}	
+		}
 	}
 }
 
 sub serializeToDB {
-    my ($self) = @_;
-    my $data = {};
+	my ($self) = @_;
+	my $data = {};
 	$self->fix_references();
 	if ($self->can('translate_to_localrefs')) {
 		print("Converting to local references\n");
 		$self->translate_to_localrefs();
 	}
 	$data = { __VERSION__ => $self->__version__() } if defined $self->__version__();
-    my $attributes = $self->_attributes();
-    foreach my $item (@{$attributes}) {
-    	my $name = $item->{name};
-    	if ($name eq "isCofactor") {
-    		if ($self->$name() != 0 && $self->$name() != 1) {
+	my $attributes = $self->_attributes();
+	foreach my $item (@{$attributes}) {
+		my $name = $item->{name};
+		if ($name eq "isCofactor") {
+			if ($self->$name() != 0 && $self->$name() != 1) {
 				$self->$name(0);
-    		}
-    	}
+			}
+		}
 		if (defined($self->$name())) {
 			if ($item->{type} eq "Int" || $item->{type} eq "Num" || $item->{type} eq "Bool") {
 				$data->{$name} = $self->$name()+0;
@@ -322,8 +329,10 @@ sub serializeToDB {
 				}
 			} elsif ($name =~ m/^parameters$/) {
 				$data->{$name} = {};
-				foreach my $key (keys(%{$self->$name()})) {
-					$data->{$name}->{$key} = $self->$name()->{$key}."";
+				for my $key ( keys %{ $self->$name() } ) {
+					$data->{ $name }{ $key } = defined $self->$name()->{ $key }
+						? $self->$name()->{ $key } . ""
+						: "";
 				}
 			} elsif ($name eq "annotations") {
 				my $dataitem = $self->$name();
@@ -349,37 +358,37 @@ sub serializeToDB {
 					$data->{$name}->[$i]->[2] = $dataitem->[$i]->[2];
 				}
 			} else {
-    			$data->{$name} = $self->$name();
-			}	
-    	}
-    }
-    my $subobjects = $self->_subobjects();
-    foreach my $item (@{$subobjects}) {
-    	my $name = "_".$item->{name};
-    	my $arrayRef = $self->$name();
+					$data->{$name} = $self->$name();
+			}
+		}
+	}
+	my $subobjects = $self->_subobjects();
+	foreach my $item (@{$subobjects}) {
+		my $name = "_".$item->{name};
+		my $arrayRef = $self->$name();
 		$data->{$item->{name}} = [];
 		foreach my $subobject (@{$arrayRef}) {
-		    if ($subobject->{created} == 1) {
-				push(@{$data->{$item->{name}}},$subobject->{object}->serializeToDB());	
-		    } else {
+			if ($subobject->{created} == 1) {
+				push(@{$data->{$item->{name}}},$subobject->{object}->serializeToDB());
+			} else {
 				my $newData;
 				foreach my $key (keys(%{$subobject->{data}})) {
-				    if ($key ne "parent") {
+					if ($key ne "parent") {
 						$newData->{$key} = $subobject->{data}->{$key};
-				    }
+					}
 				}
 				push(@{$data->{$item->{name}}},$newData);
-		    }
+			}
 		}
 		if (defined $item->{"singleton"} && $item->{"singleton"} == 1) {
-		    if (scalar @{$data->{$item->{name}}} > 0) {
+			if (scalar @{$data->{$item->{name}}} > 0) {
 				$data->{$item->{name}} = $data->{$item->{name}}->[0];
-		    } else {
+			} else {
 				delete $data->{$item->{name}};
-		    }
+			}
 		}
-    }
-    return $data;
+	}
+	return $data;
 }
 
 sub cloneObject {
@@ -390,14 +399,16 @@ sub cloneObject {
 }
 
 sub toJSON {
-    my $self = shift;
-    my $args = Bio::KBase::ObjectAPI::utilities::args([],{pp => 0}, @_);
-    my $data = $self->serializeToDB();
-    my $JSON = JSON::XS->new->utf8(1);
-    $JSON->allow_blessed(1);
-    $JSON->pretty(1) if($args->{pp} == 1);
-    return $JSON->encode($data);
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args([],{pp => 0}, @_);
+	my $data = $self->serializeToDB();
+	my $JSON = JSON::XS->new->utf8(1);
+	$JSON->allow_blessed(1);
+	$JSON->pretty(1) if($args->{pp} == 1);
+	return $JSON->encode($data);
 }
+
+sub TO_JSON { shift->toJSON( @_ ) }
 
 =head3 export
 
@@ -411,7 +422,7 @@ Description:
 =cut
 
 sub export {
-    my $self = shift;
+	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["format"], {}, @_);
 	my $function = "print_".$args->{format};
 	if (!$self->can($function)) {
@@ -423,42 +434,42 @@ sub export {
 =head3 print_html
 
 Definition:
-	
+
 Description:
 	Exports data to html format
 
 =cut
 
 sub print_html {
-    my $self = shift;
+	my $self = shift;
 	return $self->createHTML();
 }
 
 =head3 print_readable
 
 Definition:
-	
+
 Description:
 	Exports data to readable format
 
 =cut
 
 sub print_readable {
-    my $self = shift;
+	my $self = shift;
 	return $self->toReadableString();
 }
 
 =head3 print_json
 
 Definition:
-	
+
 Description:
 	Exports data to json format
 
 =cut
 
 sub print_json {
-    my $self = shift;
+	my $self = shift;
 	return $self->toJSON();
 }
 
@@ -559,7 +570,7 @@ sub toReadableString {
 			}
 		}
 	}
-    return join("\n", @$output) unless defined $asArray;
+	return join("\n", @$output) unless defined $asArray;
 	return $output;
 }
 
@@ -593,7 +604,7 @@ sub _createReadableData {
 	}
 	return $data;
  }
- 
+
 sub _getReadableAttributes {
 	my ($self) = @_;
 	my $priority = {};
@@ -625,66 +636,64 @@ sub _getReadableAttributes {
 ######################################################################
 
 sub add {
-    my ($self, $attribute, $data_or_object) = @_;
+	my ($self, $attribute, $data_or_object) = @_;
 
-    my $attr_info = $self->_subobjects($attribute);
-    if (!defined($attr_info)) {
-        Bio::KBase::ObjectAPI::utilities::error("Object doesn't have subobject with name: $attribute");
-    }
+	my $attr_info = $self->_subobjects($attribute);
+	if (!defined($attr_info)) {
+		Bio::KBase::ObjectAPI::utilities::error("Object doesn't have subobject with name: $attribute");
+	}
 
-    my $obj_info = {
-        created => 0,
-        class => $attr_info->{class}
-    };
+	my $obj_info = {
+		created => 0,
+		class => $attr_info->{class}
+	};
 
-    my $ref = ref($data_or_object);
-    if ($ref eq "HASH") {
-        # need to create object first
-        $obj_info->{data} = $data_or_object;
-        $self->_build_object($attribute, $obj_info);
-    } elsif ($ref =~ m/Bio::KBase::ObjectAPI/) {
-        $obj_info->{object} = $data_or_object;
-        $obj_info->{created} = 1;
-    } else {
-        Bio::KBase::ObjectAPI::utilities::error("Neither data nor object passed into " . ref($self) . "->add");
-    }
+	my $ref = ref($data_or_object);
+	if ($ref eq "HASH") {
+		# need to create object first
+		$obj_info->{data} = $data_or_object;
+		$self->_build_object($attribute, $obj_info);
+	} elsif ($ref =~ m/Bio::KBase::ObjectAPI/) {
+		$obj_info->{object} = $data_or_object;
+		$obj_info->{created} = 1;
+	} else {
+		Bio::KBase::ObjectAPI::utilities::error("Neither data nor object passed into " . ref($self) . "->add");
+	}
 
-    $obj_info->{object}->parent($self);
-    my $method = "_$attribute";
-    push(@{$self->$method}, $obj_info);
-    return $obj_info->{object};
+	$obj_info->{object}->parent($self);
+	my $method = "_$attribute";
+	push(@{$self->$method}, $obj_info);
+	return $obj_info->{object};
 }
 
 sub remove {
-    my ($self, $attribute, $object) = @_;
+	my ($self, $attribute, $object) = @_;
 
-    my $attr_info = $self->_subobjects($attribute);
-    if (!defined($attr_info)) {
-        Bio::KBase::ObjectAPI::utilities::error("Object doesn't have attribute with name: $attribute");
-    }
+	my $attr_info = $self->_subobjects($attribute);
+	if (!defined($attr_info)) {
+		Bio::KBase::ObjectAPI::utilities::error("Object doesn't have attribute with name: $attribute");
+	}
 
-    my $removedCount = 0;
-    my $method = "_$attribute";
-    my $array = $self->$method;
-    for (my $i=0; $i<@$array; $i++) {
-        my $obj_info = $array->[$i];
-        if ($obj_info->{created}) {
-            if ($object eq $obj_info->{object}) {
-                splice(@$array, $i, 1);
-                $removedCount += 1;
-            }
-        }
-    }
+	my $removedCount = 0;
+	my $method = "_$attribute";
+	my $array = $self->$method;
+	for (my $i=0; $i<@$array; $i++) {
+		my $obj_info = $array->[$i];
+		if ($obj_info->{created}) {
+			if ($object eq $obj_info->{object}) {
+				splice(@$array, $i, 1);
+				$removedCount += 1;
+			}
+		}
+	}
 
-    return $removedCount;
+	return $removedCount;
 }
 
 sub getLinkedObject {
-    my ($self, $ref) = @_;
+	my ($self, $ref) = @_;
 	my $debug = 0;
 	my $refchain = $self->ref_chain();
-	print("ref: $ref\n") if $debug;
-	print("refchain: $refchain\n") if $debug;
 	if (length($refchain) > 0) {
 		$refchain .= ";";
 	}
@@ -693,85 +702,88 @@ sub getLinkedObject {
 		return $self->topparent();
 	} elsif ($ref =~ m/(.+)\|\|(.*)/) {
 		print("Branch 2\n") if $debug;
-    	my $objpath = $1;
-    	my $internalref = $2;
-    	if ($objpath !~ m/^\//) {
-    		$objpath = $self->topparent()->wsmeta()->[2].$objpath;
-    		while ($objpath =~ m/[^\/]+\/\.\.\/*/) {
+			my $objpath = $1;
+			my $internalref = $2;
+			if ($objpath !~ m/^\//) {
+				$objpath = $self->topparent()->wsmeta()->[2].$objpath;
+				while ($objpath =~ m/[^\/]+\/\.\.\/*/) {
 				$objpath =~ s/[^\/]+\/\.\.\/*//g;
 			}
-    	}
-    	my $obj = $self->store()->get_object($refchain.$objpath);
-    	if (length($internalref) == 0) {
-    		return $obj;
-    	} elsif ($internalref =~ m/^\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
-    		return $obj->queryObject($1,{$2 => $3});
-    	}
-	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+			}
+			my $obj = $self->store()->get_object($refchain.$objpath);
+			if (length($internalref) == 0) {
+				return $obj;
+			} elsif ($internalref =~ m/^\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
+				return $obj->queryObject($1,{$2 => $3});
+			}
+	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 3\n") if $debug;
 		my $linkedobject = $1;
 		my $otherlinkedobject = $2;
 		my $field = $3;
-    	my $query = {$4 => $5};
+			my $query = {$4 => $5};
 		return $self->topparent()->$linkedobject()->$otherlinkedobject()->queryObject($field,$query);
-	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 4\n") if $debug;
 		my $linkedobject = $1;
 		my $field = $2;
-    	my $query = {$3 => $4};
+			my $query = {$3 => $4};
 		return $self->topparent()->$linkedobject()->queryObject($field,$query);
-	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+	} elsif ($ref =~ m/^~\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 5\n") if $debug;
 		return $self->topparent()->queryObject($1,{$2 => $3});
 	} elsif ($ref =~ m/^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$/) {
 		print("Branch 6\n") if $debug;
 		return $self->store()->getObjectByUUID($ref);
-	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-]+)$/) {
+	} elsif ($ref =~ m/^([A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 7\n") if $debug;
 		Bio::KBase::ObjectAPI::utilities::error("FAILED!");
-	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-]+$/) {
+	} elsif ($ref =~ m/^\//) {
+		print("Branch 13\n") if $debug;
+			return $self->store()->get_object($ref);
+	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+\/[\w\.\|\-:\%]+$/) {
 		print("Branch 8\n") if $debug;
-    	return $self->store()->get_object($refchain.$ref);
-    } elsif ($ref =~ m/^([:\w]+\/\w+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+			return $self->store()->get_object($refchain.$ref);
+	} elsif ($ref =~ m/^([:\w]+\/\w+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 9\n") if $debug;
-    	my $field = $2;
-    	my $query = {$3 => $4};
-    	my $object = $self->store()->get_object($refchain.$1);
-    	return $object->queryObject($field,$query);
-    } elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-]+$/) {
+			my $field = $2;
+			my $query = {$3 => $4};
+			my $object = $self->store()->get_object($refchain.$1);
+			return $object->queryObject($field,$query);
+	} elsif ($ref =~ m/^[:\w]+\/[\w\.\|\-:\%]+$/) {
 		print("Branch 0\n") if $debug;
-    	return $self->store()->get_object($refchain.$ref);
-    } elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:]+)$/) {
+			return $self->store()->get_object($refchain.$ref);
+	} elsif ($ref =~ m/^([:\w]+\/\w+)\/(\w+)\/(\w+)\/([\w\.\|\-:\%]+)$/) {
 		print("Branch 1\n") if $debug;
-    	my $field = $2;
-    	my $query = {$3 => $4};
-    	my $object = $self->store()->get_object($refchain.$1);
-    	return $object->queryObject($field,$query);
+			my $field = $2;
+			my $query = {$3 => $4};
+			my $object = $self->store()->get_object($refchain.$1);
+			return $object->queryObject($field,$query);
 	# if refereance is already a ref_chain, stand out of the way
-    } elsif ($ref =~ m/^(\d+\/\d+\/\d+;)+\d+\/\d+\/\d+$/) {
+	} elsif ($ref =~ m/^(\d+\/\d+\/\d+;)+\d+\/\d+\/\d+$/) {
 		print("Branch 12: Already a ref_chain\n") if $debug;
-    	return $self->store()->get_object($ref);
-    }
-    Bio::KBase::ObjectAPI::utilities::error("Unrecognized reference format:".$ref);
+			return $self->store()->get_object($ref);
+	}
+	Bio::KBase::ObjectAPI::utilities::error("Unrecognized reference format:".$ref);
 }
 
 sub getLinkedObjectArray {
-    my ($self,$array) = @_;
-    my $list = [];
-    foreach my $item (@{$array}) {
-    	push(@{$list},$self->getLinkedObject($item));
-    }
-    return $list;
+	my ($self,$array) = @_;
+	my $list = [];
+	foreach my $item (@{$array}) {
+		push(@{$list},$self->getLinkedObject($item));
+	}
+	return $list;
 }
 
 sub removeLinkArrayItem {
 	my ($self,$link,$object) = @_;
-    my $linkdata = $self->_links($link);
-    if (defined($linkdata) && $linkdata->{array} == 1) {
-    	my $method = $linkdata->{attribute};
-    	my $data = $self->$method();
-    	my $id = $object->id();
-    	for (my $i=0; $i < @{$data}; $i++) {
+	my $linkdata = $self->_links($link);
+	if (defined($linkdata) && $linkdata->{array} == 1) {
+		my $method = $linkdata->{attribute};
+		my $data = $self->$method();
+		my $id = $object->id();
+		for (my $i=0; $i < @{$data}; $i++) {
 			if ($data->[$i] =~ m/$id$/) {
 				Bio::KBase::ObjectAPI::utilities::verbose("Removing object from link array.");
 				if (@{$data} == 1) {
@@ -784,96 +796,96 @@ sub removeLinkArrayItem {
 				$self->$clearer();
 			}
 		}
-    }	
+	}
 }
 
 sub addLinkArrayItem {
 	my ($self,$link,$object) = @_;
-    my $linkdata = $self->_links($link);
-    if (defined($linkdata) && $linkdata->{array} == 1) {
-    	my $method = $linkdata->{attribute};
-    	my $data = $self->$method();
-    	my $found = 0;
-    	my $id = $object->id();
-    	for (my $i=0; $i < @{$data}; $i++) {
+	my $linkdata = $self->_links($link);
+	if (defined($linkdata) && $linkdata->{array} == 1) {
+		my $method = $linkdata->{attribute};
+		my $data = $self->$method();
+		my $found = 0;
+		my $id = $object->id();
+		for (my $i=0; $i < @{$data}; $i++) {
 			if ($data->[$i] =~ m/\Q$id\E$/) {
 				$found = 1;
 			}
-    	}
-    	if ($found == 0) {
-    		Bio::KBase::ObjectAPI::utilities::verbose("Adding object to link array.");
-    		my $clearer = "clear_".$link;
+		}
+		if ($found == 0) {
+			Bio::KBase::ObjectAPI::utilities::verbose("Adding object to link array.");
+			my $clearer = "clear_".$link;
 			$self->$clearer();
 			push(@{$data},$object->_reference());
-    	}
-    }	
+		}
+	}
 }
 
 sub clearLinkArray {
 	my ($self,$link) = @_;
-    my $linkdata = $self->_links($link);
-    if (defined($linkdata) && $linkdata->{array} == 1) {
-    	my $method = $linkdata->{attribute};
-    	$self->$method([]);
-    	Bio::KBase::ObjectAPI::utilities::verbose("Clearing link array.");
-    	my $clearer = "clear_".$link;
+	my $linkdata = $self->_links($link);
+	if (defined($linkdata) && $linkdata->{array} == 1) {
+		my $method = $linkdata->{attribute};
+		$self->$method([]);
+		Bio::KBase::ObjectAPI::utilities::verbose("Clearing link array.");
+		my $clearer = "clear_".$link;
 		$self->$clearer();
-    }	
+	}
 }
 
 sub store {
-    my ($self) = @_;
-    my $parent = $self->parent();
-    if (defined($parent) && ref($parent) ne "Bio::KBase::ObjectAPI::KBaseStore" && ref($parent) ne "Bio::KBase::ObjectAPI::PATRICStore" && ref($parent) ne "Bio::KBase::ObjectAPI::FileStore") {
-        return $parent->store();
-    }
-    if (!defined($parent)) {
-    	Bio::KBase::ObjectAPI::utilities::error("Attempted to get object with no store!");
-    }
-    return $parent;
+	my ($self) = @_;
+	my $parent = $self->parent();
+	if (defined($parent) && ref($parent) ne "Bio::KBase::ObjectAPI::KBaseStore" && ref($parent) ne "Bio::KBase::ObjectAPI::PATRICStore" && ref($parent) ne "Bio::KBase::ObjectAPI::FileStore") {
+		return $parent->store();
+	}
+	if (!defined($parent)) {
+		Bio::KBase::ObjectAPI::utilities::error("Attempted to get object with no store!");
+	}
+	return $parent;
 }
 
 sub topparent {
-    my ($self) = @_;
-    if ($self->_top() == 1) {
-    	return $self;
-    } else {
-    	return $self->parent()->topparent();
-    }
+	my ($self) = @_;
+	if ($self->_top() == 1) {
+		return $self;
+	} else {
+		return $self->parent()->topparent();
+	}
 }
 
 sub _build_object {
-    my ($self, $attribute, $obj_info) = @_;
+	my ($self, $attribute, $obj_info) = @_;
 
-    if ($obj_info->{created}) {
-        return $obj_info->{object};
-    }
+	if ($obj_info->{created}) {
+		return $obj_info->{object};
+	}
 	my $attInfo = $self->_subobjects($attribute);
-    if (!defined($attInfo->{class})) {
-    	Bio::KBase::ObjectAPI::utilities::error("No class for attribute ".$attribute);	
-    }
-    my $class = 'Bio::KBase::ObjectAPI::' . $attInfo->{module} . '::' . $attInfo->{class};
-    Module::Load::load $class;
-    my $obj = $class->new($obj_info->{data});
+	if (!defined($attInfo->{class})) {
+		Bio::KBase::ObjectAPI::utilities::error("No class for attribute ".$attribute);
+	}
+	my $class = 'Bio::KBase::ObjectAPI::' . $attInfo->{module} . '::' . $attInfo->{class};
+	Module::Load::load $class;
+	my $obj = $class->new($obj_info->{data});
 
-    $obj_info->{created} = 1;
-    $obj_info->{object} = $obj;
-    delete $obj_info->{data};
+	$obj_info->{created} = 1;
+	$obj_info->{object} = $obj;
+	delete $obj_info->{data};
 
-    return $obj;
+	return $obj;
 }
 
 sub _build_all_objects {
-    my ($self, $attribute) = @_;
+	my ($self, $attribute) = @_;
 
-    my $objs = [];
-    my $method = "_$attribute";
-    my $subobjs = $self->$method();
-    foreach my $subobj (@$subobjs) {
-        push(@$objs, $self->_build_object($attribute, $subobj));
-    }
+	my $objs = [];
+	my $method = "_$attribute";
+	my $subobjs = $self->$method();
+	foreach my $subobj (@$subobjs) {
+		push(@$objs, $self->_build_object($attribute, $subobj));
+	}
 
-    return $objs;
+	return $objs;
 }
 
 sub __version__ { $VERSION }

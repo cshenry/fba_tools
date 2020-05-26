@@ -37,8 +37,7 @@ Reaction::Reaction(vector<string>* InHeaders, string Fileline, Data* InData) {
 	kprime = 1;
 	turnover = 0.034537;
 	concentration = 1;
-	PrimaryForFluxConstraint = NULL;
-	PrimaryRevFluxConstraint = NULL;
+	PrimaryFluxConstraint = NULL;
 	ReadFromFileline(InHeaders,Fileline);
 	AddToReactants();
 	PerformAllCalculations();
@@ -62,8 +61,7 @@ Reaction::Reaction(string Filename, Data* InData) {
 	kprime = 1;
 	turnover = 0.034537;
 	concentration = 1;
-	PrimaryForFluxConstraint = NULL;
-	PrimaryRevFluxConstraint = NULL;
+	PrimaryFluxConstraint = NULL;
 	if (Filename.length() > 0) {
 		LoadReaction(Filename);
 		AddToReactants();
@@ -89,8 +87,7 @@ Reaction::Reaction(string id,string equation,string name,Data* InData) {
 	kprime = 1;
 	turnover = 0.034537;
 	concentration = 1;
-	PrimaryForFluxConstraint = NULL;
-	PrimaryRevFluxConstraint = NULL;
+	PrimaryFluxConstraint = NULL;
 	Interpreter("id",id,true);
 	Interpreter("equation",equation,true);
 	Interpreter("name",name,true);
@@ -3080,32 +3077,36 @@ void Reaction::CreateMFAVariables(OptimizationParameter* InParameters) {
 		}
 	}
 
+	if (InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || InParameters->ExcludeSimultaneousReversibleFlux) {
+		if (InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints || this->FType() == REVERSIBLE) {
+			NewVariable = InitializeMFAVariable();
+			NewVariable->Name = GetData("DATABASE",STRING);
+			NewVariable->AssociatedReaction = this;
+			NewVariable->Type = FORWARD_REACTION;
+			MFAVariables[FORWARD_REACTION] = NewVariable;
+			NewVariable->LowerBound = 0;
+			NewVariable->UpperBound = 1;
+			NewVariable->Binary = true;
+		}
+	}
+
 	if (InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints) {
 		//Creating the delta G variable
-		NewVariable = InitializeMFAVariable();
-		NewVariable->Name = GetData("DATABASE",STRING);
-		NewVariable->AssociatedReaction = this;
-		NewVariable->Type = POSITIVE_DELTAG;
-		MFAVariables[POSITIVE_DELTAG] = NewVariable;
-		NewVariable->LowerBound = 0;
-		NewVariable->UpperBound = InParameters->MaxDeltaG;
-
-		NewVariable = InitializeMFAVariable();
-		NewVariable->Name = GetData("DATABASE",STRING);
-		NewVariable->AssociatedReaction = this;
-		NewVariable->Type = NEGATIVE_DELTAG;
-		MFAVariables[NEGATIVE_DELTAG] = NewVariable;
-		NewVariable->LowerBound = 0;
-		NewVariable->UpperBound = InParameters->MaxDeltaG;
-
-		NewVariable = InitializeMFAVariable();
-		NewVariable->Name = GetData("DATABASE",STRING);
-		NewVariable->AssociatedReaction = this;
-		NewVariable->Type = FORWARD_REACTION;
-		MFAVariables[FORWARD_REACTION] = NewVariable;
-		NewVariable->LowerBound = 0;
-		NewVariable->UpperBound = 1;
-		NewVariable->Binary = true;
+//		NewVariable = InitializeMFAVariable();
+//		NewVariable->Name = GetData("DATABASE",STRING);
+//		NewVariable->AssociatedReaction = this;
+//		NewVariable->Type = POSITIVE_DELTAG;
+//		MFAVariables[POSITIVE_DELTAG] = NewVariable;
+//		NewVariable->LowerBound = 0;
+//		NewVariable->UpperBound = InParameters->MaxDeltaG;
+//
+//		NewVariable = InitializeMFAVariable();
+//		NewVariable->Name = GetData("DATABASE",STRING);
+//		NewVariable->AssociatedReaction = this;
+//		NewVariable->Type = NEGATIVE_DELTAG;
+//		MFAVariables[NEGATIVE_DELTAG] = NewVariable;
+//		NewVariable->LowerBound = 0;
+//		NewVariable->UpperBound = InParameters->MaxDeltaG;
 	}
 
 	if (InParameters->ReactionSlackVariable || InParameters->BinaryReactionSlackVariable) {
@@ -3118,16 +3119,6 @@ void Reaction::CreateMFAVariables(OptimizationParameter* InParameters) {
 			NewVariable->LowerBound = 0;
 			NewVariable->UpperBound = 1;
 			NewVariable->Binary = InParameters->BinaryReactionSlackVariable;
-			if (!InParameters->ThermoConstraints && !InParameters->SimpleThermoConstraints && this->FType() == REVERSIBLE) {
-				NewVariable = InitializeMFAVariable();
-				NewVariable->Name = GetData("DATABASE",STRING);
-				NewVariable->AssociatedReaction = this;
-				NewVariable->Type = FORWARD_REACTION;
-				MFAVariables[FORWARD_REACTION] = NewVariable;
-				NewVariable->LowerBound = 0;
-				NewVariable->UpperBound = 1;
-				NewVariable->Binary = true;
-			}
 		}
 	}
 
@@ -3161,7 +3152,19 @@ void Reaction::CreateMFAVariables(OptimizationParameter* InParameters) {
 	}
 }
 
+MFAVariable* Reaction::CreateMFAVariable(MFAProblem* InProblem,int Type,double UB,double LB) {
+	MFAVariable* NewVariable = InitializeMFAVariable();
+	NewVariable->Type = Type;
+	InProblem->AddVariable(NewVariable);
+	this->MFAVariables[Type] = NewVariable;
+	NewVariable->AssociatedReaction = this;
+	NewVariable->UpperBound = UB;
+	NewVariable->LowerBound = LB;
+	return NewVariable;
+}
+
 void Reaction::CreateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem) {
+	double constant = 1000;
 	if (GetData("DATABASE",STRING).length() > 5 && (GetData("DATABASE",STRING).substr(0,5).compare("PSYN_") == 0 || GetData("DATABASE",STRING).substr(0,5).compare("PDEG_") == 0)) {
 		return;
 	}
@@ -3170,228 +3173,172 @@ void Reaction::CreateReactionFluxConstraints(OptimizationParameter* InParameters
 	}
 	string biomass_var_comp = GetParameter("biomass variable");
 	biomass_var_comp.append("_");
-	if (GetData("DATABASE",STRING).length() > 5 && GetData("DATABASE",STRING).substr(0,5).compare(biomass_var_comp) == 0) {
+	if (GetData("DATABASE",STRING).length() > biomass_var_comp.length() && GetData("DATABASE",STRING).substr(0,biomass_var_comp.length()).compare(biomass_var_comp) == 0) {
 		return;
 	}
-	if (PrimaryForFluxConstraint != NULL && PrimaryRevFluxConstraint != NULL) {
+	if (PrimaryFluxConstraint != NULL) {
 		return;
 	}
+	if (this->gprdata.size() == 0 || gprdata[0][0][0]->GetData("DATABASE",STRING).compare("Unknown") == 0) {
+		if (this->ProteinProd == NULL || this->ProteinDeg == NULL || InParameters->SteadyStateProteinFBA) {
+			return;
+		}
+	}
+
 	MFAVariable* ForFluxVar = this->GetMFAVar(FLUX);
 	MFAVariable* RevFluxVar = this->GetMFAVar(REVERSE_FLUX);
 	if (ForFluxVar == NULL) {
 		ForFluxVar = this->GetMFAVar(FORWARD_FLUX);
 	}
+
 	//Instantiating flux constraint
+	this->PrimaryFluxConstraint = InitializeLinEquation("Flux limit constraint",0,EQUAL);
+	InProblem->AddConstraint(this->PrimaryFluxConstraint);
 	if (ForFluxVar != NULL) {
-		this->PrimaryForFluxConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
-		this->PrimaryForFluxConstraint->Coefficient.push_back(1);
-		this->PrimaryForFluxConstraint->Variables.push_back(ForFluxVar);
+		this->PrimaryFluxConstraint->Coefficient.push_back(-1);
+		this->PrimaryFluxConstraint->Variables.push_back(ForFluxVar);
 	}
 	if (RevFluxVar != NULL) {
-		this->PrimaryRevFluxConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
-		this->PrimaryRevFluxConstraint->Coefficient.push_back(1);
-		this->PrimaryRevFluxConstraint->Variables.push_back(RevFluxVar);
+		this->PrimaryFluxConstraint->Coefficient.push_back(-1);
+		this->PrimaryFluxConstraint->Variables.push_back(RevFluxVar);
+	}
+	MFAVariable* ForCapSlack = this->CreateMFAVariable(InProblem,FORWARD_CAPACITY_SLACK,InParameters->MaxFlux,0);
+	MFAVariable* RevCapSlack = this->CreateMFAVariable(InProblem,REVERSE_CAPACITY_SLACK,InParameters->MaxFlux,0);
+	this->PrimaryFluxConstraint->Coefficient.push_back(1);
+	this->PrimaryFluxConstraint->Variables.push_back(ForCapSlack);
+	this->PrimaryFluxConstraint->Coefficient.push_back(-1);
+	this->PrimaryFluxConstraint->Variables.push_back(RevCapSlack);
+
+	MFAVariable* KPrime = NULL;
+	if (InParameters->SteadyStateProteinFBA) {
+		KPrime = this->CreateMFAVariable(InProblem,KPRIME,1e12/constant,0);
+		double kcat = this->GetDoubleData("KCAT");
+		if (kcat != FLAG) {
+			LinEquation* kcat_const = InitializeLinEquation("KPrime fit constraint",kcat/(2*constant),EQUAL);
+			kcat_const->Variables.push_back(KPrime);
+			kcat_const->Coefficient.push_back(1);
+			kcat_const->Variables.push_back(this->CreateMFAVariable(InProblem,POS_KPRIME_ERR,1e12/constant,0));
+			kcat_const->Variables.push_back(this->CreateMFAVariable(InProblem,NEG_KPRIME_ERR,1e12/constant,0));
+			kcat_const->Coefficient.push_back(-1);
+			kcat_const->Coefficient.push_back(1);
+			InProblem->AddConstraint(kcat_const);
+		}
 	}
 	if (this->gprdata.size() == 0 || gprdata[0][0][0]->GetData("DATABASE",STRING).compare("Unknown") == 0) {
-		if (this->ProteinProd == NULL || this->ProteinDeg == NULL) {
-			if (this->PrimaryForFluxConstraint != NULL) {
-				delete this->PrimaryForFluxConstraint;
-				this->PrimaryForFluxConstraint = NULL;
-			}
-			if (this->PrimaryRevFluxConstraint != NULL) {
-				delete this->PrimaryRevFluxConstraint;
-				this->PrimaryRevFluxConstraint = NULL;
-			}
-			return;
-		}
 		//Instantiating psuedoprotein constraints when a reaction has no genes associated
-		if (this->PrimaryForFluxConstraint != NULL) {
-			this->PrimaryForFluxConstraint->RightHandSide += this->kprime*this->concentration;
-			this->PrimaryForFluxConstraint->Variables.push_back(this->ProteinProd);
-			this->PrimaryForFluxConstraint->Coefficient.push_back(-0.5*this->kprime);
-			this->PrimaryForFluxConstraint->Variables.push_back(this->ProteinDeg);
-			this->PrimaryForFluxConstraint->Coefficient.push_back(0.5*this->kprime);
-		}
-		if (this->PrimaryRevFluxConstraint != NULL) {
-			this->PrimaryRevFluxConstraint->RightHandSide += this->kprime*this->concentration;
-			this->PrimaryRevFluxConstraint->Variables.push_back(this->ProteinProd);
-			this->PrimaryRevFluxConstraint->Coefficient.push_back(-0.5*this->kprime);
-			this->PrimaryRevFluxConstraint->Variables.push_back(this->ProteinDeg);
-			this->PrimaryRevFluxConstraint->Coefficient.push_back(0.5*this->kprime);
-		}
+		//If we're doing SS protein FBA, the code never comes here
+		this->PrimaryFluxConstraint->RightHandSide += 0.5*this->kprime*this->concentration;
+		this->PrimaryFluxConstraint->Variables.push_back(this->MassBalanceConstraint->Variables[0]);
+		this->PrimaryFluxConstraint->Coefficient.push_back(-0.5*this->kprime);
 	} else {
+		double OverallSSProtCoefficient = 0;
 		for (int i=0; i < int(this->gprdata.size()); i++) {
-			vector<LinEquation*>* newforvect = new vector<LinEquation*>;
-			this->ForFluxConstraints.push_back(newforvect);
-			vector<LinEquation*>* newrevvect = new vector<LinEquation*>;
-			this->RevFluxConstraints.push_back(newrevvect);
+			vector<LinEquation*>* newvect = new vector<LinEquation*>;
+			this->FluxConstraints.push_back(newvect);
 			MFAVariable* NewComplexVariable = NULL;
-			LinEquation* NewForComplexConstraint = NULL;
-			LinEquation* NewRevComplexConstraint = NULL;
+			LinEquation* NewComplexConstraint = NULL;
 			if (this->gprdata[i].size() > 1) {
-				NewComplexVariable = InitializeMFAVariable();
-				InProblem->AddVariable(NewComplexVariable);
-				NewComplexVariable->AssociatedReaction = this;
-				NewComplexVariable->UpperBound = InParameters->MaxFlux;
-				NewComplexVariable->LowerBound = 0;
-				if (this->PrimaryForFluxConstraint != NULL) {
-					this->PrimaryForFluxConstraint->Coefficient.push_back(-1);
-					this->PrimaryForFluxConstraint->Variables.push_back(NewComplexVariable);
-				}
-				if (this->PrimaryRevFluxConstraint != NULL) {
-					this->PrimaryRevFluxConstraint->Coefficient.push_back(-1);
-					this->PrimaryRevFluxConstraint->Variables.push_back(NewComplexVariable);
-				}
+				NewComplexVariable = this->CreateMFAVariable(InProblem,COMPLEX_EXP,InParameters->MaxFlux,0);
+				this->PrimaryFluxConstraint->Coefficient.push_back(-1);
+				this->PrimaryFluxConstraint->Variables.push_back(NewComplexVariable);
 			}
 			for (int j=0; j < int(this->gprdata[i].size()); j++) {
 				if (NewComplexVariable != NULL) {
-					if (this->PrimaryForFluxConstraint != NULL) {
-						NewForComplexConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
-						this->ForFluxConstraints[i]->push_back(NewForComplexConstraint);
-						InProblem->AddConstraint(NewForComplexConstraint);
-						NewForComplexConstraint->Variables.push_back(NewComplexVariable);
-						NewForComplexConstraint->Coefficient.push_back(1);
-					}
-					if (this->PrimaryRevFluxConstraint != NULL) {
-						NewRevComplexConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
-						this->RevFluxConstraints[i]->push_back(NewRevComplexConstraint);
-						InProblem->AddConstraint(NewRevComplexConstraint);
-						NewRevComplexConstraint->Variables.push_back(NewComplexVariable);
-						NewRevComplexConstraint->Coefficient.push_back(1);
-					}
+					NewComplexConstraint = InitializeLinEquation("Flux limit constraint",0,LESS);
+					this->FluxConstraints[i]->push_back(NewComplexConstraint);
+					InProblem->AddConstraint(NewComplexConstraint);
+					NewComplexConstraint->Variables.push_back(NewComplexVariable);
+					NewComplexConstraint->Coefficient.push_back(1);
 				} else {
-					NewForComplexConstraint = this->PrimaryForFluxConstraint;
-					NewRevComplexConstraint = this->PrimaryRevFluxConstraint;
-					this->ForFluxConstraints[i]->push_back(this->PrimaryForFluxConstraint);
-					this->RevFluxConstraints[i]->push_back(this->PrimaryRevFluxConstraint);
+					NewComplexConstraint = this->PrimaryFluxConstraint;
+					this->FluxConstraints[i]->push_back(this->PrimaryFluxConstraint);
 				}
+				double SSProtCoefficient = 0;
 				for (int k=0; k < int(this->gprdata[i][j].size()); k++) {
-					if (this->PrimaryForFluxConstraint != NULL) {
-						NewForComplexConstraint->RightHandSide += this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
-						//NewForComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinProd);
-						NewForComplexConstraint->Coefficient.push_back(-0.5*this->gprdata[i][j][k]->kprime);
-						//NewForComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinDeg);
-						NewForComplexConstraint->Coefficient.push_back(0.5*this->gprdata[i][j][k]->kprime);
+					if (InParameters->SteadyStateProteinFBA) {
+						SSProtCoefficient += this->gprdata[i][j][k]->concentration;
+					} else {
+						NewComplexConstraint->RightHandSide += 0.5*this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
+						NewComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->MassBalanceConstraint->Variables[0]);
+						NewComplexConstraint->Coefficient.push_back(-0.5*this->gprdata[i][j][k]->kprime);
 					}
-					if (this->PrimaryRevFluxConstraint != NULL) {
-						NewRevComplexConstraint->RightHandSide += this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
-						//NewRevComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinProd);
-						NewRevComplexConstraint->Coefficient.push_back(-0.5*this->gprdata[i][j][k]->kprime);
-						//NewRevComplexConstraint->Variables.push_back(this->gprdata[i][j][k]->ProteinDeg);
-						NewRevComplexConstraint->Coefficient.push_back(0.5*this->gprdata[i][j][k]->kprime);
+				}
+				if (SSProtCoefficient > 0) {
+					if (NewComplexConstraint == this->PrimaryFluxConstraint) {
+						OverallSSProtCoefficient += SSProtCoefficient;
+					} else {
+						NewComplexConstraint->Variables.push_back(KPrime);
+						NewComplexConstraint->Coefficient.push_back(constant*SSProtCoefficient);
 					}
 				}
 			}
 		}
+		if (OverallSSProtCoefficient > 0) {
+			this->PrimaryFluxConstraint->Variables.push_back(KPrime);
+			this->PrimaryFluxConstraint->Coefficient.push_back(constant*OverallSSProtCoefficient);
+		}
 	}
-	if (this->PrimaryForFluxConstraint != NULL) {
-		InProblem->AddConstraint(this->PrimaryForFluxConstraint);
-	}
-	if (this->PrimaryRevFluxConstraint != NULL) {
-		InProblem->AddConstraint(this->PrimaryRevFluxConstraint);
-	}
+	//cout << "Numvar:" << this->PrimaryFluxConstraint->Variables.size() << endl;
+	//for (int i=0; i < this->PrimaryFluxConstraint->Variables.size(); i++) {
+	//	cout << GetData("DATABASE",STRING) << " " << this->PrimaryFluxConstraint->Coefficient[i] << " " << this->PrimaryFluxConstraint->Variables[i]->Name << " " << this->PrimaryFluxConstraint->Variables[i]->Type << endl;
+	//}
 }
 
 void Reaction::UpdateReactionFluxConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem) {
-	if (PrimaryForFluxConstraint == NULL && PrimaryRevFluxConstraint == NULL) {
+	if (PrimaryFluxConstraint == NULL) {
 		return;
 	}
-	if (this->PrimaryForFluxConstraint != NULL) {
-		this->PrimaryForFluxConstraint->RightHandSide = 0;
+	this->PrimaryFluxConstraint->RightHandSide = 0;
+	//KM constraints will be handled on the reaction level to simplify constraints
+	//If different enzymes associated with the same reaction have different km, we should handle this by replicating the reaction itself
+	double forfactor = 1;
+	double revfactor = 1;
+	for (int i=0; i < kmcpd.size(); i++) {
+		for (int j=0; j < FNumReactants(); j++) {
+			if (Reactants[j] == this->kmcpd[i] && ReactCompartments[j] == GetCompartment("e")->Index) {
+				if (ReactCoef[j] < 0) {
+					forfactor = forfactor*(kmcpd[i]->concentration + kmlist[i])/kmcpd[i]->concentration;
+					revfactor = revfactor*kmcpd[i]->concentration/(kmcpd[i]->concentration + kmlist[i]);
+				} else {
+					revfactor = revfactor*(kmcpd[i]->concentration + kmlist[i])/kmcpd[i]->concentration;
+					forfactor = forfactor*kmcpd[i]->concentration/(kmcpd[i]->concentration + kmlist[i]);
+				}
+			}
+		}
 	}
-	if (this->PrimaryRevFluxConstraint != NULL) {
-		this->PrimaryRevFluxConstraint->RightHandSide = 0;
+	if (this->PrimaryFluxConstraint->Variables[0]->Type == FLUX || this->PrimaryFluxConstraint->Variables[0]->Type == FORWARD_FLUX) {
+		this->PrimaryFluxConstraint->Coefficient[0] = forfactor;
+		if (this->PrimaryFluxConstraint->Variables[1]->Type == REVERSE_FLUX) {
+			this->PrimaryFluxConstraint->Coefficient[1] = revfactor;
+		}
+	} else {
+		this->PrimaryFluxConstraint->Coefficient[0] = revfactor;
 	}
+	//Now updating constants with lates kprime and concentration
 	if (this->gprdata.size() == 0 || gprdata[0][0][0]->GetData("DATABASE",STRING).compare("Unknown") == 0) {
 		//Instantiating psuedoprotein constraints when a reaction has no genes associated
-		if (this->PrimaryForFluxConstraint != NULL) {
-			this->PrimaryForFluxConstraint->RightHandSide += this->kprime*this->concentration;
-			for (int i=0; i < kmcpd.size(); i++) {
-				for (int j=0; j < FNumReactants(); j++) {
-					if (Reactants[j] == this->kmcpd[i] && ReactCompartments[j] == GetCompartment("e")->Index) {
-						if (ReactCoef[j] < 0) {
-							this->PrimaryForFluxConstraint->RightHandSide = this->PrimaryForFluxConstraint->RightHandSide * kmcpd[i]->concentration / (kmcpd[i]->concentration + kmlist[i]);
-							break;
-						} else {
-							//this->PrimaryForFluxConstraint->RightHandSide = this->PrimaryForFluxConstraint->RightHandSide * (kmcpd[i]->concentration + kmlist[i]) / kmcpd[i]->concentration;
-							break;
-						}
-					}
-				}
-			}
-			this->PrimaryForFluxConstraint->Coefficient[1] = (-0.5*this->kprime);
-			this->PrimaryForFluxConstraint->Coefficient[2] = (0.5*this->kprime);
-		}
-		if (this->PrimaryRevFluxConstraint != NULL) {
-			this->PrimaryRevFluxConstraint->RightHandSide += this->kprime*this->concentration;
-			for (int i=0; i < kmcpd.size(); i++) {
-				for (int j=0; j < FNumReactants(); j++) {
-					if (Reactants[j] == this->kmcpd[i] && ReactCompartments[j] == GetCompartment("e")->Index) {
-						if (ReactCoef[j] > 0) {
-							this->PrimaryRevFluxConstraint->RightHandSide = this->PrimaryRevFluxConstraint->RightHandSide * kmcpd[i]->concentration / (kmcpd[i]->concentration + kmlist[i]);
-							break;
-						} else {
-							//this->PrimaryRevFluxConstraint->RightHandSide = this->PrimaryRevFluxConstraint->RightHandSide * (kmcpd[i]->concentration + kmlist[i]) / kmcpd[i]->concentration;
-							break;
-						}
-					}
-				}
-			}
-			this->PrimaryRevFluxConstraint->Coefficient[1] = (-0.5*this->kprime);
-			this->PrimaryRevFluxConstraint->Coefficient[2] = (0.5*this->kprime);
-		}
+		this->PrimaryFluxConstraint->RightHandSide += 0.5*this->kprime*this->concentration;
+		this->PrimaryFluxConstraint->Coefficient[1] = -0.5*this->kprime;
+
 	} else {
 		for (int i=0; i < int(this->gprdata.size()); i++) {
 			for (int j=0; j < int(this->gprdata[i].size()); j++) {
-				if ((*this->ForFluxConstraints[i])[j] != this->PrimaryForFluxConstraint && (*this->ForFluxConstraints[i])[j] != NULL) {
-					(*this->ForFluxConstraints[i])[j]->RightHandSide = 0;
+				if ((*this->FluxConstraints[i])[j] != this->PrimaryFluxConstraint && (*this->FluxConstraints[i])[j] != NULL) {
+					(*this->FluxConstraints[i])[j]->RightHandSide = 0;
 				}
-				if ((*this->RevFluxConstraints[i])[j] != this->PrimaryRevFluxConstraint && (*this->RevFluxConstraints[i])[j] != NULL) {
-					(*this->RevFluxConstraints[i])[j]->RightHandSide = 0;
-				}
-				//int count = 0;
 				for (int k=0; k < int(this->gprdata[i][j].size()); k++) {
-					double forfactor = 1;
-					double revfactor = 1;
-					for (int m=0; m < this->gprdata[i][j][k]->kmcpd.size(); m++) {
-						for (int n=0; n < FNumReactants(); n++) {
-							if (Reactants[n] == this->gprdata[i][j][k]->kmcpd[m] && ReactCompartments[n] == GetCompartment("e")->Index) {
-								if (ReactCoef[n] < 0) {
-									forfactor = forfactor * this->gprdata[i][j][k]->kmcpd[m]->concentration / (this->gprdata[i][j][k]->kmcpd[m]->concentration + this->gprdata[i][j][k]->kmlist[m]);
-									//revfactor = revfactor * (this->gprdata[i][j][k]->kmcpd[m]->concentration + this->gprdata[i][j][k]->kmlist[m]) / this->gprdata[i][j][k]->kmcpd[m]->concentration;
-								} else {
-									//forfactor = forfactor * (this->gprdata[i][j][k]->kmcpd[m]->concentration + this->gprdata[i][j][k]->kmlist[m]) / this->gprdata[i][j][k]->kmcpd[m]->concentration;
-									revfactor = revfactor * this->gprdata[i][j][k]->kmcpd[m]->concentration / (this->gprdata[i][j][k]->kmcpd[m]->concentration + this->gprdata[i][j][k]->kmlist[m]);
-								}
-							}
-						}
+					if ((*this->FluxConstraints[i])[j] != NULL) {
+						(*this->FluxConstraints[i])[j]->RightHandSide += 0.5*this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
+						(*this->FluxConstraints[i])[j]->Coefficient[k+1] = -0.5*this->gprdata[i][j][k]->kprime;
 					}
-					if ((*this->ForFluxConstraints[i])[j] != NULL) {
-						(*this->ForFluxConstraints[i])[j]->RightHandSide += forfactor*this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
-					}
-					if ((*this->RevFluxConstraints[i])[j] != NULL) {
-						(*this->RevFluxConstraints[i])[j]->RightHandSide += revfactor*this->gprdata[i][j][k]->kprime*this->gprdata[i][j][k]->concentration;
-					}
-					//count++;
-					//(*this->FluxConstraints[i])[j]->Coefficient[count] = (-0.5*this->gprdata[i][j][k]->kprime);
-					//count++;
-					//(*this->FluxConstraints[i])[j]->Coefficient[count] = (0.5*this->gprdata[i][j][k]->kprime);
 				}
-				if ((*this->ForFluxConstraints[i])[j] != this->PrimaryForFluxConstraint && (*this->ForFluxConstraints[i])[j] != NULL) {
-					InProblem->LoadConstToSolver((*this->ForFluxConstraints[i])[j]->Index);
-				}
-				if ((*this->RevFluxConstraints[i])[j] != this->PrimaryRevFluxConstraint && (*this->RevFluxConstraints[i])[j] != NULL) {
-					InProblem->LoadConstToSolver((*this->RevFluxConstraints[i])[j]->Index);
+				if ((*this->FluxConstraints[i])[j] != this->PrimaryFluxConstraint && (*this->FluxConstraints[i])[j] != NULL) {
+					InProblem->LoadConstToSolver((*this->FluxConstraints[i])[j]->Index);
 				}
 			}
 		}
 	}
-	if (this->PrimaryForFluxConstraint != NULL) {
-		InProblem->LoadConstToSolver(this->PrimaryForFluxConstraint->Index);
-	}
-	if (this->PrimaryRevFluxConstraint != NULL) {
-		InProblem->LoadConstToSolver(this->PrimaryRevFluxConstraint->Index);
-	}
+	InProblem->LoadConstToSolver(this->PrimaryFluxConstraint->Index);
 }
 
 void Reaction::BuildReactionConstraints(OptimizationParameter* InParameters,MFAProblem* InProblem) {
@@ -3423,58 +3370,69 @@ void Reaction::BuildReactionConstraints(OptimizationParameter* InParameters,MFAP
 	}
 
 	if (InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints) {
-		LinEquation* NewConstraint = InitializeLinEquation("Gibbs energy constraint",0,EQUAL);
-		NewConstraint->AssociatedReaction = this;
-		NewConstraint->Coefficient.push_back(-1);
-		NewConstraint->Variables.push_back(this->GetMFAVar(POSITIVE_DELTAG));
-		NewConstraint->Coefficient.push_back(1);
-		NewConstraint->Variables.push_back(this->GetMFAVar(NEGATIVE_DELTAG));
-		for (int j=0; j < this->FNumReactants(); j++) {
-			NewConstraint->Coefficient.push_back(this->GetReactantCoef(j));
-			NewConstraint->Variables.push_back(this->GetReactant(j)->GetMFAVar(POTENTIAL,this->GetReactantCompartment(j)));
-		}
-		InProblem->AddConstraint(NewConstraint);
-
-		NewConstraint = InitializeLinEquation("Gibbs energy forward binary constraint",0,LESS);
-		NewConstraint->AssociatedReaction = this;
-		NewConstraint->Coefficient.push_back(1);
-		NewConstraint->Variables.push_back(this->GetMFAVar(NEGATIVE_DELTAG));
-		NewConstraint->Coefficient.push_back(-10000);
-		NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
-		InProblem->AddConstraint(NewConstraint);
-
-		NewConstraint = InitializeLinEquation("Gibbs energy reverse binary constraint",10000,LESS);
-		NewConstraint->AssociatedReaction = this;
-		NewConstraint->Coefficient.push_back(1);
-		NewConstraint->Variables.push_back(this->GetMFAVar(POSITIVE_DELTAG));
-		NewConstraint->Coefficient.push_back(10000);
-		NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
-		InProblem->AddConstraint(NewConstraint);
-
 		MFAVariable* fluxvar = this->GetMFAVar(FORWARD_FLUX);
 		if (fluxvar == NULL) {
 			fluxvar = this->GetMFAVar(FLUX);
 		}
 		if (fluxvar != NULL) {
-			NewConstraint = InitializeLinEquation("Gibbs energy forward flux constraint",0,LESS);
-			NewConstraint->AssociatedReaction = this;
-			NewConstraint->Coefficient.push_back(-100);
-			NewConstraint->Variables.push_back(this->GetMFAVar(NEGATIVE_DELTAG));
+			LinEquation* NewConstraint = InitializeLinEquation("Forward gibbs energy constraint",10000,LESS);
+			for (int j=0; j < this->FNumReactants(); j++) {
+				NewConstraint->Coefficient.push_back(100*this->GetReactantCoef(j));
+				NewConstraint->Variables.push_back(this->GetReactant(j)->GetMFAVar(POTENTIAL,this->GetReactantCompartment(j)));
+			}
 			NewConstraint->Coefficient.push_back(1);
 			NewConstraint->Variables.push_back(fluxvar);
+			NewConstraint->Coefficient.push_back(10000);
+			NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
+			InProblem->AddConstraint(NewConstraint);
+			NewConstraint = InitializeLinEquation("Enforcing forward reaction constraint on forward flux",0,LESS);
+			NewConstraint->Coefficient.push_back(1);
+			NewConstraint->Variables.push_back(fluxvar);
+			NewConstraint->Coefficient.push_back(-1*fluxvar->UpperBound);
+			NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
 			InProblem->AddConstraint(NewConstraint);
 		}
 
 		fluxvar = this->GetMFAVar(REVERSE_FLUX);
 		if (fluxvar != NULL) {
-			NewConstraint = InitializeLinEquation("Gibbs energy reverse flux constraint",0,LESS);
-			NewConstraint->AssociatedReaction = this;
-			NewConstraint->Coefficient.push_back(-100);
-			NewConstraint->Variables.push_back(this->GetMFAVar(POSITIVE_DELTAG));
+			LinEquation* NewConstraint = InitializeLinEquation("Reverse gibbs energy constraint",0,LESS);
+			for (int j=0; j < this->FNumReactants(); j++) {
+				NewConstraint->Coefficient.push_back(-100*this->GetReactantCoef(j));
+				NewConstraint->Variables.push_back(this->GetReactant(j)->GetMFAVar(POTENTIAL,this->GetReactantCompartment(j)));
+			}
 			NewConstraint->Coefficient.push_back(1);
 			NewConstraint->Variables.push_back(fluxvar);
+			NewConstraint->Coefficient.push_back(-10000);
+			NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
+			InProblem->AddConstraint(NewConstraint);
+			NewConstraint = InitializeLinEquation("Enforcing forward reaction constraint on reverse flux",fluxvar->UpperBound,LESS);
+			NewConstraint->Coefficient.push_back(1);
+			NewConstraint->Variables.push_back(fluxvar);
+			NewConstraint->Coefficient.push_back(fluxvar->UpperBound);
+			NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
 			InProblem->AddConstraint(NewConstraint);
 		}
+	} else if (InParameters->ExcludeSimultaneousReversibleFlux && this->FType() == REVERSIBLE) {
+		LinEquation* NewConstraint = InitializeLinEquation("Associating forward flux to FORWARD_REACTION",0,LESS);
+		NewConstraint->AssociatedReaction = this;
+		MFAVariable* fluxvar = this->GetMFAVar(FORWARD_FLUX);
+		if (fluxvar != NULL) {
+			NewConstraint->Coefficient.push_back(1);
+			NewConstraint->Variables.push_back(fluxvar);
+		}
+		NewConstraint->Coefficient.push_back(-1000);
+		NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
+		InProblem->AddConstraint(NewConstraint);
+		NewConstraint = InitializeLinEquation("Associating reverse flux to FORWARD_REACTION",1000,LESS);
+		NewConstraint->AssociatedReaction = this;
+		fluxvar = this->GetMFAVar(REVERSE_FLUX);
+		if (fluxvar != NULL) {
+			NewConstraint->Coefficient.push_back(1);
+			NewConstraint->Variables.push_back(fluxvar);
+		}
+		NewConstraint->Coefficient.push_back(1000);
+		NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
+		InProblem->AddConstraint(NewConstraint);
 	}
 
 	if (InParameters->ReactionSlackVariable || InParameters->BinaryReactionSlackVariable) {
@@ -3505,28 +3463,6 @@ void Reaction::BuildReactionConstraints(OptimizationParameter* InParameters,MFAP
 			NewConstraint->Coefficient.push_back(1);
 			NewConstraint->Variables.push_back(this->GetMFAVar(REACTION_SLACK));
 			InProblem->AddConstraint(NewConstraint);
-			if (!InParameters->ThermoConstraints && !InParameters->SimpleThermoConstraints && this->FType() == REVERSIBLE) {
-				LinEquation* NewConstraint = InitializeLinEquation("Associating forward flux to FORWARD_REACTION",0,LESS);
-				NewConstraint->AssociatedReaction = this;
-				MFAVariable* fluxvar = this->GetMFAVar(FORWARD_FLUX);
-				if (fluxvar != NULL) {
-					NewConstraint->Coefficient.push_back(1);
-					NewConstraint->Variables.push_back(fluxvar);
-				}
-				NewConstraint->Coefficient.push_back(-1000);
-				NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
-				InProblem->AddConstraint(NewConstraint);
-				NewConstraint = InitializeLinEquation("Associating reverse flux to FORWARD_REACTION",1000,LESS);
-				NewConstraint->AssociatedReaction = this;
-				fluxvar = this->GetMFAVar(REVERSE_FLUX);
-				if (fluxvar != NULL) {
-					NewConstraint->Coefficient.push_back(1);
-					NewConstraint->Variables.push_back(fluxvar);
-				}
-				NewConstraint->Coefficient.push_back(1000);
-				NewConstraint->Variables.push_back(this->GetMFAVar(FORWARD_REACTION));
-				InProblem->AddConstraint(NewConstraint);
-			}
 		}
 	}
 
@@ -3651,6 +3587,91 @@ void Reaction::UpdateBounds(int VarType, double Min, double Max, bool ApplyToMin
 			}
 		}
 	}
+}
+
+MFAVariable* Reaction::CreateReactionVariable(MFAProblem* InProblem,int type, double upper_bound,double lower_bound,bool binary,string name) {
+	MFAVariable* var = this->GetMFAVar(type);
+	if (var == NULL) {
+		var = InitializeMFAVariable();
+		var->AssociatedReaction = this;
+		var->Type = type;
+		var->UpperBound = upper_bound;
+		var->LowerBound = lower_bound;
+		var->Binary = binary;
+		var->Name.assign(name);
+		this->MFAVariables[type] = var;
+		InProblem->AddVariable(var);
+	}
+	return var;
+}
+
+void Reaction::CreateUseVariableConstraint(MFAProblem* InProblem, MFAVariable* variable) {
+	//Checking if constraint already exists
+	for (int i=0; i < InProblem->FNumConstraints(); i++) {
+		if (InProblem->GetConstraint(i)->AssociatedReaction == this) {
+			if (InProblem->GetConstraint(i)->ConstraintMeaning.compare("Reaction use constraint") == 0) {
+				for (int j=0; j < InProblem->GetConstraint(i)->Variables.size(); j++) {
+					if (InProblem->GetConstraint(i)->Variables[j] == variable) {
+						return;
+					}
+				}
+			}
+		}
+	}
+	MFAVariable* fluxvar;
+	if (variable->Type == REACTION_USE || variable->Type == FORWARD_USE) {
+		fluxvar = this->GetMFAVar(FORWARD_FLUX);
+		if (fluxvar == NULL) {
+			fluxvar = this->GetMFAVar(FLUX);
+		}
+	} else {
+		fluxvar = this->GetMFAVar(REVERSE_FLUX);
+	}
+	if (fluxvar == NULL) {
+		cout << "Reaction::CreateUseVariableConstraint: No flux variable associated with input use variable!" << endl;
+		return;
+	}
+	LinEquation* newconstraint = InitializeLinEquation("Reaction use constraint",0,LESS);
+	newconstraint->AssociatedReaction = this;
+	newconstraint->Variables.push_back(fluxvar);
+	newconstraint->Variables.push_back(variable);
+	newconstraint->Coefficient.push_back(1);
+	newconstraint->Coefficient.push_back(-1*fluxvar->UpperBound);
+	InProblem->AddConstraint(newconstraint);
+}
+
+void Reaction::CreateReversibilityConstraint(MFAProblem* InProblem) {
+	//Getting flux variables
+	MFAVariable* forflux = this->GetMFAVar(FORWARD_FLUX);
+	if (forflux == NULL) {
+		forflux = this->GetMFAVar(FLUX);
+	}
+	MFAVariable* revflux = this->GetMFAVar(REVERSE_FLUX);
+	//If both direction of flux don't exist, we don't need reversibility constraints
+	if (forflux == NULL || revflux == NULL) {
+		return;
+	}
+	//Creating/retrieving binary variables
+	MFAVariable* foruse = this->CreateReactionVariable(InProblem,FORWARD_USE,1,0,true,"+"+this->GetData("DATABASE",STRING));
+	MFAVariable* revuse = this->CreateReactionVariable(InProblem,REVERSE_USE,1,0,true,"+"+this->GetData("DATABASE",STRING));
+	this->CreateUseVariableConstraint(InProblem, foruse);
+	this->CreateUseVariableConstraint(InProblem, revuse);
+	bool reversibility_const = false;
+	//Checking if reversibility constraint already exists
+	for (int i=0; i < InProblem->FNumConstraints(); i++) {
+		if (InProblem->GetConstraint(i)->AssociatedReaction == this) {
+			if (InProblem->GetConstraint(i)->ConstraintMeaning.compare("Old style reversibility constraint") == 0) {
+				return;
+			}
+		}
+	}
+	LinEquation* newconstraint = InitializeLinEquation("Old style reversibility constraint",1,LESS);
+	newconstraint->AssociatedReaction = this;
+	newconstraint->Variables.push_back(foruse);
+	newconstraint->Variables.push_back(revuse);
+	newconstraint->Coefficient.push_back(1);
+	newconstraint->Coefficient.push_back(1);
+	InProblem->AddConstraint(newconstraint);
 }
 
 void Reaction::AddUseVariables(OptimizationParameter* InParameters) {

@@ -130,6 +130,129 @@ sub _buildroleSearchNameHash {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub load_metabolite_hashes {
+	my ($self,$args) = @_;
+	$args = Bio::KBase::utilities::args($args,["priority"],{
+		compartment => "c",
+		compartment_index => 0,
+		priority => 0,
+		hashes => {
+			ids => {},
+			names => {},
+			structures => {},
+			base_structures => {},
+			formulas => {}
+		}
+	});
+	my $cmp = $args->{compartment};
+	my $index = $args->{compartment_index};
+	my $priority = $args->{priority};
+	my $cpds = $self->compcompounds();
+	for (my $i=0; $i < @{$cpds}; $i++) {
+		if ($cpds->[$i]->templatecompartment()->id() eq $cmp) {
+			if ($cpds->[$i]->id() =~ m/(cpd\d+)/) {
+				my $msid = $1;
+				$args->{hashes}->{ids}->{$msid}->{$cpds->[$i]->id().$index} = $priority;
+				my $cpdhash = Bio::KBase::utilities::compound_hash();
+				if (defined($cpdhash->{$msid}->{names})) {
+					for (my $j=0; $j < @{$cpdhash->{$msid}->{names}}; $j++) {
+						$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpdhash->{$msid}->{names}->[$j])}->{$cpds->[$i]->id().$index} = $priority;
+					}
+				}
+			} elsif ($cpds->[$i]->id() =~ m/(^.+)_[a-z]\d+/) {
+				$args->{hashes}->{ids}->{$1}->{$cpds->[$i]->id().$index} = $priority;
+			}
+			if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
+				$args->{hashes}->{structures}->{$cpds->[$i]->inchikey()}->{$cpds->[$i]->id().$index} = $priority;
+				my $array = [split(/[_-]/,$cpds->[$i]->inchikey())];
+				$args->{hashes}->{base_structures}->{$array->[0]}->{$cpds->[$i]->id().$index} = $priority;
+			}
+			if (defined($cpds->[$i]->smiles()) && length($cpds->[$i]->smiles()) > 0) {
+				$args->{hashes}->{structures}->{$cpds->[$i]->smiles()}->{$cpds->[$i]->id().$index} = $priority;
+			}
+			if (defined($cpds->[$i]->formula()) && length($cpds->[$i]->formula()) > 0) {
+				$args->{hashes}->{formulas}->{$cpds->[$i]->neutral_formula()}->{$cpds->[$i]->id().$index} = $priority;
+			}
+			if (defined($cpds->[$i]->templatecompound()->name()) && length($cpds->[$i]->templatecompound()->name()) > 0) {
+				$args->{hashes}->{names}->{Bio::KBase::utilities::nameToSearchname($cpds->[$i]->templatecompound()->name())}->{$cpds->[$i]->id().$index} = $priority;
+			}
+		}
+	}
+}
+
+sub NewBuildModel {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["modelid"],{
+		function_hash => {},
+		reaction_hash => {},
+		no_features => 0,
+		fulldb => 0,
+		gc => 0.5,
+		metagenome => undef,
+		genome => undef
+	}, @_);
+	#Creating model object
+	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+		id => $args->{modelid},
+		source => Bio::KBase::utilities::conf("ModelSEED","source"),
+		source_id => $args->{modelid},
+		type => $self->type(),
+		name => $args->{modelid},
+		template_ref => $self->_reference(),
+		template_refs => [$self->_reference()],
+		gapfillings => [],
+		gapgens => [],
+		biomasses => [],
+		modelcompartments => [],
+		modelcompounds => [],
+		modelreactions => []
+	});
+	#Creating attributes
+	my $attributes = {
+		pathways => {},
+	    	auxotrophy => {},
+	    fbas => {},
+	    	gene_count => 0
+	};
+	$mdl->attributes($attributes);
+	$mdl->parent($self->store());
+	#Adding genome and metagenome reference
+	if (defined($args->{genome})) {
+		$mdl->genome_ref($args->{genome}->_reference());
+		$mdl->genome($args->{genome});
+		if (defined($args->{genome}->gc_content())) {
+			$args->{gc} = $args->{genome}->gc_content();
+		}
+	}
+	#print "Function hash:\n";
+	#print Data::Dumper->Dump([$args->{function_hash}]);
+	#print "Reaction hash:\n";
+	#print Data::Dumper->Dump([$args->{reaction_hash}]);
+	#Adding reactions based on input function lists
+	my $rxns = $self->reactions();
+	for (my $i=0; $i < @{$rxns}; $i++) {
+		my $rxn = $rxns->[$i];
+		$rxn->AddRxnToModelFromAnnotations({
+			function_hash => $args->{function_hash},
+			reaction_hash => $args->{reaction_hash},
+			model => $mdl,
+			no_features => $args->{no_features},
+			fulldb => $args->{fulldb}
+		});
+	}
+	#Adding biomass reactions
+	my $bios = $self->biomasses();
+	for (my $i=0; $i < @{$bios}; $i++) {
+		my $bio = $bios->[$i];
+ 		$bio->addBioToModel({
+			gc => $args->{gc},
+			model => $mdl
+		});
+	}
+	$mdl->attributes()->{gene_count} = @{$mdl->features()};
+	return $mdl;
+}
+
 sub buildModel {
     my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["genome","modelid"],{
@@ -141,8 +264,7 @@ sub buildModel {
 		source => Bio::KBase::utilities::conf("ModelSEED","source"),
 		source_id => $args->{modelid},
 		type => $self->type(),
-		name => $genome->scientific_name(),
-		genome_ref => $genome->_reference(),
+		name => $args->{modelid},
 		template_ref => $self->_reference(),
 		template_refs => [$self->_reference()],
 		gapfillings => [],
@@ -171,6 +293,7 @@ sub buildModel {
 		$genes = $cds;
 	}
 	$self->extend_model_from_features({
+		fulldb => $args->{fulldb},
 		model => $mdl,
 		features => $genes
 	});
@@ -196,7 +319,8 @@ sub add_reactions_from_ontology_events {
 		fbamodel => undef,
 		annotation_sources => [],
 		mdl_id => $args->{genome}->id().".mdl",
-		merge => 0
+		merge => 0,
+		fulldb => 0
 	}, $args);	
 	if (@{$args->{annotation_sources}} == 0) {
 		return;
@@ -217,7 +341,80 @@ sub add_reactions_from_ontology_events {
 		});
 	}
 	my $ftrs = $args->{genome}->features();
-}	
+	my $rxnhash;
+	my $ontology_hash = Bio::KBase::kbaseenv::get_ontology_hash();
+	my $sso_hash = Bio::KBase::kbaseenv::get_sso_hash();
+	my $sso_feature_role_hash = {};
+	my $unmatched;
+	for (my $i=0; $i < @{$ftrs}; $i++) {
+		my $compartments = $ftrs->[$i]->compartments();
+		my $ontterms = $ftrs->[$i]->ontology_terms();
+		for (my $j=0; $j < @{$args->{annotation_sources}}; $j++) {
+			if (defined($ontterms->{$args->{annotation_sources}->[$j]})) {
+				my $matched = 0;
+				foreach my $oid (keys(%{$ontterms->{$args->{annotation_sources}->[$j]}})) {
+					if (defined($sso_hash->{$oid})) {
+						$matched = 1;
+						if (defined($self->roleSearchNameHash()->{$sso_hash->{$oid}->{searchname}})) {
+							foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$sso_hash->{$oid}->{searchname}}})) {
+								if ($self->roleSearchNameHash()->{$sso_hash->{$oid}->{searchname}}->{$roleid}->source() ne "KEGG") {
+									foreach my $compartment (@{$compartments}) {
+										if (length($compartment) > 1 && defined($cmpTranslation->{$compartment})) {
+											$compartment = $cmpTranslation->{$compartment};
+										} elsif (length($compartment) > 1 && !defined($cmpTranslation->{$compartment})) {
+											print STDERR "Compartment ".$compartment." not found!\n";
+										}
+										push(@{$sso_feature_role_hash->{$roleid}->{$compartment}},$ftrs->[$i]);
+									}
+								}
+							}
+						}
+					} elsif (defined($ontology_hash->{$oid})) {
+						$matched = 1;
+						foreach my $rid (keys(%{$ontology_hash->{$oid}})) {
+							if (defined($ontterms->{$args->{annotation_sources}->[$j]}->{$oid})) {
+								$rxnhash->{$rid}->{$ftrs->[$i]->id()}->{$args->{annotation_sources}->[$j]} = 1;#$ontterms->{$args->{annotation_sources}->[$j]}->{$oid}->[0];
+							}
+						}
+					}
+				}
+				if ($matched == 0) {
+					$unmatched->{$ftrs->[$i]->id()} = $ontterms;
+				} elsif ($args->{merge} == 1) {
+					last;
+				}
+			}
+		}
+	}
+	#First filling in a temporary model based on the SEED annotations
+	my $tempmodel = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+		id => "temp",
+		source => "ModelSEED",
+		source_id => "ModelSEED",
+		type => "temp",
+		name => "temp",
+		template_ref => $self->_reference(),
+		template_refs => [$self->_reference()],
+		genome_ref => $args->{genome}->_reference()
+	});
+	$tempmodel->parent($self->parent());
+	my $rxns = $self->reactions();
+	for (my $i=0; $i < @{$rxns}; $i++) {
+		my $rxn = $rxns->[$i];
+		$rxn->addRxnToModel({
+			role_features => $sso_feature_role_hash,
+			model => $tempmodel,
+			fulldb => $args->{fulldb},
+			reaction_hash => $rxnhash
+		});
+	}
+	#Now merging the temporary model with the existing model passed in
+	my $tmdlrxns = $tempmodel->modelreactions();
+	for (my $i=0; $i < @{$tmdlrxns}; $i++) {
+		$args->{fbamodel}->merge_in_reaction($tmdlrxns->[$i]);
+	}
+}
+
 sub extend_model_from_features {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["features","model"],{
@@ -253,70 +450,12 @@ sub extend_model_from_features {
 	}
 	for (my $i=0; $i < @{$rxns}; $i++) {
 		my $rxn = $rxns->[$i];
-		$rxn->addRxnToModel({
+		$rxn->OldAddRxnToModel({
 			role_features => $roleFeatures,
 			model => $mdl,
 			fulldb => $args->{fulldb}
 		});
 	}
-}
-
-sub buildModelFromFunctions {
-    my $self = shift;
-	my $args = Bio::KBase::ObjectAPI::utilities::args(["functions","modelid"],{}, @_);
-	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
-		id => $args->{modelid},
-		source => Bio::KBase::ObjectAPI::utilities::source(),
-		source_id => $args->{modelid},
-		type => $self->type(),
-		name => $args->{modelid},
-		template_ref => $self->_reference(),
-		template_refs => [$self->_reference()],
-		gapfillings => [],
-		gapgens => [],
-		biomasses => [],
-		modelcompartments => [],
-		modelcompounds => [],
-		modelreactions => []
-	});
-	my $probabilities = {};
-	my $rxns = $self->reactions();
-	my $roleFeatures = {};
-	foreach my $function (keys(%{$args->{functions}})) {
-		my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function);
-		my $subroles = [split(/;/,$searchrole)];
-		for (my $m=0; $m < @{$subroles}; $m++) {
-			$searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($subroles->[$m]);
-			if (defined($self->roleSearchNameHash()->{$searchrole})) {
-				foreach my $roleid (keys(%{$self->roleSearchNameHash()->{$searchrole}})) {
-					if (!defined($probabilities->{$roleid})) {
-						$probabilities->{$roleid} = 0;
-					}
-					$probabilities->{$roleid} += $args->{functions}->{$function};
-					if ($self->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
-						$roleFeatures->{$roleid}->{"c"}->[0] = "Role-based-annotation";
-					}
-				}
-			}
-		}
-	}
-	for (my $i=0; $i < @{$rxns}; $i++) {
-		my $rxn = $rxns->[$i];
-		$rxn->addRxnToModel({
-			role_features => $roleFeatures,
-			model => $mdl,
-			probabilities => $probabilities
-		});
-	}
-	my $bios = $self->biomasses();
-	for (my $i=0; $i < @{$bios}; $i++) {
-		my $bio = $bios->[$i];
-		$bio->addBioToModel({
-			gc => 0.5,
-			model => $mdl
-		});
-	}
-	return $mdl;
 }
 
 =head3 searchForBiomass

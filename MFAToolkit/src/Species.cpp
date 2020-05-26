@@ -3949,29 +3949,54 @@ void Species::CreateMFAVariables(OptimizationParameter* InParameters) {
 		return;
 	}
 	if (InParameters->ThermoConstraints && InParameters->DeltaGError) {
-		MFAVariable* NewVariable = InitializeMFAVariable();
-		NewVariable->AssociatedSpecies = this;
-		NewVariable->Name = GetData("DATABASE",STRING);
-		NewVariable->Type = DELTAGF_PERROR;
-		MFAVariables[DELTAGF_PERROR] = NewVariable;
-		NewVariable->LowerBound = 0;
-		if (FEstDeltaGUncertainty() != FLAG) {
-			NewVariable->UpperBound = InParameters->ErrorMult*FEstDeltaGUncertainty();
-		} else {
-			NewVariable->UpperBound = InParameters->ErrorMult*DEFAULT_DELTAGF_ERROR;
-		}
-		NewVariable = InitializeMFAVariable();
-		NewVariable->AssociatedSpecies = this;
-		NewVariable->Name = GetData("DATABASE",STRING);
-		NewVariable->Type = DELTAGF_NERROR;
-		MFAVariables[DELTAGF_NERROR] = NewVariable;
-		NewVariable->LowerBound = 0;
-		if (FEstDeltaGUncertainty() != FLAG) {
-			NewVariable->UpperBound = InParameters->ErrorMult*FEstDeltaGUncertainty();
-		} else {
-			NewVariable->UpperBound = InParameters->ErrorMult*DEFAULT_DELTAGF_ERROR;
+//		MFAVariable* NewVariable = InitializeMFAVariable();
+//		NewVariable->AssociatedSpecies = this;
+//		NewVariable->Name = GetData("DATABASE",STRING);
+//		NewVariable->Type = DELTAGF_PERROR;
+//		MFAVariables[DELTAGF_PERROR] = NewVariable;
+//		NewVariable->LowerBound = 0;
+//		if (FEstDeltaGUncertainty() != FLAG) {
+//			NewVariable->UpperBound = InParameters->ErrorMult*FEstDeltaGUncertainty();
+//		} else {
+//			NewVariable->UpperBound = InParameters->ErrorMult*DEFAULT_DELTAGF_ERROR;
+//		}
+//		NewVariable = InitializeMFAVariable();
+//		NewVariable->AssociatedSpecies = this;
+//		NewVariable->Name = GetData("DATABASE",STRING);
+//		NewVariable->Type = DELTAGF_NERROR;
+//		MFAVariables[DELTAGF_NERROR] = NewVariable;
+//		NewVariable->LowerBound = 0;
+//		if (FEstDeltaGUncertainty() != FLAG) {
+//			NewVariable->UpperBound = InParameters->ErrorMult*FEstDeltaGUncertainty();
+//		} else {
+//			NewVariable->UpperBound = InParameters->ErrorMult*DEFAULT_DELTAGF_ERROR;
+//		}
+	}
+	if (InParameters->DilutionConstraints) {
+		for (map<int , SpeciesCompartment* , std::less<int> >::iterator MapIT = Compartments.begin(); MapIT != Compartments.end(); MapIT++) {
+			if (MapIT->second != NULL) {
+				MFAVariable* NewVariable = InitializeMFAVariable();
+				NewVariable->AssociatedSpecies = this;
+				NewVariable->Name = GetData("DATABASE",STRING)+"_dil_drain";
+				NewVariable->Compartment = MapIT->second->Compartment->Index;
+				NewVariable->Type = DILUTION_DRAIN;
+				NewVariable->UpperBound = 1000000;
+				NewVariable->LowerBound = 0;
+				NewVariable->Compartment = MapIT->second->Compartment->Index;
+				MapIT->second->MFAVariables[DILUTION_DRAIN] = NewVariable;
+				NewVariable = InitializeMFAVariable();
+				NewVariable->AssociatedSpecies = this;
+				NewVariable->Name = GetData("DATABASE",STRING)+"_dil_rel";
+				NewVariable->Compartment = MapIT->second->Compartment->Index;
+				NewVariable->Type = DILUTION_RELAX;
+				NewVariable->UpperBound = 1000;
+				NewVariable->LowerBound = 0;
+				NewVariable->Compartment = MapIT->second->Compartment->Index;
+				MapIT->second->MFAVariables[DILUTION_RELAX] = NewVariable;
+			}
 		}
 	}
+
 	if (InParameters->ThermoConstraints || InParameters->SimpleThermoConstraints) {
 		if (FFormula().compare("H") == 0) {
 			for (int i=0; i < FNumCompartments(); i++) {
@@ -3988,26 +4013,26 @@ void Species::CreateMFAVariables(OptimizationParameter* InParameters) {
 				NewVariable->Compartment = MapIT->second->Compartment->Index;
 				NewVariable->Type = POTENTIAL;
 				MapIT->second->MFAVariables[POTENTIAL] = NewVariable;
-				if (this->FEstDeltaG() != FLAG && !InParameters->SimpleThermoConstraints) {
-					NewVariable->LowerBound = this->FEstDeltaG() - InParameters->DeltaGSlack + -8.180523005;
-					NewVariable->UpperBound = this->FEstDeltaG() + InParameters->DeltaGSlack + -1.363420501;
-				} else {
+				//if (this->FEstDeltaG() != FLAG && !InParameters->SimpleThermoConstraints) {
+				//	NewVariable->LowerBound = this->FEstDeltaG() - InParameters->DeltaGSlack + -8.180523005;
+				//	NewVariable->UpperBound = this->FEstDeltaG() + InParameters->DeltaGSlack + -1.363420501;
+				//} else {
 					NewVariable->LowerBound = -InParameters->MaxPotential;
 					NewVariable->UpperBound = InParameters->MaxPotential;
-				}
+				//}
 				if (!InParameters->SimpleThermoConstraints) {
-					if (FFormula().compare("H2O") == 0) {
-						NewVariable->LowerBound = AdjustedDeltaG(GetCompartment(NewVariable->Compartment)->IonicStrength,GetCompartment(NewVariable->Compartment)->pH,InParameters->Temperature);
-						NewVariable->UpperBound = AdjustedDeltaG(GetCompartment(NewVariable->Compartment)->IonicStrength,GetCompartment(NewVariable->Compartment)->pH,InParameters->Temperature);
-					}
-					NewVariable = InitializeMFAVariable();
-					NewVariable->AssociatedSpecies = this;
-					NewVariable->Name = GetData("DATABASE",STRING);
-					NewVariable->Compartment = MapIT->second->Compartment->Index;
-					NewVariable->Type = LOG_CONC;
-					MapIT->second->MFAVariables[LOG_CONC] = NewVariable;
-					NewVariable->LowerBound = log(MapIT->second->Compartment->MinConc);
-					NewVariable->UpperBound = log(MapIT->second->Compartment->MaxConc);
+//					if (FFormula().compare("H2O") == 0) {
+//						NewVariable->LowerBound = AdjustedDeltaG(GetCompartment(NewVariable->Compartment)->IonicStrength,GetCompartment(NewVariable->Compartment)->pH,InParameters->Temperature);
+//						NewVariable->UpperBound = AdjustedDeltaG(GetCompartment(NewVariable->Compartment)->IonicStrength,GetCompartment(NewVariable->Compartment)->pH,InParameters->Temperature);
+//					}
+//					NewVariable = InitializeMFAVariable();
+//					NewVariable->AssociatedSpecies = this;
+//					NewVariable->Name = GetData("DATABASE",STRING);
+//					NewVariable->Compartment = MapIT->second->Compartment->Index;
+//					NewVariable->Type = LOG_CONC;
+//					MapIT->second->MFAVariables[LOG_CONC] = NewVariable;
+//					NewVariable->LowerBound = log(MapIT->second->Compartment->MinConc);
+//					NewVariable->UpperBound = log(MapIT->second->Compartment->MaxConc);
 				}
 			}
 		}

@@ -6,9 +6,7 @@ name     : Compare Flux with Expression
 tooltip  : |
     Compare reaction fluxes with gene expression values to identify metabolic pathways where expression and flux data agree or conflict.
 
-screenshots :
-    - compare_flux_with_expression_input.png
-    - compare_flux_with_expression_output.png
+screenshots : []
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -33,73 +31,77 @@ parameters :
         ui-name : |
             Estimate threshold
         short-hint : |
-            Estimates threshold for gene expression based on a set of universal genes
-        long-hint : |
-            Estimates threshold for gene expression based on a set of universal genes
+            If selected, the algorithm estimates a threshold for gene expression based on a set of universal genes.
 
 
     fba_id :
         ui-name : |
             FBA solution
         short-hint : |
-            Flux balance analysis solution to be compared with expression values
-        long-hint : |
-            Flux balance analysis solution to be compared with expression values
+            Flux balance analysis (FBA) solution to be compared with expression values.
 
 
     fbapathwayanalysis_output_id :
         ui-name : |
             Output ID
         short-hint : |
-            ID where the results of the comparison will be saved
-        long-hint : |
-            ID where the results of the comparison will be saved
+            ID where the results of the comparison will be saved.
 
 
     maximize_agreement :
         ui-name : |
             Maximize agreement
         short-hint : |
-            Set the expression threshold to maximize agreement with flux data
-        long-hint : |
-            Set the expression threshold to maximize agreement with flux data
+            Set the expression threshold to maximize agreement with flux data. If selected, the algorithm determines a threshold that will reflect maximal agreement with flux data.
 
 
     exp_threshold_percentile :
         ui-name : |
             Expression threshold
         short-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
-        long-hint : |
-            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF
+            Genes with expression values in the percentile above this threshold are considered ON; if below, they are considered OFF. The expression values are normalized and ranked in order to determine a threshold.
 
 
     expseries_id :
         ui-name : |
             Expression data set
         short-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
-        long-hint : |
-            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution
+            An imported ExpressionMatrix containing gene expression values, one condition (column) of which will be compared with fluxes in the selected FBA solution.
 
 
     expression_condition :
         ui-name : |
             Expression condition
         short-hint : |
-            Specific condition in expression matrix that should be compared with reaction flux
-        long-hint : |
-            Specific condition in expression matrix that should be compared with reaction flux
+            The specific condition in the expression matrix that is compared against the flux distribution (FBA object). Note that in an expression matrix there are multiple conditions given.
 
 
 icon: fba-teal.png
 
 description : |
 
-    <p>This method compare flux with gene expression for each metabolic pathway and the overall model.</p>
+    <p>This method evaluates the agreement/disagreement of a flux distribution against overall gene expression and organizes the results based on KEGG metabolic pathways that represent the entire metabolic model. For metabolic modeling related questions, please refer to the <a href=“http://kbase.us/metabolic-modeling-faq/#How-can-I-edit-my-media-or-metabolic-model”> metabolic modeling FAQ</a>.</p>
+
+    <p><strong>Prerequisites</strong><br> The following inputs are required:  a <a href=”https://narrative.kbase.us/#catalog/apps/fba_tools/run_flux_balance_analysis/release”>flux balance analysis (FBA)</a>, a <a href=”http://kbase.us/metabolic-modeling-in-kbase/”> solution</a>, and a <a href=”http://kbase.us/expression-analysis/”> gene expression data set</a>. Please note that for optimum outcome the FBA solution needs to be generated against either the same or a  similar media formulation as the expression data was originally generated.</p>
+
+    <p><strong>App output</strong><br>Upon successful completion, the App creates a pathway analysis data object of type <a href=“https://narrative.kbase.us/#spec/type/KBaseFBA.FBAPathwayAnalysis-1.0”>FBAPathwayAnalysis</a> and creates a visual summary via horizontal bar graphs. These bar graphs are generated by decomposing model reactions into KEGG pathways. Bars represent each the combinations of presence or absence of reactions or flux:</p>
+    <ul>
+      <li>Active gap-filled reactions</li>
+      <li>GAR active flux but no expression</li>
+      <li>GAR no flux but active expression</li>
+      <li>GAR no flux or expression</li>
+      <li>GAR active flux and expression</li>
+    </ul>
+
+    <p><i>Note that GAR stands for Gene Associated Reactions.</i><p>
+
+    <p>“Active expression” is defined by log2(fold_change) > expression fold-change threshold (input parameter).</p>
+
+    <p>The bar graph visualization is generated using the <a href=“https://plot.ly/”>Plotly library</a>. Icon widgets in the top right allow the user to change the graph scale, download the image as a .png file, and access other functionalities offered through Plotly. </p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry, Janaka Edirisinghe, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
+    Chris Henry, Janaka Edirisinghe, and Neal Conrad. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
 
 publications :
     -

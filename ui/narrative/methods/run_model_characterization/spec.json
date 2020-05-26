@@ -1,0 +1,152 @@
+{
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "input_mapping" : [
+            {
+               "narrative_system_variable" : "workspace",
+               "target_property" : "workspace"
+            },
+            {
+               "target_property" : "fbamodel_id",
+               "input_parameter" : "fbamodel_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "target_property" : "metagenome_model_id",
+               "input_parameter" : "metagenome_model_id",
+               "target_type_transform": "resolved-ref"
+            },
+            {
+               "target_property" : "coverage_propagation",
+               "input_parameter" : "coverage_propagation"
+            },
+            {
+               "target_property" : "fbamodel_output_id",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ],
+         "method" : "run_model_characterization",
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			},
+            {
+               "target_property" : "ws",
+               "narrative_system_variable" : "workspace"
+            },
+            {
+               "constant_value" : "KBaseFBA.FBAModel",
+               "target_property" : "type"
+            },
+            {
+               "target_property" : "obj",
+               "input_parameter" : "fbamodel_output_id"
+            }
+         ],
+         "name" : "fba_tools"
+      }
+   },
+   "authors" : [
+      "chenry"
+   ],
+   "categories" : [
+      "active",
+      "metabolic_modeling"
+   ],
+   "name" : "run_model_characterization",
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker",
+   "contact" : "help@kbase.us",
+   "widgets" : {
+      "output" : "kbaseTabTable",
+      "input" : null
+   },
+   "parameters" : [
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "fbamodel_id",
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ]
+         },
+         "advanced" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "metagenome_model_id",
+         "field_type" : "text",
+         "optional" : true,
+         "allow_multiple" : false
+      },
+      {
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "mag",
+                  "display" : "Compute MAG level coverage",
+                  "ui_name" : "Compute MAG level coverage",
+                  "value" : "mag"
+               },
+               {
+                  "value" : "contig",
+                  "ui_name" : "Use contig coverage directly",
+                  "display" : "Use contig coverage directly",
+                  "id" : "contig"
+               }
+            ]
+         },
+         "id" : "coverage_propagation",
+         "advanced" : true,
+         "default_values" : [
+            "mag"
+         ],
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.FBAModel"
+            ],
+            "is_output_name" : true
+         },
+         "field_type" : "text",
+         "optional" : false,
+         "allow_multiple" : false,
+         "default_values" : [
+            ""
+         ],
+         "id" : "fbamodel_output_id",
+         "advanced" : false
+      }
+   ],
+   "visible" : true
+}

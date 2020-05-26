@@ -19,6 +19,9 @@ has class  => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', m
 has codeid  => ( is => 'rw', isa => 'Str',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildcodeid' );
 has searchnames  => ( is => 'rw', isa => 'ArrayRef',printOrder => '-1', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_build_searchnames' );
 has isBiomassCompound  => ( is => 'rw', isa => 'Bool',printOrder => '3', type => 'msdata', metaclass => 'Typed', lazy => 1, builder => '_buildisBiomassCompound' );
+has inchikey => (is => 'rw', type => 'Str', metaclass => 'Typed', lazy => 1, builder => '_build_inchikey');
+has smiles => (is => 'rw', type => 'Str', metaclass => 'Typed', lazy => 1, builder => '_build_smiles');
+has inchi => (is => 'rw', type => 'Str', metaclass => 'Typed', lazy => 1, builder => '_build_inchi');
 
 #***********************************************************************************************************
 # BUILDERS:
@@ -165,6 +168,36 @@ sub _buildcodeid {
 	#	}
 	#}
 	return $self->id();
+}
+sub _build_inchikey {
+	my ($self) = @_;
+	if ($self->id() =~ m/(cpd\d+)/) {
+		my $id = $1;
+		my $cpdhash = Bio::KBase::utilities::compound_hash();
+		if (defined($cpdhash->{$id}->{inchikey})) {
+			return $cpdhash->{$id}->{inchikey};
+		}
+	}
+}
+sub _build_inchi {
+	my ($self) = @_;
+	if ($self->id() =~ m/(cpd\d+)/) {
+		my $id = $1;
+		my $cpdhash = Bio::KBase::utilities::compound_hash();
+		if (defined($cpdhash->{$id}->{search_inchi})) {
+			return $cpdhash->{$id}->{search_inchi};
+		}
+	}
+}
+sub _build_smiles {
+	my ($self) = @_;
+	if ($self->id() =~ m/(cpd\d+)/) {
+		my $id = $1;
+		my $cpdhash = Bio::KBase::utilities::compound_hash();
+		if (defined($cpdhash->{$id}->{smiles})) {
+			return $cpdhash->{$id}->{smiles};
+		}
+	}
 }
 
 #***********************************************************************************************************

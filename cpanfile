@@ -1,0 +1,12 @@
+requires 'Config::IniFiles';
+requires 'Cpanel::JSON::XS';
+requires 'Data::Dumper::Concise';
+requires 'Devel::Cover';
+requires 'JSON::MaybeXS';
+requires 'Path::Tiny';
+requires 'Ref::Util';
+requires 'Template::Plugin::JSON';
+requires 'Template';
+requires 'Test::Most';
+requires 'Test::Output';
+requires 'Try::Tiny';

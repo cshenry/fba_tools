@@ -1,0 +1,63 @@
+{
+   "name" : "run_fba_tools_tests",
+   "behavior" : {
+      "service-mapping" : {
+         "url" : "",
+         "method" : "run_fba_tools_tests",
+         "input_mapping" : [
+            {
+               "target_property" : "workspace",
+               "narrative_system_variable" : "workspace"
+            }
+         ],
+         "name" : "fba_tools",
+         "output_mapping" : [
+            {
+				"service_method_output_path": [0, "report_name"],
+				"target_property": "report_name"
+			},
+			{
+				"service_method_output_path": [0, "report_ref"],
+				"target_property": "report_ref"
+			},
+			{
+				"narrative_system_variable": "workspace",
+				"target_property": "workspace_name"
+			}
+         ]
+      }
+   },
+   "categories" : [
+      "inactive"
+   ],
+   "authors" : [
+      "chenry"
+   ],
+   "widgets" : {
+      "input" : null,
+      "output" : "no-display"
+   },
+   "contact" : "http://kbase.us/contact-us/",
+   "visible" : false,
+   "parameters" : [
+        {
+         "advanced" : false,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "checked_value" : 1,
+            "unchecked_value" : 0
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "test_metagenomes"
+      }
+   ],
+   "ver" : "1.0.0",
+   "job_id_output_field" : "docker"
+}

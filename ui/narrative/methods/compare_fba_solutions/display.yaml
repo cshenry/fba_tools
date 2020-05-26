@@ -4,12 +4,9 @@
 name     : Compare FBA Solutions
 
 tooltip  : |
-    For each FBA solution, compare objective values, reaction fluxes, and metabolite uptake and excretion.
+    For each flux balance analysis (FBA) solution, compare objective values, reaction fluxes, and metabolite uptake and excretion.
 
-screenshots :
-
-    - compare_fba_input.png
-    - compare_fba_output1.png
+screenshots : []
 
 
 #
@@ -18,7 +15,7 @@ screenshots :
 suggestions :
     apps:
         related :
-            []
+            [build_fba_model, run_flux_balance_analysis]
         next :
             []
     methods:
@@ -36,28 +33,35 @@ parameters :
         ui-name : |
             FBA comparison ID
         short-hint : |
-            Name of the object where FBA comparison data will be stored in your narrative
-        long-hint : |
-            Name of the object where FBA comparison data will be stored in your narrative
+            Name of the object where FBA comparison data will be stored in your Narrative.
 
 
     fba_id_list :
         ui-name : |
             FBA(s)
         short-hint : |
-            Select FBA solutions one at a time to compare one at a time; solutions must be created or copied into your narrative to be compared
-        long-hint : |
-            Select FBA solutions one at a time to compare one at a time; solutions must be created or copied into your narrative to be compared
+            Select FBA solutions one at a time to compare one at a time; solutions must be created or copied into your narrative to be compared. To ensure a successful comparison, make sure the participating FBA solutions have a non-zero objective value.
 
 
 icon: fba-teal.png
 
 description : |
 
-    <p>KBase permits the use of flux balance analysis to predict how an organism will behave metabolically in a wide range of growth conditions. With this capability, it quickly becomes important to be able to compare the flux profiles predicted by FBA side-by-side, so as to understand how an organism's behavior changes from one condition to the next, or how the behavior of two different organisms vary with in a single condition. The Compare FBA Solutions method enables this comparison. FBA solutions are compared on three levels: (i) the objective value for each FBA solution is compared; (ii) the flux through each reaction in each FBA solution is compared; and (iii) the uptake and excretion of metabolites in each FBA solution is compared. In this comparison, reaction fluxes are categorized into four possible states: not in model; no flux; forward flux; and reverse flux. Metabolite fluxes are categorized into similar states: not in model; no flux; uptake; and excretion. FBA solutions are compared based on these states, and solutions with similar states are compared based on magnitude of flux.</p>
+    <p>KBase permits the use of flux balance analysis (FBA) to predict how an organism will behave metabolically in a wide range of growth conditions. With this capability, it quickly becomes important to be able to compare the flux profiles predicted by FBAs side-by-side, so as to understand how an organism's behavior changes from one condition to the next, or how the behavior of two different organisms varies within a single condition. The Compare FBA Solutions App enables this comparison. FBA solutions are compared on three levels: (i) the objective value; (ii) the flux through each reaction; and (iii) the uptake and excretion of metabolites. In this comparison, reaction fluxes are categorized into four possible states: not in model; no flux; forward flux; and reverse flux. Metabolite fluxes are categorized into similar states: not in model; no flux; uptake; and excretion. FBA solutions are compared based on these states, and solutions with similar states are compared based on the magnitude of flux. Further information about microbial metabolic modeling and analyses within KBase can be found within this <a href="https://narrative.kbase.us/narrative/ws.18302.obj.61">Tutorial Narrative.</a></p>
+
+    <p><strong>Compare FBA Solutions Output</strong><br>
+    The Compare FBA Solutions output report currently consists of five tabs.
+    <ul>
+      <li><u>Overview:</u> this tab provides basic information on the FBA comparison job.</li>
+      <li><u>Flux Balance Analyses:</u> this tab lists the Flux Balance Analyses in the comparison, as well as the model, media, objective function value (e.g. biomass production), reactions and exchanges.</li>
+      <li><u>FBA Comparisons:</u> this tab lists the FBA solution with the far right columns making a matrix.  In this matrix, the R value is the ratio of reactions also present in the other FBA solution.  Likewise, the C is the ratio of compounds also present in the other FBA solution.</li>
+      <li><u>Reactions:</u> this tab lists the union of all the reactions for the participating FBAs. The first three columns list the reaction identifier, name, and equation. The FBAs column is the number of FBAs that have this reaction. The Most Common State column can have one of 4 values (IA - Inactive,  FOR - Forward, REV - Reverse and NA - Not Applicable) followed by a percentage of FBAs with this most common state. The Inactive State column displays the counts and object references of the FBA objects with this state. The Forward and Reverse State columns display the average and plus or minus to the max/mins of the reactions fluxes. They then display the FBA object reference and its corresponding rate.</li>
+      <li><u>Compounds:</u> this tab lists the transported compounds present in the FBA.  The first three columns list the compound identifier, name, and exchange. The FBAs column gives the number of FBAs with this compound. The Most Common State lists which state the compound is found in and the percentage of FBAs in this state. The possible states are UP (uptake), EX (Excretion) and IA (Inactive). The Inactive State column gives the count of FBAs where that compound is inactive as well as the object reference to those FBAs.  The Uptake and Excretion State columns detail the average and plus or minus to the max/mins of the reaction flux that transport the compound. Additionally, they detail the values of each FBA (in the form of an object reference) with this state. It is important to note that only compounds that are transported show up in this tab.</li>
+    </ul>
+    </p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry, Matt DeJongh, Jose Faria, Janaka Edirisinghe, Sam Seaver, Neal Conrad. For questions, <a href="mailto:help@kbase.us">e-mail help@kbase.us</a></p>
+    Chris Henry, Matt DeJongh, José P. Faria, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, please <a href=”http://kbase.us/contact-us/”> contact us</a>.</p>
 
 publications :
     -

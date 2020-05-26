@@ -4,13 +4,8 @@
 name     : Bulk Download Modeling Objects
 
 tooltip  : |
-    Bulk download many modeling objects at once
-
-screenshots :
-
-    - build_metabolic_model_input.png
-    - build_metabolic_model_output.png
-
+    Bulk download many modeling objects as one file.
+screenshots : []
 
 #
 # Define the set of other narrative methods that should be suggested to the user.
@@ -34,78 +29,84 @@ suggestions :
 parameters :
     refs :
         ui-name : |
-            Objects to export
+            One or more objects to export
         short-hint : |
-            Select all objects to export
+            Select all objects to export.
 
     model_format :
         ui-name : |
             Format for model exports
         short-hint : |
-            Format for model exports
+            Format to use for model exports.
 
     fba_format :
         ui-name : |
-            Format for fba exports
+            Format for FBA exports
         short-hint : |
-            Format for fba exports
+            Format to use for FBA exports.
 
     media_format :
         ui-name : |
             Format for media exports
         short-hint : |
-            Format for media exports
+            Format to use for media exports.
 
     phenotype_format :
         ui-name : |
             Format for phenotype exports
         short-hint : |
-            Format for phenotype exports
+            Format to use for phenotype exports.
 
     phenosim_format :
         ui-name : |
             Format for phenotype simulation exports
         short-hint : |
-            Format for phenotype simulation exports
+            Format to use for phenotype simulation exports.
 
     all_models :
         ui-name : |
             Export all models
         short-hint : |
-            Export all models
+            Check box to export all models.
 
     all_fba :
         ui-name : |
             Export all FBA
         short-hint : |
-            Export all FBA
+            Check box to export all FBA.
 
     all_media :
         ui-name : |
             Export all media
         short-hint : |
-            Export all media
+            Check box to export all media.
 
     all_phenotypes :
         ui-name : |
             Export all phenotypes
         short-hint : |
-            Export all phenotypes
+            Check box to export all phenotypes.
 
     all_phenosims :
         ui-name : |
             Export all phenotype simulations
         short-hint : |
-            Export all phenotype simulations
+            Check box to export all phenotype simulations.
 
 icon: fba-teal.png
 
 description : |
+    <p>This App enables the bulk download of any model-related objects in the current narrative of KBase. Users can select which object type(s) to download (e.g., just models or models plus media, etc.). Under the ‘show advanced’ parameters link, users can specify a file format for each type of object using the available dropdown. </p>
 
-    <p>This app enables the bulk download of any model-related object in KBase.</p>
+    <p>When the App is finished running, a link will appear under the heading “Files” and the link will be called “model_objects.tgz”. Click on the link to begin the download. Systems will vary on how to uncompress a file that has been tar’d and gzipped. On linux systems, from the command line, the command ‘tar -xzf model_objects.tgz’ can be used. Mac OS X will unpack a .tar.gz, .tar, or .zip file automatically when you double-click on its icon. If you are using windows and haven’t encountered gzip, check out the help <a href=”https://www.simplehelp.net/2015/08/11/how-to-open-tar-gz-files-in-windows-10/”>here</a>.</p>
+
+    <p>If you are having trouble locating your downloaded data, the model_objects.tgz will have a current timestamp (time it was downloaded) but the uncompressed data files will have a timestamp that corresponds to the data and time they were created in KBase.</p>
+
+    <p>For additional information about metabolic modeling, visit the <a href="https://kbase.us/metabolic-modeling-faq/">Metabolic Modeling in KBase FAQ</a>.<p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Christopher Henry. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+
 
 publications :
     -
