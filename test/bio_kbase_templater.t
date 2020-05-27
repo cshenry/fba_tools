@@ -41,7 +41,8 @@ subtest 'populate_template' => sub {
                 { thing => 'world' },
             ), 'valid output, includes template vars, output to STDOUT';
     };
-    my @content = map { s/(^\s*|\s*$)//g; $_ } grep { /\S/ } split /[\n\r]/, $stdout;
+
+    my @content = parse_template_string( $stdout );
     cmp_deeply
         \@content,
         [ "Hello world", "G'day sport!" ],
@@ -55,8 +56,7 @@ subtest 'populate_template' => sub {
             \$string
         ), 'valid output, no template vars, saved to scalar ref';
 
-
-    @content = map { s/(^\s*|\s*$)//g; $_ } grep { /\S/ } split /[\n\r]/, $string;
+    @content = parse_template_string( $string );
     cmp_deeply
         \@content,
         [ "Hello", "G'day sport!" ],
@@ -73,7 +73,7 @@ subtest 'populate_template' => sub {
             \$string
         ), 'valid output, includes template vars, saved to scalar ref';
 
-    @content = map { s/(^\s*|\s*$)//g; $_ } grep { /\S/ } split /[\n\r]/, $string;
+    @content = parse_template_string( $string );
     cmp_deeply
         \@content,
         [ "Hello world", "G'day sport!" ],
@@ -90,10 +90,7 @@ subtest 'populate_template' => sub {
             $temp_file->stringify,
         ), 'valid output, includes template vars, saved to a file';
 
-    @content = map { s/(^\s*|\s*$)//g; $_ }
-        grep { /\S/ }
-        split /[\n\r]/, $temp_file->slurp_utf8;
-
+    @content = parse_template_string( $temp_file->slurp_utf8 );
     cmp_deeply
         \@content,
         [ "Hello world", "G'day sport!" ],
@@ -105,5 +102,20 @@ subtest 'populate_template' => sub {
 
 
 };
+
+sub parse_template_string {
+    my ( $template_string ) = @_;
+
+    return
+        # remove leading and trailing whitespace
+        map { my $line = $_;
+            $line =~ s/(^\s*|\s*$)//g;
+            $line;
+        }
+        # ensure the line has non-whitespace content
+        grep { /\S/ }
+        # split on any line break type
+        split /[\n\r]+/, $template_string;
+}
 
 done_testing;

@@ -54,11 +54,12 @@ build-test-script:
 	echo 'script_dir=$$(dirname "$$(readlink -f "$$0")")' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	echo 'export KB_DEPLOYMENT_CONFIG=$$script_dir/../deploy.cfg' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	echo 'export KB_AUTH_TOKEN=`cat /kb/module/work/token`' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
-	echo 'export PERL5LIB=$$script_dir/../$(LIB_DIR):$$PATH:$$PERL5LIB' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'export PERL5LIB=$$script_dir/../$(LIB_DIR):$$PERL5LIB' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	echo 'cd $$script_dir/..' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
-	echo 'echo "running test scripts!"' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
-	echo 'prove -lvrm $(TEST_DIR)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
-	echo 'prove -lvm --ext pl $(TEST_DIR)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'echo "running perl .t tests"' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'prove -I $(TEST_DIR)/lib -lvrm -j9 $(TEST_DIR)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'echo "running .pl tests"' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
+	echo 'prove -I $(TEST_DIR)/lib -lvm --ext pl $(TEST_DIR)' >> $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 	chmod +x $(TEST_DIR)/$(TEST_SCRIPT_NAME)
 
 deploy-mfatoolkit:
