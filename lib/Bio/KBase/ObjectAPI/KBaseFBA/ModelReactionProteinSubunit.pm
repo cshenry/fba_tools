@@ -66,19 +66,51 @@ sub _buildexchangeGPRString {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub SplitFluxToGenesByAbundance {
+	my ($self,$abundance_hash,$flux,$gene_flux) = @_;
+	my $expression_array = [];
+	my $total_exp = 0;
+	my $ftrs = $self->feature_refs();
+	my $count = 0;
+	foreach my $ftr (@{$ftrs}) {
+		if ($ftr =~ m/\/([^\/]+)$/) {
+			my $ftrid = $1;
+			my $abundance = 0;
+			if (defined($abundance_hash->{$ftrid})) {
+				$abundance = $abundance_hash->{$ftrid};
+			}
+			$total_exp += $abundance;
+			push(@{$expression_array},$abundance);
+		}
+		$count++;
+	}
+	my $index = 0;
+	foreach my $ftr (@{$ftrs}) {
+		if ($ftr =~ m/\/([^\/]+)$/) {
+			my $ftrid = $1;
+			$gene_flux->{$ftrid} = $flux/$count;
+			if ($total_exp > 0) {
+				$gene_flux->{$ftrid} = $flux*$expression_array->[$index]/$total_exp;
+			}
+			$index++;
+		}
+	}
+	return $gene_flux;
+}
+
 sub subunit_expression {
 	my ($self,$expression_hash) = @_;
-	my $highest_expression = 0;
+	my $expression = 0;
 	my $ftrs = $self->feature_refs();
 	foreach my $ftr (@{$ftrs}) {
 		if ($ftr =~ m/\/([^\/]+)$/) {
 			my $ftrid = $1;
-			if (defined($expression_hash->{$ftrid}) && $expression_hash->{$ftrid} > $highest_expression) {
-				$highest_expression = $expression_hash->{$ftrid};
+			if (defined($expression_hash->{$ftrid})) {
+				$expression += $expression_hash->{$ftrid};
 			}
 		}
 	}
-	return $highest_expression;
+	return $expression;
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -68,16 +68,27 @@ sub _buildexchangeGPRString {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub SplitFluxToGenesByAbundance {
+	my ($self,$abundance_hash,$flux,$gene_flux) = @_;
+	foreach my $subunit (@{$self->modelReactionProteinSubunits()}) {
+		$gene_flux = $subunit->SplitFluxToGenesByAbundance($abundance_hash,$flux,$gene_flux);
+	}
+	return $gene_flux;
+}
+
 sub protein_expression {
 	my ($self,$expression_hash) = @_;
-	my $highest_expression = 0;
+	my $lowest_expression;
 	foreach my $subunit (@{$self->modelReactionProteinSubunits()}) {
 		my $subunitexp = $subunit->subunit_expression($expression_hash);
-		if ($subunitexp > $highest_expression) {
-			$highest_expression = $subunitexp;
+		if ($subunitexp > 0 && (!defined($lowest_expression) || $subunitexp < $lowest_expression)) {
+			$lowest_expression = $subunitexp;
 		}
 	}
-	return $highest_expression;
+	if (!defined($lowest_expression)) {
+		$lowest_expression = 0;
+	}
+	return $lowest_expression;
 }
 
 __PACKAGE__->meta->make_immutable;

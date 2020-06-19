@@ -48,7 +48,7 @@ sub reaction_hash {
 
 sub metabolite_hash {
 	my ($args) = @_;
-	$args = Bio::KBase::utilities::args($args,["priority"],{
+	$args = Bio::KBase::utilities::args($args,[],{
 		compartment => "c",
 		compartment_index => 0,
 		priority => 0,
@@ -124,6 +124,7 @@ sub metabolite_hash {
 			}
 		}
 	}
+	return $args;
 }
 
 sub find_matching_metabolite {
@@ -301,6 +302,17 @@ sub to_json {
 		$JSON->pretty(1);
     }
     return $JSON->encode($ref);
+}
+
+sub data_to_html {
+	my ($ref) = @_;
+	my $html;
+	Bio::KBase::Templater::render_template(
+		Bio::KBase::utilities::conf("fba_tools","json_renderer_template"),
+        { template_data => $ref },
+        \$html,
+    );
+    return $html;
 }
 
 =head3 deep_copy

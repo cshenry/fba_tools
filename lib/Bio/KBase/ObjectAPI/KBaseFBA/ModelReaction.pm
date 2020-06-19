@@ -358,6 +358,31 @@ sub _buildsmarts {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub SplitFluxToGenesByAbundance {
+	my ($self,$abundance_hash,$flux) = @_;
+	my $gene_flux = {};
+	my $expression_array = [];
+	my $total_exp = 0;
+	my $count = 0;
+	foreach my $protein (@{$self->modelReactionProteins()}) {
+		my $protexp = $protein->protein_expression($abundance_hash);
+		$total_exp += $protexp;
+		push(@{$expression_array},$protexp);
+		$count++;
+	}
+	my $index = 0;
+	foreach my $protein (@{$self->modelReactionProteins()}) {
+		my $protein_flux = $flux/$count;
+		if ($total_exp > 0) {
+			$protein_flux = $flux*$expression_array->[$index]/$total_exp;
+		}
+		$gene_flux = $protein->SplitFluxToGenesByAbundance($abundance_hash,$protein_flux,$gene_flux);
+		$index++;
+	}
+	return $gene_flux;
+}
+
+
 sub reaction_expression {
 	my ($self,$expression_hash) = @_;
 	my $highest_expression = 0;

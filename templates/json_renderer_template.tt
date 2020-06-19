@@ -1,0 +1,8 @@
+<div id="test"></div>
+<script type="text/javascript" src="https://rawgit.com/caldwell/renderjson/master/renderjson.js"></script>
+<script>
+    document.getElementById("test").appendChild(
+        renderjson([% USE JSON;
+        template_data.json %])
+    );
+</script>

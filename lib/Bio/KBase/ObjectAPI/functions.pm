@@ -740,7 +740,7 @@ sub func_gapfill_metabolic_model {
 		gapfill_output_id => undef,
 		atp_production_check => 1,
 		add_external_reactions => 1,
-		peak_string => undef
+		metabolite_peak_string => undef
 	});
 	my $printreport = 1;
 	my $htmlreport = "<html>";
@@ -3716,8 +3716,8 @@ sub func_run_pickaxe {
 		    #Running pickax
 		    system($command);
 		    #Parsing current pickax output and adding to model
-		    my $cpdfilename = $directory."/FBAModelCompounds.tsv";
-		    my $rxnfilename = $directory."/FBAModelReactions.tsv";
+		    my $cpdfilename = $directory."/compounds.tsv";
+		    my $rxnfilename = $directory."/reactions.tsv";
 		    if (-e $cpdfilename && -e $rxnfilename) {
 		    		#Adding compounds to model
 		    		my $cpdarray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cpdfilename);
@@ -5653,10 +5653,14 @@ sub process_matrix {
 	if (defined($matrix->{row_attributemapping_ref}) && length($matrix->{row_attributemapping_ref}) > 0) {
 		my $mapping = $handler->util_get_object($matrix->{row_attributemapping_ref});
 		for (my $m=0; $m < @{$mapping->{attributes}}; $m++) {
-			$data->{attributes}->[$m] = $mapping->{attributes}->[$m];
+			if (ref($mapping->{attributes}->[$m]) eq "HASH") {
+				$data->{attributes}->[$m] = $mapping->{attributes}->[$m]->{attribute};
+			} else {
+				$data->{attributes}->[$m] = $mapping->{attributes}->[$m];
+			}
 			for (my $j=0; $j < @{$data->{row_ids}}; $j++) {
 				if (defined($mapping->{instances}->{$data->{row_ids}->[$j]}->[$m])) {
-					$data->{attribute_values}->[$j]->[$m] = $mapping->{instances}->{$matrix->{data}->{row_ids}->[$j]}->[$m];
+					$data->{attribute_values}->[$j]->[$m] = $mapping->{instances}->{$data->{row_ids}->[$j]}->[$m];
 				}
 			}
 		}
@@ -5711,7 +5715,7 @@ sub load_matrix {
 sub check_for_peakmatch {
 	my ($metabolomics_data,$cpd_hit,$peak_hit,$cpddata,$generation,$ruleset,$noall) = @_;
 	my $typelist = ["inchikey","smiles","formula"];
-	my $hit = 0;
+	my $hit = [];
 	for (my $i=0; $i < @{$typelist}; $i++) {
 		my $type = $typelist->[$i];
 		if (defined($cpddata->{$type}) && length($cpddata->{$type}) > 0) {
@@ -5721,7 +5725,6 @@ sub check_for_peakmatch {
 				$cpdatt = $array->[0];
 			}
 			if (defined($metabolomics_data->{$type."_to_peaks"}->{$cpdatt})) {
-				$hit = 1;
 				if ($noall == 0) {
 					if (!defined($cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type})) {
 						$cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type} = 0;
@@ -5741,6 +5744,7 @@ sub check_for_peakmatch {
 				}
 				$cpd_hit->{$ruleset}->{$generation}->{$cpddata->{id}}->{$type}++;
 				foreach my $peakid (keys(%{$metabolomics_data->{$type."_to_peaks"}->{$cpdatt}})) {
+					push(@{$hit},$peakid);
 					if ($noall == 0) {
 						if (!defined($peak_hit->{all}->{allgen}->{$peakid}->{$type})) {
 							$peak_hit->{all}->{allgen}->{$peakid}->{$type} = 0;
