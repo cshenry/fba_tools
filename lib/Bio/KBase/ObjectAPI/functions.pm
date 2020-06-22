@@ -573,9 +573,9 @@ sub func_build_metabolic_model {
 		mode => "new",
 		anaerobe => 0,
 		use_annotated_functions => 1,
-        merge_all_annotations => 0,
-        source_ontology_list => [],
-        add_auxotrophy_transporters => 1
+		merge_all_annotations => 0,
+		source_ontology_list => [],
+		add_auxotrophy_transporters => 1
 	});
 	#Making sure reaction KO list is an array
 	if (defined($params->{source_ontology_list}) && ref($params->{source_ontology_list}) ne "ARRAY") {
@@ -1518,54 +1518,54 @@ sub func_view_flux_network {
 				push(@{$network->{nodes}},{
 					data => {
 						reaction =>  $mdlcpd."_".$species,
-		                direction => "=",
-		                features => [],
-		                definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0]",
-		                products => [{
+						direction => "=",
+						features => [],
+						definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0]",
+						products => [{
 							compartment => "e0",
 							id => $extcpdhash->{$mdlcpd}->{node}->{id},
 							stoich => "1",
 							compound => $extcpdhash->{$mdlcpd}->{node}->{id}
 						}],
-		                flux => $extcpdhash->{$mdlcpd}->{species_flux}->{$species},
-		                node_type => "reaction",
-		                reactants => [{
+						flux => $extcpdhash->{$mdlcpd}->{species_flux}->{$species},
+						node_type => "reaction",
+						reactants => [{
 							compartment => $species,
 							id => $species,
 							stoich => "1",
 							compound => $species
-		                }],
-		                gapfilled => 0,
-		                compartment => $species,
-		                id => $mdlcpd."_".$species,
-		                name => $mdlcpd."_".$species
+						}],
+						gapfilled => 0,
+						compartment => $species,
+						id => $mdlcpd."_".$species,
+						name => $mdlcpd."_".$species
 					}
 				});
 			} elsif ($extcpdhash->{$mdlcpd}->{species_flux}->{$species} < -0.0000001) {
 				push(@{$network->{nodes}},{
 					data => {
 						reaction =>  $mdlcpd."_".$species,
-		                direction => "=",
-		                features => [],
-		                definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."]",
-		                reactants => [{
+						direction => "=",
+						features => [],
+						definition => "(1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[e0] <=> (1) ".$extcpdhash->{$mdlcpd}->{node}->{name}."[".$species."]",
+						reactants => [{
 							compartment => "e0",
 							id => $extcpdhash->{$mdlcpd}->{node}->{id},
 							stoich => "1",
 							compound => $extcpdhash->{$mdlcpd}->{node}->{id}
 						}],
-		                flux => abs($extcpdhash->{$mdlcpd}->{species_flux}->{$species}),
-		                node_type => "reaction",
-		                products => [{
+						flux => abs($extcpdhash->{$mdlcpd}->{species_flux}->{$species}),
+						node_type => "reaction",
+						products => [{
 							compartment => $species,
 							id => $species,
 							stoich => "1",
 							compound => $species
-		                }],
-		                gapfilled => 0,
-		                compartment => $species,
-		                id => $mdlcpd."_".$species,
-		                name => $mdlcpd."_".$species
+						}],
+						gapfilled => 0,
+						compartment => $species,
+						id => $mdlcpd."_".$species,
+						name => $mdlcpd."_".$species
 					}
 				});
 			}
@@ -2733,10 +2733,10 @@ sub func_build_metagenome_metabolic_model {
 		$totalcoverage = 0;
 		print "Reads files recieved: computing coverages!\n";
 		my $params = {
-           reads => $params->{reads_refs},
-           assembly_ref => $params->{input_ref}.";".$object->{assembly_ref}
-        };
-        my $readmapper = Bio::KBase::kbaseenv::readmapper_client();
+		   reads => $params->{reads_refs},
+		   assembly_ref => $params->{input_ref}.";".$object->{assembly_ref}
+		};
+		my $readmapper = Bio::KBase::kbaseenv::readmapper_client();
    		my $result = $readmapper->readmapper($params);
    		print Bio::KBase::ObjectAPI::utilities::TOJSON($result)."\n\n";
 		my $lines = Bio::KBase::ObjectAPI::utilities::LOADFILE($result->{file_name});
@@ -2760,7 +2760,7 @@ sub func_build_metagenome_metabolic_model {
 	my $ontology_hash = Bio::KBase::kbaseenv::get_ontology_hash();
 	my $sso_hash = Bio::KBase::kbaseenv::get_sso_hash();
 	my $ftrcount = 0;
-    my $ssocount = 0;
+	my $ssocount = 0;
 	for (my $i=0; $i < @{$feature_data}; $i++) {
 		$ftrcount++;
 		if (defined($feature_data->[$i]->{db_xrefs})) {
@@ -2777,17 +2777,17 @@ sub func_build_metagenome_metabolic_model {
 					}
 				}
 
-                if ( $params->{ use_kegg }
-                    && defined $type
-                    && defined $ontology_hash->{ $term }
-                    && ( $type eq "KEGG_KO" || $type eq "KEGG_RXN" ) ) {
-                    for my $rid ( keys %{ $ontology_hash->{ $term } } ) {
-                        $reaction_hash->{ $rid }{ u } //= {
-                            hit_count             => 0,
-                            non_gene_probability  => 0,
-                            non_gene_coverage     => 0,
-                            sources               => {}
-                        };
+				if ( $params->{ use_kegg }
+					&& defined $type
+					&& defined $ontology_hash->{ $term }
+					&& ( $type eq "KEGG_KO" || $type eq "KEGG_RXN" ) ) {
+					for my $rid ( keys %{ $ontology_hash->{ $term } } ) {
+						$reaction_hash->{ $rid }{ u } //= {
+							hit_count			 => 0,
+							non_gene_probability  => 0,
+							non_gene_coverage	 => 0,
+							sources			   => {}
+						};
 						$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}*$reaction_hash->{$rid}->{u}->{hit_count}+$params->{other_anno_probability};
 						$reaction_hash->{$rid}->{u}->{hit_count}++;
 						$reaction_hash->{$rid}->{u}->{non_gene_probability} = $reaction_hash->{$rid}->{u}->{non_gene_probability}/$reaction_hash->{$rid}->{u}->{hit_count};
@@ -2919,11 +2919,11 @@ sub func_model_based_genome_characterization {
 		genome_workspace => $params->{workspace},
 		template_workspace => undef,
 		use_annotated_functions => 1,
-        merge_all_annotations => 0,
-        source_ontology_list => [],
-        metagenome_model_id => undef,
-        metagenome_model_workspace => $params->{workspace},
-        coverage_propagation => "mag"
+		merge_all_annotations => 0,
+		source_ontology_list => [],
+		metagenome_model_id => undef,
+		metagenome_model_workspace => $params->{workspace},
+		coverage_propagation => "mag"
 	});
 	Bio::KBase::ObjectAPI::functions::func_build_metabolic_model({
 		workspace => $params->{workspace},
@@ -2935,9 +2935,9 @@ sub func_model_based_genome_characterization {
 		gapfill_model => 0,
 		anaerobe => 0,
 		use_annotated_functions => $params->{use_annotated_functions},
-        merge_all_annotations => $params->{merge_all_annotations},
-        source_ontology_list => $params->{source_ontology_list},
-        add_auxotrophy_transporters => 1
+		merge_all_annotations => $params->{merge_all_annotations},
+		source_ontology_list => $params->{source_ontology_list},
+		add_auxotrophy_transporters => 1
 	},$datachannel);
 	return Bio::KBase::ObjectAPI::functions::func_run_model_chacterization_pipeline({
 		workspace => $params->{workspace},
@@ -2955,8 +2955,8 @@ sub func_run_model_chacterization_pipeline {
 		fbamodel_output_id => $params->{fbamodel_id},
 		metagenome_model_id => undef,
 		metagenome_model_workspace => $params->{workspace},
-        coverage_propagation => "mag",
-        predict_auxotrophy => 1
+		coverage_propagation => "mag",
+		predict_auxotrophy => 1
 	});
 	#Pulling and stashing original input model for the analysis
 	if (!defined($datachannel->{fbamodel})) {
@@ -3153,20 +3153,20 @@ sub func_run_model_chacterization_pipeline {
 	$datachannel->{fbamodel}->attributes($attributes);
 	my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}));
 
-    my $string;
-    Bio::KBase::Templater::render_template(
+	my $string;
+	Bio::KBase::Templater::render_template(
 		Bio::KBase::utilities::conf("fba_tools","model_characterisation_template"),
-        { template_data => $datachannel->{ fbamodel }->serializeToDB() },
-        \$string,
-    );
+		{ template_data => $datachannel->{ fbamodel }->serializeToDB() },
+		\$string,
+	);
 
 	#print "TEMPLATE:".$string."\n\n";
 
-    Bio::KBase::utilities::print_report_message( {
-        message => $string,
-        append  => 0,
-        html    => 1,
-    } );
+	Bio::KBase::utilities::print_report_message( {
+		message => $string,
+		append  => 0,
+		html	=> 1,
+	} );
 
 	return {
 		new_fbamodel_ref => $datachannel->{fbamodel}->_wswsid()."/".$datachannel->{fbamodel}->_wsobjid()."/".$datachannel->{fbamodel}->_wsversion(),
@@ -3194,9 +3194,9 @@ sub func_lookup_modelseed_ids {
 	if (!defined($attribute_hash->{modelseed})) {
 		push(@{$mapping->{attributes}},{
 			attribute => "modelseed",
-            attribute_ont_id => "Custom:Term",
-            attribute_ont_ref => "KbaseOntologies/Custom",
-            source => "ModelSEED"
+			attribute_ont_id => "Custom:Term",
+			attribute_ont_ref => "KbaseOntologies/Custom",
+			source => "ModelSEED"
 		});
 		$attribute_hash->{modelseed} = $count;
 	}
@@ -3303,12 +3303,12 @@ sub func_lookup_modelseed_ids {
 		}
 	}
 #	my $string;
-#    Bio::KBase::Templater::render_template(
+#	Bio::KBase::Templater::render_template(
 #		Bio::KBase::utilities::conf("fba_tools","metabolomics_template"),
-#        { template_data => $metabolomics_data },
-#        \$string,
-#    );
-#    Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+#		{ template_data => $metabolomics_data },
+#		\$string,
+#	);
+#	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
 	my $attmapping = $handler->util_save_object($mapping,Bio::KBase::utilities::buildref($params->{chemical_abundance_matrix_out_id}."AttMap",$params->{workspace}),{hash => 1,type => "KBaseExperiments.AttributeMapping"});
 	$object->{row_attributemapping_ref} = util_get_ref($attmapping);
 	my $wsmeta = $handler->util_save_object($object,Bio::KBase::utilities::buildref($params->{chemical_abundance_matrix_out_id},$params->{workspace}),{hash => 1,type => "KBaseMatrices.ChemicalAbundanceMatrix"});
@@ -3490,24 +3490,34 @@ sub func_create_or_edit_media {
 sub func_run_pickaxe {
 	my ($params,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","model_id"],{
-    		rule_sets => ["enzymatic"],
-    		generations => 1,
-    		prune => "none",
-    		add_transport => 0,
-    		out_model_id => $params->{model_id},
-    		compounds => [],
-    		template_id => "gramneg",
-    		template_workspace => undef,
-    		metabolomics_data => undef,
-    		metabolomics_workspace => $params->{workspace},
-    		compound_limit => 100000
-    });
+		rule_sets => ["enzymatic"],
+		generations => 1,
+		prune => "none",
+		add_transport => 0,
+		out_model_id => $params->{model_id}.".pickax",
+		template_id => "gramneg",
+		template_workspace => undef,
+		metabolomics_data => undef,
+		metabolomics_workspace => $params->{workspace},
+		model_workspace => $params->{workspace},
+		compound_limit => 100000,
+		keep_seed_hits => 1,
+		keep_metabolomic_hits => 1,
+		discard_orphan_hits => 0,
+		target_id => undef,
+		target_workspace => $params->{workspace},
+		max_new_cpds_per_gen_per_ruleset => 3000,
+		max_hits_to_keep_per_peak => 10
+	});
 	#Setting generation if this is the first time calling the function
 	if (!defined($datachannel->{currentgen})) {
 		$datachannel->{currentgen} = 1;
+	} else {
+		$datachannel->{currentgen}++;
 	}
-	#Processing metabolomics data if this is the first run through
 	if (!defined($datachannel->{metabolomics_data})) {
+		$datachannel->{peak_hits} = {};
+		$datachannel->{cpd_hits} = {};
 		$datachannel->{metabolomics_data} = {
 			formula_to_peaks => {},
 			inchikey_to_peaks => {},
@@ -3517,25 +3527,31 @@ sub func_run_pickaxe {
 			my $data;
 			if (-e $params->{metabolomics_data}) {
 				$data = Bio::KBase::ObjectAPI::functions::load_matrix($params->{metabolomics_data});
+				$datachannel->{MetabolomicsDBLINKSKey} = "MetabolomicsDataset";
 			} else {
-				my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metabolomics_data},$params->{metabolomics_workspace}));
-	    			$data = Bio::KBase::ObjectAPI::functions::process_matrix($object);
+				$datachannel->{KBaseMetabolomicsObject} = Bio::KBase::utilities::buildref($params->{metabolomics_data},$params->{metabolomics_workspace});
+				my $object = $handler->util_get_object($datachannel->{KBaseMetabolomicsObject});
+				$datachannel->{KBaseMetabolomicsObject} = "KBWS/".$datachannel->{KBaseMetabolomicsObject};
+				$datachannel->{MetabolomicsDBLINKSKey} = $datachannel->{KBaseMetabolomicsObject};
+				$data = Bio::KBase::ObjectAPI::functions::process_matrix($object);
 			}
 			for (my $i=0; $i < @{$data->{row_ids}}; $i++) {
 				my $types = ["inchikey","smiles","formula"];
 				my $found = 0;
 				for (my $j=0; $j < @{$types}; $j++) {
-					if ($found == 0) {
+				   if ($found == 0) {
 						for (my $k=0; $k < @{$data->{attributes}}; $k++) {
 							if ($data->{attributes}->[$k] eq $types->[$j]) {
 								my $key = $types->[$j]."_to_peaks";
-								my $value = $data->{attributes_values}->[$i]->[$k];
+								my $value = $data->{attribute_values}->[$i]->[$k];
 								if ($types->[$j] eq "inchikey") {
 									my $array = [split(/[-]/,$value)];
 									$value = $array->[0];
 								}
-								$params->{metabolomics_data}->{$key}->{$value}->{$data->{row_ids}->[$i]} = 1;
-								$found = 1;
+								if (length($value) > 0) {
+									$datachannel->{metabolomics_data}->{$key}->{$value}->{$data->{row_ids}->[$i]} = 1;
+									$found = 1;
+								}
 							}
 						}
 					}
@@ -3543,107 +3559,68 @@ sub func_run_pickaxe {
 			}
 		}
 	}
-    #Loading model or compound set
-    my $seedhash =  Bio::KBase::utilities::compound_hash();
-    my $seedrxnhash =  Bio::KBase::utilities::reaction_hash();
-    #Populating structure hash data for entire SEED database
-    if (!defined($datachannel->{smileshash})) {
-    		my $cpddata = {};
-    		foreach my $cpdid (keys(%{$seedhash})) {
-    			my $data = {
-    				id => $cpdid,
-		    		name => $seedhash->{$cpdid}->{name},
-		    		charge => $seedhash->{$cpdid}->{charge},
-		    		formula => $seedhash->{$cpdid}->{formula},
-		    		rxncount => 0,
-		    		source => "seed"
-    			};
-    			$cpddata->{$cpdid} = $data;
-    			if (defined($seedhash->{$cpdid}->{smiles})) {
-    				$datachannel->{smileshash}->{$seedhash->{$cpdid}->{smiles}}->{seed}->{$cpdid} = $data;
-    				$data->{smiles} = $seedhash->{$cpdid}->{smiles};
-    				if (defined($seedhash->{$cpdid}->{inchikey})) {
-    					$data->{inchikey} = $seedhash->{$cpdid}->{inchikey};
-    					$datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}}->{seed}->{$cpdid} = $data;
-    				}
-    			} elsif (defined($seedhash->{$cpdid}->{inchikey})) {
-    				$datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}}->{seed}->{$cpdid} = $data;
-    				$data->{inchikey} = $seedhash->{$cpdid}->{inchikey};
-    			}
-    			#Checking SEED database for metabolomics matches
-    			Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$data,0,"seed",0);
-    		}
-    		foreach my $rxnid (keys(%{$seedrxnhash})) {
-    			foreach my $cpdid (@{$seedrxnhash->{$rxnid}->{compound_ids}}) {
-    				$cpddata->{$cpdid}->{rxncount}++;
-    			}
-    		}
-    }
-    my $directory = Bio::KBase::utilities::conf("kb_pickaxe","scratch");
-    my $input_model_array = ["id\tstructure"];
-    my $input_compounds_with_no_structure = [];
-    my $input_compounds_with_structure = 0;
-    if (!defined($datachannel->{fbamodel})) {
-    		#This must be the first time calling the function
-    		my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{model_id},$params->{workspace}));
-    		if (ref($object) eq "HASH") {
-			for (my $i=0; $i<@{$object->{compounds}}; $i++){
+	 #Loading model or compound set
+	my $seedhash =  Bio::KBase::utilities::compound_hash();
+	my $seedrxnhash =  Bio::KBase::utilities::reaction_hash();
+	#Populating structure hash data for entire SEED database
+	if (!defined($datachannel->{smileshash})) {
+		my $cpddata = {};
+		$datachannel->{cpd_hits} = {};
+		$datachannel->{peak_hits} = {};
+		$datachannel->{reaction_hash} = {};
+		foreach my $cpdid (keys(%{$seedhash})) {
+			my $data = {
+				id => $cpdid,
+				name => $seedhash->{$cpdid}->{name},
+				charge => $seedhash->{$cpdid}->{charge},
+				formula => $seedhash->{$cpdid}->{neutral_formula},
+				rxncount => 0,
+				source => "seed"
+			};
+			$cpddata->{$cpdid} = $data;
+			if (defined($seedhash->{$cpdid}->{smiles})) {
+				$datachannel->{smileshash}->{$seedhash->{$cpdid}->{smiles}}->{seed}->{$cpdid} = $data;
+				$data->{smiles} = $seedhash->{$cpdid}->{smiles};
+				if (defined($seedhash->{$cpdid}->{inchikey}) && !defined($datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}})) {
+					$data->{inchikey} = $seedhash->{$cpdid}->{inchikey};
+					$datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}} = $data;
+				}
+			} elsif (defined($seedhash->{$cpdid}->{inchikey}) && !defined($datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}})) {
+				$datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}} = $data;
+				$data->{inchikey} = $seedhash->{$cpdid}->{inchikey};
+			}
+			#Checking SEED database for metabolomics matches
+			Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$data,0,"seed",1,$datachannel->{KBaseMetabolomicsObject});
+		}
+		foreach my $rxnid (keys(%{$seedrxnhash})) {
+			foreach my $cpdid (@{$seedrxnhash->{$rxnid}->{compound_ids}}) {
+				$cpddata->{$cpdid}->{rxncount}++;
+			}
+		}
+	}
+	my $directory = Bio::KBase::utilities::conf("kb_pickaxe","scratch");
+	my $input_model_array = ["id\tstructure"];
+	my $input_compounds_with_no_structure = [];
+	my $input_compounds_with_structure = 0;
+	my $dbhits = {inchi => 0,seed => 0,model => 0};
+	my $input_ids = {};
+	if (!defined($datachannel->{fbamodel})) {
+		#This must be the first time calling the function
+		$datachannel->{targethash} = {};
+		#Processing target list if provided
+		if (defined($params->{target_id})) {
+				my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{target_id},$params->{target_workspace}));
+				for (my $i=0; $i<@{$object->{compounds}}; $i++) {
 				my $cpd = $object->{compounds}->[$i];
-				#Checking input compoundset for metabolomics matches
-    				Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpd,0,"model",1);
-				if (!defined($cpd->{smiles}) || length($cpd->{smiles}) == 0) {
-					push(@{$input_compounds_with_no_structure},$cpd->{id}."\t".$cpd->{name});
-				} else {
-					$input_compounds_with_structure++;
-					push(@{$input_model_array},$cpd->{id}."\t".$cpd->{smiles});
-					$datachannel->{smileshash}->{$cpd->{smiles}}->{model}->{$cpd->{id}} = $cpd;
+				if (defined($cpd->{smiles}) && length($cpd->{smiles}) > 0) {
+					$datachannel->{targethash}->{$cpd->{smiles}} = [$cpd->{id},$cpd->{name}];
 				}
 			}
-	    } else {
-	   	 	#Populating structure hash data for input model
-	   	 	$datachannel->{inputmdl} = $object;
-	    		my $cpds = $object->modelcompounds();
-	    		my $cpddatahash = {};
-	    		for (my $i=0; $i < @{$cpds}; $i++) {
-	    			$cpddatahash->{$cpds->[$i]->id()} = {
-	    				rxncount => 0,
-    					id => $cpds->[$i]->id(),
-		    			name => $cpds->[$i]->name(),
-		    			charge => $cpds->[$i]->charge(),
-		    			formula => $cpds->[$i]->formula()
-	    			};
-	    			if (!defined($cpds->[$i]->smiles()) && length($cpds->[$i]->smiles()) == 0) {
-	    				push(@{$input_compounds_with_no_structure},$cpds->[$i]->id()."\t".$cpds->[$i]->name());
-	    			} elsif (!defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
-	    				#This is for the unlikely scenario that there is an inchikey but no smiles
-	    				$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$cpds->[$i]->id()} = $cpddatahash->{$cpds->[$i]->id()};
-	    				$cpddatahash->{$cpds->[$i]->id()}->{inchikey} = $cpds->[$i]->inchikey();
-	    			} else {
-	    				$cpddatahash->{$cpds->[$i]->id()}->{smiles} = $cpds->[$i]->smiles();
-	    				$datachannel->{smileshash}->{$cpds->[$i]->smiles()}->{model}->{$cpds->[$i]->id()} = $cpddatahash->{$cpds->[$i]->id()};
-	    				if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
-	    					$cpddatahash->{$cpds->[$i]->id()}->{inchikey} = $cpds->[$i]->inchikey();
-	    					$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$cpds->[$i]->id()} = $cpddatahash->{$cpds->[$i]->id()};
-	    				}
-	    				$input_compounds_with_structure++;
-					push(@{$input_model_array},$cpds->[$i]->id()."\t".$cpds->[$i]->smiles());
-	    			}
-	    			#Checking input compoundset for metabolomics matches
-    				Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddatahash->{$cpds->[$i]->id()},0,"model",1);
-	    		}
-	    		my $rxns = $object->modelreactions();
-	    		for (my $i=0; $i < @{$rxns}; $i++) {
-	    			my $rgts = $rxns->[$i]->modelReactionReagents();
-	    			for (my $j=0; $j < @{$rgts}; $j++) {
-	    				$cpddatahash->{$rgts->[$j]->modelcompound()->id()}->{rxncount}++;
-	    			}
-	    		}
-	    }
-	    print "Structures found for ".$input_compounds_with_structure." compounds in the input!\n";
-	    print "No structures found for ".@{$input_compounds_with_no_structure}." compounds, as follows:\n".join("\n",@{$input_compounds_with_no_structure})."\n";
-	    #Creating model to contain chemistry generated by pickaxe
+		}
+		my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{model_id},$params->{model_workspace}));
+		#Creating model to contain chemistry generated by pickaxe
 		my $template_trans = Bio::KBase::constants::template_trans();
-		$datachannel->{fbamodel} = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
+		$datachannel->{fbamodel} = {
 			id => $params->{out_model_id},
 			source => "PickAxe",
 			source_id => $params->{out_model_id},
@@ -3654,264 +3631,517 @@ sub func_run_pickaxe {
 			gapfillings => [],
 			gapgens => [],
 			biomasses => [],
-			modelcompartments => [],
+			modelcompartments => [{
+					compartmentIndex => 0,
+					compartment_ref => "~/template/compartments/id/c",
+					id => "c0",
+					label => "Cytoplasm",
+					pH => 7.3,
+					potential => 1
+				},{
+					compartmentIndex => 0,
+					compartment_ref => "~/template/compartments/id/e",
+					id => "e0",
+					label => "Extracellular",
+					pH => 7.3,
+					potential => 1
+				}],
 			modelcompounds => [],
 			modelreactions => []
-		});
-    } else {
-    		#This is a second or greater generation run and we want to create pickaxe input from new compounds in the input model
-    		my $cpds = $datachannel->{fbamodel}->modelcompounds();
-    		my $rxns = $datachannel->{fbamodel}->modelreactions();
-    		for (my $i=0; $i < @{$cpds}; $i++) {
-    			if ($cpds->[$i]->numerical_attributes()->{generation} == ($datachannel->{currentgen}-1)) {
-    				$input_compounds_with_structure++;
-    				push(@{$input_model_array},$cpds->[$i]->id()."\t".$cpds->[$i]->smiles());
-    			}
-    		}
-    }
-    Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."/inputModel.tsv",$input_model_array);
-    my $output;
-    if ($input_compounds_with_structure == 0) {
-    		if ($datachannel->{currentgen} == 1) {
-    			Bio::KBase::utilities::print_report_message({message => "<p>Pickaxe could not be run. No input compounds with structure were provided. If inputing a metabolic model, try integrating the model with ModelSEED IDs prior to running pickaxe.</p>",append => 0,html => 1});
-    		} else {
-    			Bio::KBase::utilities::print_report_message({message => "<p>Pickaxe run ended prematurely at generation ".($datachannel->{currentgen}-1)." because no new compounds were generated in the last generation.</p>",append => 1,html => 1});
-    		}
-    		$output->{results}->{generations}->[$datachannel->{currentgen}] = {total => {reactions => 0,compounds => 0,peaks => 0}};
-    } else {
-	    #Iterating over rulesets and running the pickaxe command for each one
-	    my $rxn_id_prefix = "pkr";
-	    my $cpd_id_prefix = "pkc";
-	    $output->{results}->{generations}->[$datachannel->{currentgen}] = {total => {reactions => 0,compounds => 0,peaks => 0}};
-	   	my $cpdcount = 0;
-		my $rxncount = 0;
-	    my $peak_hit = {};
-	    my $cpd_hit = {};
-	    foreach my $ruleset (@{$params->{rule_sets}}) {
-	    		$output->{results}->{generations}->[$datachannel->{currentgen}]->{$ruleset} = {reactions => 0,compounds => 0,peaks => 0};
-	    		my $command = "python3 /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/pickaxe.py -g 1 -c /kb/module/work/tmp/inputModel.tsv -o /kb/module/work/tmp";
-	    		my $coreactant_path = "/kb/module/data/NoCoreactants.tsv";
-	    		my $retro_rule_path = "/kb/module/data/".$ruleset.".tsv --bnice -q -m 4";
-	    		if ($ruleset eq 'spontaneous') {
-		        $rxn_id_prefix = "spontr";
-		        $cpd_id_prefix = "spontc";
-		        $command .= ' -C /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/data/ChemicalDamageCoreactants.tsv -r /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/data/ChemicalDamageReactionRules.tsv';
-		    } elsif ($ruleset eq 'enzymatic') {
-		        $rxn_id_prefix = "enzr";
-		        $cpd_id_prefix = "enzc";
-		        $command .= ' -C /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/data/EnzymaticCoreactants.tsv -r /kb/dev_container/modules/Pickaxe/MINE-Database/minedatabase/data/EnzymaticReactionRules.tsv --bnice';
-		    } elsif ($ruleset =~ /retro_rules/) {
-		        $rxn_id_prefix = "rrr";
-		        $cpd_id_prefix = "rrc";
-		        $command .= " -C $coreactant_path -r $retro_rule_path";
-		    } else {
-		        die "Invalid reaction rule set or rule set not defined";
-		    }
-		    #Dealing with pruning policy
-		    if ($params->{prune} eq 'model') {
-		        $command .= ' -p /kb/module/work/tmp/inputModel.tsv';
-		    } elsif ($params->{prune} eq 'biochemistry') {
-		        $command .= ' -p /kb/module/data/Compounds.json';
-		    }
-		    #Running pickax
-		    system($command);
-		    #Parsing current pickax output and adding to model
-		    my $cpdfilename = $directory."/compounds.tsv";
-		    my $rxnfilename = $directory."/reactions.tsv";
-		    if (-e $cpdfilename && -e $rxnfilename) {
-		    		#Adding compounds to model
-		    		my $cpdarray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cpdfilename);
-		    		my $cpdid_translation = {};
-		    		for (my $i=1; $i < @{$cpdarray}; $i++) {
-		    			if (!defined($datachannel->{current_id}->{$cpd_id_prefix})) {
-		    				$datachannel->{current_id}->{$cpd_id_prefix} = 1;
-		    			}
-		    			my $array = [split(/\t/,$cpdarray->[$i])];
-		    			my $original_id = $array->[0];
-		    			my $id = $original_id;
-		    			my $name = $id;
-		    			my $inchikey = $array->[5];
-		    			my $smiles = $array->[6];
-		    			my $charge = $array->[4];
-    					my $formula = $array->[3];
-    					my $type = "pickax";
-    					$formula =~ s/(\+|-)\d*$//;#Removing formula charge
-		    			#Check if the ID already exists in the output model
-		    			if (defined($datachannel->{fbamodel}->getObject("modelcompounds",$original_id))) {
-		    				next;#Do nothing... compound is already in output
-		    			#Check if the ID is in the input model submitted to start the app
-		    			} elsif (defined($datachannel->{inputmdl}) && defined($datachannel->{inputmdl}->getObject("modelcompounds",$original_id))) {
-		    				#Add compound to output model with data from the input model
-		    				$type = "model";
-		    				my $cpdobj = $datachannel->{inputmdl}->getObject("modelcompounds",$original_id);
-		    				$id = $cpdobj->id();
-		    				$name = $cpdobj->name();
-		    				$charge = $cpdobj->charge();
-		    				$formula = $cpdobj->formula();
-		    				if (defined($cpdobj->inchikey()) && length($cpdobj->inchikey()) > 0) {
-		    					$inchikey = $cpdobj->inchikey();
-		    				}
-		    				if (defined($cpdobj->smiles()) && length($cpdobj->smiles()) > 0) {
-		    					$smiles = $cpdobj->smiles();
-		    				}
-		    			#Check if the ID is from the ModelSEED
-		    			} elsif ($original_id =~ m/(cpd\d+)/ && defined($seedhash->{$1})) {
-		    				#Add compound to output model with data from the SEED
-		    				$type = "seed";
-		    				$id = $1;
-		    				$name = $seedhash->{$id}->{name};
-		    				$charge = $seedhash->{$id}->{charge};
-		    				$formula = $seedhash->{$id}->{formula};
-		    				$smiles = $seedhash->{$id}->{smiles};
-		    				$inchikey = $seedhash->{$id}->{inchikey};
-		    			#First check if the ID is from the ModelSEED
-		    			} elsif (defined($datachannel->{inchihash}->{$inchikey})) {
-		    				$id = $datachannel->{inchihash}->{$inchikey}->{id};
-		    				$name = $datachannel->{inchihash}->{$inchikey}->{name};
-		    				$charge = $datachannel->{inchihash}->{$inchikey}->{charge};
-		    				$formula = $datachannel->{inchihash}->{$inchikey}->{formula};
-		    				$smiles = $datachannel->{inchihash}->{$inchikey}->{smiles};
-		    			} elsif (defined($datachannel->{smileshash}->{$smiles}->{model})) {
-		    				my $best_rxn_score;
-		    				my $best_cpd;
-		    				foreach my $cpd (keys(%{$datachannel->{smileshash}->{$smiles}->{model}})) {
-		    					if (!defined($best_cpd) || $datachannel->{smileshash}->{$smiles}->{model}->{$cpd}->{rxncount}) {
-		    						$best_cpd = $cpd;
-		    						$best_rxn_score = $datachannel->{smileshash}->{$smiles}->{model}->{$cpd}->{rxncount};
-		    					}
-		    				}
-		    				$id = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{id};
-		    				$name = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{name};
-		    				$charge = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{charge};
-		    				$formula = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{formula};
-		    				$inchikey = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{inchikey};
-		    			} elsif (defined($datachannel->{smileshash}->{$smiles}->{seed})) {
-						my $best_rxn_score;
-		    				my $best_cpd;
-		    				foreach my $cpd (keys(%{$datachannel->{smileshash}->{$smiles}->{seed}})) {
-		    					if (!defined($best_cpd) || $datachannel->{smileshash}->{$smiles}->{seed}->{$cpd}->{rxncount}) {
-		    						$best_cpd = $cpd;
-		    						$best_rxn_score = $datachannel->{smileshash}->{$smiles}->{seed}->{$cpd}->{rxncount};
-		    					}
-		    				}
-		    				$id = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{id};
-		    				$name = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{name};
-		    				$charge = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{charge};
-		    				$formula = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{formula};
-		    				$inchikey = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{inchikey};
-		    			}
-		    			if ($id =~ m/^pkc/) {
-		    				$id = $cpd_id_prefix.$datachannel->{current_id}->{$cpd_id_prefix};
-		    				$datachannel->{current_id}->{$cpd_id_prefix}++;
-		    			}
-		    			#Making sure the ID includes a compartment
-		    			if ($id !~ m/_[a-z]\d+$/) {
-		    				$id .= "_c0";
-		    			}
-		    			#Adding compound to smiles and inchihash
-		    			$datachannel->{smileshash}->{$smiles}->{$type}->{$id} = {
-		    				id => $id,
-		    				name => $name,
-		    				charge => $charge,
-		    				formula => $formula,
-		    				smiles => $smiles,
-		    				inchikey => $inchikey
-		    			};
-		    			$datachannel->{inchihash}->{$inchikey} = $datachannel->{smileshash}->{$smiles}->{$type}->{$id};
-		    			#Saving ID translation so reactions can be adjusted
-		    			$cpdid_translation->{$original_id} = $id;
-		    			#Adding the compound to the model
-		    			if (!defined($datachannel->{fbamodel}->getObject("modelcompounds",$id))) {
-			    			$cpdcount++;
-			    			my $cpddata = {
-							id => $id,
-							name => $name,
-							formula => $formula,
-							charge => $charge,
-							inchikey => $inchikey,
-							smiles => $smiles
+		};
+		#Processing input object with initial compounds
+		if (ref($object) eq "HASH") {
+			#Rather than a metabolic model, a compound set is the input
+			for (my $i=0; $i<@{$object->{compounds}}; $i++) {
+				my $cpd = $object->{compounds}->[$i];
+				#Checking input compoundset for metabolomics matches
+				Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpd,0,"model",0,$datachannel->{KBaseMetabolomicsObject});
+				if (!defined($cpd->{smiles}) || length($cpd->{smiles}) == 0) {
+					push(@{$input_compounds_with_no_structure},$cpd->{id}."\t".$cpd->{name});
+				} else {
+					$input_compounds_with_structure++;
+					$cpd->{id} =~ s/_[a-z]\d+$/_c0/;
+					if (!defined($input_ids->{$cpd->{id}})) {
+						my $cpdref = "cpd00000";
+						if ($cpd->{id} =~ m/(cpd\d+)/) {
+							$cpdref = $1;
+						}
+						$input_ids->{$cpd->{id}} = 1;
+						push(@{$input_model_array},$cpd->{id}."\t".$cpd->{smiles});
+						$datachannel->{smileshash}->{$cpd->{smiles}}->{model}->{$cpd->{id}} = $cpd;
+						$datachannel->{cpdhash}->{$cpd->{id}} = {
+							id => $cpd->{id},
+							name => $cpd->{id},
+							charge => 0,
+							smiles => $cpd->{smiles},
+							numerical_attributes => {generation => 0},
+							aliases => [],
+							compound_ref => "~/template/compounds/id/".$cpdref,
+							dblinks => {},
+							modelcompartment_ref => "~/modelcompartments/id/c0",
+							string_attributes => {}
 						};
-			    			$datachannel->{fbamodel}->add("modelcompound",$cpddata);
-						#Checking that the generated compound if a metabolomics hit
-    						Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,$datachannel->{currentgen},$ruleset,1);
-		    			}
-		    		}
-		    		#Adding reactions to model
-		    		my $rxndarray = Bio::KBase::ObjectAPI::utilities::LOADFILE($rxnfilename);
-		    		for (my $i=1; $i < @{$rxndarray}; $i++) {
-		    			if (!defined($datachannel->{current_id}->{$rxn_id_prefix})) {
-		    				$datachannel->{current_id}->{$rxn_id_prefix} = 1;
-		    			}
-		    			$rxncount++;
-		    			my $array = [split(/\t/,$cpdarray->[$i])];
-		    			if (!defined($datachannel->{reaction_ids}->{$array->[5]})) {
-		    				$datachannel->{reaction_ids}->{$array->[5]} = 1;
-		    			}
-		    			my $equation = $array->[2];
-		    			my $newequation = "";
-		    			my $eqarray = [split(/\s/,$equation)];
-		    			for (my $j=0; $j < @{$eqarray}; $j++) {
-		    				if (length($newequation) > 0) {
-	    						$newequation .= " ";
-	    					}
-		    				if (defined($cpdid_translation->{$eqarray->[$j]})) {
-		    					$newequation .= $cpdid_translation->{$eqarray->[$j]};
-		    				} else {
-		    					$newequation .= $eqarray->[$j];
-		    				}
-		    			}
-		    			$datachannel->{fbamodel}->addModelReaction({
-						reaction => $rxn_id_prefix.$datachannel->{current_id}->{$rxn_id_prefix},
-						equation => $newequation,
-						direction => ">",
-						name => $array->[5]." ".$datachannel->{reaction_ids}->{$array->[5]},
-						#compounds => $cpdhash,
-						addReaction => 1
-					});
-					$datachannel->{current_id}->{$rxn_id_prefix}++;
-					$datachannel->{reaction_ids}->{$array->[5]}++;
-		    		}
-		    }
-	    }
-	    #If more generations are desired, call this function again recursively
-		if ($datachannel->{currentgen} < $params->{generation} && $cpdcount > 0) {
-			$output = Bio::KBase::ObjectAPI::functions::func_run_pickaxe($params,$datachannel);
-		} elsif ($datachannel->{currentgen} < $params->{generation}) {
-			Bio::KBase::utilities::print_report_message({message => "<p>Pickaxe run ended prematurely at generation ".($datachannel->{currentgen}-1)." because no new compounds were generated in the last generation.</p>",append => 1,html => 1});
-		}
-		$output->{results}->{generations}->[$datachannel->{currentgen}] = {new_reactions => $rxncount,new_compounds => $cpdcount};
-	}
-	#Only the first function call should proceed with final steps
-	if ($datachannel->{currentgen} != 1) {
-		return $output;
-	}
-	#Finalizing model and returning
-	my $cpdhash;
-	if (@{$datachannel->{fbamodel}->modelcompounds()} > 0) {
-		#Adding transport reactions
-		if ($params->{add_transport}) {
-			my $cpds = $datachannel->{fbamodel}->modelcompounds();
+						push(@{$datachannel->{fbamodel}->{modelcompounds}},$datachannel->{cpdhash}->{$cpd->{id}});
+					}
+				}
+			}
+		} else {
+			#Populating structure hash data for input model
+			$datachannel->{inputmdl} = $object;
+			my $cpds = $object->modelcompounds();
+			my $cpddatahash = {};
 			for (my $i=0; $i < @{$cpds}; $i++) {
-				if ($cpds->[$i]->id() !~ m/cpd\d+/) {
-					$datachannel->{fbamodel}->addModelReaction({
-						reaction => "drain-".$cpds->[$i]->id(),
-						equation => $cpds->[$i]->id()." =>",
-						direction => ">",
-						name => $cpds->[$i]->name()." drain",
-						compounds => $cpdhash,
-						addReaction => 1
-					});
+				my $id = $cpds->[$i]->id();
+				$id =~ s/_[a-z]\d+$/_c0/;
+				$cpddatahash->{$id} = {
+					rxncount => 0,
+					id => $id,
+					name => $cpds->[$i]->name(),
+					charge => $cpds->[$i]->charge(),
+					formula => $cpds->[$i]->neutral_formula(),
+					aliases => [],
+					compound_ref => $cpds->[$i]->compound_ref(),
+					dblinks => {},
+					modelcompartment_ref => "~/modelcompartments/id/c0",
+					string_attributes => {}
+				};
+				if (!defined($cpds->[$i]->smiles()) && length($cpds->[$i]->smiles()) == 0) {
+					push(@{$input_compounds_with_no_structure},$id."\t".$cpds->[$i]->name());
+				} elsif (!defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
+					#This is for the unlikely scenario that there is an inchikey but no smiles
+					$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$id} = $cpddatahash->{$id};
+					$cpddatahash->{$id}->{inchikey} = $cpds->[$i]->inchikey();
+				} else {
+					$cpddatahash->{$id}->{smiles} = $cpds->[$i]->smiles();
+					$datachannel->{smileshash}->{$cpds->[$i]->smiles()}->{model}->{$id} = $cpddatahash->{$id};
+					if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
+						$cpddatahash->{$id}->{inchikey} = $cpds->[$i]->inchikey();
+						$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$id} = $cpddatahash->{$id};
+					}
+					$input_compounds_with_structure++;
+					$input_ids->{$id} = 1;
+					push(@{$input_model_array},$id."\t".$cpds->[$i]->smiles());
+					$cpds->[$i]->{numerical_attributes}->{generation} = 0;
+					$datachannel->{cpdhash}->{$id} = $cpds->[$i]->serializeToDB();
+					push(@{$datachannel->{fbamodel}->{modelcompounds}},$datachannel->{cpdhash}->{$id});
+				}
+				#Checking input compoundset for metabolomics matches
+				Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddatahash->{$cpds->[$i]->id()},0,"model",0,$datachannel->{KBaseMetabolomicsObject});
+			}
+			my $rxns = $object->modelreactions();
+			for (my $i=0; $i < @{$rxns}; $i++) {
+				my $rgts = $rxns->[$i]->modelReactionReagents();
+				for (my $j=0; $j < @{$rgts}; $j++) {
+					$cpddatahash->{$rgts->[$j]->modelcompound()->id()}->{rxncount}++;
 				}
 			}
 		}
-		#Saving the model object
-		$output->{model_ref} = Bio::KBase::utilities::buildref($params->{out_model_id},$params->{workspace});
-		my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},$output->{model_ref},{type => "KBaseFBA.FBAModel"});
+		#Populating initial compound and peak stats
+		print "Structures found for ".$input_compounds_with_structure." compounds in the input!\n";
+		print "No structures found for ".@{$input_compounds_with_no_structure}." compounds, as follows:\n".join("\n",@{$input_compounds_with_no_structure})."\n";
+	} else {
+		#This is a second or greater generation run and we want to create pickaxe input from new compounds in the input model
+		my $cpds = $datachannel->{fbamodel}->{modelcompounds};
+		for (my $i=0; $i < @{$cpds}; $i++) {
+			if ($cpds->[$i]->{numerical_attributes}->{generation} == ($datachannel->{currentgen}-1)) {
+				$input_ids->{$cpds->[$i]->{id}} = 1;
+				$input_compounds_with_structure++;
+				push(@{$input_model_array},$cpds->[$i]->{id}."\t".$cpds->[$i]->{smiles});
+			}
+		}
 	}
-	#Update output with current data
-	$output->{results}->{peak_hits} = $datachannel->{peak_hits};
-	$output->{results}->{cpd_hits} = $datachannel->{cpd_hits};
-	return $output;
+	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."/inputModel.tsv",$input_model_array);
+	if ($input_compounds_with_structure == 0) {
+		if ($datachannel->{currentgen} == 1) {
+			Bio::KBase::utilities::print_report_message({message => "<p>Pickaxe could not be run. No input compounds with structure were provided. If inputing a metabolic model, try integrating the model with ModelSEED IDs prior to running pickaxe.</p>",append => 0,html => 1});
+		} else {
+			Bio::KBase::utilities::print_report_message({message => "<p>Pickaxe run ended prematurely at generation ".($datachannel->{currentgen}-1)." because no new compounds were generated in the last generation.</p>",append => 1,html => 1});
+		}
+	} else {
+		#Iterating over rulesets and running the pickaxe command for each one
+		my $rxn_id_prefix = "pkr";
+		my $cpd_id_prefix = "pkc";
+		my $peak_hit = {};
+		my $cpd_hit = {};
+		my $modelcpds = {};
+		foreach my $ruleset (@{$params->{rule_sets}}) {
+			print $ruleset."\n";
+			my $command = "python3 ".Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path")."pickaxe.py -g 1 -c ".$directory."/inputModel.tsv -o ".$directory;
+			my $coreactant_path = Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path")."/data/NoCoreactants.tsv";
+			my $retro_rule_path = Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path")."/data/".$ruleset.".tsv --bnice -q -m 4";
+			if ($ruleset eq 'spontaneous') {
+				$rxn_id_prefix = "spontr";
+				$cpd_id_prefix = "spontc";
+				$command .= ' -C '.Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path").'/data/ChemicalDamageCoreactants.tsv -r '.Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path").'/data/ChemicalDamageReactionRules.tsv';
+			} elsif ($ruleset eq 'enzymatic') {
+				$rxn_id_prefix = "enzr";
+				$cpd_id_prefix = "enzc";
+				$command .= ' -C '.Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path").'/data/EnzymaticCoreactants.tsv -r '.Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path").'/data/EnzymaticReactionRules.tsv --bnice';
+			} elsif ($ruleset =~ /retro_rules/) {
+				$rxn_id_prefix = "rrr";
+				$cpd_id_prefix = "rrc";
+				$command .= " -C $coreactant_path -r $retro_rule_path";
+			} else {
+				die "Invalid reaction rule set or rule set not defined";
+			}
+			#Dealing with pruning policy
+			if ($params->{prune} eq 'model') {
+				$command .= ' -p '.$directory.'/inputModel.tsv';
+			} elsif ($params->{prune} eq 'biochemistry') {
+				$command .= ' -p '.Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path").'/data/Compounds.json';
+			}
+			#Running pickax
+			system($command);
+			#Parsing current pickax output and adding to model
+			my $cpdfilename = $directory."/compounds.tsv";
+			my $rxnfilename = $directory."/reactions.tsv";
+			if (-e $cpdfilename && -e $rxnfilename) {
+				#Adding compounds to model
+				my $cpdarray = Bio::KBase::ObjectAPI::utilities::LOADFILE($cpdfilename);
+				my $cpdid_translation = {};
+				my $initially_pruned = {};
+				my $newcpdcount = 0;
+				for (my $i=1; $i < @{$cpdarray}; $i++) {
+					if (!defined($datachannel->{current_id}->{$cpd_id_prefix})) {
+						$datachannel->{current_id}->{$cpd_id_prefix} = 1;
+					}
+					my $array = [split(/\t/,$cpdarray->[$i])];
+					my $original_id = $array->[0];
+					my $id = $original_id;
+					#Making sure the ID includes a compartment
+					if ($id !~ m/_[a-z]\d+$/) {
+						$original_id .= "_c0";
+						$id .= "_c0";
+					}
+					my $name;
+					my $inchikey = $array->[5];
+					my $smiles = $array->[6];
+					my $charge = $array->[4];
+					my $formula = $array->[3];
+					my $type = "pickax";
+					$formula =~ s/(\+|-)\d*$//;#Removing formula charge
+					my $nonneutral_formula = $formula;
+					$formula = Bio::KBase::utilities::compute_neutral_formula($formula,$charge,$id);
+					#Check if the ID already exists in the output model
+					if (defined($datachannel->{cpdhash}->{$original_id})) {
+						next;#Do nothing... compound is already in output
+					#Check if the ID is in the input model submitted to start the app
+					} elsif (defined($datachannel->{inputmdl}) && defined($datachannel->{inputmdl}->getObject("modelcompounds",$original_id))) {
+						#Add compound to output model with data from the input model
+						$type = "model";
+						my $cpdobj = $datachannel->{inputmdl}->getObject("modelcompounds",$original_id);
+						$id = $cpdobj->id();
+						$name = $cpdobj->name();
+						$charge = $cpdobj->charge();
+						$nonneutral_formula = $cpdobj->formula();
+						$formula = $cpdobj->neutral_formula();
+						if (defined($cpdobj->inchikey()) && length($cpdobj->inchikey()) > 0) {
+							$inchikey = $cpdobj->inchikey();
+						}
+						if (defined($cpdobj->smiles()) && length($cpdobj->smiles()) > 0) {
+							$smiles = $cpdobj->smiles();
+						}
+					#Check if the ID is from the ModelSEED
+					} elsif ($original_id =~ m/(cpd\d+)/ && defined($seedhash->{$1})) {
+						#Add compound to output model with data from the SEED
+						$type = "seed";
+						my $baseid = $1;
+						$name = $seedhash->{$baseid}->{name};
+						$charge = $seedhash->{$baseid}->{charge};
+						$nonneutral_formula = $seedhash->{$baseid}->{formula};
+						$formula = $seedhash->{$baseid}->{neutral_formula};
+						$smiles = $seedhash->{$baseid}->{smiles};
+						$inchikey = $seedhash->{$baseid}->{inchikey};
+					} elsif (defined($datachannel->{inchihash}->{$inchikey})) {
+						$type = "inchimatch";
+						$dbhits->{inchi}++;
+						$id = $datachannel->{inchihash}->{$inchikey}->{id};
+						$name = $datachannel->{inchihash}->{$inchikey}->{name};
+						$charge = $datachannel->{inchihash}->{$inchikey}->{charge};
+						$formula = $datachannel->{inchihash}->{$inchikey}->{formula};
+						$smiles = $datachannel->{inchihash}->{$inchikey}->{smiles};
+					} elsif (defined($datachannel->{smileshash}->{$smiles}->{model})) {
+						$type = "modelsmiles";
+						$dbhits->{model}++;
+						my $best_rxn_score;
+						my $best_cpd;
+						foreach my $cpd (keys(%{$datachannel->{smileshash}->{$smiles}->{model}})) {
+							if (!defined($best_cpd) || $datachannel->{smileshash}->{$smiles}->{model}->{$cpd}->{rxncount}) {
+								$best_cpd = $cpd;
+								$best_rxn_score = $datachannel->{smileshash}->{$smiles}->{model}->{$cpd}->{rxncount};
+							}
+						}
+						$id = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{id};
+						$name = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{name};
+						$charge = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{charge};
+						$formula = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{formula};
+						$inchikey = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{inchikey};
+					} elsif (defined($datachannel->{smileshash}->{$smiles}->{seed})) {
+						$type = "seedsmiles";
+						$dbhits->{seed}++;
+						my $best_rxn_score;
+						my $best_cpd;
+						foreach my $cpd (keys(%{$datachannel->{smileshash}->{$smiles}->{seed}})) {
+							if (!defined($best_cpd) || $datachannel->{smileshash}->{$smiles}->{seed}->{$cpd}->{rxncount}) {
+								$best_cpd = $cpd;
+								$best_rxn_score = $datachannel->{smileshash}->{$smiles}->{seed}->{$cpd}->{rxncount};
+							}
+						}
+						$id = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{id};
+						$name = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{name};
+						$charge = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{charge};
+						$formula = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{formula};
+						$inchikey = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{inchikey};
+					}
+					$id =~ s/_[a-z]\d+$/_c0/;
+					if (!defined($smiles)) {
+							print "Undefined smiles:".$id."\t".$type."\t".$original_id."\n";
+					}
+					if (!defined($inchikey)) {
+							print "Undefined inchi:".$id."\t".$type."\t".$original_id."\n";
+					}
+					if (!defined($charge)) {
+							print "Undefined charge:".$id."\t".$type."\t".$original_id."\n";
+					}
+					if ($id =~ m/^pkc/) {
+						if (!defined($datachannel->{current_id}->{$cpd_id_prefix})) {
+							$datachannel->{current_id}->{$cpd_id_prefix} = 1;
+						}
+						$id = $cpd_id_prefix.$datachannel->{current_id}->{$cpd_id_prefix};
+						$datachannel->{current_id}->{$cpd_id_prefix}++;
+					}
+					#Making sure the ID includes a compartment
+					if ($id !~ m/_[a-z]\d+$/) {
+						$id .= "_c0";
+					}
+					if (!defined($name)) {
+						$name = $id;
+					}
+					#Adding compound to smiles and inchihash
+					my $cpddata = {
+						id => $id,
+						name => $name,
+						charge => $charge,
+						formula => $nonneutral_formula,
+						smiles => $smiles,
+						inchikey => $inchikey,
+						aliases => [],
+						compound_ref => "~/template/compounds/id/",
+						dblinks => {},
+						modelcompartment_ref => "~/modelcompartments/id/c0",
+						string_attributes => {}
+					};
+					if (!defined($cpddata->{charge})) {
+							$cpddata->{charge} = 0;
+					}
+					if (!defined($cpddata->{smiles})) {
+							delete($cpddata->{smiles});
+					}
+					if (!defined($cpddata->{inchikey})) {
+							delete($cpddata->{inchikey});
+					}
+					if (defined($smiles) && !defined($datachannel->{smileshash}->{$smiles}->{$type}->{$id})) {
+						$datachannel->{smileshash}->{$smiles}->{$type}->{$id} = $cpddata;
+					}
+					if (defined($inchikey) &&  !defined($datachannel->{inchihash}->{$inchikey})) {
+						$datachannel->{inchihash}->{$inchikey} = $datachannel->{smileshash}->{$smiles}->{$type}->{$id};
+					}
+					#Saving ID translation so reactions can be adjusted
+					$cpdid_translation->{$original_id} = $id;
+					#Adding the compound to the model
+					$datachannel->{rulesetcpds}->{$ruleset}->{$id} = 1;
+					#Checking that the generated compound if a metabolomics hit
+					Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,$datachannel->{currentgen},$ruleset,0,$datachannel->{KBaseMetabolomicsObject},$params->{max_hits_to_keep_per_peak});
+					$cpddata->{formula} = $formula;
+					if ($id =~ /(cpd\d+)/) {
+						$cpddata->{compound_ref}.$1;
+					} else {
+						$cpddata->{compound_ref}."cpd00000";
+					}
+					if (!defined($datachannel->{cpdhash}->{$id})) {
+						$cpddata->{formula} = $formula;
+						$datachannel->{cpdhash}->{$id} = $cpddata;
+						if (defined($datachannel->{targethash}->{$cpddata->{smiles}}) ||
+							$array->[1] eq "Coreactant" || defined($input_ids->{$id}) ||
+							($params->{keep_seed_hits} == 1 && $id =~ /cpd\d+/) ||
+							($params->{keep_metabolomic_hits} == 1 && defined($cpddata->{dblinks}->{$datachannel->{MetabolomicsDBLINKSKey}}) && !defined($cpddata->{numerical_attributes}->{redundant_hit}))) {
+							$newcpdcount++;
+							push(@{$datachannel->{fbamodel}->{modelcompounds}},$cpddata);
+							$cpddata->{numerical_attributes}->{generation} = $datachannel->{currentgen};
+							$modelcpds->{$id} = 1;
+						} else {
+							$initially_pruned->{$cpddata->{id}} = $cpddata;
+						}
+					} else {
+						$cpddata = $datachannel->{cpdhash}->{$id};
+					}
+					if ($array->[1] eq "Coreactant") {
+						$cpddata->{string_attributes}->{"pickaxe_".$ruleset."_type"} = "coreactant";
+					}
+					if (!defined($input_ids->{$cpddata->{id}}) && !defined($cpddata->{numerical_attributes}->{"generation_".$ruleset})) {
+						$cpddata->{numerical_attributes}->{"generation_".$ruleset} = $datachannel->{currentgen};
+					}   
+				}
+				#If keeping all compounds and seed, targets, metabolite hits are under the limit, fill in remaining slots with diverse compounds
+				if ($newcpdcount < $params->{max_new_cpds_per_gen_per_ruleset} && $params->{discard_orphan_hits} == 0) {
+						my $remaining = $params->{max_new_cpds_per_gen_per_ruleset} - $newcpdcount;
+						for (my $i=0; $i < $remaining; $i++) {
+							my $keylist = [keys(%{$initially_pruned})];
+							my $numkeys = @{$keylist};
+							my $random = int(rand($numkeys));
+							push(@{$datachannel->{fbamodel}->{modelcompounds}},$initially_pruned->{$keylist->[$random]});
+							$initially_pruned->{$keylist->[$random]}->{numerical_attributes}->{generation} = $datachannel->{currentgen};
+							$modelcpds->{$initially_pruned->{$keylist->[$random]}->{id}} = 1;
+							delete($initially_pruned->{$keylist->[$random]});
+						}
+				}
+				#Adding reactions to model
+				my $rxndarray = Bio::KBase::ObjectAPI::utilities::LOADFILE($rxnfilename);
+				for (my $i=1; $i < @{$rxndarray}; $i++) {
+					if (!defined($datachannel->{current_rxn_id}->{$rxn_id_prefix})) {
+						$datachannel->{current_rxn_id}->{$rxn_id_prefix} = 1;
+					}
+					my $array = [split(/\t/,$rxndarray->[$i])];
+					if (!defined($datachannel->{reaction_ids}->{$array->[4]})) {
+						$datachannel->{reaction_ids}->{$array->[4]} = 1;
+					}
+					my $equation = $array->[2];
+					my $eqarray = [split(" ",$equation)];
+					my $multiplier = -1;
+					my $coef = 1;
+					my $reagents = [];
+					my $pruned = 0;
+					my $netcharge = 0;
+					my $protons = 0;
+					for (my $j=0; $j < @{$eqarray}; $j++) {
+						if ($eqarray->[$j] =~ /=/) {
+							$multiplier = 1;
+						} elsif ($eqarray->[$j] =~ /\((\d+\.*\d*)\)/) {
+							$coef = $1+0;
+						} elsif ($eqarray->[$j] =~ /(.+)\[.+]/) {
+							my $cpdid = $1;
+							#Because some compounds will have _c0 and some not, we just strip them all off and readd
+							$cpdid =~ s/_[a-z]\d$//;
+							$cpdid .= "_c0";
+							my $orig = $cpdid;
+							if (defined($cpdid_translation->{$cpdid})) {
+								$cpdid = $cpdid_translation->{$cpdid};
+							}
+							$netcharge += $multiplier*$coef*$datachannel->{cpdhash}->{$cpdid}->{charge};
+							if (!defined($modelcpds->{$cpdid}) && !defined($input_ids->{$cpdid})) {
+								$pruned = 1;
+							}
+							if ($cpdid =~ m/cpd00067/) {
+								$protons += $multiplier*$coef;
+							} else {
+								push(@{$reagents},{
+									coefficient => $multiplier*$coef,
+									modelcompound_ref => "~/modelcompounds/id/".$cpdid
+								});
+							}
+							$coef = 1;
+						}
+					}
+					$protons = $protons - $netcharge;
+					if ($protons != 0) {
+						push(@{$reagents},{
+							coefficient => $protons,
+							modelcompound_ref => "~/modelcompounds/id/cpd00067_c0"
+						});
+					}
+					my $rxndata = {
+						id => $rxn_id_prefix.$datachannel->{current_rxn_id}->{$rxn_id_prefix}."_c0",
+						reaction_ref => "~/template/reactions/id/rxn00000_c",
+						dblinks => {"PickAxe" => [$ruleset.".".$array->[5]]},
+						direction => ">",
+						maxforflux => 1000,
+						maxrevflux => 0,
+						modelcompartment_ref => "~/modelcompartments/id/c0",
+						modelReactionReagents => $reagents,
+						modelReactionProteins => [],
+						string_attributes => {},
+						gapfill_data => {}
+					};
+					my $sorted_reagents = [sort { $a->{modelcompound_ref} cmp $b->{modelcompound_ref} } @{$reagents}];
+					my $reactstring = "";
+					my $prodstring = "";
+					for (my $j=0; $j < @{$sorted_reagents}; $j++) {
+						my $newarray = [split(/\//,$sorted_reagents->[$j]->{modelcompound_ref})];
+						my $cpdid = pop(@{$newarray});
+						if ($cpdid =~ m/cpd00067/) {
+							$reactstring .= "";
+						} elsif ($sorted_reagents->[$j]->{coefficient} < 0) { 
+							$reactstring .= "(".(-1*$sorted_reagents->[$j]->{coefficient}).")".$cpdid;
+						} else {
+							$prodstring .= "(".($sorted_reagents->[$j]->{coefficient}).")".$cpdid;
+						}
+					}
+					my $code = $reactstring."=".$prodstring;
+					my $reversecode = $prodstring."=".$reactstring;
+					if (!defined($datachannel->{reaction_hash}->{$code})) {
+						if (!defined($datachannel->{reaction_hash}->{$reversecode})) {
+							if (!defined($datachannel->{operator_counts}->{$array->[5]})) {
+								$datachannel->{operator_counts}->{$array->[5]} = 0;
+							}
+							$datachannel->{reaction_hash}->{$code} = $rxndata;
+							if ($pruned == 0) {
+								$datachannel->{operator_counts}->{$array->[5]}++;
+								$rxndata->{name} = $array->[5]."_".$datachannel->{operator_counts}->{$array->[5]};
+								push(@{$datachannel->{fbamodel}->{modelreactions}},$rxndata);
+								$rxndata->{numerical_attributes}->{generation} = $datachannel->{currentgen};
+								$datachannel->{current_rxn_id}->{$rxn_id_prefix}++;
+							}
+						} else {
+							$datachannel->{reaction_hash}->{$reversecode}->{direction} = "=";
+							my $found = 0;
+							foreach my $alias (@{$datachannel->{reaction_hash}->{$reversecode}->{dblinks}->{PickAxe}}) {
+								 if ($alias eq $ruleset.".".$array->[5]) {
+									 $found = 1;
+								 }
+							}
+							if ($found == 0) {
+								push(@{$datachannel->{reaction_hash}->{$reversecode}->{dblinks}->{PickAxe}},$ruleset.".".$array->[5]);
+							}
+							$rxndata = $datachannel->{reaction_hash}->{$reversecode};
+						}
+					} else {
+						my $found = 0;
+						foreach my $alias (@{$datachannel->{reaction_hash}->{$code}->{dblinks}->{PickAxe}}) {
+							 if ($alias eq $ruleset.".".$array->[5]) {
+								 $found = 1;
+							 }
+						}
+						if ($found == 0) {
+							push(@{$datachannel->{reaction_hash}->{$code}->{dblinks}->{PickAxe}},$ruleset.".".$array->[5]);
+						}
+						$rxndata = $datachannel->{reaction_hash}->{$code};
+					}
+					if (!defined($rxndata->{numerical_attributes}->{"generation_".$ruleset})) {
+						$rxndata->{numerical_attributes}->{"generation_".$ruleset} = $datachannel->{currentgen};
+					}
+				}
+				#unlink($cpdfilename);
+				#unlink($rxnfilename);
+				system("mv ".$cpdfilename." ".$cpdfilename.$ruleset);
+				system("mv ".$rxnfilename." ".$rxnfilename.$ruleset);
+			}
+		}
+		#If more generations are desired, call this function again recursively
+		my $cpdcount = @{$datachannel->{fbamodel}->{modelcompounds}};
+		if ($datachannel->{currentgen} < $params->{generation} && $cpdcount < $params->{compound_limit}) {
+			Bio::KBase::ObjectAPI::functions::func_run_pickaxe($params,$datachannel);
+		}
+	}
+	if ($datachannel->{currentgen} == 1 && defined($datachannel->{fbamodel})) {
+		$datachannel->{fbamodel} = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new($datachannel->{fbamodel});
+		my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},$params->{workspace}."/".$params->{out_model_id},{type => "KBaseFBA.FBAModel"});
+	}
+	return {
+		peak_hits => $datachannel->{peak_hits},
+		cpd_hits => $datachannel->{cpd_hits},
+		operator_counts => $datachannel->{operator_counts},
+		metabolomics_data => $datachannel->{metabolomics_data}
+	};
 }
 
 
@@ -5581,19 +5811,19 @@ sub process_nodes {
 sub annotate_proteins {
 	my ($params) = @_;
 	$params = Bio::KBase::utilities::args($params,["proteins"],{});
-    my $inputgenome = {
-    		features => []
-    };
-    my $return = {functions => []};
+	my $inputgenome = {
+			features => []
+	};
+	my $return = {functions => []};
 	my $rast_client = Bio::KBase::kbaseenv::rast_client();
-    for (my $i=0; $i <= @{$params->{proteins}}; $i++) {
-    		push(@{$inputgenome->{features}},{
-    			id => "peg.".$i,
-    			protein_translation => $params->{proteins}->[$i]
-    		});
-    		if ($i > 0 && $i % 4000 == 0) {
-    			print "Annotating ".($i-4000)."-".$i."\n";
-    			my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
+	for (my $i=0; $i <= @{$params->{proteins}}; $i++) {
+			push(@{$inputgenome->{features}},{
+				id => "peg.".$i,
+				protein_translation => $params->{proteins}->[$i]
+			});
+			if ($i > 0 && $i % 4000 == 0) {
+				print "Annotating ".($i-4000)."-".$i."\n";
+				my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
 				{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {min_hits => 5,annotate_hypothetical_only => 0} },
 				{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
 				{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } }
@@ -5606,13 +5836,13 @@ sub annotate_proteins {
 				push(@{$return->{functions}},$funcarray);
 			}
 			$inputgenome = {
-		    		features => []
-		    };
-    		}
-    }
-    if (@{$inputgenome->{features}} > 0) {
-    		print "Final annotation\n";
-    		my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
+					features => []
+			};
+			}
+	}
+	if (@{$inputgenome->{features}} > 0) {
+			print "Final annotation\n";
+			my $genome = $rast_client->run_pipeline($inputgenome,{stages => [
 			{ name => 'annotate_proteins_kmer_v2', kmer_v2_parameters => {min_hits => 5,annotate_hypothetical_only => 0} },
 			{ name => 'annotate_proteins_kmer_v1', kmer_v1_parameters => { annotate_hypothetical_only => 1 } },
 			{ name => 'annotate_proteins_similarity', similarity_parameters => { annotate_hypothetical_only => 1 } }
@@ -5624,7 +5854,7 @@ sub annotate_proteins {
 			}
 			push(@{$return->{functions}},$funcarray);
 		}
-    }
+	}
 	return $return;
 }
 
@@ -5713,8 +5943,14 @@ sub load_matrix {
 }
 
 sub check_for_peakmatch {
-	my ($metabolomics_data,$cpd_hit,$peak_hit,$cpddata,$generation,$ruleset,$noall) = @_;
+	my ($metabolomics_data,$cpd_hit,$peak_hit,$cpddata,$generation,$ruleset,$noall,$dbkey,$max_hits_to_keep_per_peak) = @_;
 	my $typelist = ["inchikey","smiles","formula"];
+	if (!defined($max_hits_to_keep_per_peak)) {
+		$max_hits_to_keep_per_peak = 1000000;
+	}
+	if (!defined($dbkey)) {
+		$dbkey = "MetabolomicsDataset";
+	}
 	my $hit = [];
 	for (my $i=0; $i < @{$typelist}; $i++) {
 		my $type = $typelist->[$i];
@@ -5725,44 +5961,26 @@ sub check_for_peakmatch {
 				$cpdatt = $array->[0];
 			}
 			if (defined($metabolomics_data->{$type."_to_peaks"}->{$cpdatt})) {
-				if ($noall == 0) {
-					if (!defined($cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type})) {
-						$cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type} = 0;
-					}
-					$cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type}++;
-					if (!defined($cpd_hit->{all}->{$generation}->{$cpddata->{id}}->{$type})) {
-						$cpd_hit->{all}->{$generation}->{$cpddata->{id}}->{$type} = 0;
-					}
-					$cpd_hit->{all}->{$generation}->{$cpddata->{id}}->{$type}++;
-				}
-				if (!defined($cpd_hit->{$ruleset}->{allgen}->{$cpddata->{id}}->{$type})) {
-					$cpd_hit->{$ruleset}->{allgen}->{$cpddata->{id}}->{$type} = 0;
-				}
-				$cpd_hit->{$ruleset}->{allgen}->{$cpddata->{id}}->{$type}++;
-				if (!defined($cpd_hit->{$ruleset}->{$generation}->{$cpddata->{id}}->{$type})) {
-					$cpd_hit->{$ruleset}->{$generation}->{$cpddata->{id}}->{$type} = 0;
-				}
-				$cpd_hit->{$ruleset}->{$generation}->{$cpddata->{id}}->{$type}++;
 				foreach my $peakid (keys(%{$metabolomics_data->{$type."_to_peaks"}->{$cpdatt}})) {
+					my $hitcount = keys(%{$metabolomics_data->{$type."_to_peaks"}->{$cpdatt}});
+					if ($hitcount >= $max_hits_to_keep_per_peak) {
+						$cpddata->{numerical_attributes}->{redundant_hit} = ($hitcount+1);
+					}
 					push(@{$hit},$peakid);
+					if (!defined($cpddata->{dblinks}->{$dbkey})) {
+						$cpddata->{dblinks}->{$dbkey} = [];
+					}
+					push(@{$cpddata->{dblinks}->{$dbkey}},$peakid);
 					if ($noall == 0) {
-						if (!defined($peak_hit->{all}->{allgen}->{$peakid}->{$type})) {
-							$peak_hit->{all}->{allgen}->{$peakid}->{$type} = 0;
-						}
-						$peak_hit->{all}->{allgen}->{$peakid}->{$type}++;
-						if (!defined($peak_hit->{all}->{$generation}->{$peakid}->{$type})) {
-							$peak_hit->{all}->{$generation}->{$peakid}->{$type} = 0;
-						}
-						$peak_hit->{all}->{$generation}->{$peakid}->{$type}++;
+						$cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
+						$cpd_hit->{all}->{$generation}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
+						$peak_hit->{all}->{allgen}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
+						$peak_hit->{all}->{$generation}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
 					}
-					if (!defined($peak_hit->{$ruleset}->{allgen}->{$peakid}->{$type})) {
-						$peak_hit->{$ruleset}->{allgen}->{$peakid}->{$type} = 0;
-					}
-					$peak_hit->{$ruleset}->{allgen}->{$peakid}->{$type}++;
-					if (!defined($peak_hit->{$ruleset}->{$generation}->{$peakid}->{$type})) {
-						$peak_hit->{$ruleset}->{$generation}->{$peakid}->{$type} = 0;
-					}
-					$peak_hit->{$ruleset}->{$generation}->{$peakid}->{$type}++;
+					$cpd_hit->{$ruleset}->{allgen}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
+					$cpd_hit->{$ruleset}->{$generation}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
+					$peak_hit->{$ruleset}->{allgen}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
+					$peak_hit->{$ruleset}->{$generation}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
 				}
 			}
 		}
