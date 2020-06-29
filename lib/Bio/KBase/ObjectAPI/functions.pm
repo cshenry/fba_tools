@@ -3727,6 +3727,7 @@ sub func_run_pickaxe {
 				}
 				#Checking input compoundset for metabolomics matches
 				Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddatahash->{$cpds->[$i]->id()},0,"model",0,$datachannel->{KBaseMetabolomicsObject});
+				$cpddatahash->{$id}->{formula} = $cpds->[$i]->formula()
 			}
 			my $rxns = $object->modelreactions();
 			for (my $i=0; $i < @{$rxns}; $i++) {
@@ -4035,7 +4036,7 @@ sub func_run_pickaxe {
 								$protons += $multiplier*$coef;
 							} else {
 								push(@{$reagents},{
-									coefficient => $multiplier*$coef,
+									coefficient => $multiplier*$coef+0,
 									modelcompound_ref => "~/modelcompounds/id/".$cpdid
 								});
 							}
@@ -4045,7 +4046,7 @@ sub func_run_pickaxe {
 					$protons = $protons - $netcharge;
 					if ($protons != 0) {
 						push(@{$reagents},{
-							coefficient => $protons,
+							coefficient => $protons+0,
 							modelcompound_ref => "~/modelcompounds/id/cpd00067_c0"
 						});
 					}
@@ -4072,8 +4073,10 @@ sub func_run_pickaxe {
 							$reactstring .= "";
 						} elsif ($sorted_reagents->[$j]->{coefficient} < 0) { 
 							$reactstring .= "(".(-1*$sorted_reagents->[$j]->{coefficient}).")".$cpdid;
+							$sorted_reagents->[$j]->{coefficient} += 0;
 						} else {
 							$prodstring .= "(".($sorted_reagents->[$j]->{coefficient}).")".$cpdid;
+							$sorted_reagents->[$j]->{coefficient} += 0;
 						}
 					}
 					my $code = $reactstring."=".$prodstring;
@@ -4133,14 +4136,17 @@ sub func_run_pickaxe {
 		}
 	}
 	if ($datachannel->{currentgen} == 1 && defined($datachannel->{fbamodel})) {
+		for (my $i=0; $i < @{$datachannel->{fbamodel}->{modelcompounds}}; $i++) {
+			if (!defined($datachannel->{fbamodel}->{modelcompounds}->[$i]->{formula})) {
+				$datachannel->{fbamodel}->{modelcompounds}->[$i]->{formula} = "";
+			}
+		}
 		$datachannel->{fbamodel} = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new($datachannel->{fbamodel});
 		my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},$params->{workspace}."/".$params->{out_model_id},{type => "KBaseFBA.FBAModel"});
 	}
 	return {
-		peak_hits => $datachannel->{peak_hits},
 		cpd_hits => $datachannel->{cpd_hits},
 		operator_counts => $datachannel->{operator_counts},
-		metabolomics_data => $datachannel->{metabolomics_data}
 	};
 }
 
