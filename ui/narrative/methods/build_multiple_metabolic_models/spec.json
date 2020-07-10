@@ -80,12 +80,6 @@
                   "display" : "Gram positive"
                },
                {
-                  "display" : "Plant",
-                  "ui_name" : "Plant",
-                  "value" : "plant",
-                  "id" : "plant"
-               },
-               {
                   "display" : "Core metabolism",
                   "ui_name" : "Core metabolism",
                   "value" : "core",
