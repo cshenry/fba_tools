@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+	<title>Pickaxe Results</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+	<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.3.1.js">
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+	</script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+	</script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js">
+	</script>
+	<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js">
+	</script>
+</head>
+<body class="container">
+<div>
+    <h1>Pickaxe Results</h1>
+	<ul class="nav nav-tabs" id="nav-tab" role="tablist">
+		<li><a class="nav-item nav-link active" id="nav-overview-tab" data-toggle="tab" href="#nav-overview" role="tab" aria-controls="nav-overview" aria-selected="true">Overview</a> </li>
+		<li><a class="nav-item nav-link" id="nav-generations-tab" data-toggle="tab" href="#nav-generations" role="tab" aria-controls="nav-generations" aria-selected="false">Generations</a> </li>
+		<li><a class="nav-item nav-link" id="nav-rules-tab" data-toggle="tab" href="#nav-rules" role="tab" aria-controls="nav-rules" aria-selected="false">Rules</a> </li>
+		<li><a class="nav-item nav-link" id="nav-peaks-tab" data-toggle="tab" href="#nav-peaks" role="tab" aria-controls="nav-peaks" aria-selected="false">Peaks</a> </li>
+		<li><a class="nav-item nav-link" id="nav-compounds-tab" data-toggle="tab" href="#nav-compounds" role="tab" aria-controls="nav-compounds" aria-selected="false">Compounds</a> </li>
+		<li><a class="nav-item nav-link" id="nav-reactions-tab" data-toggle="tab" href="#nav-reactions" role="tab" aria-controls="nav-reactions" aria-selected="false">Reactions</a> </li>
+	</ul>
+	<div class="tab-content" id="nav-tabContent">
+		<div class="tab-pane fade show active" id="nav-overview" role="tabpanel" aria-labelledby="nav-overview-tab">
+			<h3>
+				Overview of Pickaxe Expansion
+			</h3>
+[%  overview = data.overview;
+    generations = data.generations;
+    rules = data.rules;
+    peaks = data.peaks;
+    compounds = data.compounds;
+    reactions = data.reactions;
+%]
+			<table class="table table-striped table-bordered">
+				<tbody>
+					<tr>
+						<td>Rules</td>
+						<td>[% overview.rules %]</td>
+					</tr>
+					<tr>
+						<td>Total reactions</td>
+						<td>[% overview.reactions %]</td>
+					</tr>
+					<tr>
+						<td>Total compounds</td>
+						<td>[% overview.compounds %]</td>
+					</tr>
+					<tr>
+						<td>Filtered compounds</td>
+						<td>[% overview.filtered_compounds %]</td>
+					</tr>
+					<tr>
+						<td>Filtered reactions</td>
+						<td>[% overview.filtered_reactions %]</td>
+					</tr>
+					<tr>
+						<td>Generations</td>
+						<td>[% overview.generations %]</td>
+					</tr>
+					<tr>
+						<td>Starting compounds</td>
+						<td>[% overview.starting_compounds %]</td>
+					</tr>
+					<tr>
+						<td>Compounds generated</td>
+						<td>[% overview.generated_compounds %]</td>
+					</tr>
+					<tr>
+						<td>Starting ModelSEED compounds</td>
+						<td>[% overview.starting_modelseed %]/[% overview.starting_compounds %]</td>
+					</tr>
+					<tr>
+						<td>Generated ModelSEED compounds</td>
+						<td>[% overview.generated_modelseed %]/[% overview.generated_compounds %]</td>
+					</tr>
+					<tr>
+						<td>Peaks matched to starting compounds</td>
+						<td>[% overview.peaks_hit_model %]/[% overview.total_peaks %]</td>
+					</tr>
+					<tr>
+						<td>Peaks matched to generated compounds</td>
+						<td>[% overview.peaks_hit_generated %]/[% overview.total_peaks %]</td>
+					</tr>
+					<tr>
+						<td>Peaks matched to ModelSEED</td>
+						<td>[% overview.peaks_hit_modelseed %]/[% overview.total_peaks %]</td>
+					</tr>
+					<tr>
+						<td>Starting compounds with peaks</td>
+						<td>[% overview.starting_hit_peaks %]/[% overview.starting_compounds %]</td>
+					</tr>
+					<tr>
+						<td>Generated compounds with peaks</td>
+						<td>[% overview.generated_hit_peaks %]/[% overview.generated_compounds %]</td>
+					</tr>
+					<tr>
+						<td>ModelSEED compounds with peaks</td>
+						<td>[% overview.modelseed_hit_peaks %]/[% overview.modelseed_compounds %]</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="tab-pane fade" id="nav-generations" role="tabpanel" aria-labelledby="nav-generations-tab">
+			<h3>
+				Generation Statistics
+			</h3>
+			<table id="table-generations" class="table table-striped table-bordered" width="100%">
+			</table>
+		</div>
+		<div class="tab-pane fade" id="nav-rules" role="tabpanel" aria-labelledby="nav-rules-tab">
+			<h3>
+				List of Reaction Rules Applied
+			</h3>
+			<table id="table-rules" class="table table-striped table-bordered" width="100%">
+			</table>
+		</div>
+		<div class="tab-pane fade" id="nav-peaks" role="tabpanel" aria-labelledby="nav-peaks-tab">
+			<h3>
+				Metabolomics Peaks Analyzed
+			</h3>
+			<table id="table-peaks" class="table table-striped table-bordered" width="100%">
+			</table>
+		</div>
+		<div class="tab-pane fade" id="nav-reactions" role="tabpanel" aria-labelledby="nav-reactions-tab">
+			<h3>
+				Reactions Generated
+			</h3>
+			<table id="table-reactions" class="table table-striped table-bordered" width="100%">
+			</table>
+		</div>
+		<div class="tab-pane fade" id="nav-compounds" role="tabpanel" aria-labelledby="nav-compounds-tab">
+			<h3>
+				Compounds Generated
+			</h3>
+			<table id="table-compounds" class="table table-striped table-bordered" width="100%">
+			</table>
+		</div>
+	</div>
+</div>
+<script>
+$(document).ready(function() {
+    "use strict";
+    [%  USE JSON; %]
+    var generations = {
+        data: [% generations.json %],
+        cols: {
+            id: {
+                title: "Generation",
+                data:   d => d.id,
+            },
+            compounds: {
+                title: "Compounds",
+                data:   d => d.compounds,
+            },
+            reactions: {
+                title: "Reactions",
+                data:   d => d.reactions,
+            },
+            peaks: {
+                title: "Peaks",
+                data:   d => d.peaks,
+            },
+            compounds_with_peaks: {
+                title: "Compounds with Peaks",
+                data:   d => d.compounds_with_peaks,
+            },
+            modelseed_compounds: {
+                title: "ModelSEED Compounds",
+                data:   d => d.modelseed_compounds,
+            },
+            filtered_compounds: {
+                title: "Filtered Compounds",
+                data:   d => d.filtered_compounds,
+            },
+            filtered_reactions: {
+                title: "Filtered Reactions",
+                data:   d => d.filtered_reactions,
+            }
+        },
+        colOrder: [
+            "id",
+            "compounds",
+            "reactions",
+            "peaks",
+            "compounds_with_peaks",
+            "modelseed_compounds",
+            "filtered_compounds",
+            "filtered_reactions",
+        ],
+    },
+    rules = {
+        data: [% rules.json %],
+        cols: {
+            ruleset: {
+                title: "Ruleset",
+                data:   d => d.ruleset,
+            },
+            id: {
+                title: "Name",
+                data:   d => d.id,
+            },
+            reactions: {
+                title: "Reactions",
+                data:   d => d.reactions,
+            },
+        },
+        colOrder: [
+            'ruleset',
+            'id',
+            'reactions'
+        ],
+    },
+    peaks = {
+        data: [% peaks.json %],
+        cols: {
+            id: {
+                title: "ID",
+                data:   d => d.id,
+
+            },
+            mz: {
+                title: "M/Z",
+                data:   d => d.mz,
+
+            },
+            formula: {
+                title: "Formula",
+                data:   d => d.formula,
+
+            },
+            name: {
+                title: "Name",
+                data:   d => d.name,
+
+            },
+            smiles: {
+                title: "Smiles",
+                data:   d => d.smiles,
+
+            },
+            inchikey: {
+                title: "Inchikey",
+                data:   d => d.inchikey,
+
+            },
+            hits: {
+                title: "Hits",
+                render: ( data, type, d, meta ) => {
+                    return type === 'display'
+                        ? d.hits.join("<br>")
+                        : d.hits.join("|");
+                }
+
+            },
+            compounds: {
+                title: "Compounds",
+                data:   d => d.compounds,
+                render: ( data, type, d, meta ) => {
+                    return type === 'display'
+                        ? d.compounds.join("<br>")
+                        : d.compounds.join("|");
+                }
+            }
+        },
+        colOrder: [
+            'id',
+            'mz',
+            'formula',
+            'name',
+            'smiles',
+            'inchikey',
+            'hits',
+            'compounds'
+        ],
+    },
+    reactions = {
+        data: [% reactions.json %],
+        cols: {
+            id: {
+                title: "Reaction",
+                data:   d => d.id,
+
+            },
+            equation: {
+                title: "Equation",
+                data:   d => d.equation,
+
+            },
+            rules: {
+                title: "Rules",
+                data:   d => d.rules,
+                render: ( data, type, d, meta ) => {
+                    return type === 'display'
+                        ? d.rules.join(", ")
+                        : d.rules.join("|");
+                }
+            },
+            generation: {
+                title: "Generation",
+                data:   d => d.generation,
+
+            }
+        },
+        colOrder: [
+            'id',
+            'equation',
+            'rules',
+            'generation'
+        ],
+    },
+    compounds = {
+        data: [% compounds.json %],
+        cols: {
+            id: {
+                title: "Compound",
+                data:   d => d.id,
+                render: ( data, type, d, meta ) => {
+                    if (type === 'display') {
+						if (d.msid) {
+							return '<a href="http://modelseed.org/biochem/compounds/' + d.msid + '">' + d.msid + '</a>';
+						} else {
+							return d.id;
+						}
+                    }
+                    return d.id;
+                }
+            },
+            name: {
+                title: "Name",
+                data:   d => d.name,
+
+            },
+            formula: {
+                title: "Formula",
+                data:   d => d.formula,
+
+            },
+            charge: {
+                title: "Charge",
+                data:   d => d.charge,
+
+            },
+            smiles: {
+                title: "Smiles",
+                data:   d => d.smiles,
+            },
+            inchikey: {
+                title: "Inchikey",
+                data:   d => d.inchikey,
+            },
+            reactions: {
+                title: "Reactions",
+                data:   d => d.reactions,
+
+            },
+            generation: {
+                title: "Generation",
+                data:   d => d.generation,
+
+            },
+            peaks: {
+                title: "Peaks",
+                data:   d => d.peaks,
+                render: ( data, type, d, meta ) => {
+                    return type === 'display'
+                        ? d.peaks.join(", ")
+                        : d.peaks.join("|");
+                }
+            }
+        },
+        colOrder: [
+            'id',
+            'name',
+            'formula',
+            'charge',
+            'smiles',
+            'inchikey',
+            'reactions',
+            'generation',
+            'peaks'
+        ],
+    }
+
+    $('#nav-tab a').on('click', function (e) {
+      e.preventDefault()
+      $(this).tab('show')
+    })
+
+    $('a[data-toggle="tab"]').on( 'shown.bs.tab', function (e) {
+        $.fn.dataTable.tables( {visible: true, api: true} ).columns.adjust();
+    } );
+
+	$('#table-generations').DataTable( {
+        data: Object.values( generations.data ),
+        columns: generations.colOrder.map( e => generations.cols[ e ] ),
+    } );
+
+    $('#table-peaks').DataTable( {
+        data: Object.values( peaks.data ),
+        columns: peaks.colOrder.map( e => peaks.cols[ e ] ),
+    } );
+    
+    $('#table-rules').DataTable( {
+        data: Object.values( rules.data ),
+        columns: rules.colOrder.map( e => rules.cols[ e ] ),
+    } );
+
+    $('#table-reactions').DataTable( {
+        data: Object.values( reactions.data ),
+        columns: reactions.colOrder.map( e => reactions.cols[ e ] ),
+    } );
+    
+    $('#table-compounds').DataTable( {
+        data: Object.values( compounds.data ),
+        columns: compounds.colOrder.map( e => compounds.cols[ e ] ),
+    } );
+
+} );
+</script>
+</body>
+</html>

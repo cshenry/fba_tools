@@ -210,6 +210,10 @@ sub get_ref_from_metadata {
 	return $metadata->{"ref"};
 }
 
+sub uuid_to_ref {
+	return undef;
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 1;
