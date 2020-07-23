@@ -76,6 +76,90 @@ sub _buildfeatureHash {
 #***********************************************************************************************************
 # FUNCTIONS:
 #***********************************************************************************************************
+sub predict_auxotrophy_nofba {
+	my ($self) = @_;
+	my $thresholds = Bio::KBase::constants::auxotrophy_thresholds();
+	my $output = {};
+	foreach my $cpd (keys(%{$thresholds})) {
+		my $rule = $thresholds->{$cpd}->[3];
+		my $steps = [split(/\&/,$rule)];
+		$output->{$cpd} = {
+			gfrxn => 0,
+			missing => 0,
+			present => 0,
+			total => 0,
+			missing_reactions => [],
+			gapfilled_reactions => [],
+			present_reactions => [],
+		};
+		foreach my $step (@{$steps}) {
+			my $options = [split(/\|/,$step)];
+			my $bestscore;
+			my $bestcounts = [0,0,0];
+			my $bestmissing = [];
+			my $bestgapfilled = [];
+			my $bestpresent = [];
+			foreach my $option (@{$options}) {
+				my $subcounts = [0,0,0];
+				my $submissing = [];
+				my $subgapfilled = [];
+				my $subpresent = [];
+				my $count = 0;
+				my $substeps = [split(/\+/,$option)];
+				foreach my $substep (@{$substeps}) {
+					$count++;
+					my $alternatives = [split(/\//,$substep)];
+					my $status = "missing";
+					my $selected_rxn = $alternatives->[0];
+					foreach my $alternative (@{$alternatives}) {
+						my $diff = 5-length($alternative);
+						my $prefix = "rxn";
+						for (my $i=0; $i < $diff; $i++) {
+							$prefix .= "0";
+						}
+						my $mdlrxn = $self->getObject("modelreactions",$prefix.$alternative."_c0");
+						if (defined($mdlrxn)) {
+							if (length($mdlrxn->gapfillString()) > 0 && $status ne "present") {
+								$status = "gapfilled";
+								$selected_rxn = $alternative;
+							} else {
+								$selected_rxn = $alternative;
+								$status = "present";
+							}
+						}
+					}
+					if ($status eq "missing") {
+						$subcounts->[0]++;
+						push(@{$submissing},$selected_rxn);
+					} elsif ($status eq "gapfilled") {
+						$subcounts->[1]++;
+						push(@{$subgapfilled},$selected_rxn);
+					} else {
+						$subcounts->[2]++;
+						push(@{$subpresent},$selected_rxn);
+					}
+				}
+				my $score = ($subcounts->[0]+$subcounts->[1])/$count;
+				if (!defined($bestscore) || $bestscore > $score) {
+					$bestscore = $score;
+					$bestcounts = $subcounts;
+					$bestmissing = $submissing;
+					$bestgapfilled = $subgapfilled;
+					$bestpresent = $subpresent;
+				}
+			}
+			$output->{$cpd}->{gfrxn} += $bestcounts->[1];
+			$output->{$cpd}->{missing} += $bestcounts->[0];
+			$output->{$cpd}->{present} += $bestcounts->[2];
+			$output->{$cpd}->{total} += $bestcounts->[0]+$bestcounts->[1]+$bestcounts->[2];
+			push(@{$output->{$cpd}->{missing_reactions}},@{$bestmissing});
+			push(@{$output->{$cpd}->{gapfilled_reactions}},@{$bestgapfilled});
+			push(@{$output->{$cpd}->{present_reactions}},@{$bestpresent});
+		}
+	}
+	return $output;
+}
+
 sub load_metabolite_hashes {
 	my ($self,$args) = @_;
 	$args = Bio::KBase::utilities::args($args,["priority"],{
