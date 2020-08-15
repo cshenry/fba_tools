@@ -483,6 +483,7 @@ sub ProcessAnnotationData {
 sub AddRxnToModelFromAnnotations {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["model"],{
+		probability_threshold => 0.8,
 		no_features => 0,
 		fulldb => 0,
 		function_hash => {},
@@ -578,7 +579,8 @@ sub AddRxnToModelFromAnnotations {
 	}
 	#Now adding reaction to model if it meets the necessary criteria
 	if ((!defined($anno_args->{proteins}) || @{$anno_args->{proteins}} == 0) && 
-		(!defined($anno_args->{gene_count}) || $anno_args->{gene_count} == 0) && 
+		(!defined($anno_args->{gene_count}) || $anno_args->{gene_count} == 0) &&
+		(!defined($anno_args->{probability}) || $anno_args->{probability} < $args->{probability_threshold}) &&
 		$self->type() ne "universal" && 
 		$self->type() ne "spontaneous" && 
 		$args->{fulldb} == 0) {

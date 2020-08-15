@@ -183,6 +183,7 @@ sub load_metabolite_hashes {
 sub NewBuildModel {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args(["modelid"],{
+		probability_threshold => 0.8,
 		function_hash => {},
 		reaction_hash => {},
 		no_features => 0,
@@ -233,6 +234,7 @@ sub NewBuildModel {
 	for (my $i=0; $i < @{$rxns}; $i++) {
 		my $rxn = $rxns->[$i];
 		$rxn->AddRxnToModelFromAnnotations({
+			probability_threshold => $args->{probability_threshold},
 			function_hash => $args->{function_hash},
 			reaction_hash => $args->{reaction_hash},
 			model => $mdl,

@@ -488,6 +488,24 @@ public class FbaToolsClient {
     }
 
     /**
+     * <p>Original spec-file function name: build_model_from_roles</p>
+     * <pre>
+     * Build a genome-scale metabolic model based on annotations in an input genome typed object
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.fbatools.BuildModelFromRolesParams BuildModelFromRolesParams}
+     * @return   instance of type {@link us.kbase.fbatools.BuildMetabolicModelResults BuildMetabolicModelResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public BuildMetabolicModelResults buildModelFromRoles(BuildModelFromRolesParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<BuildMetabolicModelResults>> retType = new TypeReference<List<BuildMetabolicModelResults>>() {};
+        List<BuildMetabolicModelResults> res = caller.jsonrpcCall("fba_tools.build_model_from_roles", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
      * <p>Original spec-file function name: fit_exometabolite_data</p>
      * <pre>
      * Gapfills a metabolic model to fit input exometabolite data

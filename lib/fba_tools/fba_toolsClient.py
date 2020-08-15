@@ -569,6 +569,52 @@ class fba_tools(object):
             'fba_tools.build_metagenome_metabolic_model',
             [params], self._service_ver, context)
 
+    def build_model_from_roles(self, params, context=None):
+        """
+        Build a genome-scale metabolic model based on annotations in an input genome typed object
+        :param params: instance of type "BuildModelFromRolesParams" ->
+           structure: parameter "workspace" of type "workspace_name" (A
+           string representing a workspace name.), parameter "roles" of type
+           "ModelReconstructionInput" (Input to model reconstruction) ->
+           structure: parameter "reaction_hash" of mapping from String to
+           mapping from String to type "FunctionMappingData" -> structure:
+           parameter "features" of mapping from String to type
+           "FeatureMapping" -> structure: parameter "feature_ref" of String,
+           parameter "probability" of Double, parameter "coverage" of Double,
+           parameter "sources" of mapping from String to String, parameter
+           "hit_count" of Long, parameter "non_gene_probability" of Double,
+           parameter "non_gene_coverage" of Double, parameter "sources" of
+           mapping from String to String, parameter "function_hash" of
+           mapping from String to mapping from String to type
+           "FunctionMappingData" -> structure: parameter "features" of
+           mapping from String to type "FeatureMapping" -> structure:
+           parameter "feature_ref" of String, parameter "probability" of
+           Double, parameter "coverage" of Double, parameter "sources" of
+           mapping from String to String, parameter "hit_count" of Long,
+           parameter "non_gene_probability" of Double, parameter
+           "non_gene_coverage" of Double, parameter "sources" of mapping from
+           String to String, parameter "media_id" of type "media_id" (A
+           string representing a Media id.), parameter "media_workspace" of
+           type "workspace_name" (A string representing a workspace name.),
+           parameter "fbamodel_output_id" of type "fbamodel_id" (A string
+           representing a FBAModel id.), parameter "model_name" of String,
+           parameter "template_id" of type "template_id" (A string
+           representing a NewModelTemplate id.), parameter
+           "template_workspace" of type "workspace_name" (A string
+           representing a workspace name.), parameter "save_model" of type
+           "bool" (A binary boolean)
+        :returns: instance of type "BuildMetabolicModelResults" -> structure:
+           parameter "new_fbamodel_ref" of type "ws_fbamodel_id" (The
+           workspace ID for a FBAModel data object. @id ws
+           KBaseFBA.FBAModel), parameter "new_fba_ref" of type "ws_fba_id"
+           (The workspace ID for a FBA data object. @id ws KBaseFBA.FBA),
+           parameter "number_gapfilled_reactions" of Long, parameter
+           "number_removed_biomass_compounds" of Long
+        """
+        return self._client.call_method(
+            'fba_tools.build_model_from_roles',
+            [params], self._service_ver, context)
+
     def fit_exometabolite_data(self, params, context=None):
         """
         Gapfills a metabolic model to fit input exometabolite data

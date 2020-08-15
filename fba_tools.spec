@@ -567,6 +567,46 @@ module fba_tools {
         Build a genome-scale metabolic model based on annotations in an input genome typed object
     */
     funcdef build_metagenome_metabolic_model(BuildMetagenomeMetabolicModelParams params) returns (BuildMetabolicModelResults) authentication required;
+	
+	typedef structure {
+    	string feature_ref;
+    	float probability;
+    	float coverage;
+    	mapping<string source,string source_term> sources;
+	} FeatureMapping;
+	
+	typedef structure {
+    	mapping<string feature_id,FeatureMapping> features;
+    	int hit_count;
+    	float non_gene_probability;
+    	float non_gene_coverage;
+    	mapping<string source,string source_term> sources;
+	} FunctionMappingData;
+    
+    /* 
+    	Input to model reconstruction
+    */
+    typedef structure {
+        mapping<string rxn_id,mapping<string compartment,FunctionMappingData> > reaction_hash;
+        mapping<string role_id,mapping<string compartment,FunctionMappingData> > function_hash;
+    } ModelReconstructionInput;
+	
+	typedef structure {
+		workspace_name workspace;
+		ModelReconstructionInput roles;
+		media_id media_id;
+		workspace_name media_workspace;
+		fbamodel_id fbamodel_output_id;
+		string model_name;
+		template_id template_id;
+		workspace_name template_workspace;
+		bool save_model;
+    } BuildModelFromRolesParams;
+    
+    /*
+        Build a genome-scale metabolic model based on annotations in an input genome typed object
+    */
+    funcdef build_model_from_roles(BuildModelFromRolesParams params) returns (BuildMetabolicModelResults) authentication required;
 
 	typedef structure {
 		fbamodel_id fbamodel_id;

@@ -701,6 +701,92 @@ sub func_build_metabolic_model {
 	return $output;
 }
 
+sub func_build_model_from_roles {
+	my ($params,$datachannel) = @_;
+	$params = Bio::KBase::utilities::args($params,["workspace","functions","fbamodel_output_id"],{
+		model_name => $params->{fbamodel_output_id},
+		media_id => "Complete",
+		template_id => "GramNegModelTemplateV2",
+		template_workspace => Bio::KBase::utilities::conf("ModelSEED","default_template_workspace"),
+		media_workspace => $params->{workspace},
+		gapfill_model => 1,
+		add_auxotrophy_transporters => 1,
+		atp_production_check => 1,
+		anaerobe => 0,
+		max_objective_limit => 1.2,
+		probability_threshold => 0.8
+	});
+	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
+	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
+	#Translating functions
+	if (defined($params->{functions}->{function_probabilities})) {
+		$params->{functions}->{function_hash} = {};
+		foreach my $function (keys(%{$params->{functions}->{function_probabilities}})) {
+			my $searchrole = Bio::KBase::ObjectAPI::utilities::convertRoleToSearchRole($function);
+			if (defined($template->roleSearchNameHash()->{$searchrole})) {		
+				foreach my $roleid (keys(%{$template->roleSearchNameHash()->{$searchrole}})) {
+					if ($template->roleSearchNameHash()->{$searchrole}->{$roleid}->source() ne "KEGG") {
+						if (!defined($params->{functions}->{function_hash}->{$roleid}->{u})) {
+							$params->{functions}->{function_hash}->{$roleid}->{u} = {
+								hit_count => 0,
+								non_gene_probability => 0,
+								non_gene_coverage => 0,
+								sources => {function => $function}
+							};
+						}
+						my $prob = $params->{functions}->{function_probabilities}->{$function} + $params->{functions}->{function_hash}->{$roleid}->{u}->{non_gene_probability} * $params->{functions}->{function_hash}->{$roleid}->{u}->{hit_count};
+						$params->{functions}->{function_hash}->{$roleid}->{u}->{hit_count}++;
+						$params->{functions}->{function_hash}->{$roleid}->{u}->{non_gene_probability} = $prob/$params->{functions}->{function_hash}->{$roleid}->{u}->{hit_count};
+					}
+				}
+			}
+		}
+	}
+	#Building model with classic template
+	my $mdl = $template->NewBuildModel({
+		probability_threshold => $params->{probability_threshold},
+		modelid => $params->{fbamodel_output_id},
+		function_hash => $params->{functions}->{function_hash},
+		reaction_hash => $params->{functions}->{reaction_hash},
+		no_features => 1
+	});
+	$mdl->name($params->{model_name});
+	#Adding transport reactions
+	if ($params->{add_auxotrophy_transporters} == 1) {
+		Bio::KBase::ObjectAPI::functions::add_auxotrophy_transporters({fbamodel => $mdl});
+	}
+	#Creating HTML report
+	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on input annotations.";
+	if ($params->{atp_production_check} == 1) {
+		my $output = $mdl->EnsureProperATPProduction({
+			anaerobe => $params->{anaerobe},
+			max_objective_limit => $params->{max_objective_limit}
+		});
+	}
+	my $output = {};
+	if ($params->{gapfill_model} == 1) {
+		$output = Bio::KBase::ObjectAPI::functions::func_gapfill_metabolic_model({
+			workspace => $params->{workspace},
+			fbamodel_id => $params->{fbamodel_output_id},
+			fbamodel_output_id => $params->{fbamodel_output_id},
+			media_workspace => $params->{media_workspace},
+			media_id => $params->{media_id},
+			atp_production_check => 1
+		},{fbamodel => $mdl});
+		$htmlreport .= $output->{html_report}." Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p>".Bio::KBase::utilities::gapfilling_html_table()."</div>";
+	} else {
+		#If not gapfilling, then we just save the model directly
+		$output->{number_gapfilled_reactions} = 0;
+		$output->{number_removed_biomass_compounds} = 0;
+		$output->{new_fbamodel_ref} = Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace});
+		#print "\n\n".$fullmodel->toJSON()."\n\n";
+		my $wsmeta = $handler->util_save_object($mdl,$output->{new_fbamodel_ref},{type => "KBaseFBA.FBAModel"});
+		$htmlreport .= " No gapfilling was performed on the model. It is expected that the model will not be capable of producing biomass on any growth condition until gapfilling is run. Model was saved with the name ".$params->{fbamodel_output_id}.". The final model includes ".@{$mdl->modelreactions()}." reactions, ".@{$mdl->modelcompounds()}." compounds, and ".$mdl->gene_count()." genes.</p></div>"
+	}
+	$datachannel->{fbamodel} = $mdl;
+	Bio::KBase::utilities::print_report_message({message => $htmlreport,append => 0,html => 1});
+}
+
 sub func_gapfill_metabolic_model {
 	my ($params,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","fbamodel_id"],{

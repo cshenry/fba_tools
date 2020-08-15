@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
-our $VERSION = '1.7.8';
+our $VERSION = '2.0.0';
 our $GIT_URL = 'ssh://git@github.com/cshenry/fba_tools.git';
-our $GIT_COMMIT_HASH = '8ac05c39c662be1b2856a8af03f8a6be59581921';
+our $GIT_COMMIT_HASH = 'fcefe31979c8d9b3ff1c9b2a6745ca0cd68cbf45';
 
 =head1 NAME
 
@@ -2587,6 +2587,151 @@ sub build_metagenome_metabolic_model
 	my $msg = "Invalid returns passed to build_metagenome_metabolic_model:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'build_metagenome_metabolic_model');
+    }
+    return($return);
+}
+
+
+
+
+=head2 build_model_from_roles
+
+  $return = $obj->build_model_from_roles($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a fba_tools.BuildModelFromRolesParams
+$return is a fba_tools.BuildMetabolicModelResults
+BuildModelFromRolesParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	roles has a value which is a fba_tools.ModelReconstructionInput
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	model_name has a value which is a string
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+	save_model has a value which is a fba_tools.bool
+workspace_name is a string
+ModelReconstructionInput is a reference to a hash where the following keys are defined:
+	reaction_hash has a value which is a reference to a hash where the key is a string and the value is a reference to a hash where the key is a string and the value is a fba_tools.FunctionMappingData
+	function_hash has a value which is a reference to a hash where the key is a string and the value is a reference to a hash where the key is a string and the value is a fba_tools.FunctionMappingData
+FunctionMappingData is a reference to a hash where the following keys are defined:
+	features has a value which is a reference to a hash where the key is a string and the value is a fba_tools.FeatureMapping
+	hit_count has a value which is an int
+	non_gene_probability has a value which is a float
+	non_gene_coverage has a value which is a float
+	sources has a value which is a reference to a hash where the key is a string and the value is a string
+FeatureMapping is a reference to a hash where the following keys are defined:
+	feature_ref has a value which is a string
+	probability has a value which is a float
+	coverage has a value which is a float
+	sources has a value which is a reference to a hash where the key is a string and the value is a string
+media_id is a string
+fbamodel_id is a string
+template_id is a string
+bool is an int
+BuildMetabolicModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+	number_gapfilled_reactions has a value which is an int
+	number_removed_biomass_compounds has a value which is an int
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a fba_tools.BuildModelFromRolesParams
+$return is a fba_tools.BuildMetabolicModelResults
+BuildModelFromRolesParams is a reference to a hash where the following keys are defined:
+	workspace has a value which is a fba_tools.workspace_name
+	roles has a value which is a fba_tools.ModelReconstructionInput
+	media_id has a value which is a fba_tools.media_id
+	media_workspace has a value which is a fba_tools.workspace_name
+	fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+	model_name has a value which is a string
+	template_id has a value which is a fba_tools.template_id
+	template_workspace has a value which is a fba_tools.workspace_name
+	save_model has a value which is a fba_tools.bool
+workspace_name is a string
+ModelReconstructionInput is a reference to a hash where the following keys are defined:
+	reaction_hash has a value which is a reference to a hash where the key is a string and the value is a reference to a hash where the key is a string and the value is a fba_tools.FunctionMappingData
+	function_hash has a value which is a reference to a hash where the key is a string and the value is a reference to a hash where the key is a string and the value is a fba_tools.FunctionMappingData
+FunctionMappingData is a reference to a hash where the following keys are defined:
+	features has a value which is a reference to a hash where the key is a string and the value is a fba_tools.FeatureMapping
+	hit_count has a value which is an int
+	non_gene_probability has a value which is a float
+	non_gene_coverage has a value which is a float
+	sources has a value which is a reference to a hash where the key is a string and the value is a string
+FeatureMapping is a reference to a hash where the following keys are defined:
+	feature_ref has a value which is a string
+	probability has a value which is a float
+	coverage has a value which is a float
+	sources has a value which is a reference to a hash where the key is a string and the value is a string
+media_id is a string
+fbamodel_id is a string
+template_id is a string
+bool is an int
+BuildMetabolicModelResults is a reference to a hash where the following keys are defined:
+	new_fbamodel_ref has a value which is a fba_tools.ws_fbamodel_id
+	new_fba_ref has a value which is a fba_tools.ws_fba_id
+	number_gapfilled_reactions has a value which is an int
+	number_removed_biomass_compounds has a value which is an int
+ws_fbamodel_id is a string
+ws_fba_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+Build a genome-scale metabolic model based on annotations in an input genome typed object
+
+=back
+
+=cut
+
+sub build_model_from_roles
+{
+    my $self = shift;
+    my($params) = @_;
+
+    my @_bad_arguments;
+    (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to build_model_from_roles:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'build_model_from_roles');
+    }
+
+    my $ctx = $fba_tools::fba_toolsServer::CallContext;
+    my($return);
+    #BEGIN build_model_from_roles
+    $params = $self->util_initialize_call($params,$ctx);
+	$return = Bio::KBase::ObjectAPI::functions::func_build_model_from_roles($params);
+	$self->util_finalize_call({
+		output => $return,
+		workspace => $params->{workspace},
+		report_name => $params->{fbamodel_output_id}.".report",
+	});
+    #END build_model_from_roles
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to build_model_from_roles:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'build_model_from_roles');
     }
     return($return);
 }
@@ -8007,6 +8152,163 @@ fbamodel_output_id has a value which is a fba_tools.fbamodel_id
 workspace has a value which is a fba_tools.workspace_name
 gapfill_model has a value which is a fba_tools.bool
 gff_file has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 FeatureMapping
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+feature_ref has a value which is a string
+probability has a value which is a float
+coverage has a value which is a float
+sources has a value which is a reference to a hash where the key is a string and the value is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+feature_ref has a value which is a string
+probability has a value which is a float
+coverage has a value which is a float
+sources has a value which is a reference to a hash where the key is a string and the value is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 FunctionMappingData
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+features has a value which is a reference to a hash where the key is a string and the value is a fba_tools.FeatureMapping
+hit_count has a value which is an int
+non_gene_probability has a value which is a float
+non_gene_coverage has a value which is a float
+sources has a value which is a reference to a hash where the key is a string and the value is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+features has a value which is a reference to a hash where the key is a string and the value is a fba_tools.FeatureMapping
+hit_count has a value which is an int
+non_gene_probability has a value which is a float
+non_gene_coverage has a value which is a float
+sources has a value which is a reference to a hash where the key is a string and the value is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ModelReconstructionInput
+
+=over 4
+
+
+
+=item Description
+
+Input to model reconstruction
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+reaction_hash has a value which is a reference to a hash where the key is a string and the value is a reference to a hash where the key is a string and the value is a fba_tools.FunctionMappingData
+function_hash has a value which is a reference to a hash where the key is a string and the value is a reference to a hash where the key is a string and the value is a fba_tools.FunctionMappingData
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+reaction_hash has a value which is a reference to a hash where the key is a string and the value is a reference to a hash where the key is a string and the value is a fba_tools.FunctionMappingData
+function_hash has a value which is a reference to a hash where the key is a string and the value is a reference to a hash where the key is a string and the value is a fba_tools.FunctionMappingData
+
+
+=end text
+
+=back
+
+
+
+=head2 BuildModelFromRolesParams
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+roles has a value which is a fba_tools.ModelReconstructionInput
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+model_name has a value which is a string
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+save_model has a value which is a fba_tools.bool
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+workspace has a value which is a fba_tools.workspace_name
+roles has a value which is a fba_tools.ModelReconstructionInput
+media_id has a value which is a fba_tools.media_id
+media_workspace has a value which is a fba_tools.workspace_name
+fbamodel_output_id has a value which is a fba_tools.fbamodel_id
+model_name has a value which is a string
+template_id has a value which is a fba_tools.template_id
+template_workspace has a value which is a fba_tools.workspace_name
+save_model has a value which is a fba_tools.bool
 
 
 =end text
