@@ -7,6 +7,7 @@ MAINTAINER KBase Developer
 
 COPY ./cpanfile /kb/module/cpanfile
 WORKDIR /kb/module
+RUN cpanm --reinstall JSON::XS
 RUN cpanm --installdeps .
 
 COPY ./MFAToolkit /kb/module/MFAToolkit
