@@ -330,6 +330,10 @@ sub initialize_call {
 }
 
 sub get_ontology_hash {
+	my ($input) = @_;
+	if (defined($input)) {
+		$ontology_hash = $input;
+	}
 	if (!defined($ontology_hash)) {
 		$ontology_hash = {};
 		my $list = Bio::KBase::utilities::conf("ModelSEED","ontology_map_list");
@@ -350,6 +354,10 @@ sub get_ontology_hash {
 }
 
 sub get_sso_hash {
+	my ($input) = @_;
+	if (defined($input)) {
+		$sso_hash = $input;
+	}
 	if (!defined($sso_hash)) {
 		my $output = $ws_client->get_objects([{
 			workspace => "KBaseOntology",
