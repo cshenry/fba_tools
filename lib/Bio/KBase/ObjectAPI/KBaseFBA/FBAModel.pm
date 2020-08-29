@@ -2174,6 +2174,9 @@ sub merge_models {
 				if ($parameters->{mixed_bag_model} == 1) {
 					$index = 0;
 				}
+				if ($cmps->[$j]->compartmentIndex() == 1) {
+					$index += 20;
+				}
 				$cmpsHash->{$cmps->[$j]->compartment()->id()} = $self->addCompartmentToModel({
 					compartment => $cmps->[$j]->compartment(),
 					pH => 7,
