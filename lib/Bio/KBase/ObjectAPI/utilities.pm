@@ -690,10 +690,11 @@ Description:
 sub convertRoleToSearchRole {
 	my ($rolename) = @_;
 	$rolename = lc($rolename);
-	$rolename =~ s/[\d\-]+\.[\d\-]+\.[\d\-]+\.[\d\-]+//g;
-	$rolename =~ s/\s//g;
-	$rolename =~ s/\#.*$//g;
-	$rolename =~ s/\(ec\)//g;
+	$rolename =~ s/[^a-z0-9]//g;
+	#$rolename =~ s/[\d\-]+\.[\d\-]+\.[\d\-]+\.[\d\-]+//g;
+	#$rolename =~ s/\s//g;
+	#$rolename =~ s/\#.*$//g;
+	#$rolename =~ s/\(ec\)//g;
 	return $rolename;
 }
 
