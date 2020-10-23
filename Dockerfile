@@ -7,7 +7,7 @@ MAINTAINER KBase Developer
 
 COPY ./cpanfile /kb/module/cpanfile
 WORKDIR /kb/module
-RUN cpanm --installdeps .
+RUN cpanm --installdeps -f .
 
 COPY ./MFAToolkit /kb/module/MFAToolkit
 COPY ./data/classifier.txt /kb/module/data/
