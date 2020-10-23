@@ -1822,11 +1822,7 @@ sub createJobDirectory {
 		"Min flux multiplier" => 1,
 		"Max deltaG" => 10000,
 		"max objective limit" => 1.6,
-		"steady state community modeling" => 0,
-		"Unconstrain community biomass abundances" => 1,
-		"Starting flux coefficient" => 2500,
-		"Flux coefficient iterations" => 1,
-		"Flux coefficient step size" => 100
+		"steady state community modeling" => 0
 	};
 	if (defined($self->{"fit phenotype data"})) {
 		$parameters->{"fit phenotype data"} = $self->{"fit phenotype data"};
