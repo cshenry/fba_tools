@@ -94,8 +94,7 @@
       "chenry"
    ],
    "categories" : [
-      "active",
-      "metabolic_modeling"
+      "inactive"
    ],
    "name" : "fit_exometabolite_data",
    "ver" : "1.0.0",
@@ -343,5 +342,5 @@
          "id" : "minimum_target_flux"
       }
    ],
-   "visible" : true
+   "visible" : false
 }

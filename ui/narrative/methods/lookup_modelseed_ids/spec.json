@@ -43,8 +43,7 @@
       "chenry"
    ],
    "categories" : [
-      "active",
-      "metabolic_modeling"
+      "inactive"
    ],
    "name" : "lookup_modelseed_ids",
    "ver" : "1.0.0",
@@ -87,5 +86,5 @@
          "advanced" : false
       }
    ],
-   "visible" : true
+   "visible" : false
 }

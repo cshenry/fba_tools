@@ -4,7 +4,9 @@
    "authors" : ["chenry"],
    "contact" : "http://kbase.us/contact-us/",
    "visible" : false,
-   "categories" : ["inactive","metabolic_modeling"],
+   "categories" : [
+      "inactive"
+   ],
    "widgets" : {
       "input" : null,
       "output" : "kbaseTabTable"

@@ -2751,6 +2751,7 @@ sub func_build_metagenome_metabolic_model {
 	my ($params,$datachannel) = @_;
 	$params = Bio::KBase::utilities::args($params,["workspace","input_ref"],{
 		input_workspace => $params->{workspace},
+		custom_template_id => undef,
 		fbamodel_output_id => undef,
 		media_id => undef,
 		media_workspace => $params->{workspace},
@@ -2838,8 +2839,13 @@ sub func_build_metagenome_metabolic_model {
 		$contig_coverages->{$contig} = $contig_coverages->{$contig}/$totalcoverage;
 	}
 	#Loading metagenome template
-	my $template_trans = Bio::KBase::constants::template_trans();
-	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($template_trans->{metagenome},Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")));
+	my $template;
+	if (defined($params->{custom_template_id)) {
+		$template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{custom_template_id},$params->{workspace}));
+	} else {
+		my $template_trans = Bio::KBase::constants::template_trans();
+		$template = $handler->util_get_object(Bio::KBase::utilities::buildref($template_trans->{metagenome},Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")));
+	}
 	#Parsing through feature array
 	my $function_hash = {};
 	my $reaction_hash = {};

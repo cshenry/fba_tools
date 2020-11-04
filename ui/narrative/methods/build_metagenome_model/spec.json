@@ -31,6 +31,21 @@
          }
       },
       {
+         "text_options" : {
+            "valid_ws_types" : [
+               "KBaseFBA.NewModelTemplate"
+            ]
+         },
+         "field_type" : "text",
+         "allow_multiple" : false,
+         "optional" : true,
+         "default_values" : [
+            ""
+         ],
+         "id" : "custom_template_id",
+         "advanced" : true
+      },
+      {
          "id" : "reads_refs",
          "default_values" : [
             ""
@@ -117,6 +132,10 @@
             {
                "target_property" : "fbamodel_output_id",
                "input_parameter" : "fbamodel_output_id"
+            },
+            {
+               "target_property" : "custom_template_id",
+               "input_parameter" : "custom_template_id"
             },
             {
                "input_parameter" : "gapfill_model",

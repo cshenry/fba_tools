@@ -74,6 +74,18 @@
                   "value" : "auto"
                },
                {
+                  "value" : "old_gramneg",
+                  "ui_name" : "Legacy gram negative",
+                  "display" : "Legacy gram negative",
+                  "id" : "old_gramneg"
+               },
+               {
+                  "id" : "old_grampos",
+                  "value" : "old_grampos",
+                  "ui_name" : "Legacy gram positive",
+                  "display" : "Legacy gram positive"
+               },
+               {
                   "value" : "gramneg",
                   "ui_name" : "Gram negative",
                   "display" : "Gram negative",
@@ -84,12 +96,6 @@
                   "value" : "grampos",
                   "ui_name" : "Gram positive",
                   "display" : "Gram positive"
-               },
-               {
-                  "display" : "Plant",
-                  "ui_name" : "Plant",
-                  "value" : "plant",
-                  "id" : "plant"
                },
                {
                   "display" : "Core metabolism",

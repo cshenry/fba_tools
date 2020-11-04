@@ -3,8 +3,10 @@
    "name" : "predict_metabolite_biosynthesis_pathway",
    "authors" : ["chenry"],
    "contact" : "http://kbase.us/contact-us/",
-   "visible" : true,
-   "categories" : ["active","metabolic_modeling"],
+   "visible" : false,
+   "categories" : [
+      "inactive"
+   ],
    "widgets" : {
       "input" : null,
       "output" : "no-display"

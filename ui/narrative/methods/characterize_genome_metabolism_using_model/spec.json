@@ -5,10 +5,9 @@
       "chenry"
    ],
    "contact" : "http://kbase.us/contact-us/",
-   "visible" : true,
+   "visible" : false,
    "categories" : [
-      "active",
-      "metabolic_modeling"
+      "inactive"
    ],
    "widgets" : {
       "output" : "kbaseTabTable",

@@ -2098,13 +2098,13 @@ sub merge_models {
 	my $self = shift;
 	my $parameters = Bio::KBase::ObjectAPI::utilities::args(["models","fbamodel_output_id"], {mixed_bag_model => 0}, @_);
     my $cmpsHash = {
-		e => $self->addCompartmentToModel({
+		e0 => $self->addCompartmentToModel({
 			compartment => $self->template()->biochemistry()->getObject("compartments","e"),
 			pH => 7,
 			potential => 0,
 			compartmentIndex => 0
 		}),
-		c => $self->addCompartmentToModel({
+		c0 => $self->addCompartmentToModel({
 			compartment => $self->template()->biochemistry()->getObject("compartments","c"),
 			pH => 7,
 			potential => 0,
@@ -2128,10 +2128,10 @@ sub merge_models {
 	my $biomassCompound = $self->template()->getObject("compounds","cpd11416");
 	if ($parameters->{mixed_bag_model} == 0) {
 		my $biocpd = $self->add("modelcompounds",{
-			id => $biomassCompound->id()."_".$cmpsHash->{c}->id(),
+			id => $biomassCompound->id()."_".$cmpsHash->{c0}->id(),
 			compound_ref => $biomassCompound->_reference(),
 			charge => 0,
-			modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{c}->id()
+			modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{c0}->id()
 		});
 		$primbio->add("biomasscompounds",{
 			modelcompound_ref => "~/modelcompounds/id/".$biocpd->id(),
@@ -2169,7 +2169,7 @@ sub merge_models {
 		my $cmps = $model->modelcompartments();
 		print "Loading compartments\n";
 		for (my $j=0; $j < @{$cmps}; $j++) {
-			if ($cmps->[$j]->compartment()->id() ne "e") {
+			if ($cmps->[$j]->id() ne "e0") {
 				my $index = ($i+1);
 				if ($parameters->{mixed_bag_model} == 1) {
 					$index = 0;
@@ -2177,7 +2177,7 @@ sub merge_models {
 				if ($cmps->[$j]->compartmentIndex() == 1) {
 					$index += 20;
 				}
-				$cmpsHash->{$cmps->[$j]->compartment()->id()} = $self->addCompartmentToModel({
+				$cmpsHash->{$cmps->[$j]->id()} = $self->addCompartmentToModel({
 					compartment => $cmps->[$j]->compartment(),
 					pH => 7,
 					potential => 0,
@@ -2195,10 +2195,10 @@ sub merge_models {
 			if ($cpd->id() =~ m/(.+)_([a-zA-Z]\d+)/) {
 				$rootid = $1;
 			}
-			my $comcpd = $self->getObject("modelcompounds",$rootid."_".$cmpsHash->{$cpd->modelcompartment()->compartment()->id()}->id());
+			my $comcpd = $self->getObject("modelcompounds",$rootid."_".$cmpsHash->{$cpd->modelcompartment()->id()}->id());
 			if (!defined($comcpd)) {
 				$comcpd = $self->add("modelcompounds",{
-					id => $rootid."_".$cmpsHash->{$cpd->modelcompartment()->compartment()->id()}->id(),
+					id => $rootid."_".$cmpsHash->{$cpd->modelcompartment()->id()}->id(),
 					compound_ref => $cpd->compound_ref(),
 					charge => $cpd->charge(),
 					formula => $cpd->formula(),
@@ -2207,7 +2207,7 @@ sub merge_models {
 					inchikey => $cpd->inchikey(),
 					dblinks => $cpd->dblinks(),
 					aliases => $cpd->aliases(),
-					modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{$cpd->modelcompartment()->compartment()->id()}->id()
+					modelcompartment_ref => "~/modelcompartments/id/".$cmpsHash->{$cpd->modelcompartment()->id()}->id()
 				});
 			}
 			$translation->{$cpd->id()} = $comcpd->id();
@@ -2227,7 +2227,7 @@ sub merge_models {
 					$rootid = $1;
 				}
 			}
-			my $originalcmpid = $rxn->modelcompartment()->compartment()->id();
+			my $originalcmpid = $rxn->modelcompartment()->id();
 			if ($originalcmpid eq "e0") {
 				$originalcmpid = "c0";
 			}
