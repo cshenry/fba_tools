@@ -50,6 +50,16 @@ parameters :
         placeholder : |
             Growth condition for gapfilling
 
+    custom_template_id :
+        ui-name : |
+            Custom template
+        short-hint : |
+            Select custom template to use to build metagenome model
+        long-hint : |
+            Select custom template to use to build metagenome model
+        placeholder : |
+            Custom template (optional)
+    
     fbamodel_output_id :
         ui-name : |
             Output model
