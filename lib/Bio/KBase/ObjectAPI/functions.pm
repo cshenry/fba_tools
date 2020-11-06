@@ -577,6 +577,9 @@ sub func_build_metabolic_model {
 		source_ontology_list => [],
 		add_auxotrophy_transporters => 1
 	});
+	foreach my $key (keys(%{$params})) {
+		print $key."\t".$params->{$key}."\n";
+	}
 	#Making sure reaction KO list is an array
 	if (defined($params->{source_ontology_list}) && ref($params->{source_ontology_list}) ne "ARRAY") {
 		if (length($params->{source_ontology_list}) > 0) {
