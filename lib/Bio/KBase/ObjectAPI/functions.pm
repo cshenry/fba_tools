@@ -546,6 +546,10 @@ sub add_auxotrophy_transporters {
 
 sub func_build_metabolic_model {
 	my ($params,$datachannel) = @_;
+	foreach my $key (keys(%{$params})) {
+		print $key."\t".$params->{$key}."\n";
+	}
+	print "TEST\n";
 	$params = Bio::KBase::utilities::args($params,["workspace","genome_id"],{
 		fbamodel_output_id => undef,
 		media_id => undef,
