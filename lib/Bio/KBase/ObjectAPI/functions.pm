@@ -570,7 +570,7 @@ sub func_build_metabolic_model {
 		number_of_solutions => 1,
 		max_objective_limit => 1.2,
 		predict_auxotrophy => 0,
-		mode => "new",
+		classic_mode => 0,
 		anaerobe => 0,
 		use_annotated_functions => 1,
 		merge_all_annotations => 0,
@@ -643,7 +643,8 @@ sub func_build_metabolic_model {
 	}
 	#Creating HTML report
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
-	if ($params->{mode} eq "new") {
+	if ($params->{classic_mode} == 0) {
+		print "NEW METHOD\n";
 		my $output = $mdl->EnsureProperATPProduction({
 			anaerobe => $params->{anaerobe},
 			max_objective_limit => $params->{max_objective_limit}
@@ -2840,7 +2841,7 @@ sub func_build_metagenome_metabolic_model {
 	}
 	#Loading metagenome template
 	my $template;
-	if (defined($params->{custom_template_id)) {
+	if (defined($params->{custom_template_id})) {
 		$template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{custom_template_id},$params->{workspace}));
 	} else {
 		my $template_trans = Bio::KBase::constants::template_trans();

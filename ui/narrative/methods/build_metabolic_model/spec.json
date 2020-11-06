@@ -138,11 +138,11 @@
          "id" : "classic_mode",
          "advanced" : true,
          "default_values" : [
-            "new"
+            "0"
          ],
          "checkbox_options" : {
-            "unchecked_value" : "new",
-            "checked_value" : "classic"
+            "unchecked_value" : 0,
+            "checked_value" : 1
          },
          "text_options" : {
             "valid_ws_types" : []
@@ -301,7 +301,7 @@
             },
             {
                "input_parameter" : "classic_mode",
-               "target_property" : "new"
+               "target_property" : "classic_mode"
             },
             {
                "target_property" : "custom_bound_list",
