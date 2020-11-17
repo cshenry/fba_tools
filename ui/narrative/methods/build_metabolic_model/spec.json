@@ -135,7 +135,7 @@
          "field_type" : "checkbox",
          "allow_multiple" : false,
          "optional" : false,
-         "id" : "classic_mode",
+         "id" : "classic",
          "advanced" : true,
          "default_values" : [
             "0"
@@ -300,8 +300,8 @@
                "target_property" : "gapfill_model"
             },
             {
-               "input_parameter" : "classic_mode",
-               "target_property" : "classic_mode"
+               "input_parameter" : "classic",
+               "target_property" : "classic"
             },
             {
                "target_property" : "custom_bound_list",

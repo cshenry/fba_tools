@@ -36,7 +36,7 @@ parameters :
             Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
 
 
-    classic_mode :
+    classic :
         ui-name : |
             Classic mode?
         short-hint : |

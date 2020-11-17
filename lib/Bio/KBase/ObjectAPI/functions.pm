@@ -574,7 +574,7 @@ sub func_build_metabolic_model {
 		number_of_solutions => 1,
 		max_objective_limit => 1.2,
 		predict_auxotrophy => 0,
-		classic_mode => 0,
+		classic => 0,
 		anaerobe => 0,
 		use_annotated_functions => 1,
 		merge_all_annotations => 0,
@@ -650,7 +650,7 @@ sub func_build_metabolic_model {
 	}
 	#Creating HTML report
 	my $htmlreport = Bio::KBase::utilities::style()."<div style=\"height: 200px; overflow-y: scroll;\"><p>A new draft genome-scale metabolic model was constructed based on the annotations in the genome ".$params->{genome_id}.".";
-	if ($params->{classic_mode} == 0) {
+	if ($params->{classic} == 0) {
 		print "NEW METHOD\n";
 		my $output = $mdl->EnsureProperATPProduction({
 			anaerobe => $params->{anaerobe},
@@ -2841,7 +2841,7 @@ sub func_build_metagenome_metabolic_model {
 		   assembly_ref => $params->{input_ref}.";".$object->{assembly_ref}
 		};
 		if ($params->{gene_level_coverage} == 1) {
-			my $filename = Bio::KBase::utilities::conf("fba_tools","scratch")."/GeneSequences.fasta".
+			my $filename = Bio::KBase::utilities::conf("fba_tools","scratch")."/GeneSequences.fasta";
 			open ( my $fh, ">", $filename) || Bio::KBase::ObjectAPI::utilities::error("Failure to open file: $filename, $!");
 		    for (my $i=0; $i < @{$feature_data}; $i++) {
 				print $fh $feature_data->[$i]->{id}."\n";
