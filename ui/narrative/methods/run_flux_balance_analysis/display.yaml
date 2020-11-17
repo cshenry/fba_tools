@@ -73,13 +73,6 @@ parameters :
             Check this box to run FBA on simulated single gene knockouts for all the genes in the model. This will identify genes associated with essential reactions that carry fluxes on a given media condition.
 
 
-    predict_community_composition :
-        ui-name : |
-            Predict community composition
-        short-hint : |
-            For compartmentalized community models consisting of multiple microbial metabolic models in their own compartment - simulate those models and predict their steady state community composition.
-
-
     max_s_uptake :
         ui-name : |
             Max sulfur uptake

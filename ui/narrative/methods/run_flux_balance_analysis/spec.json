@@ -144,23 +144,6 @@
          "id" : "simulate_ko"
       },
       {
-         "advanced" : true,
-         "default_values" : [
-            "0"
-         ],
-         "checkbox_options" : {
-            "checked_value" : 1,
-            "unchecked_value" : 0
-         },
-         "text_options" : {
-            "valid_ws_types" : []
-         },
-         "field_type" : "checkbox",
-         "allow_multiple" : false,
-         "optional" : false,
-         "id" : "predict_community_composition"
-      },
-      {
          "id" : "feature_ko_list",
          "field_type" : "textsubdata",
          "allow_multiple" : false,
