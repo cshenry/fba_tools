@@ -59,6 +59,14 @@ parameters :
             Select custom template to use to build metagenome model
         placeholder : |
             Custom template (optional)
+            
+    gene_level_coverage :
+        ui-name : |
+            Gene level coverage
+        short-hint : |
+            Check this box if you want coverages computed by gene rather than contig - useful when mapping transcriptomic data
+        long-hint : |
+            Check this box if you want coverages computed by gene rather than contig - useful when mapping transcriptomic data
     
     fbamodel_output_id :
         ui-name : |

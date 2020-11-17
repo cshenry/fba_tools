@@ -107,6 +107,23 @@
          "text_options" : {
             "valid_ws_types" : []
          }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "gene_level_coverage",
+         "advanced" : true,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
       }
    ], 
    "behavior" : {
@@ -136,6 +153,10 @@
             {
                "target_property" : "custom_template_id",
                "input_parameter" : "custom_template_id"
+            },
+            {
+               "target_property" : "gene_level_coverage",
+               "input_parameter" : "gene_level_coverage"
             },
             {
                "input_parameter" : "gapfill_model",

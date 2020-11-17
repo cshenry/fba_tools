@@ -2767,6 +2767,7 @@ sub func_build_metagenome_metabolic_model {
 		max_objective_limit => 1.4,
 		minimum_target_flux => undef,
 		contig_coverage_file => undef,
+		gene_level_coverage => 0,
 		rast_probability => 1,
 		other_anno_probability => 0.5,
 		use_kegg => 1,
@@ -2793,12 +2794,20 @@ sub func_build_metagenome_metabolic_model {
 		my $prot = Bio::KBase::ObjectAPI::KBaseGenomes::Feature::translate_seq({},$feature_data->[$i]->{dna_sequence});
 		push(@{$proteins},$prot);
 		if (defined($feature_data->[$i]->{location}->[0]->[0])) {
-			push(@{$contigs},$feature_data->[$i]->{location}->[0]->[0]);
-			$contig_coverages->{$feature_data->[$i]->{location}->[0]->[0]} = 1;
-			$totalcoverage++;
+			if ($params->{gene_level_coverage} == 1) {
+				push(@{$contigs},$feature_data->[$i]->{id});
+				$contig_coverages->{$feature_data->[$i]->{id}} = 0;
+			} else {
+				push(@{$contigs},$feature_data->[$i]->{location}->[0]->[0]);
+				$contig_coverages->{$feature_data->[$i]->{location}->[0]->[0]} = 1;
+				$totalcoverage++;
+			}
 		} else {
 			push(@{$contigs},"");
 		}
+	}
+	if ($totalcoverage == 0) {
+		$totalcoverage = 1;
 	}
 	#Reading the contig coverage file if provided
 	if (defined($params->{contig_coverage_file})) {
@@ -2831,6 +2840,24 @@ sub func_build_metagenome_metabolic_model {
 		   reads => $params->{reads_refs},
 		   assembly_ref => $params->{input_ref}.";".$object->{assembly_ref}
 		};
+		if ($params->{gene_level_coverage} == 1) {
+			my $filename = Bio::KBase::utilities::conf("fba_tools","scratch")."/GeneSequences.fasta".
+			open ( my $fh, ">", $filename) || Bio::KBase::ObjectAPI::utilities::error("Failure to open file: $filename, $!");
+		    for (my $i=0; $i < @{$feature_data}; $i++) {
+				print $fh $feature_data->[$i]->{id}."\n";
+				print $fh $feature_data->[$i]->{dna_sequence}."\n";	
+		    }
+		    close($fh);
+		    my $assembly_client = Bio::KBase::kbaseenv::ac_client();
+   			my $result = $assembly_client->save_assembly_from_fasta({
+   				file => {
+   					path => $filename
+   				},
+   				workspace_name => $params->{workspace},
+   				assembly_name => $object->{id}.".GeneSeqAssembly"
+   			});
+   			$params->{assembly_ref} = $params->{workspace}."/".$object->{id}.".GeneSeqAssembly";
+		}
 		my $readmapper = Bio::KBase::kbaseenv::readmapper_client();
    		my $result = $readmapper->readmapper($params);
    		print Bio::KBase::ObjectAPI::utilities::TOJSON($result)."\n\n";
