@@ -56,7 +56,7 @@
          "allow_multiple" : true,
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseFile.PairedEndLibrary"
+               "KBaseFile.PairedEndLibrary","KBaseFile.SingleEndLibrary"
             ]
          }
       },
@@ -125,7 +125,7 @@
             "valid_ws_types" : []
          }
       }
-   ], 
+   ],
    "behavior" : {
       "service-mapping" : {
          "url" : "",
