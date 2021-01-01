@@ -987,6 +987,8 @@ sub build_multiple_metabolic_models
 		eval {
 			my $output = Bio::KBase::ObjectAPI::functions::func_build_metabolic_model($params);
 		};
+		#Clearing the cache so we don't consume too much RAM
+		$self->util_store()->cache({});
 		if ($@) {
 			print $@."\n";
 			$htmlmessage .= $genomes->[$i]." failed!<br>";

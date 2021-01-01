@@ -8,7 +8,7 @@
 use Bio::KBase::ObjectAPI::Types;
 use DateTime;
 use Data::UUID;
-use JSON::XS;
+use JSON::MultiValueOrdered;
 use Module::Load;
 use Bio::KBase::ObjectAPI::Attribute::Typed;
 use Bio::KBase::ObjectAPI::Exceptions;
@@ -402,8 +402,7 @@ sub toJSON {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([],{pp => 0}, @_);
 	my $data = $self->serializeToDB();
-	my $JSON = JSON::XS->new->utf8(1);
-	$JSON->allow_blessed(1);
+	my $JSON = JSON::MultiValueOrdered->new(allow_blessed=>1,utf8=>1);
 	$JSON->pretty(1) if($args->{pp} == 1);
 	return $JSON->encode($data);
 }

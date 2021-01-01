@@ -3635,7 +3635,12 @@ sub func_run_pickaxe {
 		target_workspace => $params->{workspace},
 		max_new_cpds_per_gen_per_ruleset => 3000,
 		max_hits_to_keep_per_peak => 10,
-		condition => undef
+		condition => undef,
+		json_output_file => undef,
+		html_output_file => undef,
+		rxn_print_limit => 100,
+		cpd_print_limit => 100,
+		include_metabolomics_in_start => 0
 	});
 	#Setting generation if this is the first time calling the function
 	print "Parameters:\n";
@@ -3721,6 +3726,7 @@ sub func_run_pickaxe {
 			if (-e $params->{metabolomics_data}) {
 				$data = Bio::KBase::ObjectAPI::functions::load_matrix($params->{metabolomics_data});
 				$datachannel->{MetabolomicsDBLINKSKey} = "MetabolomicsDataset";
+				$datachannel->{KBaseMetabolomicsObject} = "File:";
 			} else {
 				$datachannel->{KBaseMetabolomicsObject} = Bio::KBase::utilities::buildref($params->{metabolomics_data},$params->{metabolomics_workspace});
 				my $object = $handler->util_get_object($datachannel->{KBaseMetabolomicsObject});
@@ -3973,6 +3979,36 @@ sub func_run_pickaxe {
 				my $rgts = $rxns->[$i]->modelReactionReagents();
 				for (my $j=0; $j < @{$rgts}; $j++) {
 					$cpddatahash->{$rgts->[$j]->modelcompound()->id()}->{rxncount}++;
+				}
+			}
+		}
+		#Adding metabolites to initial compounds if requested
+		if ($params->{include_metabolomics_in_start} == 1 && defined($datachannel->{template_data}->{peaks})) {
+			foreach my $obj (@{$datachannel->{template_data}->{peaks}}) {
+				my $id = $obj->{id};
+				if (!defined($datachannel->{peak_hits}->{all}->{allgen}->{$id})) {
+					my $cpddata = {
+						rxncount => 0,
+						id => $id,
+						name => $obj->{name},
+						charge => 0,
+						formula => $obj->{formula},
+						aliases => [],
+						compound_ref => "~/template/compounds/id/cpd00000",
+						dblinks => {},
+						modelcompartment_ref => "~/modelcompartments/id/c0",
+						string_attributes => {},
+						smiles => $obj->{smiles}
+					};
+					$datachannel->{smileshash}->{$obj->{smiles}}->{model}->{$id} = $cpddata;
+					$input_compounds_with_structure++;
+					$input_ids->{$id} = 1;
+					push(@{$input_model_array},$id."\t".$obj->{smiles});
+					$cpddata->{numerical_attributes}->{generation} = 0;
+					$datachannel->{cpdhash}->{$id} = $cpddata;
+					$datachannel->{cpdhash}->{$id}->{name} =~ s/_[a-z]\d+$//;
+					push(@{$datachannel->{fbamodel}->{modelcompounds}},$cpddata);
+					Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,0,"model",0,$datachannel->{KBaseMetabolomicsObject});
 				}
 			}
 		}
@@ -4421,7 +4457,7 @@ sub func_run_pickaxe {
 					$ruleshash->{$1}->{$2}++;
 				}
 			}
-			if (@{$datachannel->{template_data}->{reactions}} < 100) {
+			if (@{$datachannel->{template_data}->{reactions}} < $params->{rxn_print_limit}) {
 				push(@{$datachannel->{template_data}->{reactions}},{
 					id => $rxn->id(),
 					equation => $rxn->definition(),
@@ -4489,7 +4525,7 @@ sub func_run_pickaxe {
 				peaks => $peaks,
 				generation => $generation
 			};
-			if (@{$datachannel->{template_data}->{compounds}} < 100) {
+			if (@{$datachannel->{template_data}->{compounds}} < $params->{cpd_print_limit}) {
 			push(@{$datachannel->{template_data}->{compounds}},$cpddata);
 			}
 		}
@@ -4550,14 +4586,18 @@ sub func_run_pickaxe {
 				}
 			}
 		}
-		Bio::KBase::ObjectAPI::utilities::PRINTFILE("/Users/chenry/Dropbox/workspace/KBase/PickaxeDev/testout.json",[Bio::KBase::ObjectAPI::utilities::TOJSON($datachannel->{template_data},1)]);
+		if (defined($params->{json_output_file})) {
+			Bio::KBase::ObjectAPI::utilities::PRINTFILE($params->{json_output_file},[Bio::KBase::ObjectAPI::utilities::TOJSON($datachannel->{template_data},1)]);
+		}
 		my $string;
 		Bio::KBase::Templater::render_template(
 			Bio::KBase::utilities::conf("fba_tools","pickaxe_template"),
 			{ data => $datachannel->{template_data} },
 			\$string,
 		);
-		Bio::KBase::ObjectAPI::utilities::PRINTFILE("/Users/chenry/Dropbox/workspace/KBase/PickaxeDev/report.html",[$string]);
+		if (defined($params->{html_output_file})) {
+			Bio::KBase::ObjectAPI::utilities::PRINTFILE($params->{html_output_file},[$string]);
+		}
 		Bio::KBase::utilities::print_report_message( {
 			message => $string,
 			append  => 0,
