@@ -4129,14 +4129,14 @@ sub func_run_pickaxe {
 						$formula = $seedhash->{$baseid}->{neutral_formula};
 						$smiles = $seedhash->{$baseid}->{smiles};
 						$inchikey = $seedhash->{$baseid}->{inchikey};
-					} elsif (defined($datachannel->{inchihash}->{$inchikey})) {
-						$type = "inchimatch";
-						$dbhits->{inchi}++;
-						$id = $datachannel->{inchihash}->{$inchikey}->{id};
-						$name = $datachannel->{inchihash}->{$inchikey}->{name};
-						$charge = $datachannel->{inchihash}->{$inchikey}->{charge};
-						$formula = $datachannel->{inchihash}->{$inchikey}->{formula};
-						$smiles = $datachannel->{inchihash}->{$inchikey}->{smiles};
+#					} elsif (defined($datachannel->{inchihash}->{$inchikey})) {
+#						$type = "inchimatch";
+#						$dbhits->{inchi}++;
+#						$id = $datachannel->{inchihash}->{$inchikey}->{id};
+#						$name = $datachannel->{inchihash}->{$inchikey}->{name};
+#						$charge = $datachannel->{inchihash}->{$inchikey}->{charge};
+#						$formula = $datachannel->{inchihash}->{$inchikey}->{formula};
+#						$smiles = $datachannel->{inchihash}->{$inchikey}->{smiles};
 					} elsif (defined($datachannel->{smileshash}->{$smiles}->{model})) {
 						$type = "modelsmiles";
 						$dbhits->{model}++;
@@ -4169,6 +4169,14 @@ sub func_run_pickaxe {
 						$charge = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{charge};
 						$formula = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{formula};
 						$inchikey = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{inchikey};
+					} elsif (defined($datachannel->{smileshash}->{$smiles}->{pickax})) {
+						$type = "pickax";
+						my $keylist = [keys(%{$datachannel->{smileshash}->{$smiles}->{pickax}})];
+						$id = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{id};
+						$name = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{name};
+						$charge = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{charge};
+						$formula = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{formula};
+						$inchikey = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{inchikey};
 					}
 					$id =~ s/_[a-z]\d+$/_c0/;
 					if (!defined($smiles)) {
