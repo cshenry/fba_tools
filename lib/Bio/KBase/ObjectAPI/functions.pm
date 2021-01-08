@@ -546,10 +546,6 @@ sub add_auxotrophy_transporters {
 
 sub func_build_metabolic_model {
 	my ($params,$datachannel) = @_;
-	foreach my $key (keys(%{$params})) {
-		print $key."\t".$params->{$key}."\n";
-	}
-	print "TEST\n";
 	$params = Bio::KBase::utilities::args($params,["workspace","genome_id"],{
 		fbamodel_output_id => undef,
 		media_id => undef,
@@ -581,9 +577,6 @@ sub func_build_metabolic_model {
 		source_ontology_list => [],
 		add_auxotrophy_transporters => 1
 	});
-	foreach my $key (keys(%{$params})) {
-		print $key."\t".$params->{$key}."\n";
-	}
 	#Making sure reaction KO list is an array
 	if (defined($params->{source_ontology_list}) && ref($params->{source_ontology_list}) ne "ARRAY") {
 		if (length($params->{source_ontology_list}) > 0) {
@@ -600,6 +593,10 @@ sub func_build_metabolic_model {
 	}
 	#Retrieving template
 	my $template_trans = Bio::KBase::constants::template_trans();
+	if ($params->{template_id} eq "core") {
+		$params->{classic} = 1;
+		$params->{add_auxotrophy_transporters} = 0;
+	}
 	if (defined($template_trans->{$params->{template_id}})) {
 		if ($template_trans->{$params->{template_id}} eq "auto") {
 			$handler->util_log("Classifying genome in order to select template.");
@@ -3003,9 +3000,6 @@ sub func_build_metagenome_metabolic_model {
 		reaction_hash => $reaction_hash,
 		modelid => $params->{fbamodel_output_id}
 	});
-	if ($coverage_data == 1) {
-		$mdl->contig_coverages($contig_coverages);
-	}
 	$mdl->type("Metagenome");
 	$mdl->genome_ref("PlantSEED/Empty");
 	$mdl->EnsureProperATPProduction({
@@ -3095,59 +3089,59 @@ sub func_run_model_chacterization_pipeline {
 		$datachannel->{fbamodel}->attributes()->{auxotrophy} = {};
 	}
 	#Propagating coverage from input metagenome object
-	if (defined($params->{metagenome_model_id})) {
-		my $metamodel = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metagenome_model_id},$params->{metagenome_model_workspace}));
-		if (!defined($metamodel->contig_coverages())) {
-			print "Input metagenome model does not include coverage information, so coverages cannot be computed for this metagenome assembled genome.\n";	
-		} else {
-			my $covhash = $metamodel->contig_coverages();
-			if ($params->{coverage_propagation} eq "mag") {
-				my $totallength = 0;
-				my $magcoverage = 0;
-				my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($datachannel->{fbamodel}->genome()->assembly_ref(),$params->{input_workspace}));
-				my $allfound = 1;
-				foreach my $contigid (keys(%{$assembly_object->{contigs}})) {
-					$totallength += $assembly_object->{contigs}->{$contigid}->{"length"};
-					if (defined($covhash->{$contigid})) {
-						$magcoverage += $assembly_object->{contigs}->{$contigid}->{"length"}*$covhash->{$contigid};
-					} else {
-						$allfound = 0;
-					}
-				}
-				if ($allfound == 1) {
-					$magcoverage = $magcoverage/$totallength;
-					my $rxns = $datachannel->{fbamodel}->modelreactions();
-					for (my $i=0; $i < @{$rxns}; $i++) {
-						my $proteins = $rxns->[$i]->modelReactionProteins();
-						my $count = @{$proteins};
-						$rxns->[$i]->coverage($count*$magcoverage);
-					}
-				} else {
-					print "MAG contains one or more contigs that are not included in the metagenome model!\n";
-				}
-			} else {
-				my $ftrs = $datachannel->{fbamodel}->genome()->features();
-				my $gene_coverages = {};
-				my $allfound = 1;
-				for (my $i=0; $i < @{$ftrs}; $i++) {
-					my $contig = $ftrs->[$i]->location()->[0]->[0];
-					if (defined($covhash->{$contig})) {
-						$gene_coverages->{$ftrs->[$i]->id()} = $covhash->{$contig};
-					} else {
-						$allfound = 0;
-					}
-				}
-				if ($allfound == 1) {
-					my $rxns = $datachannel->{fbamodel}->modelreactions();
-					for (my $i=0; $i < @{$rxns}; $i++) {
-						$rxns->[$i]->compute_reaction_coverage_from_gene_coverage($gene_coverages);
-					}
-				} else {
-					print "MAG contains one or more contigs that are not included in the metagenome model!\n";
-				}
-			}
-		}
-	}
+#	if (defined($params->{metagenome_model_id})) {
+#		my $metamodel = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{metagenome_model_id},$params->{metagenome_model_workspace}));
+#		if (!defined($metamodel->contig_coverages())) {
+#			print "Input metagenome model does not include coverage information, so coverages cannot be computed for this metagenome assembled genome.\n";	
+#		} else {
+#			my $covhash = $metamodel->contig_coverages();
+#			if ($params->{coverage_propagation} eq "mag") {
+#				my $totallength = 0;
+#				my $magcoverage = 0;
+#				my $assembly_object = $handler->util_get_object(Bio::KBase::utilities::buildref($datachannel->{fbamodel}->genome()->assembly_ref(),$params->{input_workspace}));
+#				my $allfound = 1;
+#				foreach my $contigid (keys(%{$assembly_object->{contigs}})) {
+#					$totallength += $assembly_object->{contigs}->{$contigid}->{"length"};
+#					if (defined($covhash->{$contigid})) {
+#						$magcoverage += $assembly_object->{contigs}->{$contigid}->{"length"}*$covhash->{$contigid};
+#					} else {
+#						$allfound = 0;
+#					}
+#				}
+#				if ($allfound == 1) {
+#					$magcoverage = $magcoverage/$totallength;
+#					my $rxns = $datachannel->{fbamodel}->modelreactions();
+#					for (my $i=0; $i < @{$rxns}; $i++) {
+#						my $proteins = $rxns->[$i]->modelReactionProteins();
+#						my $count = @{$proteins};
+#						$rxns->[$i]->coverage($count*$magcoverage);
+#					}
+#				} else {
+#					print "MAG contains one or more contigs that are not included in the metagenome model!\n";
+#				}
+#			} else {
+#				my $ftrs = $datachannel->{fbamodel}->genome()->features();
+#				my $gene_coverages = {};
+#				my $allfound = 1;
+#				for (my $i=0; $i < @{$ftrs}; $i++) {
+#					my $contig = $ftrs->[$i]->location()->[0]->[0];
+#					if (defined($covhash->{$contig})) {
+#						$gene_coverages->{$ftrs->[$i]->id()} = $covhash->{$contig};
+#					} else {
+#						$allfound = 0;
+#					}
+#				}
+#				if ($allfound == 1) {
+#					my $rxns = $datachannel->{fbamodel}->modelreactions();
+#					for (my $i=0; $i < @{$rxns}; $i++) {
+#						$rxns->[$i]->compute_reaction_coverage_from_gene_coverage($gene_coverages);
+#					}
+#				} else {
+#					print "MAG contains one or more contigs that are not included in the metagenome model!\n";
+#				}
+#			}
+#		}
+#	}
 	#Instantiating attribute data
 	my $attributes = {
 		pathways => {},
@@ -3809,7 +3803,7 @@ sub func_run_pickaxe {
 			};
 			$cpddata->{$cpdid} = $data;
 			if (defined($seedhash->{$cpdid}->{smiles})) {
-				$datachannel->{smileshash}->{$seedhash->{$cpdid}->{smiles}}->{seed}->{$cpdid} = $data;
+				$datachannel->{smileshash}->{Bio::KBase::utilities::remove_smiles_charge($seedhash->{$cpdid}->{smiles})}->{seed}->{$cpdid} = $data;
 				$data->{smiles} = $seedhash->{$cpdid}->{smiles};
 				if (defined($seedhash->{$cpdid}->{inchikey}) && !defined($datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}})) {
 					$data->{inchikey} = $seedhash->{$cpdid}->{inchikey};
@@ -3904,9 +3898,7 @@ sub func_run_pickaxe {
 						if ($cpd->{id} =~ m/(cpd\d+)/) {
 							$cpdref = $1;
 						}
-						$input_ids->{$cpd->{id}} = 1;
-						push(@{$input_model_array},$cpd->{id}."\t".$cpd->{smiles});
-						$datachannel->{smileshash}->{$cpd->{smiles}}->{model}->{$cpd->{id}} = $cpd;
+						$datachannel->{smileshash}->{Bio::KBase::utilities::remove_smiles_charge($cpd->{smiles})}->{model}->{$cpd->{id}} = $cpd;
 						$datachannel->{cpdhash}->{$cpd->{id}} = {
 							id => $cpd->{id},
 							name => $cpd->{id},
@@ -3920,7 +3912,6 @@ sub func_run_pickaxe {
 							string_attributes => {}
 						};
 						$datachannel->{cpdhash}->{$cpd->{id}}->{name} =~ s/_[a-z]\d+$//;
-						$datachannel->{modelids}->{$cpd->{id}} = 1;
 						push(@{$datachannel->{fbamodel}->{modelcompounds}},$datachannel->{cpdhash}->{$cpd->{id}});
 					}
 				}
@@ -3955,15 +3946,11 @@ sub func_run_pickaxe {
 						$cpddatahash->{$id}->{inchikey} = $cpds->[$i]->inchikey();
 					} else {
 						$cpddatahash->{$id}->{smiles} = $cpds->[$i]->smiles();
-						$datachannel->{smileshash}->{$cpds->[$i]->smiles()}->{model}->{$id} = $cpddatahash->{$id};
+						$datachannel->{smileshash}->{Bio::KBase::utilities::remove_smiles_charge($cpds->[$i]->smiles())}->{model}->{$id} = $cpddatahash->{$id};
 						if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
 							$cpddatahash->{$id}->{inchikey} = $cpds->[$i]->inchikey();
 							$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$id} = $cpddatahash->{$id};
 						}
-						$input_compounds_with_structure++;
-						$input_ids->{$id} = 1;
-						$datachannel->{modelids}->{$id} = 1;
-						push(@{$input_model_array},$id."\t".$cpds->[$i]->smiles());
 						$cpddatahash->{$id}->{numerical_attributes}->{generation} = 0;
 						$datachannel->{cpdhash}->{$id} = $cpddatahash->{$id};
 						$datachannel->{cpdhash}->{$id}->{name} =~ s/_[a-z]\d+$//;
@@ -3980,6 +3967,23 @@ sub func_run_pickaxe {
 				for (my $j=0; $j < @{$rgts}; $j++) {
 					$cpddatahash->{$rgts->[$j]->modelcompound()->id()}->{rxncount}++;
 				}
+			}
+		}
+		#Creating input file only with unique smiles with highest existing rxncounts
+		foreach my $smiles (keys(%{$datachannel->{smileshash}})) {
+			if (defined($datachannel->{smileshash}->{model})) {
+				my $highestrxn;
+				my $bestcpd;
+				foreach my $modelid (keys(%{$datachannel->{smileshash}->{model}})) {
+					if (!defined($highestrxn) || $highestrxn < $datachannel->{smileshash}->{model}->{$modelid}->{rxncount}) {
+						$bestcpd = $modelid;
+						$highestrxn = $datachannel->{smileshash}->{model}->{$modelid}->{rxncount};
+					}
+				}
+				push(@{$input_model_array},$bestcpd."\t".$datachannel->{smileshash}->{model}->{$bestcpd}->{smiles});
+				$input_compounds_with_structure++;
+				$input_ids->{$bestcpd} = 1;
+				$datachannel->{modelids}->{$bestcpd} = 1;
 			}
 		}
 		#Adding metabolites to initial compounds if requested
@@ -4000,7 +4004,7 @@ sub func_run_pickaxe {
 						string_attributes => {},
 						smiles => $obj->{smiles}
 					};
-					$datachannel->{smileshash}->{$obj->{smiles}}->{model}->{$id} = $cpddata;
+					$datachannel->{smileshash}->{Bio::KBase::utilities::remove_smiles_charge($obj->{smiles})}->{model}->{$id} = $cpddata;
 					$input_compounds_with_structure++;
 					$input_ids->{$id} = 1;
 					push(@{$input_model_array},$id."\t".$obj->{smiles});

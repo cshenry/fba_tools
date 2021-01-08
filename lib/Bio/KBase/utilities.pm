@@ -798,6 +798,12 @@ sub neutralize_formula {
 	return $formula;
 }
 
+sub remove_smiles_charge {
+	my $smiles = shift;
+	$smiles =~ s/[\[\]\+\-]//g;
+	return $smiles;
+}
+
 sub nameToSearchname {
 	my ($InName) = @_;
 	my $OriginalName = $InName;
