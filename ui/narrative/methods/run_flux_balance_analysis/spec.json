@@ -218,7 +218,7 @@
          }
       },
       {
-         "allow_multiple" : true,
+         "allow_multiple" : false,
          "optional" : true,
          "field_type" : "textsubdata",
          "id" : "media_supplement_list",
@@ -246,7 +246,7 @@
                   "modelcompounds/[*]/name"
                ]
             },
-            "multiselection" : false
+            "multiselection" : true
          }
       },
       {

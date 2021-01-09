@@ -223,7 +223,7 @@
       {
          "id" : "media_supplement_list",
          "optional" : true,
-         "allow_multiple" : true,
+         "allow_multiple" : false,
          "field_type" : "textsubdata",
          "textsubdata_options" : {
             "allow_custom" : false,
@@ -243,7 +243,7 @@
                ],
                "description_template" : "- {{name}}"
             },
-            "multiselection" : false
+            "multiselection" : true
          },
          "text_options" : {
             "valid_ws_types" : []
