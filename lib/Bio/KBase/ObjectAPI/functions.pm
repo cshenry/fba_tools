@@ -4004,9 +4004,9 @@ sub func_run_pickaxe {
 						$cpddata->{inchikey} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{inchikey};
 					}
 					$datachannel->{cpdhash}->{$id} = $cpddata;
-					$datachannel->{smileshash}->{$smiles}->{peak_in}->{$id} = $cpddata;
+					$datachannel->{smileshash}->{$smiles}->{model}->{$id} = $cpddata;
 					push(@{$datachannel->{fbamodel}->{modelcompounds}},$cpddata);
-					Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,0,"model",0,$datachannel->{KBaseMetabolomicsObject});
+					Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,0,"peak_in",0,$datachannel->{KBaseMetabolomicsObject});
 				}
 			}
 		}
@@ -4014,16 +4014,16 @@ sub func_run_pickaxe {
 		foreach my $smiles (keys(%{$datachannel->{smileshash}})) {
 			my $types = ["model"];
 			foreach my $type (@{$types}) { 
-				if (defined($datachannel->{smileshash}->{$type})) {
+				if (defined($datachannel->{smileshash}->{$smiles}->{$type})) {
 					my $highestrxn;
 					my $bestcpd;
-					foreach my $modelid (keys(%{$datachannel->{smileshash}->{$type}})) {
-						if (!defined($highestrxn) || $highestrxn < $datachannel->{smileshash}->{$type}->{$modelid}->{rxncount}) {
+					foreach my $modelid (keys(%{$datachannel->{smileshash}->{$smiles}->{$type}})) {
+						if (!defined($highestrxn) || $highestrxn < $datachannel->{smileshash}->{$smiles}->{$type}->{$modelid}->{rxncount}) {
 							$bestcpd = $modelid;
-							$highestrxn = $datachannel->{smileshash}->{$type}->{$modelid}->{rxncount};
+							$highestrxn = $datachannel->{smileshash}->{$smiles}->{$type}->{$modelid}->{rxncount};
 						}
 					}
-					push(@{$input_model_array},$bestcpd."\t".$datachannel->{smileshash}->{$type}->{$bestcpd}->{smiles});
+					push(@{$input_model_array},$bestcpd."\t".$datachannel->{smileshash}->{$smiles}->{$type}->{$bestcpd}->{smiles});
 					$input_compounds_with_structure++;
 					$input_ids->{$bestcpd} = 1;
 					$datachannel->{modelids}->{$bestcpd} = 1;
