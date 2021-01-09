@@ -308,6 +308,9 @@ sub util_build_fba {
 			$fbaobj->addLinkArrayItem("reactionKOs",$rxnObj);
 		}
 	}
+	if (ref($params->{media_supplement_list}) ne 'ARRAY') {
+		$params->{media_supplement_list} = [split(/[\n;,\|]+/,$params->{media_supplement_list})];
+	}
 	foreach my $compound (@{$params->{media_supplement_list}}) {
 		my $cpdObj = $params->{model}->searchForCompound($compound);
 		if (defined($cpdObj)) {
