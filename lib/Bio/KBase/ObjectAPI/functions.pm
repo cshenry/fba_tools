@@ -3887,7 +3887,6 @@ sub func_run_pickaxe {
 				if (!defined($cpd->{smiles}) || length($cpd->{smiles}) == 0) {
 					push(@{$input_compounds_with_no_structure},$cpd->{id}."\t".$cpd->{name});
 				} else {
-					$input_compounds_with_structure++;
 					if ($cpd->{id} =~ m/_[a-z]\d+$/) {
 						$cpd->{id} =~ s/_[a-z]\d+$/_c0/;
 					} else {
@@ -3934,6 +3933,7 @@ sub func_run_pickaxe {
 						aliases => [],
 						compound_ref => $cpds->[$i]->compound_ref(),
 						dblinks => {},
+						numerical_attributes => {generation => 0},
 						modelcompartment_ref => "~/modelcompartments/id/c0",
 						string_attributes => {}
 					};
@@ -3951,7 +3951,6 @@ sub func_run_pickaxe {
 							$cpddatahash->{$id}->{inchikey} = $cpds->[$i]->inchikey();
 							$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$id} = $cpddatahash->{$id};
 						}
-						$cpddatahash->{$id}->{numerical_attributes}->{generation} = 0;
 						$datachannel->{cpdhash}->{$id} = $cpddatahash->{$id};
 						$datachannel->{cpdhash}->{$id}->{name} =~ s/_[a-z]\d+$//;
 						push(@{$datachannel->{fbamodel}->{modelcompounds}},$cpddatahash->{$id});
@@ -3969,28 +3968,12 @@ sub func_run_pickaxe {
 				}
 			}
 		}
-		#Creating input file only with unique smiles with highest existing rxncounts
-		foreach my $smiles (keys(%{$datachannel->{smileshash}})) {
-			if (defined($datachannel->{smileshash}->{model})) {
-				my $highestrxn;
-				my $bestcpd;
-				foreach my $modelid (keys(%{$datachannel->{smileshash}->{model}})) {
-					if (!defined($highestrxn) || $highestrxn < $datachannel->{smileshash}->{model}->{$modelid}->{rxncount}) {
-						$bestcpd = $modelid;
-						$highestrxn = $datachannel->{smileshash}->{model}->{$modelid}->{rxncount};
-					}
-				}
-				push(@{$input_model_array},$bestcpd."\t".$datachannel->{smileshash}->{model}->{$bestcpd}->{smiles});
-				$input_compounds_with_structure++;
-				$input_ids->{$bestcpd} = 1;
-				$datachannel->{modelids}->{$bestcpd} = 1;
-			}
-		}
 		#Adding metabolites to initial compounds if requested
 		if ($params->{include_metabolomics_in_start} == 1 && defined($datachannel->{template_data}->{peaks})) {
 			foreach my $obj (@{$datachannel->{template_data}->{peaks}}) {
 				my $id = $obj->{id};
-				if (!defined($datachannel->{peak_hits}->{all}->{allgen}->{$id})) {
+				my $smiles = Bio::KBase::utilities::remove_smiles_charge($obj->{smiles});
+				if (!defined($datachannel->{smileshash}->{$smiles})) {
 					my $cpddata = {
 						rxncount => 0,
 						id => $id,
@@ -4002,17 +3985,48 @@ sub func_run_pickaxe {
 						dblinks => {},
 						modelcompartment_ref => "~/modelcompartments/id/c0",
 						string_attributes => {},
-						smiles => $obj->{smiles}
+						numerical_attributes => {generation => 0},
+						smiles => $smiles
 					};
-					$datachannel->{smileshash}->{Bio::KBase::utilities::remove_smiles_charge($obj->{smiles})}->{model}->{$id} = $cpddata;
-					$input_compounds_with_structure++;
-					$input_ids->{$id} = 1;
-					push(@{$input_model_array},$id."\t".$obj->{smiles});
-					$cpddata->{numerical_attributes}->{generation} = 0;
+					if (defined($datachannel->{smileshash}->{$smiles}->{seed})) {
+						my $best_rxn_score;
+						my $best_cpd;
+						foreach my $cpd (keys(%{$datachannel->{smileshash}->{$smiles}->{seed}})) {
+							if (!defined($best_cpd) || $datachannel->{smileshash}->{$smiles}->{seed}->{$cpd}->{rxncount}) {
+								$best_cpd = $cpd;
+								$best_rxn_score = $datachannel->{smileshash}->{$smiles}->{seed}->{$cpd}->{rxncount};
+							}
+						}
+						$cpddata->{id} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{id};
+						$cpddata->{name} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{name};
+						$cpddata->{charge} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{charge};
+						$cpddata->{formula} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{formula};
+						$cpddata->{inchikey} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{inchikey};
+					}
 					$datachannel->{cpdhash}->{$id} = $cpddata;
-					$datachannel->{cpdhash}->{$id}->{name} =~ s/_[a-z]\d+$//;
+					$datachannel->{smileshash}->{$smiles}->{peak_in}->{$id} = $cpddata;
 					push(@{$datachannel->{fbamodel}->{modelcompounds}},$cpddata);
 					Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,0,"model",0,$datachannel->{KBaseMetabolomicsObject});
+				}
+			}
+		}
+		#Creating input file only with unique smiles with highest existing rxncounts
+		foreach my $smiles (keys(%{$datachannel->{smileshash}})) {
+			my $types = ["model"];
+			foreach my $type (@{$types}) { 
+				if (defined($datachannel->{smileshash}->{$type})) {
+					my $highestrxn;
+					my $bestcpd;
+					foreach my $modelid (keys(%{$datachannel->{smileshash}->{$type}})) {
+						if (!defined($highestrxn) || $highestrxn < $datachannel->{smileshash}->{$type}->{$modelid}->{rxncount}) {
+							$bestcpd = $modelid;
+							$highestrxn = $datachannel->{smileshash}->{$type}->{$modelid}->{rxncount};
+						}
+					}
+					push(@{$input_model_array},$bestcpd."\t".$datachannel->{smileshash}->{$type}->{$bestcpd}->{smiles});
+					$input_compounds_with_structure++;
+					$input_ids->{$bestcpd} = 1;
+					$datachannel->{modelids}->{$bestcpd} = 1;
 				}
 			}
 		}
@@ -4096,7 +4110,8 @@ sub func_run_pickaxe {
 					}
 					my $name;
 					my $inchikey = $array->[5];
-					my $smiles = $array->[6];
+					my $truesmiles = $array->[6];
+					my $smiles = Bio::KBase::utilities::remove_smiles_charge($truesmiles); 
 					my $charge = $array->[4];
 					my $formula = $array->[3];
 					my $type = "pickax";
@@ -4142,7 +4157,7 @@ sub func_run_pickaxe {
 #						$formula = $datachannel->{inchihash}->{$inchikey}->{formula};
 #						$smiles = $datachannel->{inchihash}->{$inchikey}->{smiles};
 					} elsif (defined($datachannel->{smileshash}->{$smiles}->{model})) {
-						$type = "modelsmiles";
+						$type = "model";
 						$dbhits->{model}++;
 						my $best_rxn_score;
 						my $best_cpd;
@@ -4158,7 +4173,7 @@ sub func_run_pickaxe {
 						$formula = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{formula};
 						$inchikey = $datachannel->{smileshash}->{$smiles}->{model}->{$best_cpd}->{inchikey};
 					} elsif (defined($datachannel->{smileshash}->{$smiles}->{seed})) {
-						$type = "seedsmiles";
+						$type = "seed";
 						$dbhits->{seed}++;
 						my $best_rxn_score;
 						my $best_cpd;
@@ -4251,7 +4266,7 @@ sub func_run_pickaxe {
 					if (!defined($datachannel->{cpdhash}->{$id})) {
 						$cpddata->{formula} = $formula;
 						$datachannel->{cpdhash}->{$id} = $cpddata;
-						if (defined($datachannel->{targethash}->{$cpddata->{smiles}}) ||
+						if (defined($datachannel->{targethash}->{$smiles}) ||
 							$array->[1] eq "Coreactant" || defined($input_ids->{$id}) ||
 							($params->{keep_seed_hits} == 1 && $id =~ /cpd\d+/) ||
 							($params->{keep_metabolomic_hits} == 1 && defined($cpddata->{dblinks}->{$datachannel->{MetabolomicsDBLINKSKey}}) && !defined($cpddata->{numerical_attributes}->{redundant_hit}))) {
