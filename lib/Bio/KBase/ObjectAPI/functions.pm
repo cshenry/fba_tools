@@ -3991,7 +3991,7 @@ sub func_run_pickaxe {
 						modelcompartment_ref => "~/modelcompartments/id/c0",
 						string_attributes => {},
 						numerical_attributes => {generation => 0},
-						smiles => $smiles
+						smiles => $obj->{smiles}
 					};
 					if (defined($datachannel->{smileshash}->{$smiles}->{seed})) {
 						my $best_rxn_score;
@@ -4007,6 +4007,7 @@ sub func_run_pickaxe {
 						$cpddata->{charge} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{charge};
 						$cpddata->{formula} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{formula};
 						$cpddata->{inchikey} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{inchikey};
+						$cpddata->{smiles} = $datachannel->{smileshash}->{$smiles}->{seed}->{$best_cpd}->{smiles};
 					}
 					$datachannel->{cpdhash}->{$id} = $cpddata;
 					$datachannel->{smileshash}->{$smiles}->{model}->{$id} = $cpddata;
@@ -4233,7 +4234,7 @@ sub func_run_pickaxe {
 						name => $name,
 						charge => $charge,
 						formula => $nonneutral_formula,
-						smiles => $smiles,
+						smiles => $truesmiles,
 						inchikey => $inchikey,
 						aliases => [],
 						compound_ref => "~/template/compounds/id/",
@@ -4252,6 +4253,8 @@ sub func_run_pickaxe {
 					}
 					if (defined($smiles) && !defined($datachannel->{smileshash}->{$smiles}->{$type}->{$id})) {
 						$datachannel->{smileshash}->{$smiles}->{$type}->{$id} = $cpddata;
+						#Checking that the new generated compound if a metabolomics hit
+						Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,$datachannel->{currentgen},$ruleset,0,$datachannel->{KBaseMetabolomicsObject},$params->{max_hits_to_keep_per_peak});
 					}
 					if (defined($inchikey) &&  !defined($datachannel->{inchihash}->{$inchikey})) {
 						$datachannel->{inchihash}->{$inchikey} = $datachannel->{smileshash}->{$smiles}->{$type}->{$id};
@@ -4260,8 +4263,6 @@ sub func_run_pickaxe {
 					$cpdid_translation->{$original_id} = $id;
 					#Adding the compound to the model
 					$datachannel->{rulesetcpds}->{$ruleset}->{$id} = 1;
-					#Checking that the generated compound if a metabolomics hit
-					Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,$datachannel->{currentgen},$ruleset,0,$datachannel->{KBaseMetabolomicsObject},$params->{max_hits_to_keep_per_peak});
 					$cpddata->{formula} = $formula;
 					if ($id =~ /(cpd\d+)/) {
 						$cpddata->{compound_ref} = $cpddata->{compound_ref}.$1;

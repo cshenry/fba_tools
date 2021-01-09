@@ -800,7 +800,8 @@ sub neutralize_formula {
 
 sub remove_smiles_charge {
 	my $smiles = shift;
-	$smiles =~ s/[\[\]\+\-]//g;
+	$smiles =~ s/H\d*\+*\]//g;
+	$smiles =~ s/[\[\]\+\-H]//g;
 	return $smiles;
 }
 
