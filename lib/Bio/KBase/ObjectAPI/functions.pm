@@ -3768,7 +3768,9 @@ sub func_run_pickaxe {
 									if ($types->[$j] eq "inchikey") {
 										my $array = [split(/[-]/,$value)];
 										$value = $array->[0];
-									}
+									} elsif ($types->[$j] eq "smiles") {
+										$value = Bio::KBase::utilities::remove_smiles_charge($value);
+									}									
 									if (length($value) > 0) {
 										$datachannel->{metabolomics_data}->{$key}->{$value}->{$data->{row_ids}->[$i]} = 1;
 										$found = 1;
@@ -6452,6 +6454,8 @@ sub check_for_peakmatch {
 			if ($type eq "inchikey") {
 				my $array = [split(/-/,$cpdatt)];
 				$cpdatt = $array->[0];
+			} elsif ($type eq "smiles") {
+				$cpdatt = Bio::KBase::utilities::remove_smiles_charge($cpdatt);
 			}
 			if (defined($metabolomics_data->{$type."_to_peaks"}->{$cpdatt})) {
 				foreach my $peakid (keys(%{$metabolomics_data->{$type."_to_peaks"}->{$cpdatt}})) {
