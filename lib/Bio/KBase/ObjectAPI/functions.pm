@@ -3723,7 +3723,7 @@ sub func_run_pickaxe {
 			if (-e $params->{metabolomics_data}) {
 				$data = Bio::KBase::ObjectAPI::functions::load_matrix($params->{metabolomics_data});
 				$datachannel->{MetabolomicsDBLINKSKey} = "MetabolomicsDataset";
-				$datachannel->{KBaseMetabolomicsObject} = "File:";
+				$datachannel->{KBaseMetabolomicsObject} = "File:".$params->{metabolomics_data};
 			} else {
 				$datachannel->{KBaseMetabolomicsObject} = Bio::KBase::utilities::buildref($params->{metabolomics_data},$params->{metabolomics_workspace});
 				my $object = $handler->util_get_object($datachannel->{KBaseMetabolomicsObject});
@@ -3887,37 +3887,63 @@ sub func_run_pickaxe {
 			#Rather than a metabolic model, a compound set is the input
 			for (my $i=0; $i<@{$object->{compounds}}; $i++) {
 				my $cpd = $object->{compounds}->[$i];
-				#Checking input compoundset for metabolomics matches
-				Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpd,0,"model",0,$datachannel->{KBaseMetabolomicsObject});
 				if (!defined($cpd->{smiles}) || length($cpd->{smiles}) == 0) {
 					push(@{$input_compounds_with_no_structure},$cpd->{id}."\t".$cpd->{name});
 				} else {
+					#Check if the compound is a match to the SEED
+					my $cleansmiles = Bio::KBase::utilities::remove_smiles_charge($cpd->{smiles});
+					if (defined($datachannel->{smileshash}->{$cleansmiles}->{seed})) {
+						my $best_rxn_score;
+						my $best_cpd;
+						foreach my $cpd (keys(%{$datachannel->{smileshash}->{$cleansmiles}->{seed}})) {
+							if (!defined($best_cpd) || $datachannel->{smileshash}->{$cleansmiles}->{seed}->{$cpd}->{rxncount}) {
+								$best_cpd = $cpd;
+								$best_rxn_score = $datachannel->{smileshash}->{$cleansmiles}->{seed}->{$cpd}->{rxncount};
+							}
+						}
+						$cpd->{id} = $datachannel->{smileshash}->{$cleansmiles}->{seed}->{$best_cpd}->{id};
+						$cpd->{name} = $datachannel->{smileshash}->{$cleansmiles}->{seed}->{$best_cpd}->{name};
+						$cpd->{charge} = $datachannel->{smileshash}->{$cleansmiles}->{seed}->{$best_cpd}->{charge};
+						$cpd->{formula} = $datachannel->{smileshash}->{$cleansmiles}->{seed}->{$best_cpd}->{formula};
+						$cpd->{inchikey} = $datachannel->{smileshash}->{$cleansmiles}->{seed}->{$best_cpd}->{inchikey};
+						$cpd->{smiles} = $datachannel->{smileshash}->{$cleansmiles}->{seed}->{$best_cpd}->{smiles};
+					}
+					#Standardizing the ID
 					if ($cpd->{id} =~ m/_[a-z]\d+$/) {
 						$cpd->{id} =~ s/_[a-z]\d+$/_c0/;
 					} else {
 						$cpd->{id} .= "_c0";
 					}
-					if (!defined($input_ids->{$cpd->{id}})) {
-						my $cpdref = "cpd00000";
-						if ($cpd->{id} =~ m/(cpd\d+)/) {
-							$cpdref = $1;
-						}
-						$datachannel->{smileshash}->{Bio::KBase::utilities::remove_smiles_charge($cpd->{smiles})}->{model}->{$cpd->{id}} = $cpd;
-						$datachannel->{cpdhash}->{$cpd->{id}} = {
-							id => $cpd->{id},
-							name => $cpd->{id},
-							charge => 0,
-							smiles => $cpd->{smiles},
-							numerical_attributes => {generation => 0},
-							aliases => [],
-							compound_ref => "~/template/compounds/id/".$cpdref,
-							dblinks => {},
-							modelcompartment_ref => "~/modelcompartments/id/c0",
-							string_attributes => {}
-						};
-						$datachannel->{cpdhash}->{$cpd->{id}}->{name} =~ s/_[a-z]\d+$//;
-						push(@{$datachannel->{fbamodel}->{modelcompounds}},$datachannel->{cpdhash}->{$cpd->{id}});
+					#Creating the reference
+					my $cpdref = "cpd00000";
+					if ($cpd->{id} =~ m/(cpd\d+)/) {
+						$cpdref = $1;
 					}
+					#Creating data object
+					if (!defined($cpd->{name})) {
+						$cpd->{name} = $cpd->{id};
+					}
+					$cpd->{name} =~ s/_[a-z]\d+$//;
+					if (!defined($cpd->{charge})) {
+						$cpd->{charge} = 0;
+					}
+					$datachannel->{cpdhash}->{$cpd->{id}} = {
+						id => $cpd->{id},
+						name => $cpd->{name},
+						charge => $cpd->{charge},
+						smiles => $cpd->{smiles},
+						numerical_attributes => {generation => 0},
+						aliases => [],
+						compound_ref => "~/template/compounds/id/".$cpdref,
+						dblinks => {},
+						modelcompartment_ref => "~/modelcompartments/id/c0",
+						string_attributes => {}
+					};
+					#Adding compounds to smileshash
+					$datachannel->{smileshash}->{$cleansmiles}->{model}->{$cpd->{id}} = $datachannel->{cpdhash}->{$cpd->{id}};
+					#Checking input compoundset for metabolomics matches
+					Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$datachannel->{cpdhash}->{$cpd->{id}},0,"model",0,$datachannel->{KBaseMetabolomicsObject});
+					push(@{$datachannel->{fbamodel}->{modelcompounds}},$datachannel->{cpdhash}->{$cpd->{id}});
 				}
 			}
 		} else {
@@ -3978,7 +4004,7 @@ sub func_run_pickaxe {
 			foreach my $obj (@{$datachannel->{template_data}->{peaks}}) {
 				my $id = $obj->{id};
 				my $smiles = Bio::KBase::utilities::remove_smiles_charge($obj->{smiles});
-				if (!defined($datachannel->{smileshash}->{$smiles})) {
+				if (!defined($datachannel->{smileshash}->{$smiles}->{model})) {
 					my $cpddata = {
 						rxncount => 0,
 						id => $id,
@@ -4141,7 +4167,7 @@ sub func_run_pickaxe {
 							$inchikey = $cpdobj->inchikey();
 						}
 						if (defined($cpdobj->smiles()) && length($cpdobj->smiles()) > 0) {
-							$smiles = $cpdobj->smiles();
+							$truesmiles = $cpdobj->smiles();
 						}
 					#Check if the ID is from the ModelSEED
 					} elsif ($original_id =~ m/(cpd\d+)/ && defined($seedhash->{$1})) {
@@ -4152,7 +4178,7 @@ sub func_run_pickaxe {
 						$charge = $seedhash->{$baseid}->{charge};
 						$nonneutral_formula = $seedhash->{$baseid}->{formula};
 						$formula = $seedhash->{$baseid}->{neutral_formula};
-						$smiles = $seedhash->{$baseid}->{smiles};
+						$truesmiles = $seedhash->{$baseid}->{smiles};
 						$inchikey = $seedhash->{$baseid}->{inchikey};
 #					} elsif (defined($datachannel->{inchihash}->{$inchikey})) {
 #						$type = "inchimatch";
@@ -4253,8 +4279,6 @@ sub func_run_pickaxe {
 					}
 					if (defined($smiles) && !defined($datachannel->{smileshash}->{$smiles}->{$type}->{$id})) {
 						$datachannel->{smileshash}->{$smiles}->{$type}->{$id} = $cpddata;
-						#Checking that the new generated compound if a metabolomics hit
-						Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,$datachannel->{currentgen},$ruleset,0,$datachannel->{KBaseMetabolomicsObject},$params->{max_hits_to_keep_per_peak});
 					}
 					if (defined($inchikey) &&  !defined($datachannel->{inchihash}->{$inchikey})) {
 						$datachannel->{inchihash}->{$inchikey} = $datachannel->{smileshash}->{$smiles}->{$type}->{$id};
@@ -4263,13 +4287,14 @@ sub func_run_pickaxe {
 					$cpdid_translation->{$original_id} = $id;
 					#Adding the compound to the model
 					$datachannel->{rulesetcpds}->{$ruleset}->{$id} = 1;
-					$cpddata->{formula} = $formula;
 					if ($id =~ /(cpd\d+)/) {
 						$cpddata->{compound_ref} = $cpddata->{compound_ref}.$1;
 					} else {
 						$cpddata->{compound_ref} = $cpddata->{compound_ref}."cpd00000";
 					}
 					if (!defined($datachannel->{cpdhash}->{$id})) {
+						#Checking that the new generated compound is a metabolomics hit
+						Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddata,$datachannel->{currentgen},$ruleset,0,$datachannel->{KBaseMetabolomicsObject},$params->{max_hits_to_keep_per_peak});
 						$cpddata->{formula} = $formula;
 						$datachannel->{cpdhash}->{$id} = $cpddata;
 						if (defined($datachannel->{targethash}->{$smiles}) ||
@@ -6464,21 +6489,29 @@ sub check_for_peakmatch {
 					if (!defined($cpddata->{dblinks}->{$dbkey})) {
 						$cpddata->{dblinks}->{$dbkey} = [];
 					}
-					push(@{$cpddata->{dblinks}->{$dbkey}},$peakid);
-					if ($noall == 0) {
-						$cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
-						$cpd_hit->{all}->{$generation}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
-						$peak_hit->{all}->{allgen}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
-						$peak_hit->{all}->{$generation}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
-						my $hitcount = keys(%{$peak_hit->{all}->{allgen}->{$peakid}->{$type}});
-						if ($hitcount >= $max_hits_to_keep_per_peak) {
-							$cpddata->{numerical_attributes}->{redundant_hit} = ($hitcount+1);
+					my $found = 0;
+					foreach my $newpeakid (@{$cpddata->{dblinks}->{$dbkey}}) {
+						if 	($peakid eq $newpeakid) {
+							$found = 1;
 						}
 					}
-					$cpd_hit->{$ruleset}->{allgen}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
-					$cpd_hit->{$ruleset}->{$generation}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
-					$peak_hit->{$ruleset}->{allgen}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
-					$peak_hit->{$ruleset}->{$generation}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
+					if ($found == 0) {
+						push(@{$cpddata->{dblinks}->{$dbkey}},$peakid);
+						if ($noall == 0) {
+							$cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
+							$cpd_hit->{all}->{$generation}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
+							$peak_hit->{all}->{allgen}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
+							$peak_hit->{all}->{$generation}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
+							my $hitcount = keys(%{$peak_hit->{all}->{allgen}->{$peakid}->{$type}});
+							if ($hitcount >= $max_hits_to_keep_per_peak) {
+								$cpddata->{numerical_attributes}->{redundant_hit} = ($hitcount+1);
+							}
+						}
+						$cpd_hit->{$ruleset}->{allgen}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
+						$cpd_hit->{$ruleset}->{$generation}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
+						$peak_hit->{$ruleset}->{allgen}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
+						$peak_hit->{$ruleset}->{$generation}->{$peakid}->{$type}->{$cpddata->{id}} = $cpddata;
+					}
 				}
 			}
 		}
