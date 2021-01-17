@@ -538,11 +538,13 @@ sub add_auxotrophy_transporters {
 	my $transporthash = Bio::KBase::constants::auxotrophy_transports();
 	foreach my $rxn (keys(%{$transporthash})) {
 		if (!defined($params->{fbamodel}->queryObject("modelreactions",{id => $rxn."_c".$params->{compartment_index}}))) {
-			$params->{fbamodel}->addModelReaction({
-				reaction => $rxn,
-				direction => "=",
-				addReaction => 1
-			});
+			if (defined($params->{fbamodel}->template()->queryObject("reactions",{id => $rxn."_c"}))) {
+				$params->{fbamodel}->addModelReaction({
+					reaction => $rxn,
+					direction => "=",
+					addReaction => 1
+				});
+			}
 		}
 	}
 }
@@ -3722,6 +3724,7 @@ sub func_run_pickaxe {
 			my $data;
 			if (-e $params->{metabolomics_data}) {
 				$data = Bio::KBase::ObjectAPI::functions::load_matrix($params->{metabolomics_data});
+				Bio::KBase::ObjectAPI::utilities::PRINTFILE($params->{json_output_file}.".metabolomics",[Bio::KBase::ObjectAPI::utilities::TOJSON($data,1)]);
 				$datachannel->{MetabolomicsDBLINKSKey} = "MetabolomicsDataset";
 				$datachannel->{KBaseMetabolomicsObject} = "File:".$params->{metabolomics_data};
 			} else {
@@ -3744,44 +3747,39 @@ sub func_run_pickaxe {
 				}
 			}
 			for (my $i=0; $i < @{$data->{row_ids}}; $i++) {
-				my $peakdata = {
-					id => $data->{row_ids}->[$i],
-					mz => "",
-					formula => "",
-					name => "",
-					smiles => "",
-					inchikey => "",
-					hits => [],
-					compounds => []
-				};
 				if ($column == -1 || $data->{data}->[$i]->[$column] > 0) {
-					push(@{$datachannel->{template_data}->{peaks}},$peakdata);
-					my $types = ["inchikey","smiles","formula"];
-					my $found = 0;
-					for (my $j=0; $j < @{$types}; $j++) {
-					   if ($found == 0) {
-							for (my $k=0; $k < @{$data->{attributes}}; $k++) {
-								if ($data->{attributes}->[$k] eq $types->[$j]) {
-									my $key = $types->[$j]."_to_peaks";
-									my $value = $data->{attribute_values}->[$i]->[$k];
-									$peakdata->{$types->[$j]} = $value;
-									if ($types->[$j] eq "inchikey") {
-										my $array = [split(/[-]/,$value)];
-										$value = $array->[0];
-									} elsif ($types->[$j] eq "smiles") {
-										$value = Bio::KBase::utilities::remove_smiles_charge($value);
-									}									
-									if (length($value) > 0) {
-										$datachannel->{metabolomics_data}->{$key}->{$value}->{$data->{row_ids}->[$i]} = 1;
-										$found = 1;
-									}
-								} elsif ($data->{attributes}->[$k] eq "mz") {
-									$peakdata->{mz} = $data->{attribute_values}->[$i]->[$k];
-								} elsif ($data->{attributes}->[$k] eq "name") {
-									$peakdata->{name} = $data->{attribute_values}->[$i]->[$k];
-								}
-							}
+					my $peakdata = {
+						id => $data->{row_ids}->[$i],
+						mz => "",
+						formula => "",
+						name => "",
+						smiles => "",
+						inchikey => "",
+						hits => [],
+						compounds => []
+					};
+					for (my $k=0; $k < @{$data->{attributes}}; $k++) {
+						if ($data->{attributes}->[$k] eq "inchikey") {
+							$peakdata->{inchikey} = $data->{attribute_values}->[$i]->[$k];
+						} elsif ($data->{attributes}->[$k] eq "smiles") {
+							$peakdata->{smiles} = $data->{attribute_values}->[$i]->[$k];
+						} elsif ($data->{attributes}->[$k] eq "formula") {
+							$peakdata->{formula} = $data->{attribute_values}->[$i]->[$k];
+						} elsif ($data->{attributes}->[$k] eq "mz") {
+							$peakdata->{mz} = $data->{attribute_values}->[$i]->[$k];
+						} elsif ($data->{attributes}->[$k] eq "name") {
+							$peakdata->{name} = $data->{attribute_values}->[$i]->[$k];
 						}
+					}
+					push(@{$datachannel->{template_data}->{peaks}},$peakdata);
+					#Adding peak in prioritized order to hashes used to find matches
+					if (length($peakdata->{inchikey}) > 0) {
+						my $array = [split(/[-]/,$peakdata->{inchikey})];
+						$datachannel->{metabolomics_data}->{inchikey_to_peaks}->{$array->[0]}->{$peakdata->{id}} = 1;
+					} elsif (length($peakdata->{smiles}) > 0) {
+						$datachannel->{metabolomics_data}->{smiles_to_peaks}->{Bio::KBase::utilities::remove_smiles_charge($peakdata->{smiles})}->{$peakdata->{id}} = 1;
+					} elsif (length($peakdata->{formula}) > 0) {
+						$datachannel->{metabolomics_data}->{formula_to_peaks}->{$peakdata->{formula}}->{$peakdata->{id}} = 1;
 					}
 				}
 			}
@@ -6444,7 +6442,7 @@ sub load_matrix {
 		} elsif (defined($peak_id_col)) {
 			push(@{$data->{col_ids}},$array->[0]->[$i]);
 			for (my $j=1; $j < @{$array}; $j++) {
-				push(@{$data->{data}->[$j]},$array->[$j]->[$i]);
+				push(@{$data->{data}->[$j-1]},$array->[$j]->[$i]);
 				my $true_col_id = ($i - $peak_id_col - 1);
 				if (!defined($data->{highest}->[$true_col_id]) || $data->{highest}->[$true_col_id] < abs($array->[$j]->[$i])) {
 					$data->{highest}->[$true_col_id] = $array->[$j]->[$i];
@@ -6456,7 +6454,7 @@ sub load_matrix {
 		} else {
 			push(@{$data->{attributes}},$array->[0]->[$i]);
 			for (my $j=1; $j < @{$array}; $j++) {
-				push(@{$data->{attribute_values}->[$j]},$array->[$j]->[$i]);
+				push(@{$data->{attribute_values}->[$j-1]},$array->[$j]->[$i]);
 			}
 		}
 	}
