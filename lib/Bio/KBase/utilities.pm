@@ -805,6 +805,22 @@ sub remove_smiles_charge {
 	return $smiles;
 }
 
+sub compute_base_inchi {
+	my $inchi = shift;
+	my $array = [split(/[-_]/,$inchi)];
+	return $array->[0];
+}
+
+sub compute_struct_string {
+	my $data = shift;
+	if (defined($data->{inchikey})) {
+		return Bio::KBase::utilities::compute_base_inchi($data->{inchikey});
+	} elsif ($data->{smiles}) {
+		return Bio::KBase::utilities::remove_smiles_charge($data->{smiles});
+	}
+	return undef;
+}
+
 sub nameToSearchname {
 	my ($InName) = @_;
 	my $OriginalName = $InName;

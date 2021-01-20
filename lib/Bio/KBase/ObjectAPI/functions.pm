@@ -3805,14 +3805,14 @@ sub func_run_pickaxe {
 				source => "seed"
 			};
 			$cpddata->{$cpdid} = $data;
+			my $structstring = Bio::KBase::utilities::compute_struct_string($seedhash->{$cpdid});
+			if (defined($structstring)) {
+				$datachannel->{smileshash}->{$structstring} = $data;
+			}
 			if (defined($seedhash->{$cpdid}->{smiles})) {
-				$datachannel->{smileshash}->{Bio::KBase::utilities::remove_smiles_charge($seedhash->{$cpdid}->{smiles})}->{seed}->{$cpdid} = $data;
 				$data->{smiles} = $seedhash->{$cpdid}->{smiles};
-				if (defined($seedhash->{$cpdid}->{inchikey}) && !defined($datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}})) {
-					$data->{inchikey} = $seedhash->{$cpdid}->{inchikey};
-					$datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}} = $data;
-				}
-			} elsif (defined($seedhash->{$cpdid}->{inchikey}) && !defined($datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}})) {
+			}
+			if (defined($seedhash->{$cpdid}->{inchikey}) && !defined($datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}})) {
 				$datachannel->{inchihash}->{$seedhash->{$cpdid}->{inchikey}} = $data;
 				$data->{inchikey} = $seedhash->{$cpdid}->{inchikey};
 			}
@@ -3839,11 +3839,12 @@ sub func_run_pickaxe {
 		$datachannel->{targethash} = {};
 		#Processing target list if provided
 		if (defined($params->{target_id})) {
-				my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{target_id},$params->{target_workspace}));
-				for (my $i=0; $i<@{$object->{compounds}}; $i++) {
+			my $object = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{target_id},$params->{target_workspace}));
+			for (my $i=0; $i<@{$object->{compounds}}; $i++) {
 				my $cpd = $object->{compounds}->[$i];
-				if (defined($cpd->{smiles}) && length($cpd->{smiles}) > 0) {
-					$datachannel->{targethash}->{$cpd->{smiles}} = [$cpd->{id},$cpd->{name}];
+				my $structstring = Bio::KBase::utilities::compute_struct_string($cpd);
+				if (defined($structstring)) {
+					$datachannel->{targethash}->{$structstring} = [$cpd->{id},$cpd->{name}];
 				}
 			}
 		}
@@ -3889,8 +3890,8 @@ sub func_run_pickaxe {
 					push(@{$input_compounds_with_no_structure},$cpd->{id}."\t".$cpd->{name});
 				} else {
 					#Check if the compound is a match to the SEED
-					my $cleansmiles = Bio::KBase::utilities::remove_smiles_charge($cpd->{smiles});
-					if (defined($datachannel->{smileshash}->{$cleansmiles}->{seed})) {
+					my $cleansmiles = Bio::KBase::utilities::compute_struct_string($cpd);
+					if (defined($cleansmiles) && defined($datachannel->{smileshash}->{$cleansmiles}->{seed})) {
 						my $best_rxn_score;
 						my $best_cpd;
 						foreach my $cpd (keys(%{$datachannel->{smileshash}->{$cleansmiles}->{seed}})) {
@@ -3966,20 +3967,18 @@ sub func_run_pickaxe {
 						modelcompartment_ref => "~/modelcompartments/id/c0",
 						string_attributes => {}
 					};
-					if (!defined($cpds->[$i]->smiles()) && length($cpds->[$i]->smiles()) == 0) {
+					if (!defined($cpds->[$i]->smiles()) || length($cpds->[$i]->smiles()) == 0) {
 						push(@{$input_compounds_with_no_structure},$id."\t".$cpds->[$i]->name());
-					} elsif (!defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
-						#This is for the unlikely scenario that there is an inchikey but no smiles
-						push(@{$input_compounds_with_no_structure},$id."\t".$cpds->[$i]->name());
-						$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$id} = $cpddatahash->{$id};
-						$cpddatahash->{$id}->{inchikey} = $cpds->[$i]->inchikey();
 					} else {
 						$cpddatahash->{$id}->{smiles} = $cpds->[$i]->smiles();
-						$datachannel->{smileshash}->{Bio::KBase::utilities::remove_smiles_charge($cpds->[$i]->smiles())}->{model}->{$id} = $cpddatahash->{$id};
-						if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
-							$cpddatahash->{$id}->{inchikey} = $cpds->[$i]->inchikey();
-							$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$id} = $cpddatahash->{$id};
-						}
+					}
+					if (defined($cpds->[$i]->inchikey()) && length($cpds->[$i]->inchikey()) > 0) {
+						$cpddatahash->{$id}->{inchikey} = $cpds->[$i]->inchikey();
+						$datachannel->{inchihash}->{$cpds->[$i]->inchikey()}->{model}->{$id} = $cpddatahash->{$id};
+					}
+					my $cleansmiles = Bio::KBase::utilities::compute_struct_string($cpddatahash->{$id});
+					if (defined($cleansmiles)) {
+						$datachannel->{smileshash}->{$cleansmiles}->{model}->{$id} = $cpddatahash->{$id};
 						$datachannel->{cpdhash}->{$id} = $cpddatahash->{$id};
 						$datachannel->{cpdhash}->{$id}->{name} =~ s/_[a-z]\d+$//;
 						push(@{$datachannel->{fbamodel}->{modelcompounds}},$cpddatahash->{$id});
@@ -4001,7 +4000,7 @@ sub func_run_pickaxe {
 		if ($params->{include_metabolomics_in_start} == 1 && defined($datachannel->{template_data}->{peaks})) {
 			foreach my $obj (@{$datachannel->{template_data}->{peaks}}) {
 				my $id = $obj->{id};
-				my $smiles = Bio::KBase::utilities::remove_smiles_charge($obj->{smiles});
+				my $smiles = Bio::KBase::utilities::compute_struct_string($obj);
 				if (!defined($datachannel->{smileshash}->{$smiles}->{model})) {
 					my $cpddata = {
 						rxncount => 0,
@@ -4141,7 +4140,7 @@ sub func_run_pickaxe {
 					my $name;
 					my $inchikey = $array->[5];
 					my $truesmiles = $array->[6];
-					my $smiles = Bio::KBase::utilities::remove_smiles_charge($truesmiles); 
+					my $smiles = Bio::KBase::utilities::compute_struct_string({smiles => $truesmiles,inchikey => $inchikey}); 
 					my $charge = $array->[4];
 					my $formula = $array->[3];
 					my $type = "pickax";
