@@ -3984,6 +3984,7 @@ sub func_run_pickaxe {
 						push(@{$datachannel->{fbamodel}->{modelcompounds}},$cpddatahash->{$id});
 					}
 					#Checking input compoundset for metabolomics matches
+					print $id."\t".$cpds->[$i]->name()."\t".$cpddatahash->{$id}->{smiles}."\t".$cpddatahash->{$id}->{inchikey}."\n";
 					Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$cpddatahash->{$cpds->[$i]->id()},0,"model",0,$datachannel->{KBaseMetabolomicsObject});
 					$cpddatahash->{$id}->{formula} = $cpds->[$i]->formula();
 				}
@@ -6470,6 +6471,7 @@ sub check_for_peakmatch {
 		$dbkey = "MetabolomicsDataset";
 	}
 	my $hit = [];
+	print $cpddata->{id}."\t".$cpddata->{name}."\t".$cpddata->{smiles}."\t".$cpddata->{inchikey}."\n";
 	for (my $i=0; $i < @{$typelist}; $i++) {
 		my $type = $typelist->[$i];
 		if (defined($cpddata->{$type}) && length($cpddata->{$type}) > 0) {
@@ -6490,9 +6492,11 @@ sub check_for_peakmatch {
 					foreach my $newpeakid (@{$cpddata->{dblinks}->{$dbkey}}) {
 						if 	($peakid eq $newpeakid) {
 							$found = 1;
+							print "Peak already mapped!\n";
 						}
 					}
 					if ($found == 0) {
+						print $peakid." matched with type ".$type." and gen ".$generation." and rules ".$ruleset."\n"
 						push(@{$cpddata->{dblinks}->{$dbkey}},$peakid);
 						if ($noall == 0) {
 							$cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
