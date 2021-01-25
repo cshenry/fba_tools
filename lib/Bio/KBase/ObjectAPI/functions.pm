@@ -6496,7 +6496,7 @@ sub check_for_peakmatch {
 						}
 					}
 					if ($found == 0) {
-						print $peakid." matched with type ".$type." and gen ".$generation." and rules ".$ruleset."\n"
+						print $peakid." matched with type ".$type." and gen ".$generation." and rules ".$ruleset."\n";
 						push(@{$cpddata->{dblinks}->{$dbkey}},$peakid);
 						if ($noall == 0) {
 							$cpd_hit->{all}->{allgen}->{$cpddata->{id}}->{$type}->{$peakid} = 1;
