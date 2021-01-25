@@ -4534,15 +4534,6 @@ sub func_run_pickaxe {
 			}
 		}
 		my $mdlcpds = $datachannel->{fbamodel}->modelcompounds();
-		foreach my $gen (@{$datachannel->{template_data}->{generations}}) {
-			my $count = keys(%{$datachannel->{peak_hits}->{all}->{$gen->{id}}});
-			$gen->{peaks} = $count;
-			if ($gen->{id} == 0) {
-				$datachannel->{template_data}->{overview}->{peaks_hit_model} = $count;
-			}
-		}
-		$datachannel->{template_data}->{overview}->{peaks_hit_generated} = keys(%{$datachannel->{peak_hits}->{all}->{allgen}})-$datachannel->{template_data}->{overview}->{peaks_hit_model};
-		$datachannel->{template_data}->{overview}->{peaks_hit_modelseed} = keys(%{$datachannel->{peak_hits}->{seed}->{allgen}})+0;
 		foreach my $cpd (@{$mdlcpds}) {
 			$datachannel->{template_data}->{overview}->{compounds}++;
 			if (!defined($rxncounts->{$cpd->id()})) {
@@ -4562,9 +4553,9 @@ sub func_run_pickaxe {
 				$datachannel->{template_data}->{generations}->[$generation]->{modelseed_compounds}++;
 			}
 			my $peaks = [];
-			if (defined($cpd->dblinks()->{$datachannel->{MetabolomicsDBLINKSKey}})) {
+			if (defined($cpd->dblinks()->{$datachannel->{KBaseMetabolomicsObject}})) {
 				$datachannel->{template_data}->{generations}->[$generation]->{compounds_with_peaks}++;
-				$peaks = $cpd->dblinks()->{$datachannel->{MetabolomicsDBLINKSKey}};
+				$peaks = $cpd->dblinks()->{$datachannel->{KBaseMetabolomicsObject}};
 				if ($generation == 0) {
 					$datachannel->{template_data}->{overview}->{starting_hit_peaks}++;
 				} else {
@@ -4583,40 +4574,88 @@ sub func_run_pickaxe {
 				generation => $generation
 			};
 			if (@{$datachannel->{template_data}->{compounds}} < $params->{cpd_print_limit}) {
-			push(@{$datachannel->{template_data}->{compounds}},$cpddata);
+				push(@{$datachannel->{template_data}->{compounds}},$cpddata);
 			}
 		}
+		foreach my $gen (@{$datachannel->{template_data}->{generations}}) {
+			my $count = keys(%{$datachannel->{peak_hits}->{all}->{$gen->{id}}});
+			$gen->{peaks} = $count;
+		}
+		$datachannel->{template_data}->{overview}->{peaks_hit_modelseed} = keys(%{$datachannel->{peak_hits}->{seed}->{allgen}})+0;
 		for (my $i = 0; $i < @{$datachannel->{template_data}->{peaks}}; $i++) {
 			$datachannel->{template_data}->{overview}->{total_peaks}++;
 			my $peakid = $datachannel->{template_data}->{peaks}->[$i]->{id};
 			my $hithash = {
 				all => {},
-				model => {},
-				pickaxe => {},
-				pickaxems => {},
-				modelseed => {}
+				Model => {},
+				Pickaxe => {},
+				"Pickaxe MS" => {},
+				ModelSEED => {}
 			};
+			my $othermodelhits = [];
+			my $mspickaxehits = [];
+			my $otherpickaxehits = [];
+			my $hitlist = [];
+			my $otherhits = [];
+			#All hits from the model and hits from pickaxe that hit ModelSEED are always reported
+			my $generations = {};
 			if (defined($datachannel->{peak_hits}->{all}->{allgen}->{$peakid})) {
 				foreach my $type (keys(%{$datachannel->{peak_hits}->{all}->{allgen}->{$peakid}})) {
 					foreach my $cpdid (keys(%{$datachannel->{peak_hits}->{all}->{allgen}->{$peakid}->{$type}})) {
-						if ($datachannel->{peak_hits}->{all}->{allgen}->{$peakid}->{$type}->{$cpdid}->{numerical_attributes}->{generation} == 0) {
-							$hithash->{all}->{$cpdid} = 0;
-							$hithash->{Model}->{$cpdid} = 0;
-						} elsif ($cpdid =~ m/cpd\d+/) {
-							$hithash->{all}->{$cpdid} = $datachannel->{peak_hits}->{all}->{allgen}->{$peakid}->{$type}->{$cpdid}->{numerical_attributes}->{generation};
-							$hithash->{"Pickaxe MS"}->{$cpdid} = $datachannel->{peak_hits}->{all}->{allgen}->{$peakid}->{$type}->{$cpdid}->{numerical_attributes}->{generation};
-							$hithash->{Pickaxe}->{$cpdid} = $datachannel->{peak_hits}->{all}->{allgen}->{$peakid}->{$type}->{$cpdid}->{numerical_attributes}->{generation};
-						} else {
-							$hithash->{all}->{$cpdid} = $datachannel->{peak_hits}->{all}->{allgen}->{$peakid}->{$type}->{$cpdid}->{numerical_attributes}->{generation};
-							$hithash->{Pickaxe}->{$cpdid} = $datachannel->{peak_hits}->{all}->{allgen}->{$peakid}->{$type}->{$cpdid}->{numerical_attributes}->{generation};
+						my $gen = $datachannel->{peak_hits}->{all}->{allgen}->{$peakid}->{$type}->{$cpdid}->{numerical_attributes}->{generation};
+						if (!defined($hithash->{all}->{$cpdid})) {
+							$hithash->{all}->{$cpdid} = $gen;
+							if ($cpdid =~ m/cpd\d+/) {
+								if ($gen == 0) {
+									$hithash->{Model}->{$cpdid} = 0;
+									push(@{$hitlist},[$cpdid.":M"]);
+								} else {
+									$hithash->{"Pickaxe MS"}->{$cpdid} = $gen;
+									push(@{$mspickaxehits},[$cpdid.":P".$gen]);
+								}
+							} else {
+								if ($gen == 0) {
+									$hithash->{Model}->{$cpdid} = 0;
+									push(@{$othermodelhits},[$cpdid.":M"]);
+								} else {
+									$hithash->{Pickaxe}->{$cpdid} = $gen;
+									push(@{$otherpickaxehits},[$cpdid.":P".$gen]);
+								}
+							}
+						} elsif ($gen < $hithash->{all}->{$cpdid}) {
+							$hithash->{all}->{$cpdid} = $gen;
 						}
 					}
 				}
 			}
+			#Adding all hits in the order we want to see them - all model first then all pickax modelseed
+			for (my $j=0; $j < @{$othermodelhits}; $j++) {
+				push(@{$hitlist},$othermodelhits->[$j]);
+			}
+			if (@{$hitlist} > 0) {
+				$datachannel->{template_data}->{overview}->{peaks_hit_model}++;
+			}
+			for (my $j=0; $j < @{$mspickaxehits}; $j++) {
+				push(@{$hitlist},$mspickaxehits->[$j]);
+			}
+			#If there are still fewer than 10 hits, we add more non modelseed pickax hits
+			my $count = @{$hitlist};
+			for (my $j=0; $j < 10-$count; $j++) {
+				if (defined($otherpickaxehits->[$j])) {
+					push(@{$hitlist},$otherpickaxehits->[$j]);
+				}
+			}
+			if ((@{$mspickaxehits} + @{$otherpickaxehits}) > 0) {
+				$datachannel->{template_data}->{overview}->{peaks_hit_generated}++;
+			}
+			#Adding all modelseed hits that weren't in the model or pickaxe output
 			if (defined($datachannel->{peak_hits}->{seed}->{allgen}->{$peakid})) {
 				foreach my $type (keys(%{$datachannel->{peak_hits}->{seed}->{allgen}->{$peakid}})) {
 					foreach my $cpdid (keys(%{$datachannel->{peak_hits}->{seed}->{allgen}->{$peakid}->{$type}})) {
 						$hithash->{ModelSEED}->{$cpdid} = 1;
+						if (!defined($hithash->{all}->{$cpdid})) {
+							push(@{$hitlist},[$cpdid.":MS"]);
+						}
 					}
 				}
 			}
@@ -4626,23 +4665,9 @@ sub func_run_pickaxe {
 				my $count = keys(%{$hithash->{$type}});
 				push(@{$datachannel->{template_data}->{peaks}->[$i]->{hits}},$type.":".$count);
 			}
-			my $count = 0;
-			$types = ["model","seed","other"];
-			foreach my $type (@{$types}) {
-				foreach my $cpdid (keys(%{$hithash->{all}})) {
-					if ($count <= 10 && $cpdid =~ m/cpd\d+/ && $type eq "seed") {
-						$count++;
-						push(@{$datachannel->{template_data}->{peaks}->[$i]->{compounds}},$cpdid.":".$hithash->{all}->{$cpdid});
-					} elsif ($count <= 10 && $hithash->{all}->{$cpdid} == 0 && $type eq "model") {
-						$count++;
-						push(@{$datachannel->{template_data}->{peaks}->[$i]->{compounds}},$cpdid.":".$hithash->{all}->{$cpdid});
-					} elsif ($count <= 10 && $type eq "other") {
-						$count++;
-						push(@{$datachannel->{template_data}->{peaks}->[$i]->{compounds}},$cpdid.":".$hithash->{all}->{$cpdid});
-					}
-				}
-			}
+			$datachannel->{template_data}->{peaks}->[$i]->{compounds} = $hitlist;
 		}
+		$datachannel->{peak_hits}->{all}->{0}->{peaks} = $datachannel->{template_data}->{overview}->{peaks_hit_model};
 		if (defined($params->{json_output_file})) {
 			Bio::KBase::ObjectAPI::utilities::PRINTFILE($params->{json_output_file},[Bio::KBase::ObjectAPI::utilities::TOJSON($datachannel->{template_data},1)]);
 		}
