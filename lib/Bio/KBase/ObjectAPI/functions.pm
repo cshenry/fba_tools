@@ -4228,6 +4228,9 @@ sub func_run_pickaxe {
 						$formula = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{formula};
 						$inchikey = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{inchikey};
 					}
+					if ($smiles eq "JFCQEDHGNNZCLN") {
+						print "FOUND:".$type.";".$id.";".$name.";".$inchikey.";".$truesmiles."\n";
+					}
 					$id =~ s/_[a-z]\d+$/_c0/;
 					if (!defined($smiles)) {
 							print "Undefined smiles:".$id."\t".$type."\t".$original_id."\n";
@@ -4311,6 +4314,9 @@ sub func_run_pickaxe {
 						}
 					} else {
 						$cpddata = $datachannel->{cpdhash}->{$id};
+					}
+					if ($smiles eq "JFCQEDHGNNZCLN") {
+						print "FOUND2:".$type.";".$id.";".$name.";".$inchikey.";".$truesmiles."\n";
 					}
 					if ($array->[1] eq "Coreactant") {
 						$cpddata->{string_attributes}->{"pickaxe_".$ruleset."_type"} = "coreactant";
@@ -4653,7 +4659,7 @@ sub func_run_pickaxe {
 				foreach my $type (keys(%{$datachannel->{peak_hits}->{seed}->{allgen}->{$peakid}})) {
 					foreach my $cpdid (keys(%{$datachannel->{peak_hits}->{seed}->{allgen}->{$peakid}->{$type}})) {
 						$hithash->{ModelSEED}->{$cpdid} = 1;
-						if (!defined($hithash->{all}->{$cpdid})) {
+						if (!defined($hithash->{all}->{$cpdid."_c0"})) {
 							push(@{$hitlist},[$cpdid.":MS"]);
 						}
 					}
