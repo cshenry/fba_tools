@@ -3807,7 +3807,7 @@ sub func_run_pickaxe {
 			$cpddata->{$cpdid} = $data;
 			my $structstring = Bio::KBase::utilities::compute_struct_string($seedhash->{$cpdid});
 			if (defined($structstring)) {
-				$datachannel->{smileshash}->{$structstring}->{seed} = $data;
+				$datachannel->{smileshash}->{$structstring}->{seed}->{$cpdid} = $data;
 			}
 			if (defined($seedhash->{$cpdid}->{smiles})) {
 				$data->{smiles} = $seedhash->{$cpdid}->{smiles};
@@ -3821,9 +3821,6 @@ sub func_run_pickaxe {
 			Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$data,0,"seed",1,$datachannel->{KBaseMetabolomicsObject});
 			if (defined($data->{dblinks}->{$datachannel->{KBaseMetabolomicsObject}})) {
 				$datachannel->{template_data}->{overview}->{modelseed_hit_peaks}++;
-			}
-			if ($structstring eq "JFCQEDHGNNZCLN") {
-				print "FOUNDSEED:".$cpdid.";".$seedhash->{$cpdid}->{name}.";".$data->{inchikey}.";".$data->{smiles}."\n";
 			}
 		}
 		foreach my $rxnid (keys(%{$seedrxnhash})) {
