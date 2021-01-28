@@ -4228,9 +4228,6 @@ sub func_run_pickaxe {
 						$formula = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{formula};
 						$inchikey = $datachannel->{smileshash}->{$smiles}->{pickax}->{$keylist->[0]}->{inchikey};
 					}
-					if ($smiles eq "JFCQEDHGNNZCLN") {
-						print "FOUND:".$type.";".$id.";".$name.";".$inchikey.";".$truesmiles."\n";
-					}
 					$id =~ s/_[a-z]\d+$/_c0/;
 					if (!defined($smiles)) {
 							print "Undefined smiles:".$id."\t".$type."\t".$original_id."\n";
@@ -4302,7 +4299,7 @@ sub func_run_pickaxe {
 						if (defined($datachannel->{targethash}->{$smiles}) ||
 							$array->[1] eq "Coreactant" || defined($input_ids->{$id}) ||
 							($params->{keep_seed_hits} == 1 && $id =~ /cpd\d+/) ||
-							($params->{keep_metabolomic_hits} == 1 && defined($cpddata->{dblinks}->{$datachannel->{MetabolomicsDBLINKSKey}}) && !defined($cpddata->{numerical_attributes}->{redundant_hit}))) {
+							($params->{keep_metabolomic_hits} == 1 && defined($cpddata->{dblinks}->{$datachannel->{KBaseMetabolomicsObject}}) && !defined($cpddata->{numerical_attributes}->{redundant_hit}))) {
 							$newcpdcount++;
 							push(@{$datachannel->{fbamodel}->{modelcompounds}},$cpddata);
 							$cpddata->{numerical_attributes}->{generation} = $datachannel->{currentgen};
@@ -4314,9 +4311,6 @@ sub func_run_pickaxe {
 						}
 					} else {
 						$cpddata = $datachannel->{cpdhash}->{$id};
-					}
-					if ($smiles eq "JFCQEDHGNNZCLN") {
-						print "FOUND2:".$type.";".$id.";".$name.";".$inchikey.";".$truesmiles."\n";
 					}
 					if ($array->[1] eq "Coreactant") {
 						$cpddata->{string_attributes}->{"pickaxe_".$ruleset."_type"} = "coreactant";
