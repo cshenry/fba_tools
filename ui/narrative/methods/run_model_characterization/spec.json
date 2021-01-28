@@ -60,7 +60,7 @@
       "chenry"
    ],
    "categories" : [
-      "inactive"
+      "active","metabolic_modeling"
    ],
    "name" : "run_model_characterization",
    "ver" : "1.0.0",
@@ -147,5 +147,5 @@
          "advanced" : false
       }
    ],
-   "visible" : false
+   "visible" : true
 }

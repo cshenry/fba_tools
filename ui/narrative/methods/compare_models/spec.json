@@ -4,8 +4,8 @@
         "dejongh"
     ],
     "contact": "http://kbase.us/contact-us/",
-    "visible": false,
-    "categories": ["inactive"],
+    "visible": true,
+    "categories": ["active","metabolic_modeling"],
     "widgets": {
         "input": null,
         "output": "kbaseFbaModelComparisonNew"
