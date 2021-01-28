@@ -3773,13 +3773,14 @@ sub func_run_pickaxe {
 					}
 					push(@{$datachannel->{template_data}->{peaks}},$peakdata);
 					#Adding peak in prioritized order to hashes used to find matches
+					$datachannel->{metabolomics_data}->{peakdata}->{$peakdata->{id}} = $peakdata;
 					if (length($peakdata->{inchikey}) > 0) {
 						my $array = [split(/[-]/,$peakdata->{inchikey})];
-						$datachannel->{metabolomics_data}->{inchikey_to_peaks}->{$array->[0]}->{$peakdata->{id}} = 1;
+						$datachannel->{metabolomics_data}->{inchikey_to_peaks}->{$array->[0]}->{$peakdata->{id}} = $peakdata;
 					} elsif (length($peakdata->{smiles}) > 0) {
-						$datachannel->{metabolomics_data}->{smiles_to_peaks}->{Bio::KBase::utilities::remove_smiles_charge($peakdata->{smiles})}->{$peakdata->{id}} = 1;
+						$datachannel->{metabolomics_data}->{smiles_to_peaks}->{Bio::KBase::utilities::remove_smiles_charge($peakdata->{smiles})}->{$peakdata->{id}} = $peakdata;
 					} elsif (length($peakdata->{formula}) > 0) {
-						$datachannel->{metabolomics_data}->{formula_to_peaks}->{$peakdata->{formula}}->{$peakdata->{id}} = 1;
+						$datachannel->{metabolomics_data}->{formula_to_peaks}->{$peakdata->{formula}}->{$peakdata->{id}} = $peakdata;
 					}
 				}
 			}
@@ -6513,6 +6514,11 @@ sub check_for_peakmatch {
 					push(@{$hit},$peakid);
 					if (!defined($cpddata->{dblinks}->{$dbkey})) {
 						$cpddata->{dblinks}->{$dbkey} = [];
+					}
+					if ($type ne "formula" && defined($metabolomics_data->{$type."_to_peaks"}->{$cpdatt}->{$peakid}->{name})) {
+						if (!defined($cpddata->{name}) || $cpddata->{name} eq $cpddata->{id}) {
+							$cpddata->{name} = $metabolomics_data->{$type."_to_peaks"}->{$cpdatt}->{$peakid}->{name};
+						}
 					}
 					my $found = 0;
 					foreach my $newpeakid (@{$cpddata->{dblinks}->{$dbkey}}) {
