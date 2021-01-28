@@ -6516,7 +6516,7 @@ sub check_for_peakmatch {
 						$cpddata->{dblinks}->{$dbkey} = [];
 					}
 					if ($type ne "formula" && defined($metabolomics_data->{$type."_to_peaks"}->{$cpdatt}->{$peakid}->{name})) {
-						if (!defined($cpddata->{name}) || $cpddata->{name} eq $cpddata->{id}) {
+						if (!defined($cpddata->{name}) || $cpddata->{name} =~ m/enzc\d+/ || $cpddata->{name} =~ m/spontc\d+/) {
 							$cpddata->{name} = $metabolomics_data->{$type."_to_peaks"}->{$cpdatt}->{$peakid}->{name};
 						}
 					}
