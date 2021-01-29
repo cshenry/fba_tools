@@ -89,7 +89,7 @@ module KBaseFBA {
     typedef string metagenome_otu_ref;
     /*
 		Reference to a metagenome object
-		@id ws KBaseGenomes.MetagenomeAnnotation
+		@id ws KBaseGenomes.MetagenomeAnnotation KBaseMetagenomes.AnnotatedMetagenomeAssembly
 	*/
     typedef string metagenome_ref;
     /*

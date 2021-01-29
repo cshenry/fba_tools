@@ -226,7 +226,29 @@ sub EnsureProperATPProduction {
 		$mdlrxns->[$i]->reaction();
 	}
 	my $template_trans = Bio::KBase::constants::template_trans();
-	$self->template($self->getLinkedObject(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core}));
+	my $currentcore = $self->getLinkedObject(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{core});
+	my $legacycore = $self->getLinkedObject(Bio::KBase::utilities::conf("ModelSEED","default_template_workspace")."/".$template_trans->{legacycore});
+	my $matches = 0;
+	my $legacymatches = 0;
+	my $corerxns = $currentcore->reactions();
+	for (my $i=0; $i < @{$corerxns}; $i++) {
+		if (defined($oldtemplate->getObject("reactions",$corerxns->[$i]->id()))) {
+			$matches++;
+		}
+	}
+	$corerxns = $legacycore->reactions();
+	for (my $i=0; $i < @{$corerxns}; $i++) {
+		if (defined($oldtemplate->getObject("reactions",$corerxns->[$i]->id()))) {
+			$legacymatches++;
+		}
+	}
+	if ($matches > $legacymatches) {
+		print $matches."\t".$legacymatches."\tCurrent core\n";
+		$self->template($currentcore);
+	} else {
+		print $matches."\t".$legacymatches."\tLegacy core\n";
+		$self->template($legacycore);
+	}
 	#Retrieving and hashing core reactions
 	my $rxnhash = {};
 	my $corerxns = $self->template()->reactions();
