@@ -5,6 +5,7 @@ use POSIX;
 use Data::Dumper::Concise;
 use Data::UUID;
 use Bio::KBase::utilities;
+use annotation_ontology_api::annotation_ontology_apiServiceClient;
 use Bio::KBase::constants;
 use XML::DOM;
 use Bio::KBase::Templater qw( render_template );
@@ -618,26 +619,62 @@ sub func_build_metabolic_model {
 	}
 	$handler->util_log("Retrieving model template ".$params->{template_id}.".");
 	my $template = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{template_id},$params->{template_workspace}));
-	#Organizing annotation source array
+	#Pulling annotations from functions
+	my $annotation_hash = {function_hash=>{},reaction_hash=>{}};
+	if ($params->{use_annotated_functions} == 1) {
+		$annotation_hash = $genome->build_annotation_hashes({
+			template => $template,
+			annotation_sources => ["_FUNCTION_"],
+			merge => 1
+		});
+	}
+	#Pulling annotations from ontology terms
 	if ($params->{source_ontology_list} eq "") {
 		$params->{source_ontology_list} = [];
 	}
-	my $anno_sources = [];
-	if ($params->{use_annotated_functions} == 1) {
-		$anno_sources = ["_FUNCTION_"];
+	if (defined($params->{source_ontology_list}->[0])) {
+		my $anno_ontology_client = annotation_ontology_api::annotation_ontology_apiServiceClient->new(undef,token => Bio::KBase::utilities::token());
+		my $output = $anno_ontology_client->get_annotation_ontology_events({
+			input_ref => Bio::KBase::utilities::buildref($params->{genome_id},$params->{genome_workspace})
+		});
+		my $gene_anno = {};
+		for (my $i=0; $i < @{$params->{source_ontology_list}}; $i++) {
+			for (my $j=0; $j < @{$output->{events}}; $j++) {
+				if ($output->{events}->[$j]->{original_description} eq $params->{source_ontology_list}->[$i]) {
+					foreach my $gene (keys(%{$output->{events}->[$j]->{ontology_terms}})) {
+						if ($params->{merge_all_annotations} == 1 || !defined($gene_anno->{$gene})) {
+							for (my $k=0; $k < @{$output->{events}->[$j]->{ontology_terms}->{$gene}}; $k++) {
+								my $term = $output->{events}->[$j]->{ontology_terms}->{$gene}->[$k];
+								if (defined($term->{modelseed_ids})) {
+									for (my $m=0; $m < @{$term->{modelseed_ids}}; $m++) {
+										my $rxnid = $term->{modelseed_ids}->[$m];
+										$rxnid =~ s/^MSRXN://;
+										$gene_anno->{$gene}->{$rxnid} = 1;
+										if (!defined($annotation_hash->{reaction_hash}->{$rxnid}->{u})) {
+											$annotation_hash->{reaction_hash}->{$rxnid}->{u} = {
+												hit_count => 0,
+												non_gene_probability => 0,
+												non_gene_coverage => 0,
+												sources => {},
+												features => {}
+											};
+										}
+										$annotation_hash->{reaction_hash}->{$rxnid}->{u}->{features}->{$gene} = {
+											feature_ref => "~/genome/features/id/".$gene,
+											probability => 1,
+											coverage => 1,
+											sources => {function => $term->{term}}
+										};
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-	if (@{$params->{source_ontology_list}} == 0) {
-		push(@{$anno_sources},"_SEED_");
-	}
-	for (my $i=0; $i < @{$params->{source_ontology_list}};$i++) {
-		push(@{$anno_sources},$params->{source_ontology_list}->[$i]);
-	}
-	#Pulling annotation hashes from genome
-	my $annotation_hash = $genome->build_annotation_hashes({
-		template => $template,
-		annotation_sources => $anno_sources,
-		merge => $params->{merge_all_annotations}
-	});
+	Bio::KBase::ObjectAPI::utilities::PRINTFILE("/Users/chenry/annotation_hash.json",[Bio::KBase::ObjectAPI::utilities::TOJSON($annotation_hash,1)]);
 	#Building model with classic template
 	my $mdl = $template->NewBuildModel({
 		modelid => $params->{fbamodel_output_id},
