@@ -688,7 +688,7 @@ sub func_build_metabolic_model {
 			}
 		}
 	}
-	Bio::KBase::ObjectAPI::utilities::PRINTFILE("/Users/chenry/annotation_hash.json",[Bio::KBase::ObjectAPI::utilities::TOJSON($annotation_hash,1)]);
+	#Bio::KBase::ObjectAPI::utilities::PRINTFILE("/Users/chenry/annotation_hash.json",[Bio::KBase::ObjectAPI::utilities::TOJSON($annotation_hash,1)]);
 	#Building model with classic template
 	my $mdl = $template->NewBuildModel({
 		modelid => $params->{fbamodel_output_id},
