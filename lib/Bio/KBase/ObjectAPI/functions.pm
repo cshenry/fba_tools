@@ -637,39 +637,53 @@ sub func_build_metabolic_model {
 		my $output = $anno_ontology_client->get_annotation_ontology_events({
 			input_ref => Bio::KBase::utilities::buildref($params->{genome_id},$params->{genome_workspace})
 		});
+		#Bio::KBase::ObjectAPI::utilities::PRINTFILE("/Users/chenry/test.json",[Bio::KBase::ObjectAPI::utilities::TOJSON($output,1)]);
 		my $gene_anno = {};
 		for (my $i=0; $i < @{$params->{source_ontology_list}}; $i++) {
 			for (my $j=0; $j < @{$output->{events}}; $j++) {
 				if ($output->{events}->[$j]->{original_description} eq $params->{source_ontology_list}->[$i]) {
+					my $genehash = {};
+					my $msgenehash = {};
+					my $rxnhash = {};
 					foreach my $gene (keys(%{$output->{events}->[$j]->{ontology_terms}})) {
 						if ($params->{merge_all_annotations} == 1 || !defined($gene_anno->{$gene})) {
 							for (my $k=0; $k < @{$output->{events}->[$j]->{ontology_terms}->{$gene}}; $k++) {
-								my $term = $output->{events}->[$j]->{ontology_terms}->{$gene}->[$k];
-								if (defined($term->{modelseed_ids})) {
-									for (my $m=0; $m < @{$term->{modelseed_ids}}; $m++) {
-										my $rxnid = $term->{modelseed_ids}->[$m];
-										$rxnid =~ s/^MSRXN://;
-										$gene_anno->{$gene}->{$rxnid} = 1;
-										if (!defined($annotation_hash->{reaction_hash}->{$rxnid}->{u})) {
-											$annotation_hash->{reaction_hash}->{$rxnid}->{u} = {
-												hit_count => 0,
-												non_gene_probability => 0,
-												non_gene_coverage => 0,
-												sources => {},
-												features => {}
+								if ($output->{feature_types}->{$gene} eq "gene") {
+									$genehash->{$gene} = 1;
+									my $term = $output->{events}->[$j]->{ontology_terms}->{$gene}->[$k];
+									if (defined($term->{modelseed_ids})) {
+										for (my $m=0; $m < @{$term->{modelseed_ids}}; $m++) {
+											my $rxnid = $term->{modelseed_ids}->[$m];
+											$rxnid =~ s/^MSRXN://;
+											$gene_anno->{$gene}->{$rxnid} = 1;
+											$msgenehash->{$gene} = 1;
+											$rxnhash->{$rxnid} = 1;
+											if (!defined($annotation_hash->{reaction_hash}->{$rxnid}->{u})) {
+												$annotation_hash->{reaction_hash}->{$rxnid}->{u} = {
+													hit_count => 0,
+													non_gene_probability => 0,
+													non_gene_coverage => 0,
+													sources => {},
+													features => {}
+												};
+											}
+											$annotation_hash->{reaction_hash}->{$rxnid}->{u}->{hit_count}++;
+											$annotation_hash->{reaction_hash}->{$rxnid}->{u}->{features}->{$gene} = {
+												feature_ref => "~/genome/features/id/".$gene,
+												probability => 1,
+												coverage => 1,
+												sources => {function => $term->{term}}
 											};
 										}
-										$annotation_hash->{reaction_hash}->{$rxnid}->{u}->{features}->{$gene} = {
-											feature_ref => "~/genome/features/id/".$gene,
-											probability => 1,
-											coverage => 1,
-											sources => {function => $term->{term}}
-										};
 									}
 								}
 							}
 						}
 					}
+					print $output->{events}->[$j]->{original_description}."\n";
+					print "GENE COUNT:".keys(%$genehash)."\n";
+					print "MSGENE COUNT:".keys($msgenehash)."\n";
+					print "RXN COUNT:".keys(%$rxnhash)."\n";
 				}
 			}
 		}
