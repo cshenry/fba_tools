@@ -581,7 +581,10 @@ sub func_build_metabolic_model {
 		use_annotated_functions => 1,
 		merge_all_annotations => 0,
 		source_ontology_list => [],
-		add_auxotrophy_transporters => 1
+		add_auxotrophy_transporters => 1,
+		use_nontemplate_reactions => 0,
+		include_charge_imbalance => 0,
+		include_mass_imbalance => 0
 	});
 	#Making sure reaction KO list is an array
 	if (defined($params->{source_ontology_list}) && ref($params->{source_ontology_list}) ne "ARRAY") {
@@ -695,7 +698,10 @@ sub func_build_metabolic_model {
 		function_hash => $annotation_hash->{function_hash},
 		reaction_hash => $annotation_hash->{reaction_hash},
 		no_features => 0,
-		genome => $genome
+		genome => $genome,
+		use_nontemplate_reactions => $params->{use_nontemplate_reactions},
+		include_charge_imbalance => $params->{include_charge_imbalance},
+		include_mass_imbalance => $params->{include_mass_imbalance},
 	});
 	#Adding transport reactions
 	if ($params->{add_auxotrophy_transporters} == 1) {

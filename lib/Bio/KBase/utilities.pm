@@ -8,6 +8,8 @@ use Bio::KBase::ObjectAPI::KBaseGenomes::Feature;
 
 our $reaction_hash;
 our $compound_hash;
+our $new_reaction_hash;
+our $new_compound_hash;
 our $pathway_hash;
 our $kegg_hash;
 our $config = undef;
@@ -44,6 +46,30 @@ sub reaction_hash {
 		}
 	}
 	return $reaction_hash;
+};
+
+sub new_reaction_hash {
+	if (!defined($new_reaction_hash)) {
+		my $filename = Bio::KBase::utilities::conf("ModelSEED","reactions_json");
+		$filename =~ s/Reactions\.json/NewReactions.json/;
+		my $rxndata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE($filename)}));
+		for (my $i=0; $i < @{$rxndata}; $i++) {
+			$new_reaction_hash->{$rxndata->[$i]->{id}} = $rxndata->[$i];
+		}
+	}
+	return $new_reaction_hash;
+};
+
+sub new_compound_hash {
+	if (!defined($new_compound_hash)) {
+		my $filename = Bio::KBase::utilities::conf("ModelSEED","compounds_json");
+		$filename =~ s/Compounds\.json/NewCompounds.json/;
+		my $cpddata = Bio::KBase::ObjectAPI::utilities::FROMJSON(join("\n",@{Bio::KBase::ObjectAPI::utilities::LOADFILE($filename)}));
+		for (my $i=0; $i < @{$cpddata}; $i++) {
+			$new_compound_hash->{$cpddata->[$i]->{id}} = $cpddata->[$i];
+		}
+	}
+	return $new_compound_hash;
 };
 
 sub metabolite_hash {

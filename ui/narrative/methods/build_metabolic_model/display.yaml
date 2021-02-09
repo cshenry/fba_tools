@@ -112,6 +112,29 @@ parameters :
         placeholder : |
             Genome ID for modeling
 
+    use_nontemplate_reactions :
+        ui-name : |
+            Include nontemplate reactions
+        short-hint : |
+            Include reactions in the model that are not in the template if ontology terms reference them
+            
+    use_nontemplate_reactions :
+        ui-name : |
+            Include nontemplate reactions
+        short-hint : |
+            Include reactions in the model that are not in the template if ontology terms reference them
+            
+    accept_charge_imbalanced :
+        ui-name : |
+            Accept charge imbalanced reactions
+        short-hint : |
+            Include charge imbalanced reactions in the model that are not in the template if ontology terms reference them
+            
+    accept_mass_imbalanced :
+        ui-name : |
+            Accept mass imbalanced reactions
+        short-hint : |
+            Include mass imbalanced reactions in the model that are not in the template if ontology terms reference them
 
 icon: modelseed-teal.png
 

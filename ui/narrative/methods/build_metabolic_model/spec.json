@@ -183,6 +183,57 @@
          }
       },
       {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "use_nontemplate_reactions",
+         "advanced" : true,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : "0",
+            "checked_value" : "1"
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "accept_charge_imbalanced",
+         "advanced" : true,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : "0",
+            "checked_value" : "1"
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : false,
+         "id" : "accept_mass_imbalanced",
+         "advanced" : true,
+         "default_values" : [
+            "0"
+         ],
+         "checkbox_options" : {
+            "unchecked_value" : "0",
+            "checked_value" : "1"
+         },
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
          "field_type" : "textsubdata",
          "allow_multiple" : false,
          "optional" : true,
@@ -326,6 +377,18 @@
             {
                "target_property" : "minimum_target_flux",
                "input_parameter" : "minimum_target_flux"
+            },
+            {
+               "target_property" : "use_nontemplate_reactions",
+               "input_parameter" : "use_nontemplate_reactions"
+            },
+            {
+               "target_property" : "accept_charge_imbalanced",
+               "input_parameter" : "accept_charge_imbalanced"
+            },
+            {
+               "target_property" : "accept_mass_imbalanced",
+               "input_parameter" : "accept_mass_imbalanced"
             }
          ],
          "output_mapping" : [

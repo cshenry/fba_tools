@@ -187,6 +187,9 @@ sub NewBuildModel {
 		function_hash => {},
 		reaction_hash => {},
 		no_features => 0,
+		use_nontemplate_reactions => 0,
+		include_charge_imbalance => 0,
+		include_mass_imbalance => 0,
 		fulldb => 0,
 		gc => 0.5,
 		metagenome => undef,
@@ -231,6 +234,7 @@ sub NewBuildModel {
 	#print Data::Dumper->Dump([$args->{reaction_hash}]);
 	#Adding reactions based on input function lists
 	my $rxns = $self->reactions();
+	my $hash = {};
 	for (my $i=0; $i < @{$rxns}; $i++) {
 		my $rxn = $rxns->[$i];
 		$rxn->AddRxnToModelFromAnnotations({
@@ -241,6 +245,113 @@ sub NewBuildModel {
 			no_features => $args->{no_features},
 			fulldb => $args->{fulldb}
 		});
+	}
+	#Adding nontemplate reactions from input reaction hash
+	if ($args->{use_nontemplate_reactions} == 1 && defined($args->{reaction_hash})) {
+		my $cpd_hash = Bio::KBase::utilities::new_compound_hash();
+		my $rxn_hash = Bio::KBase::utilities::new_reaction_hash();
+		foreach my $rxnid (keys(%{$args->{reaction_hash}})) {
+			foreach my $comp (keys(%{$args->{reaction_hash}->{$rxnid}})) {
+				if ($comp eq "u") {
+					$comp = "c";
+				}
+				my $searchid = $rxnid."_".$comp;
+				if (!defined($self->getObject("reactions",$searchid))) {
+					print "Attempting to add nontemplate reaction: ".$rxnid."\n";
+					if (defined($rxn_hash->{$rxnid})) {
+						if ($args->{use_nontemplate_reactions} == 1 || $rxn_hash->{$rxnid}->{status} !~ m/MI/) {
+							if ($args->{include_charge_imbalance} == 1 || $rxn_hash->{$rxnid}->{status} !~ m/CI/) {
+								my $data = {
+									id => $searchid,
+									msname => $rxn_hash->{$rxnid}->{name},
+									name => $rxn_hash->{$rxnid}->{name},
+									type => "conditional",
+									forward_penalty => 10,
+									reverse_penalty => 10,
+									direction => $rxn_hash->{$rxnid}->{reversibility},
+									GapfillDirection => $rxn_hash->{$rxnid}->{direction},
+									maxforflux => 100,
+									maxrevflux => -100,
+									templatecompartment_ref => "~/compartments/id/c",
+									base_cost => 10,
+									templateReactionReagents => [],
+									templatecomplex_refs => [],
+									deltaG => 10000000.0,
+		            					deltaGErr => 10000000.0,
+								};
+								my $rgts = [split(/;/,$rxn_hash->{$rxnid}->{stoichiometry})];
+								my $allfound = 1;
+								foreach my $rgt (@{$rgts}) {
+									my $array = [split(/:/,$rgt)];
+									my $comp = "c";
+									if ($array->[2] == 1) {
+										$comp = "e";
+									}
+									push(@{$data->{templateReactionReagents}},{
+										templatecompcompound_ref => "~/compcompounds/id/".$array->[1]."_".$comp,
+                    						coefficient => $array->[0]
+									});
+									if (!defined($self->getObject("compcompounds",$array->[1]."_".$comp))) {
+										if (!defined($cpd_hash->{$array->[1]})) {
+											$allfound = 0;
+										} else {
+											if (!defined($cpd_hash->{$array->[1]}->{formula})) {
+												$cpd_hash->{$array->[1]}->{formula} = "";
+											}
+											if (!defined($cpd_hash->{$array->[1]}->{mass})) {
+												$cpd_hash->{$array->[1]}->{mass} = 0;
+											}
+											if (!defined($cpd_hash->{$array->[1]}->{charge})) {
+												$cpd_hash->{$array->[1]}->{charge} = 0;
+											}
+											if (!defined($self->getObject("compounds",$array->[1]))) {
+												my $tempcpd = $self->add("compounds",{
+													id => $array->[1],
+													name => $cpd_hash->{$array->[1]}->{name},
+													abbreviation => $cpd_hash->{$array->[1]}->{abbreviation},
+													isCofactor => 0,
+													aliases => $cpd_hash->{$array->[1]}->{aliases},
+													defaultCharge => $cpd_hash->{$array->[1]}->{charge},
+													mass => $cpd_hash->{$array->[1]}->{mass},
+													deltaG => $cpd_hash->{$array->[1]}->{deltaG},
+													deltaGErr => $cpd_hash->{$array->[1]}->{deltaGErr},
+            											formula	=> $cpd_hash->{$array->[1]}->{formula}
+												});
+											}
+											my $tempcompcpd = $self->add("compcompounds",{
+												id => $array->[1]."_".$comp,
+												templatecompound_ref => "~/compounds/id/".$array->[1],
+												charge => $cpd_hash->{$array->[1]}->{charge},
+												maxuptake => 0.0,
+												formula => $cpd_hash->{$array->[1]}->{formula},
+												templatecompartment_ref => "~/compartments/id/".$comp
+											});
+										}
+									}
+								}
+								if ($allfound == 1) {
+									my $temprxn = $self->add("reactions",$data);
+									$temprxn->AddRxnToModelFromAnnotations({
+										probability_threshold => $args->{probability_threshold},
+										function_hash => $args->{function_hash},
+										reaction_hash => $args->{reaction_hash},
+										model => $mdl,
+										no_features => $args->{no_features},
+										fulldb => 0
+									});
+								}
+							} else {
+								print "Filtering out charge imbalanced reaction:".$rxnid."\n";
+							}	
+						} else {
+							print "Filtering out mass imbalanced reaction:".$rxnid."\n";
+						}
+					} else {
+						print "Could not find data on nontemplate reaction: ".$rxnid."\n";
+					}
+				}
+			}
+		}
 	}
 	#Adding biomass reactions
 	my $bios = $self->biomasses();
