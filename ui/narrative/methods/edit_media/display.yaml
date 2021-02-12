@@ -134,7 +134,7 @@ description : |
     <p>Media formulations often require custom curation in order to address individual scientific objectives.  The Edit Media App allows curation of media formulations by addition or removal of compounds, modification of compound concentrations, and/or flux bound adjustments. By adjusting flux bounds, the minimum and maximum uptake/excretion rates for each compound can be constrained for model simulation. Flux balance analysis (FBA) can be done in KBase via the <a href=“https://narrative.kbase.us/#catalog/apps/fba_tools/run_flux_balance_analysis/release”>Run Flux Balance Analysis App</a>. Adjusting the flux bound is especially useful if one wants to <a href=”https://narrative.kbase.us/#catalog/apps/fba_tools/gapfill_metabolic_model/release”> gapfill a metabolic model</a> and needs to constrain compound excretion by the model (e.g., draft metabolic models should not excrete oxygen when deriving a gapfill solution).</p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+    Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, please <a href="https://www.kbase.us/support/">contact us</a>.</p>
 
 
 publications :
