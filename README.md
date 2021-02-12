@@ -10,12 +10,19 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
-### VERSION: 2.0.0 (Released 2/23/2020)
+### VERSION: 2.0.0 (Released 2/12/2021)
 - Further improving model reconstruction and gapfilling to prevent overproduction ATP
 - Adding support for building models from multiple annotation sources (with LLNL team)
 - Adding support for metagenome model reconstruction
 - Adding model characterization tools to support pathway analysis, auxotrophy prediction, and reaction classification
 - Removing outdated, obfuscated, and nonfunctional apps
+- The ability to reconstruct a model for plants has been moved, and it is now available in the Reconstruct Plant Metabolism App.
+- The gram-negative and gram-positive templates have been updated. The “Automatic selection” will use the updated templates. 
+- The old templates (legacy) can be manually selected in the parameter dropdown. It is important to note that models built using the older templates will lead to different results if your genome(s) was annotated with the latest version of RAST. We do not recommend this practice. If you are trying to use older templates for reproducibility purposes please use a genome annotated with the older version of RAST
+- In tha FBA App - Gene Knockouts functionality now allows search of genes associated with the model removing the need to manually type gene names
+- Biochemistry DB is now searchable when adding new reactions and compound to to the model with the Edit Metabolic Model App
+- view_flux_network App has been deprecated. 
+- build_multiple_metabolic_models. In addition to individual genomes, genome sets can now be used as an input for model reconstruction
 
 ### VERSION: 1.7.8 (Released 10/16/2018)
 ------------------------------------------
