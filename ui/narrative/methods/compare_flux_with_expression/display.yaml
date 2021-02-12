@@ -100,7 +100,7 @@ description : |
     <p>The bar graph visualization is generated using the <a href=“https://plot.ly/”>Plotly library</a>. Icon widgets in the top right allow the user to change the graph scale, download the image as a .png file, and access other functionalities offered through Plotly. </p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry, Janaka Edirisinghe, and Neal Conrad. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+    Chris Henry, Janaka Edirisinghe, and Neal Conrad. For questions, please <a href="https://www.kbase.us/support/">contact us</a>.</p>
 
 
 publications :

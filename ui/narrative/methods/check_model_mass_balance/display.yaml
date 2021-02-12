@@ -48,7 +48,7 @@ description : |
     <p>Mass imbalance is often found in imported models, and some of these are false positives caused by differences in chemical formulas.  After reviewing all unbalanced reactions, you can run "edit metabolic model" to fix any reactions that are incorrect.</p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
-    Chris Henry and Matt DeJongh. For questions, please <a href="http://kbase.us/contact-us/">contact us</a>.</p>
+    Chris Henry and Matt DeJongh. For questions, please <a href="https://www.kbase.us/support/">contact us</a>.</p>
 
 
 publications :
