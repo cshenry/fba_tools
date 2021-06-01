@@ -2554,7 +2554,6 @@ sub edit_metabolic_model {
 	}
 	Bio::KBase::utilities::log("Adding reactions");
 	for (my $i=0; $i < @{$params->{reactions_to_add}}; $i++) {
-		print "Initial add:".Bio::KBase::utilities::to_json($params->{reactions_to_add}->[$i],1)."\n";
 		if (defined($params->{reactions_to_add}->[$i]->{reaction_compartment_id})) {
 			if (ref($params->{reactions_to_add}->[$i]->{reaction_compartment_id}) eq "ARRAY") {
 				$params->{reactions_to_add}->[$i]->{reaction_compartment_id} = $params->{reactions_to_add}->[$i]->{reaction_compartment_id}->[0];
@@ -2567,7 +2566,6 @@ sub edit_metabolic_model {
 		}
 		my $rxnobj = $self->template()->getObject("reactions",$rxnadd->{add_reaction_id}."_".substr($rxnadd->{reaction_compartment_id},0,1));
 		if (!defined($rxnobj) && $rxnadd->{add_reaction_id} =~ m/rxn\d+/) {
-			print "NOT TEMPLATE\n";
 			$rxnobj = $self->template()->biochemistry()->getObject("reactions",$rxnadd->{add_reaction_id});
 		}
 		my $rxnref = "~/template/reactions/id/rxn00000_c";
@@ -2592,15 +2590,13 @@ sub edit_metabolic_model {
 				$rxnadd->{add_reaction_direction} = "=";
 			}
 		}
-		print "Final add:".Bio::KBase::utilities::to_json($params->{reactions_to_add}->[$i],1)."\n";
 		my $mdlrxnobj = $self->add("modelreactions",{
 			id => $rxnadd->{add_reaction_id}."_".$rxnadd->{reaction_compartment_id},
 			reaction_ref => $rxnref,
 			name => $rxnadd->{add_reaction_name},
 			direction => $rxnadd->{add_reaction_direction},
 			modelcompartment_ref => "~/modelcompartments/id/".$rxnadd->{reaction_compartment_id}
-		});
-		
+		});		
 		if (defined($rxnadd->{equation})) {
 			$self->LoadExternalReactionEquation({
 				equation => $rxnadd->{equation},
@@ -2610,7 +2606,6 @@ sub edit_metabolic_model {
 		} elsif (defined($rxnobj)) {
 			my $reactants;
 			if ($rxnobj->id() =~ m/rxn\d+_[a-z]+/) {
-				print "TEMPLATE\n";
 				$reactants = $rxnobj->templateReactionReagents();
 				for (my $i=0; $i < @{$reactants}; $i++) {
 					my $reactantobj = $self->getObject("modelcompounds",$reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1));
@@ -2632,7 +2627,6 @@ sub edit_metabolic_model {
 					});
 				}
 			} else {
-				print "NOT MODELSEED\n";
 				$reactants = $rxnobj->reagents();
 				my $multicomp = 0;
 				my $firstcomp = $reactants->[0]->compartment()->id();
@@ -2641,24 +2635,17 @@ sub edit_metabolic_model {
 						$multicomp = 1;
 					}
 				}
-				print "Multicompartment:".$multicomp."\n";
 				for (my $i=0; $i < @{$reactants}; $i++) {
 					my $rxnindex = substr($rxnadd->{reaction_compartment_id},1);
 					my $templatecomp = $reactants->[$i]->compartment()->id();
-					print "Original compartment:".$templatecomp.$rxnindex."\n";
 					my $reactcomp = $templatecomp.$rxnindex;
 					if ($multicomp == 0 || $templatecomp eq "c") {
 						$reactcomp = $rxnadd->{reaction_compartment_id};
 					}
-					print "Final compartment:".$reactcomp."\n";
 					my $cpdid = $reactants->[$i]->compound()->id();
-					print "Original cpdid:".$cpdid."\n";
 					$cpdid = $cpdid."_".$reactcomp;
-					print "Final cpdid:".$cpdid."\n";
 					my $rxnname = $reactants->[$i]->compound()->name();
-					print "Original name:".$rxnname."\n";
 					$rxnname = $rxnname."_".$reactcomp;
-					print "Final name:".$rxnname."\n";
 					my $reactantobj = $self->getObject("modelcompounds",$cpdid);
 					if (!defined($reactantobj)) {
 						my $cpdref = "~/template/compounds/cpd00000";
@@ -2682,8 +2669,6 @@ sub edit_metabolic_model {
 					});
 				}
 			}
-		} else {
-			print "NOT BIOCHEMISTRY\n";
 		}
 		if (defined($rxnadd->{add_reaction_gpr})) {
 			$mdlrxnobj->loadGPRFromString($rxnadd->{add_reaction_gpr});
