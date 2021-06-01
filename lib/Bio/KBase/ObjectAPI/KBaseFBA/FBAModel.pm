@@ -2610,46 +2610,20 @@ sub edit_metabolic_model {
 		} elsif (defined($rxnobj)) {
 			my $reactants;
 			if ($rxnobj->id() =~ m/rxn\d+_[a-z]+/) {
-				print "MODELSEED\n";
+				print "TEMPLATE\n";
 				$reactants = $rxnobj->templateReactionReagents();
-				my $multicomp = 0;
-				my $firstcomp = $reactants->[0]->templatecompcompound()->templatecompartment()->id();
-				for (my $i=1; $i < @{$reactants}; $i++) {
-					if ($reactants->[$i]->templatecompcompound()->templatecompartment()->id() ne $firstcomp) {
-						$multicomp = 1;
-					}
-				}
-				print "Multicompartment:".$multicomp."\n";
 				for (my $i=0; $i < @{$reactants}; $i++) {
-					my $rxnindex = substr($rxnadd->{reaction_compartment_id},1);
-					my $templatecomp = $reactants->[$i]->templatecompcompound()->templatecompartment()->id();
-					print "Original compartment:".$templatecomp.$rxnindex."\n";
-					my $reactcomp = $templatecomp.$rxnindex;
-					if ($multicomp == 0 || $templatecomp eq "c") {
-						$reactcomp = $rxnadd->{reaction_compartment_id};
-					}
-					print "Final compartment:".$reactcomp."\n";
-					my $cpdid = $reactants->[$i]->templatecompcompound()->id();
-					my $array = [split(/_/,$cpdid)];
-					print "Original cpdid:".$cpdid."\n";
-					$cpdid = $array->[0]."_".$reactcomp;
-					print "Final cpdid:".$cpdid."\n";
-					my $rxnname = $reactants->[$i]->templatecompcompound()->name();
-					$array = [split(/_/,$rxnname)];
-					print "Original name:".$rxnname."\n";
-					$rxnname = $array->[0]."_".$reactcomp;
-					print "Final name:".$rxnname."\n";
-					my $reactantobj = $self->getObject("modelcompounds",$cpdid);
+					my $reactantobj = $self->getObject("modelcompounds",$reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1));
 					if (!defined($reactantobj)) {
 						$reactantobj = $self->add("modelcompounds",{
-							id => $cpdid,
-							compound_ref => "~/template/compounds/".$cpdid,
+							id => $reactants->[$i]->templatecompcompound()->id().substr($rxnadd->{reaction_compartment_id},1),
+							compound_ref => "~/template/compounds/".$reactants->[$i]->templatecompcompound()->templatecompound()->id(),
 							aliases => [],
-							name => $rxnname,
+							name => $reactants->[$i]->templatecompcompound()->templatecompound()->name(),
 							charge => $reactants->[$i]->templatecompcompound()->charge(),
 							maxuptake => $reactants->[$i]->templatecompcompound()->maxuptake(),
 							formula => $reactants->[$i]->templatecompcompound()->formula(),
-							modelcompartment_ref => "~/modelcompartments/id/".$reactcomp
+							modelcompartment_ref => "~/modelcompartments/id/".$reactants->[$i]->templatecompcompound()->templatecompartment()->id().substr($rxnadd->{reaction_compartment_id},1)
 						});
 					}
 					$mdlrxnobj->add("modelReactionReagents",{
