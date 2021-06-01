@@ -545,7 +545,8 @@
 				"valid_ws_types" : []
 			}
 		},
-		"default_values" : [""],
+		{
+			"default_values" : [""],
 			"advanced" : false,
 			"id" : "add_reaction_id",
 			"field_type" : "text",
@@ -553,6 +554,7 @@
 			"optional" : false,
 			"text_options" : {
 				"valid_ws_types" : []
+			}
 		},
 		{
          "optional" : false,
