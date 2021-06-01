@@ -2681,7 +2681,7 @@ sub edit_metabolic_model {
 					print "Original cpdid:".$cpdid."\n";
 					$cpdid = $cpdid."_".$reactcomp;
 					print "Final cpdid:".$cpdid."\n";
-					my $rxnname = $reactants->[$i]->templatecompcompound()->name();
+					my $rxnname = $reactants->[$i]->compound()->name();
 					print "Original name:".$rxnname."\n";
 					$rxnname = $rxnname."_".$reactcomp;
 					print "Final name:".$rxnname."\n";
