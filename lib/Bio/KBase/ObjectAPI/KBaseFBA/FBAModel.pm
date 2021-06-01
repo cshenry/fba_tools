@@ -2660,18 +2660,42 @@ sub edit_metabolic_model {
 			} else {
 				print "NOT MODELSEED\n";
 				$reactants = $rxnobj->reagents();
+				my $multicomp = 0;
+				my $firstcomp = $reactants->[0]->compartment()->id();
+				for (my $i=1; $i < @{$reactants}; $i++) {
+					if ($reactants->[$i]->compartment()->id() ne $firstcomp) {
+						$multicomp = 1;
+					}
+				}
+				print "Multicompartment:".$multicomp."\n";
 				for (my $i=0; $i < @{$reactants}; $i++) {
-					my $reactantobj = $self->getObject("modelcompounds",$reactants->[$i]->compound()->id()."_".$reactants->[$i]->compartment()->id().substr($rxnadd->{reaction_compartment_id},1));
+					my $rxnindex = substr($rxnadd->{reaction_compartment_id},1);
+					my $templatecomp = $reactants->[$i]->compartment()->id();
+					print "Original compartment:".$templatecomp.$rxnindex."\n";
+					my $reactcomp = $templatecomp.$rxnindex;
+					if ($multicomp == 0 || $templatecomp eq "c") {
+						$reactcomp = $rxnadd->{reaction_compartment_id};
+					}
+					print "Final compartment:".$reactcomp."\n";
+					my $cpdid = $reactants->[$i]->compound()->id();
+					print "Original cpdid:".$cpdid."\n";
+					$cpdid = $cpdid."_".$reactcomp;
+					print "Final cpdid:".$cpdid."\n";
+					my $rxnname = $reactants->[$i]->templatecompcompound()->name();
+					print "Original name:".$rxnname."\n";
+					$rxnname = $rxnname."_".$reactcomp;
+					print "Final name:".$rxnname."\n";
+					my $reactantobj = $self->getObject("modelcompounds",$cpdid);
 					if (!defined($reactantobj)) {
 						my $cpdref = "~/template/compounds/cpd00000";
 						if (defined($self->template()->getObject("compounds",$reactants->[$i]->compound()->id()))) {
 							$cpdref = "~/template/compounds/".$reactants->[$i]->compound()->id();
 						}
 						$reactantobj = $self->add("modelcompounds",{
-							id => $reactants->[$i]->compound()->id()."_".$reactants->[$i]->compartment()->id().substr($rxnadd->{reaction_compartment_id},1),
+							id => $cpdid,
 							compound_ref => $cpdref,
 							aliases => [],
-							name => $reactants->[$i]->compound()->name(),
+							name => $rxnname,
 							charge => $reactants->[$i]->compound()->defaultCharge(),
 							maxuptake => 100,
 							formula => $reactants->[$i]->compound()->formula(),
