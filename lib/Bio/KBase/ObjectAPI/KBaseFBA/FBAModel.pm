@@ -2699,7 +2699,7 @@ sub edit_metabolic_model {
 							charge => $reactants->[$i]->compound()->defaultCharge(),
 							maxuptake => 100,
 							formula => $reactants->[$i]->compound()->formula(),
-							modelcompartment_ref => "~/modelcompartments/id/".$reactants->[$i]->compartment()->id().substr($rxnadd->{reaction_compartment_id},1)
+							modelcompartment_ref => "~/modelcompartments/id/".$reactcomp
 						});
 					}
 					$mdlrxnobj->add("modelReactionReagents",{
