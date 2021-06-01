@@ -151,33 +151,14 @@
             }
 		},
 		{
+			"default_values" : [""],
+			"advanced" : false,
+			"id" : "add_compound_id",
+			"field_type" : "text",
 			"allow_multiple" : false,
 			"optional" : false,
-			"field_type" : "textsubdata",
-			"id" : "add_compartment_id",
-			"advanced" : false,
-			"default_values" : [""],
 			"text_options" : {
 				"valid_ws_types" : []
-			},
-			"textsubdata_options" : {
-				"allow_custom" : false,
-				"show_src_obj" : false,
-				"subdata_selection" : {
-					"parameter_id" : "fbamodel_id",
-					"path_to_subdata" : [
-						"modelcompartments"
-					],
-					"selection_id" : "id",
-					"selection_description" : [
-						"label"
-					],
-					"subdata_included" : [
-						"modelcompartments/[*]/id",
-						"modelcompartments/[*]/label"
-					]
-				},
-				"multiselection" : false
 			}
 		},
 		{
@@ -564,21 +545,14 @@
 				"valid_ws_types" : []
 			}
 		},
-		{
-			"default_values" : [""],
+		"default_values" : [""],
 			"advanced" : false,
 			"id" : "add_reaction_id",
+			"field_type" : "text",
 			"allow_multiple" : false,
 			"optional" : false,
-			"field_type" : "dynamic_dropdown",
-            "dynamic_dropdown_options" : {
-                "data_source": "custom",
-                "service_function": "BiochemistryAPI.search_reactions",
-                "service_version": "dev",
-                "service_params": [{"query":"{{dynamic_dropdown_input}}"}],
-                "selection_id" : "id",
-                "description_template" : "<strong>{{id}}</strong>: {{name}}"
-            }
+			"text_options" : {
+				"valid_ws_types" : []
 		},
 		{
          "optional" : false,
