@@ -586,7 +586,7 @@ sub func_build_metabolic_model {
 		include_charge_imbalance => 0,
 		include_mass_imbalance => 0
 	});
-	#Making sure reaction KO list is an array
+	#Making sure the source ontology is an array
 	if (defined($params->{source_ontology_list}) && ref($params->{source_ontology_list}) ne "ARRAY") {
 		if (length($params->{source_ontology_list}) > 0) {
 			$params->{source_ontology_list} = [split(/,/,$params->{source_ontology_list})];
@@ -1745,8 +1745,8 @@ sub func_simulate_growth_on_phenotype_data {
 		reaction_ko_list => [],
 		custom_bound_list => [],
 		media_supplement_list => [],
-		all_transporters => 0,
-		positive_transporters => 0,
+		add_all_transporters => 0,
+		add_positive_transporters => 0,
 		gapfill_phenotypes => 0,
 		fit_phenotype_data => 0,
 	});
@@ -1757,9 +1757,10 @@ sub func_simulate_growth_on_phenotype_data {
 	$params->{fbamodel_output_id} = $model->id().".phenogf";
 	$handler->util_log("Retrieving phenotype set.");
 	my $pheno = $handler->util_get_object(Bio::KBase::utilities::buildref($params->{phenotypeset_id},$params->{phenotypeset_workspace}));
-	if ( $params->{all_transporters} ) {
+	if ( $params->{add_all_transporters} ) {
+		print("Adding all phenotype transporters");
 		$model->addPhenotypeTransporters({phenotypes => $pheno,positiveonly => 0});
-	} elsif ( $params->{positive_transporters} ) {
+	} elsif ( $params->{add_positive_transporters} ) {
 		$model->addPhenotypeTransporters({phenotypes => $pheno,positiveonly => 1});
 	}
 	$handler->util_log("Retrieving ".$params->{media_id}." media.");

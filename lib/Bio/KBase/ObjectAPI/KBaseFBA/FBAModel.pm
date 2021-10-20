@@ -209,6 +209,89 @@ sub load_metabolite_hashes {
 	}
 }
 
+sub addPhenotypeTransporters {
+	my $self = shift;
+	my $args = Bio::KBase::ObjectAPI::utilities::args(["phenotypes"], {
+		positiveonly => 0,
+		extracellular_compartments => [0],
+		cytosol_compartments => undef
+	}, @_);
+	#Retrieving list of compartments in model
+	my $mdlcmps = $self->modelcompartments();
+	if (!defined($args->{cytosol_compartments})) {
+		my $cmphash = {};
+		for (my $i=0; $i < @{$mdlcmps}; $i++) {
+			if ($mdlcmps->[$i]->compartment()->id() eq "c") {
+				$cmphash->{$mdlcmps->[$i]->compartmentIndex()} = 1;
+			}
+		}
+		$args->{cytosol_compartments} = [keys(%{$cmphash})];
+	}
+	if (!defined($args->{extracellular_compartments})) {
+		my $cmphash = {};
+		for (my $i=0; $i < @{$mdlcmps}; $i++) {
+			if ($mdlcmps->[$i]->compartment()->id() eq "e") {
+				$cmphash->{$mdlcmps->[$i]->compartmentIndex()} = 1;
+			}
+		}
+		$args->{extracellular_compartments} = [keys(%{$cmphash})];
+	}
+	#Building hash of phenotype transporters	
+	my $phenotypes = $args->{phenotypes}->phenotypes();
+	my $mediahash;
+	for (my $i=0; $i < @{$phenotypes}; $i++) {
+		my $phenotype = $phenotypes->[$i];
+		my $media = $phenotype->media();
+		if ($phenotype->normalizedGrowth() > 0 || $args->{positiveonly} == 0) {
+			$mediahash->{$media->_reference()} = $media;
+		} 
+	}
+	my $cpdhash;
+	foreach my $ref (keys(%{$mediahash})) {
+		my $cpds = $mediahash->{$ref}->mediacompounds();
+		foreach my $cpd (@{$cpds}) {
+			$cpdhash->{$cpd->compound()->id()} = $cpd;
+		}
+	}
+	#Identifying which compounds are transported in all compartments
+	my $needed = {};
+	my $compound_reactions = $self->compound_reaction_hash();
+	foreach my $cpd (keys(%{$cpdhash})) {
+		for (my $i=0; $i < @{$args->{cytosol_compartments}}; $i++) {
+			for (my $j=0; $j < @{$args->{extracellular_compartments}}; $j++) {
+				my $found = 0;
+				if (defined($compound_reactions->{$cpd."_e".$args->{extracellular_compartments}->[$j]})) {
+					foreach my $rxn (keys(%{$compound_reactions->{$cpd."_e".$args->{extracellular_compartments}->[$j]}})) {
+						if (defined($compound_reactions->{$cpd."_c".$args->{cytosol_compartments}->[$i]}->{$rxn})
+							&& 	$compound_reactions->{$cpd."_c".$args->{cytosol_compartments}->[$i]}->{$rxn}*$compound_reactions->{$cpd."_e".$args->{extracellular_compartments}->[$j]}->{$rxn} < 0) {
+							$found = 1;
+							last;
+						}
+					}		
+				
+				}
+				if ($found == 0) {
+					$needed->{$cpd}->{$args->{extracellular_compartments}->[$j]}->{$args->{cytosol_compartments}->[$i]} = 1;
+				}
+			}
+		}
+	}
+	#Adding transporters to model
+	foreach my $cpd (keys(%{$needed})) {
+		for my $ext_comp (keys(%{$needed->{$cpd}})) {
+			for my $cyt_comp (keys(%{$needed->{$cpd}->{$ext_comp}})) {
+				$self->addModelReaction({
+					reaction => $cpd."-".$ext_comp."-trans",
+					equation => $cpd."_e".$ext_comp." => ".$cpd."_c".$cyt_comp,
+					compartment => "c",
+					compartmentIndex => $cyt_comp,
+					addReaction => 1,
+				});
+			}
+		}
+	}
+}
+
 sub EnsureProperATPProduction {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([],{
