@@ -93,9 +93,7 @@
    "authors" : [
       "chenry"
    ],
-   "categories" : [
-      "inactive"
-   ],
+   "categories" : ["active","metabolic_modeling"],
    "name" : "fit_exometabolite_data",
    "ver" : "1.0.0",
    "job_id_output_field" : "docker",
@@ -342,5 +340,5 @@
          "id" : "minimum_target_flux"
       }
    ],
-   "visible" : false
+   "visible" : true
 }
