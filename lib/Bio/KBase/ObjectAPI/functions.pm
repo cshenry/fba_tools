@@ -588,7 +588,7 @@ sub func_build_metabolic_model {
 		include_mass_imbalance => 0
 	});
 	if ($params->{atpmedia} !~ m/\//) {
-		$params->{atpmedia} = "94026/".$params->{atpmedia}.".atp"
+		$params->{atpmedia} = "94026/".$params->{atpmedia}.".atp";
 	}
 	#Making sure the source ontology is an array
 	if (defined($params->{source_ontology_list}) && ref($params->{source_ontology_list}) ne "ARRAY") {

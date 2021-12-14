@@ -98,7 +98,7 @@ sub _buildblacklistedrxns {
 		rxn11619 rxn11620 rxn11624 rxn11626 rxn11638 rxn11648 rxn11651
 		rxn11665 rxn11666 rxn11667 rxn11698 rxn11983 rxn11986 rxn11994
 		rxn12006 rxn12007 rxn12014 rxn12017 rxn12022 rxn12160 rxn12161
-		rxn01267 rxn05294 rxn04656 rxn11279 rxn02485
+		rxn01267 rxn05294 rxn04656 rxn11279 rxn02485 rxn07588 rxn07589
 	)];
 }
 sub _buildjobid {
