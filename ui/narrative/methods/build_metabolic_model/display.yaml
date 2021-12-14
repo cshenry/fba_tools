@@ -92,6 +92,12 @@ parameters :
         short-hint : |
             Models are generated based on a default template model in KBase. Template models capture the necessary biochemical information based on user-defined scope. KBase primarily uses three template models: (i) Gram positive microbe, (ii) Gram negative microbe, and(iii) Core pathways prokaryote. These template models differ from each other by biomass composition and biochemical reaction functional associations. The “automatic selection” option attempts to classify organisms as gram negative or gram positive based on specific functional roles (e.g. cell wall) linked to gram stain differentiation. Previous versions of templates are also available for reproducibility.The automatic selection feature will always use the latest version of the templates.
 
+    atpmedia :
+        ui-name : |
+            Media for core ATP gapfilling
+        short-hint : |
+            Media for core ATP gapfilling
+
     media_supplement_list :
         ui-name : |
             Media supplement

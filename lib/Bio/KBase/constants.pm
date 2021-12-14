@@ -191,9 +191,9 @@ sub compartment_trans {
 my $template_trans = {
 	auto => "auto",
 	plant => "PlantModelTemplate",
-	"Gram negative" => "GramNegModelTemplateV3",
-	"Gram positive" => "GramPosModelTemplateV3",
-	core => "CoreModelTemplateV3",
+	"Gram negative" => "GramNegModelTemplateV4",
+	"Gram positive" => "GramPosModelTemplateV4",
+	core => "Core-11-17-21",
 	legacycore => "CoreModelTemplateV2",
 	old_grampos => "GramPosModelTemplateV2",
 	old_gramneg => "GramNegModelTemplateV2",

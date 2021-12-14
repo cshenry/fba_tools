@@ -296,7 +296,8 @@ sub EnsureProperATPProduction {
 	my $self = shift;
 	my $args = Bio::KBase::ObjectAPI::utilities::args([],{
 		anaerobe => 0,
-		max_objective_limit => 1.4
+		max_objective_limit => 1.4,
+		media => "RefGlucoseMinimal"
 	}, @_);
 	my $oldtemplate = $self->template();
 	#Need to instantiate compound and reaction objects before swapping out the template
@@ -334,7 +335,7 @@ sub EnsureProperATPProduction {
 	}
 	#Retrieving and hashing core reactions
 	my $rxnhash = {};
-	my $corerxns = $self->template()->reactions();
+	$corerxns = $self->template()->reactions();
 	for (my $i=0; $i < @{$corerxns}; $i++) {
 		$rxnhash->{$corerxns->[$i]->msid()} = $corerxns->[$i]->direction();
 	}
@@ -400,7 +401,7 @@ sub EnsureProperATPProduction {
 		workspace => "NULL",
 		fbamodel_id => $self->id(),
 		fba_output_id => $self->id().".atp.fba",
-		media_id => "RefGlucoseMinimal",
+		media_id => $args->{media},
 		media_workspace => Bio::KBase::utilities::conf("ModelSEED","default_media_workspace"),
 		target_reaction => $biorxn->id(),
 		reaction_addition_study => 1,
@@ -2976,6 +2977,62 @@ sub translate_model {
 		});
 	}
 	return {};
+}
+
+sub correct_ref_chain {
+	my $self = shift;
+	my $ref = shift;
+	my $value = shift;
+	my $array = [split(";",$value)];
+	if ($array->[0] ne $ref) {
+		unshift(@{$array},$ref);
+	}
+	return join(";",@{$array});
+}
+
+sub fix_ref_chains {
+	my $self = shift;
+	#Check if this object came from the workspace 
+	my $ref;
+	if (length($self->wsmeta) > 0) {
+		$ref = $self->_wswsid()."/".$self->_wsobjid()."/".$self->_wsversion();
+	}
+	#Turning all object refs into ref chains to ensure object can be saved
+    if (defined($ref)) {
+    	$self->genome_ref($self->correct_ref_chain($ref,$self->genome_ref()));
+    	if (defined($self->metagenome_ref())) {
+    		$self->metagenome_ref($self->correct_ref_chain($ref,$self->metagenome_ref()));
+    	}
+    	print "OLDREF:".$self->template_ref()."\n";
+    	$self->template_ref($self->correct_ref_chain($ref,$self->template_ref()));
+    	print "NEWREF:".$self->template_ref()."\n";
+    	my $new_array = [];
+    	foreach my $new_ref (@{$self->other_genome_refs()}) {
+    		push(@{$new_array},$self->correct_ref_chain($ref,$new_ref));
+    	}
+		$self->other_genome_refs($new_array);
+		$new_array = [];
+    	foreach my $new_ref (@{$self->template_refs()}) {
+    		push(@{$new_array},$self->correct_ref_chain($ref,$new_ref));
+    	}
+		$self->template_refs($new_array);
+		foreach my $gapfill (@{$self->gapfillings()}) {
+			if (defined($gapfill->fba_ref()) && length($gapfill->fba_ref()) > 0) {
+				$gapfill->fba_ref($self->correct_ref_chain($ref,$gapfill->fba_ref()));
+			}
+			if (defined($gapfill->media_ref())) {
+				$gapfill->media_ref($self->correct_ref_chain($ref,$gapfill->media_ref()));
+			}
+		}
+		foreach my $gapgen (@{$self->gapgens()}) {
+			if (defined($gapgen->fba_ref())) {
+				$gapgen->fba_ref($self->correct_ref_chain($ref,$gapgen->fba_ref()));
+			}
+			if (defined($gapgen->media_ref())) {
+				$gapgen->media_ref($self->correct_ref_chain($ref,$gapgen->media_ref()));
+			}
+		}
+    }
 }
 
 sub translate_to_localrefs {

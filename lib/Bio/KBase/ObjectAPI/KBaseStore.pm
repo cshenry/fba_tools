@@ -284,10 +284,12 @@ sub process_object {
 			});
 		}
 		if ($type eq "FBAModel" && $options->{raw} != 1) {
+			$self->cache()->{$ref}->fix_ref_chains();
 			if (defined($self->cache()->{$ref}->template_ref())) {
 				if ($self->cache()->{$ref}->template_ref() =~ m/(\w+)\/(\w+)\/*\d*/) {
+					my $array = [split(";",$self->cache()->{$ref}->template_ref())];
 					my $output = Bio::KBase::kbaseenv::get_object_info([{
-						"ref" => $self->cache()->{$ref}->template_ref()
+						"ref" => pop(@{$array})
 					}],0);
 					if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
 						$self->cache()->{$ref}->template_ref("NewKBaseModelTemplates/GramPosModelTemplate");
@@ -305,8 +307,9 @@ sub process_object {
 			if (defined($self->cache()->{$ref}->template_refs())) {
 				my $temprefs = $self->cache()->{$ref}->template_refs();
 				for (my $j=0; $j < @{$temprefs}; $j++) {
+					my $array = [split(";",$temprefs->[$j])];
 					my $output = Bio::KBase::kbaseenv::get_object_info([{
-						"ref" => $temprefs->[$j]
+						"ref" => pop(@{$array})
 					}],0);
 					if ($output->[0]->[7] eq "KBaseTemplateModels" && $output->[0]->[1] eq "GramPosModelTemplate") {
 						$temprefs->[$j] = "NewKBaseModelTemplates/GramPosModelTemplate";

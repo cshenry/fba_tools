@@ -115,6 +115,65 @@
          }
       },
       {
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "dropdown",
+         "dropdown_options" : {
+            "options" : [
+               {
+                  "id" : "Glc.O2",
+                  "display" : "Aerobic glucose",
+                  "ui_name" : "Aerobic glucose",
+                  "value" : "Glc.O2"
+               },
+               {
+                  "value" : "Pyr.O2",
+                  "ui_name" : "Aerobic pyruvate",
+                  "display" : "Aerobic pyruvate",
+                  "id" : "Pyr.O2"
+               },
+               {
+                  "id" : "Glc",
+                  "value" : "Glc",
+                  "ui_name" : "Anaerobic glucose",
+                  "display" : "Anaerobic glucose"
+               },
+               {
+                  "id" : "Pyr",
+                  "value" : "Pyr",
+                  "ui_name" : "Anaerobic pyruvate",
+                  "display" : "Anaerobic pyruvate"
+               },
+               {
+                  "id" : "For.NO3",
+                  "value" : "For.NO3",
+                  "ui_name" : "Nitrate",
+                  "display" : "Nitrate"
+               },
+               {
+                  "id" : "For.NO2",
+                  "value" : "For.NO2",
+                  "ui_name" : "Nitrite",
+                  "display" : "Nitrite"
+               },
+               {
+                  "display" : "Methanogenesis",
+                  "ui_name" : "Methanogenesis",
+                  "value" : "H2.CO2",
+                  "id" : "H2.CO2"
+               }
+            ]
+         },
+         "id" : "atpmedia",
+         "advanced" : false,
+         "default_values" : [
+            "Glc.O2"
+         ],     
+         "text_options" : {
+            "valid_ws_types" : []
+         }
+      },
+      {
          "field_type" : "checkbox",
          "allow_multiple" : false,
          "optional" : false,
@@ -385,6 +444,10 @@
             {
                "target_property" : "accept_charge_imbalanced",
                "input_parameter" : "accept_charge_imbalanced"
+            },
+            {
+               "target_property" : "atpmedia",
+               "input_parameter" : "atpmedia"
             },
             {
                "target_property" : "accept_mass_imbalanced",

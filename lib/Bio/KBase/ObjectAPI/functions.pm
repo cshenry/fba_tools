@@ -555,6 +555,7 @@ sub func_build_metabolic_model {
 	$params = Bio::KBase::utilities::args($params,["workspace","genome_id"],{
 		fbamodel_output_id => undef,
 		media_id => undef,
+		atpmedia => "KBaseMedia/RefGlucoseMinimal",
 		template_id => "auto",
 		genome_workspace => $params->{workspace},
 		template_workspace => undef,
@@ -586,6 +587,9 @@ sub func_build_metabolic_model {
 		include_charge_imbalance => 0,
 		include_mass_imbalance => 0
 	});
+	if ($params->{atpmedia} !~ m/\//) {
+		$params->{atpmedia} = "94026/".$params->{atpmedia}.".atp"
+	}
 	#Making sure the source ontology is an array
 	if (defined($params->{source_ontology_list}) && ref($params->{source_ontology_list}) ne "ARRAY") {
 		if (length($params->{source_ontology_list}) > 0) {
@@ -713,7 +717,8 @@ sub func_build_metabolic_model {
 		print "NEW METHOD\n";
 		my $output = $mdl->EnsureProperATPProduction({
 			anaerobe => $params->{anaerobe},
-			max_objective_limit => $params->{max_objective_limit}
+			max_objective_limit => $params->{max_objective_limit},
+			media => $params->{atpmedia}
 		});
 		#Predicting auxotrophy
 		if ($params->{predict_auxotrophy} == 1) {
@@ -965,10 +970,6 @@ sub func_gapfill_metabolic_model {
 		$gapfillnum = @{$fba->gapfillingSolutions()->[0]->{gapfillingSolutionReactions}};
 	}
 	$handler->util_log("Saving gapfilled model.");
-	# If the model is saved in the workspace, add it to the genome reference path
-	if ($datachannel->{fbamodel}->_reference() =~ m/^(\w+\/\w+\/\w+)/ && defined($datachannel->{fbamodel}->genome_ref()) && length($datachannel->{fbamodel}->genome_ref()) > 0) {
-		$datachannel->{fbamodel}->genome_ref($datachannel->{fbamodel}->_reference() . ";" . $datachannel->{fbamodel}->genome_ref());
-	}
 	my $modelmeta = $handler->util_save_object($datachannel->{fbamodel},Bio::KBase::utilities::buildref($params->{fbamodel_output_id},$params->{workspace}),{type => "KBaseFBA.FBAModel"});
 	$handler->util_log("Saving FBA object with gapfilling sensitivity analysis and flux.");
 	$fba->fbamodel_ref($datachannel->{fbamodel}->_reference());
@@ -1813,7 +1814,6 @@ sub func_simulate_growth_on_phenotype_data {
 		}
 		if ($params->{fit_phenotype_data} == 1) {
 			$handler->util_log("Saving gapfilled model.");
-			$model->genome_ref($model->_reference().";".$model->genome_ref());
 			my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 			$fba->fbamodel_ref($model->_reference());
 		}
@@ -4785,7 +4785,6 @@ sub func_edit_metabolic_model {
 	});
 	#Creating message to report all modifications made
 	$handler->util_log("Saving edited model to workspace");
-	$model->genome_ref($model->_reference().";".$model->genome_ref());
 	my $wsmeta = $handler->util_save_object($model,$params->{workspace}."/".$params->{fbamodel_output_id},{type => "KBaseFBA.FBAModel"});
 	my $message = "Name of edited model: ".$params->{fbamodel_output_id}."\n";
 	$message .= "Starting from: ".$params->{fbamodel_id}."\n";

@@ -597,7 +597,7 @@ module fba_tools {
 		media_id media_id;
 		workspace_name media_workspace;
 		fbamodel_id fbamodel_output_id;
-		string model_name;
+		string model_name; 
 		template_id template_id;
 		workspace_name template_workspace;
 		bool save_model;

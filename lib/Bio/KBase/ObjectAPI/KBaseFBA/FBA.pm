@@ -98,7 +98,7 @@ sub _buildblacklistedrxns {
 		rxn11619 rxn11620 rxn11624 rxn11626 rxn11638 rxn11648 rxn11651
 		rxn11665 rxn11666 rxn11667 rxn11698 rxn11983 rxn11986 rxn11994
 		rxn12006 rxn12007 rxn12014 rxn12017 rxn12022 rxn12160 rxn12161
-		rxn01267 rxn05294 rxn04656
+		rxn01267 rxn05294 rxn04656 rxn11279 rxn02485
 	)];
 }
 sub _buildjobid {
@@ -1343,6 +1343,10 @@ sub createJobDirectory {
 						my $suffix = $compindex;
 						if ($rgt->templatecompcompound()->templatecompartment()->id() eq "e") {
 							$suffix = "0";
+						}
+						my $array = [split("\/",$rgt->templatecompcompound()->templatecompound_ref())];
+						if (!defined($tmp->getObject("compounds",$array->[-1]))) {
+							print $array->[-1]." not found\n";
 						}
 						$gfcpdhash->{$rgt->templatecompcompound()->id().$suffix} = $rgt->templatecompcompound()->templatecompound();
 						if ($rgt->templatecompcompound()->templatecompartment()->id() eq "e") {

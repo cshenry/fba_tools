@@ -148,6 +148,18 @@ sub load_metabolite_hashes {
 	my $index = $args->{compartment_index};
 	my $priority = $args->{priority};
 	my $cpds = $self->compcompounds();
+	$self->add("compartments",{"index" => "0",
+         "pH" => 7,
+         "aliases" => [],
+         "name" => "Periplasm",
+         "id" => "p",
+         "hierarchy" => 3});
+	for (my $i=0; $i < @{$cpds}; $i++) {
+		if 	($cpds->[$i]->id() =~ m/_$/) {
+			$self->remove("compcompounds",$cpds->[$i]);
+		}
+	}
+	$cpds = $self->compcompounds();
 	for (my $i=0; $i < @{$cpds}; $i++) {
 		if ($cpds->[$i]->templatecompartment()->id() eq $cmp) {
 			if ($cpds->[$i]->id() =~ m/(cpd\d+)/) {
@@ -195,6 +207,8 @@ sub NewBuildModel {
 		metagenome => undef,
 		genome => undef
 	}, @_);
+	my $cpd_hash = Bio::KBase::utilities::new_compound_hash();
+	my $rxn_hash = Bio::KBase::utilities::new_reaction_hash();
 	#Creating model object
 	my $mdl = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new({
 		id => $args->{modelid},
@@ -237,19 +251,21 @@ sub NewBuildModel {
 	my $hash = {};
 	for (my $i=0; $i < @{$rxns}; $i++) {
 		my $rxn = $rxns->[$i];
-		$rxn->AddRxnToModelFromAnnotations({
-			probability_threshold => $args->{probability_threshold},
-			function_hash => $args->{function_hash},
-			reaction_hash => $args->{reaction_hash},
-			model => $mdl,
-			no_features => $args->{no_features},
-			fulldb => $args->{fulldb}
-		});
+		if ($rxn_hash->{$rxn->msid()}->{status} !~ m/MI/) {
+			$rxn->AddRxnToModelFromAnnotations({
+				probability_threshold => $args->{probability_threshold},
+				function_hash => $args->{function_hash},
+				reaction_hash => $args->{reaction_hash},
+				model => $mdl,
+				no_features => $args->{no_features},
+				fulldb => $args->{fulldb}
+			});
+		} else {
+			print $rxn->msid()."\t".$rxn_hash->{$rxn->msid()}->{status}."\n";
+		}
 	}
 	#Adding nontemplate reactions from input reaction hash
 	if ($args->{use_nontemplate_reactions} == 1 && defined($args->{reaction_hash})) {
-		my $cpd_hash = Bio::KBase::utilities::new_compound_hash();
-		my $rxn_hash = Bio::KBase::utilities::new_reaction_hash();
 		foreach my $rxnid (keys(%{$args->{reaction_hash}})) {
 			foreach my $comp (keys(%{$args->{reaction_hash}->{$rxnid}})) {
 				if ($comp eq "u") {
@@ -259,7 +275,7 @@ sub NewBuildModel {
 				if (!defined($self->getObject("reactions",$searchid))) {
 					print "Attempting to add nontemplate reaction: ".$rxnid."\n";
 					if (defined($rxn_hash->{$rxnid})) {
-						if ($args->{use_nontemplate_reactions} == 1 || $rxn_hash->{$rxnid}->{status} !~ m/MI/) {
+						if ($args->{include_mass_imbalance} == 1 || $rxn_hash->{$rxnid}->{status} !~ m/MI/) {
 							if ($args->{include_charge_imbalance} == 1 || $rxn_hash->{$rxnid}->{status} !~ m/CI/) {
 								my $data = {
 									id => $searchid,
@@ -352,6 +368,14 @@ sub NewBuildModel {
 				}
 			}
 		}
+	}
+	#Updating charge and formula from latest biochemistry
+	my $cpds = $mdl->modelcompounds();
+	for (my $i=0; $i < @{$cpds}; $i++) {
+		if (defined($cpd_hash->{$cpds->[$i]->msid()})) {
+			$cpds->[$i]->charge($cpd_hash->{$cpds->[$i]->msid()}->{charge});
+			$cpds->[$i]->formula($cpd_hash->{$cpds->[$i]->msid()}->{formula});
+		}	
 	}
 	#Adding biomass reactions
 	my $bios = $self->biomasses();
