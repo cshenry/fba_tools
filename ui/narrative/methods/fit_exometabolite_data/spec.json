@@ -129,7 +129,8 @@
          "optional" : false,
          "text_options" : {
             "valid_ws_types" : [
-               "KBaseMatrices.MetaboliteMatrix"
+               "KBaseMatrices.MetaboliteMatrix",
+	       "KBaseMatrices.ChemicalAbundanceMatrix"
             ]
          }
       },      
