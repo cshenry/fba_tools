@@ -63,9 +63,9 @@ sub util_finalize_call {
         }
     );
     
-    if ($params{"report_name"} =~ m/(.+)\/(.+)/) {
-    	$params{"workspace"} = $1;
-    	$params{"report_name"} = $2;
+    if ($params->{report_name} =~ m/(.+)\/(.+)/) {
+    	$params->{workspace} = $1;
+    	$params->{report_name} = $2;
     }
     
     my $report_html    = Bio::KBase::utilities::report_html()    // "";
