@@ -62,11 +62,13 @@ sub util_finalize_call {
             direct_html_link_index  => undef,
         }
     );
-    
+    print "Old report name:"+$params->{report_name}."\n";
     if ($params->{report_name} =~ m/(.+)\/(.+)/) {
     	$params->{workspace} = $1;
     	$params->{report_name} = $2;
+    	print "MATCH!\n";
     }
+    print "New report name:"+$params->{report_name}."\n";
     
     my $report_html    = Bio::KBase::utilities::report_html()    // "";
     my $report_message = Bio::KBase::utilities::report_message() // "";
