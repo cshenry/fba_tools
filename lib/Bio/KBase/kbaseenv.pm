@@ -78,8 +78,12 @@ sub create_report {
         direct_html_link_index => $parameters->{direct_html_link_index},
         file_links => Bio::KBase::utilities::report_files(),
         report_object_name => $parameters->{report_object_name},
-        workspace_name => $parameters->{workspace_name}
 	};
+	if ($parameters->{workspace_name} =~ m/^\d+$/) {
+		$data->{workspace_id} = $parameters->{workspace_name}+0;
+	} else {
+		$data->{workspace_name} = $parameters->{workspace_name};
+	}
 	return $kr->create_extended_report($data);
 }
 
