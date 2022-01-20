@@ -62,7 +62,12 @@ sub util_finalize_call {
             direct_html_link_index  => undef,
         }
     );
-
+    
+    if ($params{"report_name"} =~ m/(.+)\/(.+)/) {
+    	$params{"workspace"} = $1;
+    	$params{"report_name"} = $2;
+    }
+    
     my $report_html    = Bio::KBase::utilities::report_html()    // "";
     my $report_message = Bio::KBase::utilities::report_message() // "";
 
@@ -77,7 +82,7 @@ sub util_finalize_call {
         report_object_name     => $params->{ report_name },
         direct_html_link_index => $params->{ direct_html_link_index },
     } );
-    $params->{ output }{ report_ref }  = $report->{ ref };
+    $params->{ output }{ report_ref }  = $report->{ "ref" };
     $params->{ output }{ report_name } = $params->{ report_name };
 
     delete $params->{ output }{ new_fbamodel };
