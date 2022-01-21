@@ -370,13 +370,13 @@ sub NewBuildModel {
 		}
 	}
 	#Updating charge and formula from latest biochemistry
-	my $cpds = $mdl->modelcompounds();
-	for (my $i=0; $i < @{$cpds}; $i++) {
-		if (defined($cpd_hash->{$cpds->[$i]->msid()})) {
-			$cpds->[$i]->charge($cpd_hash->{$cpds->[$i]->msid()}->{charge});
-			$cpds->[$i]->formula($cpd_hash->{$cpds->[$i]->msid()}->{formula});
-		}	
-	}
+	#my $cpds = $mdl->modelcompounds();
+	#for (my $i=0; $i < @{$cpds}; $i++) {
+	#	if (defined($cpd_hash->{$cpds->[$i]->msid()})) {
+	#		$cpds->[$i]->charge($cpd_hash->{$cpds->[$i]->msid()}->{charge});
+	#		$cpds->[$i]->formula($cpd_hash->{$cpds->[$i]->msid()}->{formula});
+	#	}	
+	#}
 	#Adding biomass reactions
 	my $bios = $self->biomasses();
 	for (my $i=0; $i < @{$bios}; $i++) {
