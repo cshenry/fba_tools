@@ -144,7 +144,7 @@
             "dynamic_dropdown_options" : {
                 "data_source": "custom",
                 "service_function": "BiochemistryAPI.search_compounds",
-                "service_version": "dev",
+                "service_version": "release",
                 "service_params": [{"query":"{{dynamic_dropdown_input}}"}],
                 "selection_id" : "id",
                 "description_template" : "<strong>{{id}}</strong>: {{name}}"
