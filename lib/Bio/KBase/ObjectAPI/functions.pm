@@ -4885,6 +4885,8 @@ sub func_compare_models {
 		my $model=undef;
 		eval {
 			$model = $handler->util_get_object($model_ref,{raw => 1});
+			$output = Bio::KBase::kbaseenv::get_object_info([{"ref"=>$model_ref}],0);
+			$model->{id} = $output->[1];
 			print("Downloaded model: $model->{id}\n");
 			if (defined($modelnamehash->{$model->{id}})) {
 				die "Duplicate model names are not permitted\n";
