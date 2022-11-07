@@ -100,6 +100,12 @@ parameters :
             Media supplement
         short-hint : |
             Specify additional compounds to add to the media one at a time by using the add (+) button.
+    
+    source_media_supplement_list :
+        ui-name : |
+            Source model media supplement
+        short-hint : |
+            Specify compounds from the source model to allow for consumption
 
 
 icon: modelseed-teal.png

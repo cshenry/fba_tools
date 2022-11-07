@@ -5,7 +5,7 @@ use POSIX;
 use Data::Dumper::Concise;
 use Data::UUID;
 use Bio::KBase::utilities;
-use annotation_ontology_api::annotation_ontology_apiServiceClient;
+#use annotation_ontology_api::annotation_ontology_apiServiceClient;
 use Bio::KBase::constants;
 use XML::DOM;
 use Bio::KBase::Templater qw( render_template );
@@ -86,6 +86,7 @@ sub util_build_fba {
 		reaction_ko_list => [],
 		custom_bound_list => [],
 		media_supplement_list => [],
+		source_media_supplement_list => [],
 		source_metabolite_list => [],
 		target_metabolite_list => [],
 		reaction_list => [],#For reaction addition analysis
@@ -311,6 +312,33 @@ sub util_build_fba {
 	}
 	if (ref($params->{media_supplement_list}) ne 'ARRAY') {
 		$params->{media_supplement_list} = [split(/[\n;,\|]+/,$params->{media_supplement_list})];
+	}
+	if (ref($params->{source_media_supplement_list}) ne 'ARRAY') {
+		$params->{source_media_supplement_list} = [split(/[\n;,\|]+/,$params->{source_media_supplement_list})];		
+	}
+	if (defined($params->{source_model})) {
+		for (my $i=0; $i < @{$params->{source_media_supplement_list}}; $i++) {
+			my $cpd = $params->{source_model}->searchForCompound($params->{source_media_supplement_list}->[$i]);
+			if (defined($cpd)) {
+				my $cpde = $params->{model}->addCompoundToModel({
+					compound => $cpd->compound(),
+					modelCompartment => $params->{model}->getObject("modelcompartments","e0")
+				});
+				my $cpdc = $params->{model}->addCompoundToModel({
+					compound => $cpd->compound(),
+					modelCompartment => $params->{model}->getObject("modelcompartments","c0")
+				});
+				$params->{model}->addModelReaction({
+					reaction => $cpd->compound()->name()."Transport",
+					equation => $cpde->id()." => ".$cpdc->id(),
+			    	direction => ">",
+			    	compartment => "c",
+			    	compartmentIndex => 0,
+			    	name => $cpd->compound()->name()."Transport"
+				});
+				$fbaobj->addLinkArrayItem("additionalCpds",$cpdc);
+			}
+		}
 	}
 	foreach my $compound (@{$params->{media_supplement_list}}) {
 		my $cpdObj = $params->{model}->searchForCompound($compound);
@@ -573,7 +601,7 @@ sub func_build_metabolic_model {
 		activation_coefficient => 0.5,
 		omega => 0,
 		objective_fraction => 0.1,
-		minimum_target_flux => 0.1,
+		minimum_target_flux => 0.05,
 		number_of_solutions => 1,
 		max_objective_limit => 1.2,
 		predict_auxotrophy => 0,
@@ -878,6 +906,7 @@ sub func_gapfill_metabolic_model {
 		blacklist => [],
 		custom_bound_list => [],
 		media_supplement_list => [],
+		source_media_supplement_list => [],
 		expseries_id => undef,
 		expseries_workspace => $params->{workspace},
 		expression_condition => undef,
@@ -3878,7 +3907,7 @@ sub func_run_pickaxe {
 			#Checking SEED database for metabolomics matches
 			#print "Seed-search:".$data->{id}."\t".$data->{name}."\t".$data->{smiles}."\t".$data->{inchikey}."\n";
 			Bio::KBase::ObjectAPI::functions::check_for_peakmatch($datachannel->{metabolomics_data},$datachannel->{cpd_hits},$datachannel->{peak_hits},$data,0,"seed",1,$datachannel->{KBaseMetabolomicsObject});
-			if (defined($data->{dblinks}->{$datachannel->{KBaseMetabolomicsObject}})) {
+			if (defined($data->{dblinks}) && defined($data->{dblinks}->{$datachannel->{KBaseMetabolomicsObject}})) {
 				$datachannel->{template_data}->{overview}->{modelseed_hit_peaks}++;
 			}
 		}
@@ -4173,7 +4202,7 @@ sub func_run_pickaxe {
 			if ($params->{prune} eq 'model') {
 				$command .= ' -p '.$directory.'/inputModel.tsv';
 			} elsif ($params->{prune} eq 'biochemistry') {
-				$command .= ' -p '.Bio::KBase::utilities::conf("kb_pickaxe","pickaxe_path").'/data/Compounds.json';
+				$command .= ' -p '.Bio::KBase::utilities::conf("kb_pickaxe","biochem_path").'/data/Compounds.json';
 			}
 			#Running pickax
 			system($command);
@@ -4379,6 +4408,7 @@ sub func_run_pickaxe {
 					}   
 				}
 				#If keeping all compounds and seed, targets, metabolite hits are under the limit, fill in remaining slots with diverse compounds
+				print "New compounds:".$newcpdcount.";".$params->{max_new_cpds_per_gen_per_ruleset}."\n";
 				if ($newcpdcount < $params->{max_new_cpds_per_gen_per_ruleset} && $params->{discard_orphan_hits} == 0) {
 						#Determine how many more compounds I can add without exceeding my limit
 						my $remaining = $params->{max_new_cpds_per_gen_per_ruleset} - $newcpdcount;
@@ -4387,6 +4417,7 @@ sub func_run_pickaxe {
 						if ($prunedcount < $remaining) {
 							$remaining = $prunedcount;
 						}
+						print "Pruned:".$prunedcount.";".$remaining."\n";
 						for (my $i=0; $i < $remaining; $i++) {
 							my $keylist = [keys(%{$initially_pruned})];
 							my $numkeys = @{$keylist};
@@ -4447,6 +4478,7 @@ sub func_run_pickaxe {
 						}
 					}
 					if ($pruned == 1) {
+						print "PRUNED!";
 						$datachannel->{template_data}->{generations}->[$datachannel->{currentgen}]->{filtered_reactions}++;
 						$datachannel->{template_data}->{overview}->{filtered_reactions}++;
 					}
@@ -4550,6 +4582,7 @@ sub func_run_pickaxe {
 		}
 		$datachannel->{fbamodel} = Bio::KBase::ObjectAPI::KBaseFBA::FBAModel->new($datachannel->{fbamodel});
 		$datachannel->{fbamodel}->parent($handler->util_store());
+		print "Saving:".$params->{workspace}."/".$params->{out_model_id}."\n";
 		my $wsmeta = $handler->util_save_object($datachannel->{fbamodel},$params->{workspace}."/".$params->{out_model_id},{type => "KBaseFBA.FBAModel"});
 		my $mdlrxns = $datachannel->{fbamodel}->modelreactions();
 		my $rxncounts = {};
@@ -4885,7 +4918,7 @@ sub func_compare_models {
 		my $model=undef;
 		eval {
 			$model = $handler->util_get_object($model_ref,{raw => 1});
-			$output = Bio::KBase::kbaseenv::get_object_info([{"ref"=>$model_ref}],0);
+			my $output = Bio::KBase::kbaseenv::get_object_info([{"ref"=>$model_ref}],0);
 			$model->{id} = $output->[1];
 			print("Downloaded model: $model->{id}\n");
 			if (defined($modelnamehash->{$model->{id}})) {

@@ -46,6 +46,10 @@
                "target_property" : "media_supplement_list"
             },
             {
+               "input_parameter" : "source_media_supplement_list",
+               "target_property" : "source_media_supplement_list"
+            },
+            {
                "input_parameter" : "minimum_target_flux",
                "target_property" : "minimum_target_flux"
             }
@@ -281,6 +285,39 @@
             ""
          ],
          "id" : "media_supplement_list",
+         "optional" : true,
+         "allow_multiple" : false,
+         "field_type" : "textsubdata"
+      },
+      {
+         "text_options" : {
+            "valid_ws_types" : []
+         },
+         "textsubdata_options" : {
+            "allow_custom" : false,
+            "show_src_obj" : true,
+            "subdata_selection" : {
+               "parameter_id" : "source_fbamodel_id",
+               "path_to_subdata" : [
+                  "modelcompounds"
+               ],
+               "selection_id" : "id",
+               "selection_description" : [
+                  "name"
+               ],
+               "subdata_included" : [
+                  "modelcompounds/[*]/id",
+                  "modelcompounds/[*]/name"
+               ],
+               "description_template" : "- {{name}}"
+            },
+            "multiselection" : true
+         },
+         "advanced" : true,
+         "default_values" : [
+            ""
+         ],
+         "id" : "source_media_supplement_list",
          "optional" : true,
          "allow_multiple" : false,
          "field_type" : "textsubdata"
