@@ -6324,6 +6324,7 @@ sub func_bulk_export {
 		phenotype_format => "tsv",
 		phenosim_format => "tsv",
 	});
+	my $dlrefs = [];
 	my $translation = {
 		"KBaseFBA.FBA" => "fba",
 		"KBaseBiochem.Media" => "media",
@@ -6380,10 +6381,12 @@ sub func_bulk_export {
 			object => $translation->{$object->_type()},
 			path => $export_dir
 		});
+		$dlrefs.append($item);
 	}
 	chdir(Bio::KBase::utilities::conf("fba_tools","scratch"));
 	system("tar -czf model_objects.tgz model_objects");
 	return {
+		downloaded_refs => $dlrefs,
 		name => "model_objects.tgz",
 		description => "Zip archive of ".$count." model objects.",
 		path => Bio::KBase::utilities::conf("fba_tools","scratch")."/model_objects.tgz"
