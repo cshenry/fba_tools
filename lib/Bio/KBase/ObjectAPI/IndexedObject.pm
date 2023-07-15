@@ -323,6 +323,16 @@ sub _buildIndex {
 					push(@{$newIndex->{$item}},$so_info);
 				}
 			} else {
+				if ($subatt eq "id" && index($data, "/") >= 0) {
+					my @array = split(/\//, $data);
+					my $tail = pop(@array);
+					print "WARNING! ID FOUND WITH / IN IT! THIS SHOULD BE FIXED BEFORE PROCEEDING! HACKING AS A FIX BY ADDING ".$tail." TO INDEX\n";
+					if (!defined($newIndex->{$tail})) {
+						push(@{$newIndex->{$tail}},$so_info);
+					} else {
+						print "WARNING! MULTIPLE OBJECTS HAVE THE SAME ".$tail.". THE / IN THE ID REALLY NEEDS TO BE FIXED!!\n";
+					}
+				}
 				push(@{$newIndex->{$data}},$so_info);
 			}
 		}
