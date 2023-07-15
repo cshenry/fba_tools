@@ -6381,7 +6381,7 @@ sub func_bulk_export {
 			object => $translation->{$object->_type()},
 			path => $export_dir
 		});
-		$dlrefs.append($item);
+		push(@{$dlrefs},$item);
 	}
 	chdir(Bio::KBase::utilities::conf("fba_tools","scratch"));
 	system("tar -czf model_objects.tgz model_objects");
