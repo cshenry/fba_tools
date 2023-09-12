@@ -1,4 +1,4 @@
-package annotation_ontology_api::annotation_ontology_apiClient;
+package installed_clients::cb_annotation_ontology_apiClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -22,12 +22,12 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-annotation_ontology_api::annotation_ontology_apiClient
+installed_clients::cb_annotation_ontology_apiClient
 
 =head1 DESCRIPTION
 
 
-A KBase module: annotation_ontology_api
+A KBase module: cb_annotation_ontology_api
 
 
 =cut
@@ -38,7 +38,7 @@ sub new
     
 
     my $self = {
-	client => annotation_ontology_api::annotation_ontology_apiClient::RpcClient->new,
+	client => installed_clients::cb_annotation_ontology_apiClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -142,7 +142,7 @@ sub _check_job {
         }
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "annotation_ontology_api._check_job",
+        method => "cb_annotation_ontology_api._check_job",
         params => \@args});
     if ($result) {
         if ($result->is_error) {
@@ -175,8 +175,8 @@ sub _check_job {
 =begin html
 
 <pre>
-$params is an annotation_ontology_api.GetAnnotationOntologyEventsParams
-$output is an annotation_ontology_api.GetAnnotationOntologyEventsOutput
+$params is a cb_annotation_ontology_api.GetAnnotationOntologyEventsParams
+$output is a cb_annotation_ontology_api.GetAnnotationOntologyEventsOutput
 GetAnnotationOntologyEventsParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	input_workspace has a value which is a string
@@ -184,7 +184,7 @@ GetAnnotationOntologyEventsParams is a reference to a hash where the following k
 	query_genes has a value which is a reference to a list where each element is a string
 	standardize_modelseed_ids has a value which is an int
 GetAnnotationOntologyEventsOutput is a reference to a hash where the following keys are defined:
-	events has a value which is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyEvent
+	events has a value which is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyEvent
 AnnotationOntologyEvent is a reference to a hash where the following keys are defined:
 	event_id has a value which is a string
 	description has a value which is a string
@@ -193,7 +193,7 @@ AnnotationOntologyEvent is a reference to a hash where the following keys are de
 	method_version has a value which is a string
 	timestamp has a value which is a string
 	feature_types has a value which is a reference to a hash where the key is a string and the value is a string
-	ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyTerm
+	ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyTerm
 AnnotationOntologyTerm is a reference to a hash where the following keys are defined:
 	term has a value which is a string
 	modelseed_ids has a value which is a reference to a list where each element is a string
@@ -205,8 +205,8 @@ AnnotationOntologyTerm is a reference to a hash where the following keys are def
 
 =begin text
 
-$params is an annotation_ontology_api.GetAnnotationOntologyEventsParams
-$output is an annotation_ontology_api.GetAnnotationOntologyEventsOutput
+$params is a cb_annotation_ontology_api.GetAnnotationOntologyEventsParams
+$output is a cb_annotation_ontology_api.GetAnnotationOntologyEventsOutput
 GetAnnotationOntologyEventsParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	input_workspace has a value which is a string
@@ -214,7 +214,7 @@ GetAnnotationOntologyEventsParams is a reference to a hash where the following k
 	query_genes has a value which is a reference to a list where each element is a string
 	standardize_modelseed_ids has a value which is an int
 GetAnnotationOntologyEventsOutput is a reference to a hash where the following keys are defined:
-	events has a value which is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyEvent
+	events has a value which is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyEvent
 AnnotationOntologyEvent is a reference to a hash where the following keys are defined:
 	event_id has a value which is a string
 	description has a value which is a string
@@ -223,7 +223,7 @@ AnnotationOntologyEvent is a reference to a hash where the following keys are de
 	method_version has a value which is a string
 	timestamp has a value which is a string
 	feature_types has a value which is a reference to a hash where the key is a string and the value is a string
-	ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyTerm
+	ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyTerm
 AnnotationOntologyTerm is a reference to a hash where the following keys are defined:
 	term has a value which is a string
 	modelseed_ids has a value which is a reference to a list where each element is a string
@@ -283,7 +283,7 @@ sub _get_annotation_ontology_events_submit {
         $context = {'service_ver' => $self->{service_version}};
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "annotation_ontology_api._get_annotation_ontology_events_submit",
+        method => "cb_annotation_ontology_api._get_annotation_ontology_events_submit",
         params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
@@ -316,8 +316,8 @@ sub _get_annotation_ontology_events_submit {
 =begin html
 
 <pre>
-$params is an annotation_ontology_api.AddAnnotationOntologyEventsParams
-$output is an annotation_ontology_api.AddAnnotationOntologyEventsOutput
+$params is a cb_annotation_ontology_api.AddAnnotationOntologyEventsParams
+$output is a cb_annotation_ontology_api.AddAnnotationOntologyEventsOutput
 AddAnnotationOntologyEventsParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	input_workspace has a value which is a string
@@ -325,7 +325,7 @@ AddAnnotationOntologyEventsParams is a reference to a hash where the following k
 	output_workspace has a value which is a string
 	clear_existing has a value which is an int
 	overwrite_matching has a value which is an int
-	events has a value which is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyEvent
+	events has a value which is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyEvent
 AnnotationOntologyEvent is a reference to a hash where the following keys are defined:
 	event_id has a value which is a string
 	description has a value which is a string
@@ -334,7 +334,7 @@ AnnotationOntologyEvent is a reference to a hash where the following keys are de
 	method_version has a value which is a string
 	timestamp has a value which is a string
 	feature_types has a value which is a reference to a hash where the key is a string and the value is a string
-	ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyTerm
+	ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyTerm
 AnnotationOntologyTerm is a reference to a hash where the following keys are defined:
 	term has a value which is a string
 	modelseed_ids has a value which is a reference to a list where each element is a string
@@ -348,8 +348,8 @@ AddAnnotationOntologyEventsOutput is a reference to a hash where the following k
 
 =begin text
 
-$params is an annotation_ontology_api.AddAnnotationOntologyEventsParams
-$output is an annotation_ontology_api.AddAnnotationOntologyEventsOutput
+$params is a cb_annotation_ontology_api.AddAnnotationOntologyEventsParams
+$output is a cb_annotation_ontology_api.AddAnnotationOntologyEventsOutput
 AddAnnotationOntologyEventsParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	input_workspace has a value which is a string
@@ -357,7 +357,7 @@ AddAnnotationOntologyEventsParams is a reference to a hash where the following k
 	output_workspace has a value which is a string
 	clear_existing has a value which is an int
 	overwrite_matching has a value which is an int
-	events has a value which is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyEvent
+	events has a value which is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyEvent
 AnnotationOntologyEvent is a reference to a hash where the following keys are defined:
 	event_id has a value which is a string
 	description has a value which is a string
@@ -366,7 +366,7 @@ AnnotationOntologyEvent is a reference to a hash where the following keys are de
 	method_version has a value which is a string
 	timestamp has a value which is a string
 	feature_types has a value which is a reference to a hash where the key is a string and the value is a string
-	ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyTerm
+	ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyTerm
 AnnotationOntologyTerm is a reference to a hash where the following keys are defined:
 	term has a value which is a string
 	modelseed_ids has a value which is a reference to a list where each element is a string
@@ -428,7 +428,7 @@ sub _add_annotation_ontology_events_submit {
         $context = {'service_ver' => $self->{service_version}};
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "annotation_ontology_api._add_annotation_ontology_events_submit",
+        method => "cb_annotation_ontology_api._add_annotation_ontology_events_submit",
         params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
@@ -462,7 +462,7 @@ sub status
         $context = {'service_ver' => $self->{service_version}};
     }
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "annotation_ontology_api._status_submit",
+        method => "cb_annotation_ontology_api._status_submit",
         params => \@args, context => $context});
     if ($result) {
         if ($result->is_error) {
@@ -500,7 +500,7 @@ sub status
 sub version {
     my ($self) = @_;
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "annotation_ontology_api.version",
+        method => "cb_annotation_ontology_api.version",
         params => [],
     });
     if ($result) {
@@ -543,10 +543,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for annotation_ontology_api::annotation_ontology_apiClient\n";
+        warn "New client version available for installed_clients::cb_annotation_ontology_apiClient\n";
     }
     if ($sMajor == 0) {
-        warn "annotation_ontology_api::annotation_ontology_apiClient version is $svr_version. API subject to change.\n";
+        warn "installed_clients::cb_annotation_ontology_apiClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -607,7 +607,7 @@ method has a value which is a string
 method_version has a value which is a string
 timestamp has a value which is a string
 feature_types has a value which is a reference to a hash where the key is a string and the value is a string
-ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyTerm
+ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyTerm
 
 </pre>
 
@@ -623,7 +623,7 @@ method has a value which is a string
 method_version has a value which is a string
 timestamp has a value which is a string
 feature_types has a value which is a reference to a hash where the key is a string and the value is a string
-ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyTerm
+ontology_terms has a value which is a reference to a hash where the key is a string and the value is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyTerm
 
 
 =end text
@@ -682,7 +682,7 @@ standardize_modelseed_ids has a value which is an int
 
 <pre>
 a reference to a hash where the following keys are defined:
-events has a value which is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyEvent
+events has a value which is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyEvent
 
 </pre>
 
@@ -691,7 +691,7 @@ events has a value which is a reference to a list where each element is an annot
 =begin text
 
 a reference to a hash where the following keys are defined:
-events has a value which is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyEvent
+events has a value which is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyEvent
 
 
 =end text
@@ -718,7 +718,7 @@ output_name has a value which is a string
 output_workspace has a value which is a string
 clear_existing has a value which is an int
 overwrite_matching has a value which is an int
-events has a value which is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyEvent
+events has a value which is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyEvent
 
 </pre>
 
@@ -733,7 +733,7 @@ output_name has a value which is a string
 output_workspace has a value which is a string
 clear_existing has a value which is an int
 overwrite_matching has a value which is an int
-events has a value which is a reference to a list where each element is an annotation_ontology_api.AnnotationOntologyEvent
+events has a value which is a reference to a list where each element is a cb_annotation_ontology_api.AnnotationOntologyEvent
 
 
 =end text
@@ -774,7 +774,7 @@ output_ref has a value which is a string
 
 =cut
 
-package annotation_ontology_api::annotation_ontology_apiClient::RpcClient;
+package installed_clients::cb_annotation_ontology_apiClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;

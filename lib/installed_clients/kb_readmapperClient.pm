@@ -1,4 +1,4 @@
-package kb_readmapper::kb_readmapperClient;
+package installed_clients::kb_readmapperClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -22,7 +22,7 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-kb_readmapper::kb_readmapperClient
+installed_clients::kb_readmapperClient
 
 =head1 DESCRIPTION
 
@@ -38,7 +38,7 @@ sub new
     
 
     my $self = {
-	client => kb_readmapper::kb_readmapperClient::RpcClient->new,
+	client => installed_clients::kb_readmapperClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -55,7 +55,7 @@ sub new
     if (exists $arg_hash{"async_job_check_max_time_ms"}) {
         $self->{async_job_check_max_time} = $arg_hash{"async_job_check_max_time_ms"} / 1000.0;
     }
-    my $service_version = 'dev';
+    my $service_version = 'release';
     if (exists $arg_hash{"service_version"}) {
         $service_version = $arg_hash{"service_version"};
     }
@@ -360,10 +360,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for kb_readmapper::kb_readmapperClient\n";
+        warn "New client version available for installed_clients::kb_readmapperClient\n";
     }
     if ($sMajor == 0) {
-        warn "kb_readmapper::kb_readmapperClient version is $svr_version. API subject to change.\n";
+        warn "installed_clients::kb_readmapperClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -403,7 +403,7 @@ file_name has a value which is a string
 
 =cut
 
-package kb_readmapper::kb_readmapperClient::RpcClient;
+package installed_clients::kb_readmapperClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;

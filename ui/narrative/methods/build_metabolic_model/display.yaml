@@ -4,7 +4,7 @@
 name     : Build Metabolic Model
 
 tooltip  : |
-    Construct a draft metabolic model based on an annotated genome.
+    Construct a draft metabolic model based on an annotated genome.<b>This app is now obsolete, replaced by the new ModelSEED2 app: MS2 - Build Prokaryotic Metabolic Models.</b>
 
 screenshots : []
 

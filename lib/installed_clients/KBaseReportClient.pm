@@ -1,4 +1,4 @@
-package KBaseReport::KBaseReportClient;
+package installed_clients::KBaseReportClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -22,12 +22,12 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-KBaseReport::KBaseReportClient
+installed_clients::KBaseReportClient
 
 =head1 DESCRIPTION
 
 
-Module for a simple WS data object report type.
+Module for workspace data object reports, which show the results of running a job in an SDK app.
 
 
 =cut
@@ -38,7 +38,7 @@ sub new
     
 
     my $self = {
-	client => KBaseReport::KBaseReportClient::RpcClient->new,
+	client => installed_clients::KBaseReportClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -155,10 +155,9 @@ sub _check_job {
             return $result->result->[0];
         }
     } else {
-        return {
-            finished  => 0,
-            failed  => 1,
-        };
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _check_job",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_check_job');
     }
 }
 
@@ -179,27 +178,22 @@ sub _check_job {
 $params is a KBaseReport.CreateParams
 $info is a KBaseReport.ReportInfo
 CreateParams is a reference to a hash where the following keys are defined:
-	report has a value which is a KBaseReport.Report
+	report has a value which is a KBaseReport.SimpleReport
 	workspace_name has a value which is a string
-Report is a reference to a hash where the following keys are defined:
+	workspace_id has a value which is an int
+SimpleReport is a reference to a hash where the following keys are defined:
 	text_message has a value which is a string
+	direct_html has a value which is a string
+	template has a value which is a KBaseReport.TemplateParams
 	warnings has a value which is a reference to a list where each element is a string
 	objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
-	file_links has a value which is a reference to a list where each element is a KBaseReport.LinkedFile
-	html_links has a value which is a reference to a list where each element is a KBaseReport.LinkedFile
-	direct_html has a value which is a string
-	direct_html_link_index has a value which is an int
+TemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	template_data_json has a value which is a string
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	description has a value which is a string
 ws_id is a string
-LinkedFile is a reference to a hash where the following keys are defined:
-	handle has a value which is a KBaseReport.handle_ref
-	description has a value which is a string
-	name has a value which is a string
-	label has a value which is a string
-	URL has a value which is a string
-handle_ref is a string
 ReportInfo is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	name has a value which is a string
@@ -213,27 +207,22 @@ ReportInfo is a reference to a hash where the following keys are defined:
 $params is a KBaseReport.CreateParams
 $info is a KBaseReport.ReportInfo
 CreateParams is a reference to a hash where the following keys are defined:
-	report has a value which is a KBaseReport.Report
+	report has a value which is a KBaseReport.SimpleReport
 	workspace_name has a value which is a string
-Report is a reference to a hash where the following keys are defined:
+	workspace_id has a value which is an int
+SimpleReport is a reference to a hash where the following keys are defined:
 	text_message has a value which is a string
+	direct_html has a value which is a string
+	template has a value which is a KBaseReport.TemplateParams
 	warnings has a value which is a reference to a list where each element is a string
 	objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
-	file_links has a value which is a reference to a list where each element is a KBaseReport.LinkedFile
-	html_links has a value which is a reference to a list where each element is a KBaseReport.LinkedFile
-	direct_html has a value which is a string
-	direct_html_link_index has a value which is an int
+TemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	template_data_json has a value which is a string
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	description has a value which is a string
 ws_id is a string
-LinkedFile is a reference to a hash where the following keys are defined:
-	handle has a value which is a KBaseReport.handle_ref
-	description has a value which is a string
-	name has a value which is a string
-	label has a value which is a string
-	URL has a value which is a string
-handle_ref is a string
 ReportInfo is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	name has a value which is a string
@@ -243,7 +232,9 @@ ReportInfo is a reference to a hash where the following keys are defined:
 
 =item Description
 
-Create a KBaseReport with a brief summary of an App run.
+Function signature for the create() method -- generate a simple,
+text-based report for an app run.
+@deprecated KBaseReport.create_extended_report
 
 =back
 
@@ -332,6 +323,7 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
 	warnings has a value which is a reference to a list where each element is a string
 	html_links has a value which is a reference to a list where each element is a KBaseReport.File
+	template has a value which is a KBaseReport.TemplateParams
 	direct_html has a value which is a string
 	direct_html_link_index has a value which is an int
 	file_links has a value which is a reference to a list where each element is a KBaseReport.File
@@ -339,6 +331,7 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	html_window_height has a value which is a float
 	summary_window_height has a value which is a float
 	workspace_name has a value which is a string
+	workspace_id has a value which is an int
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	description has a value which is a string
@@ -346,8 +339,13 @@ ws_id is a string
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
+	template has a value which is a KBaseReport.TemplateParams
 	name has a value which is a string
+	label has a value which is a string
 	description has a value which is a string
+TemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	template_data_json has a value which is a string
 ReportInfo is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	name has a value which is a string
@@ -365,6 +363,7 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
 	warnings has a value which is a reference to a list where each element is a string
 	html_links has a value which is a reference to a list where each element is a KBaseReport.File
+	template has a value which is a KBaseReport.TemplateParams
 	direct_html has a value which is a string
 	direct_html_link_index has a value which is an int
 	file_links has a value which is a reference to a list where each element is a KBaseReport.File
@@ -372,6 +371,7 @@ CreateExtendedReportParams is a reference to a hash where the following keys are
 	html_window_height has a value which is a float
 	summary_window_height has a value which is a float
 	workspace_name has a value which is a string
+	workspace_id has a value which is an int
 WorkspaceObject is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	description has a value which is a string
@@ -379,8 +379,13 @@ ws_id is a string
 File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
+	template has a value which is a KBaseReport.TemplateParams
 	name has a value which is a string
+	label has a value which is a string
 	description has a value which is a string
+TemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	template_data_json has a value which is a string
 ReportInfo is a reference to a hash where the following keys are defined:
 	ref has a value which is a KBaseReport.ws_id
 	name has a value which is a string
@@ -390,7 +395,8 @@ ReportInfo is a reference to a hash where the following keys are defined:
 
 =item Description
 
-A more complex function to create a report that enables the user to specify files and html view that the report should link to
+Create a report for the results of an app run. This method handles file
+and HTML zipping, uploading, and linking as well as HTML rendering.
 
 =back
 
@@ -459,6 +465,277 @@ sub _create_extended_report_submit {
 }
 
  
+
+
+=head2 render_template
+
+  $output_file_path = $obj->render_template($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a KBaseReport.RenderTemplateParams
+$output_file_path is a KBaseReport.File
+RenderTemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	output_file has a value which is a string
+	template_data_json has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	template has a value which is a KBaseReport.TemplateParams
+	name has a value which is a string
+	label has a value which is a string
+	description has a value which is a string
+TemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	template_data_json has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a KBaseReport.RenderTemplateParams
+$output_file_path is a KBaseReport.File
+RenderTemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	output_file has a value which is a string
+	template_data_json has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	template has a value which is a KBaseReport.TemplateParams
+	name has a value which is a string
+	label has a value which is a string
+	description has a value which is a string
+TemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	template_data_json has a value which is a string
+
+
+=end text
+
+=item Description
+
+Render a file from a template. This method takes a template file and
+a data structure, renders the template, and saves the results to a file.
+It returns the output file path in the form
+{ 'path': '/path/to/file' }
+
+To ensure that the template and the output file are accessible to both
+the KBaseReport service and the app requesting the template rendering, the
+template file should be copied into the shared `scratch` directory and the
+output_file location should also be in `scratch`.
+
+See https://github.com/kbaseIncubator/kbase_report_templates for sample
+page templates, standard includes, and instructions on creating your own
+templates.
+
+=back
+
+=cut
+
+sub render_template
+{
+    my($self, @args) = @_;
+    my $job_id = $self->_render_template_submit(@args);
+    my $async_job_check_time = $self->{async_job_check_time};
+    while (1) {
+        Time::HiRes::sleep($async_job_check_time);
+        $async_job_check_time *= $self->{async_job_check_time_scale_percent} / 100.0;
+        if ($async_job_check_time > $self->{async_job_check_max_time}) {
+            $async_job_check_time = $self->{async_job_check_max_time};
+        }
+        my $job_state_ref = $self->_check_job($job_id);
+        if ($job_state_ref->{"finished"} != 0) {
+            if (!exists $job_state_ref->{"result"}) {
+                $job_state_ref->{"result"} = [];
+            }
+            return wantarray ? @{$job_state_ref->{"result"}} : $job_state_ref->{"result"}->[0];
+        }
+    }
+}
+
+sub _render_template_submit {
+    my($self, @args) = @_;
+# Authentication: required
+    if ((my $n = @args) != 1) {
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+                                   "Invalid argument count for function _render_template_submit (received $n, expecting 1)");
+    }
+    {
+        my($params) = @args;
+        my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+            my $msg = "Invalid arguments passed to _render_template_submit:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+            Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+                                   method_name => '_render_template_submit');
+        }
+    }
+    my $context = undef;
+    if ($self->{service_version}) {
+        $context = {'service_ver' => $self->{service_version}};
+    }
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+        method => "KBaseReport._render_template_submit",
+        params => \@args, context => $context});
+    if ($result) {
+        if ($result->is_error) {
+            Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+                           code => $result->content->{error}->{code},
+                           method_name => '_render_template_submit',
+                           data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+            );
+        } else {
+            return $result->result->[0];  # job_id
+        }
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _render_template_submit",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_render_template_submit');
+    }
+}
+
+ 
+
+
+=head2 render_templates
+
+  $output_paths = $obj->render_templates($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a reference to a list where each element is a KBaseReport.RenderTemplateParams
+$output_paths is a reference to a list where each element is a KBaseReport.File
+RenderTemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	output_file has a value which is a string
+	template_data_json has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	template has a value which is a KBaseReport.TemplateParams
+	name has a value which is a string
+	label has a value which is a string
+	description has a value which is a string
+TemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	template_data_json has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a reference to a list where each element is a KBaseReport.RenderTemplateParams
+$output_paths is a reference to a list where each element is a KBaseReport.File
+RenderTemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	output_file has a value which is a string
+	template_data_json has a value which is a string
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	template has a value which is a KBaseReport.TemplateParams
+	name has a value which is a string
+	label has a value which is a string
+	description has a value which is a string
+TemplateParams is a reference to a hash where the following keys are defined:
+	template_file has a value which is a string
+	template_data_json has a value which is a string
+
+
+=end text
+
+=item Description
+
+Render files from a list of template specifications. Input is a list of dicts
+with the keys 'template_file', 'output_file', and 'template_data_json', and output
+is a list of dicts containing the path of the rendered files, returned in the order
+that the input was specified. All 'output_file' paths must be unique.
+
+If any template fails to render, the endpoint will return an error.
+
+=back
+
+=cut
+
+sub render_templates
+{
+    my($self, @args) = @_;
+    my $job_id = $self->_render_templates_submit(@args);
+    my $async_job_check_time = $self->{async_job_check_time};
+    while (1) {
+        Time::HiRes::sleep($async_job_check_time);
+        $async_job_check_time *= $self->{async_job_check_time_scale_percent} / 100.0;
+        if ($async_job_check_time > $self->{async_job_check_max_time}) {
+            $async_job_check_time = $self->{async_job_check_max_time};
+        }
+        my $job_state_ref = $self->_check_job($job_id);
+        if ($job_state_ref->{"finished"} != 0) {
+            if (!exists $job_state_ref->{"result"}) {
+                $job_state_ref->{"result"} = [];
+            }
+            return wantarray ? @{$job_state_ref->{"result"}} : $job_state_ref->{"result"}->[0];
+        }
+    }
+}
+
+sub _render_templates_submit {
+    my($self, @args) = @_;
+# Authentication: required
+    if ((my $n = @args) != 1) {
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+                                   "Invalid argument count for function _render_templates_submit (received $n, expecting 1)");
+    }
+    {
+        my($params) = @args;
+        my @_bad_arguments;
+        (ref($params) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+            my $msg = "Invalid arguments passed to _render_templates_submit:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+            Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+                                   method_name => '_render_templates_submit');
+        }
+    }
+    my $context = undef;
+    if ($self->{service_version}) {
+        $context = {'service_ver' => $self->{service_version}};
+    }
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+        method => "KBaseReport._render_templates_submit",
+        params => \@args, context => $context});
+    if ($result) {
+        if ($result->is_error) {
+            Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+                           code => $result->content->{error}->{code},
+                           method_name => '_render_templates_submit',
+                           data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+            );
+        } else {
+            return $result->result->[0];  # job_id
+        }
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _render_templates_submit",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_render_templates_submit');
+    }
+}
+
+ 
  
 sub status
 {
@@ -519,16 +796,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'create_extended_report',
+                method_name => 'render_templates',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method create_extended_report",
+            error => "Error invoking method render_templates",
             status_line => $self->{client}->status_line,
-            method_name => 'create_extended_report',
+            method_name => 'render_templates',
         );
     }
 }
@@ -554,10 +831,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for KBaseReport::KBaseReportClient\n";
+        warn "New client version available for installed_clients::KBaseReportClient\n";
     }
     if ($sMajor == 0) {
-        warn "KBaseReport::KBaseReportClient version is $svr_version. API subject to change.\n";
+        warn "installed_clients::KBaseReportClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -573,7 +850,8 @@ sub _validate_version {
 
 =item Description
 
-@id ws
+* Workspace ID reference in the format 'workspace_id/object_id/version'
+* @id ws
 
 
 =item Definition
@@ -596,7 +874,7 @@ a string
 
 
 
-=head2 handle_ref
+=head2 TemplateParams
 
 =over 4
 
@@ -604,8 +882,8 @@ a string
 
 =item Description
 
-Reference to a handle
-@id handle
+* Structure representing a template to be rendered. 'template_file' must be provided,
+* 'template_data_json' is optional
 
 
 =item Definition
@@ -613,14 +891,20 @@ Reference to a handle
 =begin html
 
 <pre>
-a string
+a reference to a hash where the following keys are defined:
+template_file has a value which is a string
+template_data_json has a value which is a string
+
 </pre>
 
 =end html
 
 =begin text
 
-a string
+a reference to a hash where the following keys are defined:
+template_file has a value which is a string
+template_data_json has a value which is a string
+
 
 =end text
 
@@ -636,9 +920,13 @@ a string
 
 =item Description
 
-Represents a Workspace object with some brief description text
-that can be associated with the object.
-@optional description
+* Represents a Workspace object with some brief description text
+* that can be associated with the object.
+* Required arguments:
+*     ws_id ref - workspace ID in the format 'workspace_id/object_id/version'
+* Optional arguments:
+*     string description - A plaintext, human-readable description of the
+*         object created
 
 
 =item Definition
@@ -667,7 +955,7 @@ description has a value which is a string
 
 
 
-=head2 LinkedFile
+=head2 SimpleReport
 
 =over 4
 
@@ -675,57 +963,15 @@ description has a value which is a string
 
 =item Description
 
-Represents a file or html archive that the report should like to
-@optional description label
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a reference to a hash where the following keys are defined:
-handle has a value which is a KBaseReport.handle_ref
-description has a value which is a string
-name has a value which is a string
-label has a value which is a string
-URL has a value which is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-a reference to a hash where the following keys are defined:
-handle has a value which is a KBaseReport.handle_ref
-description has a value which is a string
-name has a value which is a string
-label has a value which is a string
-URL has a value which is a string
-
-
-=end text
-
-=back
-
-
-
-=head2 Report
-
-=over 4
-
-
-
-=item Description
-
-A simple Report of a method run in KBase.
-It only provides for now a way to display a fixed width text output summary message, a
-list of warnings, and a list of objects created (each with descriptions).
-@optional warnings file_links html_links direct_html direct_html_link_index
-@metadata ws length(warnings) as Warnings
-@metadata ws length(text_message) as Size(characters)
-@metadata ws length(objects_created) as Objects Created
+* A simple report for use in create()
+* Optional arguments:
+*     string text_message - Readable plain-text report message
+*     string direct_html - Simple HTML text that will be rendered within the report widget
+*     TemplateParams template - a template file and template data to be rendered and displayed
+*         as HTML. Use in place of 'direct_html'
+*     list<string> warnings - A list of plain-text warning messages
+*     list<WorkspaceObject> objects_created - List of result workspace objects that this app
+*         has created. They will get linked in the report view
 
 
 =item Definition
@@ -735,12 +981,10 @@ list of warnings, and a list of objects created (each with descriptions).
 <pre>
 a reference to a hash where the following keys are defined:
 text_message has a value which is a string
+direct_html has a value which is a string
+template has a value which is a KBaseReport.TemplateParams
 warnings has a value which is a reference to a list where each element is a string
 objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
-file_links has a value which is a reference to a list where each element is a KBaseReport.LinkedFile
-html_links has a value which is a reference to a list where each element is a KBaseReport.LinkedFile
-direct_html has a value which is a string
-direct_html_link_index has a value which is an int
 
 </pre>
 
@@ -750,12 +994,10 @@ direct_html_link_index has a value which is an int
 
 a reference to a hash where the following keys are defined:
 text_message has a value which is a string
+direct_html has a value which is a string
+template has a value which is a KBaseReport.TemplateParams
 warnings has a value which is a reference to a list where each element is a string
 objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
-file_links has a value which is a reference to a list where each element is a KBaseReport.LinkedFile
-html_links has a value which is a reference to a list where each element is a KBaseReport.LinkedFile
-direct_html has a value which is a string
-direct_html_link_index has a value which is an int
 
 
 =end text
@@ -772,18 +1014,18 @@ direct_html_link_index has a value which is an int
 
 =item Description
 
-Provide the report information.  The structure is:
-    params = {
-        report: {
-            text_message: '',
-            warnings: ['w1'],
-            objects_created: [ {
-                ref: 'ws/objid',
-                description: ''
-            }]
-        },
-        workspace_name: 'ws'
-    }
+* Parameters for the create() method
+*
+* Pass in *either* workspace_name or workspace_id -- only one is needed.
+* Note that workspace_id is preferred over workspace_name because workspace_id immutable. If
+* both are provided, the workspace_id will be used.
+*
+* Required arguments:
+*     SimpleReport report - See the structure above
+*     string workspace_name - Workspace name of the running app. Required
+*         if workspace_id is absent
+*     int workspace_id - Workspace ID of the running app. Required if
+*         workspace_name is absent
 
 
 =item Definition
@@ -792,8 +1034,9 @@ Provide the report information.  The structure is:
 
 <pre>
 a reference to a hash where the following keys are defined:
-report has a value which is a KBaseReport.Report
+report has a value which is a KBaseReport.SimpleReport
 workspace_name has a value which is a string
+workspace_id has a value which is an int
 
 </pre>
 
@@ -802,8 +1045,9 @@ workspace_name has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-report has a value which is a KBaseReport.Report
+report has a value which is a KBaseReport.SimpleReport
 workspace_name has a value which is a string
+workspace_id has a value which is an int
 
 
 =end text
@@ -820,11 +1064,14 @@ workspace_name has a value which is a string
 
 =item Description
 
-The reference to the saved KBaseReport.  The structure is:
-    reportInfo = {
-        ref: 'ws/objid/ver',
-        name: 'myreport.2262323452'
-    }
+* The reference to the saved KBaseReport. This is the return object for
+* both create() and create_extended()
+* Returned data:
+*    ws_id ref - reference to a workspace object in the form of
+*        'workspace_id/object_id/version'. This is a reference to a saved
+*        Report object (see KBaseReportWorkspace.spec)
+*    string name - Plaintext unique name for the report. In
+*        create_extended, this can optionally be set in a parameter
 
 
 =item Definition
@@ -859,6 +1106,22 @@ name has a value which is a string
 
 
 
+=item Description
+
+* A file to be linked in the report. Pass in *either* a shock_id or a
+* path. If a path to a file is given, then the file will be uploaded. If a
+* path to a directory is given, then it will be zipped and uploaded.
+* Required arguments:
+*     string name - Plain-text filename (eg. "results.zip") -- shown to the user
+*  One of the following identifiers is required:
+*     string path - Can be a file or directory path.
+*     string shock_id - Shock node ID.
+*     TemplateParams template - template to be rendered and saved as a file.
+* Optional arguments:
+*     string label - A short description for the file (eg. "Filter results")
+*     string description - A more detailed, human-readable description of the file
+
+
 =item Definition
 
 =begin html
@@ -867,7 +1130,9 @@ name has a value which is a string
 a reference to a hash where the following keys are defined:
 path has a value which is a string
 shock_id has a value which is a string
+template has a value which is a KBaseReport.TemplateParams
 name has a value which is a string
+label has a value which is a string
 description has a value which is a string
 
 </pre>
@@ -879,7 +1144,9 @@ description has a value which is a string
 a reference to a hash where the following keys are defined:
 path has a value which is a string
 shock_id has a value which is a string
+template has a value which is a KBaseReport.TemplateParams
 name has a value which is a string
+label has a value which is a string
 description has a value which is a string
 
 
@@ -897,23 +1164,43 @@ description has a value which is a string
 
 =item Description
 
-Parameters used to create a more complex report with file and html links
-The following arguments allow the user to specify the classical data fields in the report object:
-string message - simple text message to store in report object
-list <WorkspaceObject> objects_created;
-list <string> warnings - a list of warning messages in simple text
-The following argument allows the user to specify the location of html files/directories that the report widget will render <or> link to:
-list <fileRef> html_links - a list of paths or shock node IDs pointing to a single flat html file or to the top level directory of a website
-The report widget can render one html view directly. Set one of the following fields to decide which view to render:
-string direct_html - simple html text that will be rendered within the report widget
-int  direct_html_link_index - use this to specify the index of the page in html_links to view directly in the report widget (ignored if html_string is set)
-The following argument allows the user to specify the location of files that the report widget should link for download:
-list <fileRef> file_links - a list of paths or shock node IDs pointing to a single flat file
-The following parameters indicate where the report object should be saved in the workspace:
-string report_object_name - name to use for the report object (job ID is used if left unspecified)
-html_window_height - height of the html window in the narrative output widget
-summary_window_height - height of summary window in the narrative output widget
-string workspace_name - name of workspace where object should be saved
+* Parameters used to create a more complex report with file and HTML links
+*
+* Pass in *either* workspace_name or workspace_id -- only one is needed.
+* Note that workspace_id is preferred over workspace_name because workspace_id immutable.
+*
+* Note that it is possible to pass both 'html_links'/'direct_html_link_index' and 'direct_html'
+* as parameters for an extended report; in such cases, the file specified by the
+* 'direct_html_link_links' parameter is used for the report and the 'direct_html' is ignored.
+*
+* Required arguments:
+*     string workspace_name - Name of the workspace where the report
+*         should be saved. Required if workspace_id is absent
+*     int workspace_id - ID of workspace where the report should be saved.
+*         Required if workspace_name is absent
+* Optional arguments:
+*     string message - Simple text message to store in the report object
+*     list<WorkspaceObject> objects_created - List of result workspace objects that this app
+*         has created. They will be linked in the report view
+*     list<string> warnings - A list of plain-text warning messages
+*     string direct_html - Simple HTML text content to be rendered within the report widget.
+*         Set only one of 'direct_html', 'template', and 'html_links'/'direct_html_link_index'.
+*         Setting both 'template' and 'direct_html' will generate an error.
+*     TemplateParams template - render a template to produce HTML text content that will be
+*         rendered within the report widget. Setting 'template' and 'direct_html' or
+*         'html_links'/'direct_html_link_index' will generate an error.
+*     list<File> html_links - A list of paths, shock IDs, or template specs pointing to HTML files or directories.
+*         If you pass in paths to directories, they will be zipped and uploaded
+*     int direct_html_link_index - Index in html_links to set the direct/default view in the report.
+*         Set only one of 'direct_html', 'template', and 'html_links'/'direct_html_link_index'.
+*         Setting both 'template' and 'html_links'/'direct_html_link_index' will generate an error.
+*     list<File> file_links - Allows the user to specify files that the report widget
+*         should link for download. If you pass in paths to directories, they will be zipped.
+*         Each entry should be a path, shock ID, or template specification.
+*     string report_object_name - Name to use for the report object (will
+*         be auto-generated if unspecified)
+*     html_window_height - Fixed height in pixels of the HTML window for the report
+*     summary_window_height - Fixed height in pixels of the summary window for the report
 
 
 =item Definition
@@ -926,6 +1213,7 @@ message has a value which is a string
 objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
 warnings has a value which is a reference to a list where each element is a string
 html_links has a value which is a reference to a list where each element is a KBaseReport.File
+template has a value which is a KBaseReport.TemplateParams
 direct_html has a value which is a string
 direct_html_link_index has a value which is an int
 file_links has a value which is a reference to a list where each element is a KBaseReport.File
@@ -933,6 +1221,7 @@ report_object_name has a value which is a string
 html_window_height has a value which is a float
 summary_window_height has a value which is a float
 workspace_name has a value which is a string
+workspace_id has a value which is an int
 
 </pre>
 
@@ -945,6 +1234,7 @@ message has a value which is a string
 objects_created has a value which is a reference to a list where each element is a KBaseReport.WorkspaceObject
 warnings has a value which is a reference to a list where each element is a string
 html_links has a value which is a reference to a list where each element is a KBaseReport.File
+template has a value which is a KBaseReport.TemplateParams
 direct_html has a value which is a string
 direct_html_link_index has a value which is an int
 file_links has a value which is a reference to a list where each element is a KBaseReport.File
@@ -952,6 +1242,54 @@ report_object_name has a value which is a string
 html_window_height has a value which is a float
 summary_window_height has a value which is a float
 workspace_name has a value which is a string
+workspace_id has a value which is an int
+
+
+=end text
+
+=back
+
+
+
+=head2 RenderTemplateParams
+
+=over 4
+
+
+
+=item Description
+
+* Render a template using the supplied data, saving the results to an output
+* file in the scratch directory.
+*
+* Required arguments:
+*     string template_file  -  Path to the template file to be rendered.
+*     string output_file    -  Path to the file where the rendered template
+*                              should be saved. Must be in the scratch directory.
+* Optional:
+*     string template_data_json -  Data for rendering in the template.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+template_file has a value which is a string
+output_file has a value which is a string
+template_data_json has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+template_file has a value which is a string
+output_file has a value which is a string
+template_data_json has a value which is a string
 
 
 =end text
@@ -962,7 +1300,7 @@ workspace_name has a value which is a string
 
 =cut
 
-package KBaseReport::KBaseReportClient::RpcClient;
+package installed_clients::KBaseReportClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;

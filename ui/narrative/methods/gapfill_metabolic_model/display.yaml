@@ -3,7 +3,7 @@
 #
 name     : Gapfill Metabolic Model
 tooltip  : |
-    Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.
+    Identify the minimal set of biochemical reactions to add to a draft metabolic model to enable it to produce biomass in a specified media.<b>This app is now obsolete, replaced by the new ModelSEED2 app: MS2 - Improved Gapfill Metabolic Models.</b>
 
 screenshots :
     - Gapfill_eq_1.jpg

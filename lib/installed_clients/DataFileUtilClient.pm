@@ -1,4 +1,4 @@
-package DataFileUtil::DataFileUtilClient;
+package installed_clients::DataFileUtilClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -22,7 +22,7 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-DataFileUtil::DataFileUtilClient
+installed_clients::DataFileUtilClient
 
 =head1 DESCRIPTION
 
@@ -45,7 +45,7 @@ sub new
     
 
     my $self = {
-	client => DataFileUtil::DataFileUtilClient::RpcClient->new,
+	client => installed_clients::DataFileUtilClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -162,10 +162,9 @@ sub _check_job {
             return $result->result->[0];
         }
     } else {
-        return {
-            finished  => 0,
-            failed  => 1,
-        };
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _check_job",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_check_job');
     }
 }
 
@@ -583,8 +582,8 @@ UnpackFileResult is a reference to a hash where the following keys are defined:
 
 Using the same logic as unpacking a Shock file, this method will cause
 any bzip or gzip files to be uncompressed, and then unpack tar and zip
-archive files (uncompressing gzipped or bzipped archive files if 
-necessary). If the file is an archive, it will be unbundled into the 
+archive files (uncompressing gzipped or bzipped archive files if
+necessary). If the file is an archive, it will be unbundled into the
 directory containing the original output file.
 
 =back
@@ -650,6 +649,121 @@ sub _unpack_file_submit {
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _unpack_file_submit",
                         status_line => $self->{client}->status_line,
                         method_name => '_unpack_file_submit');
+    }
+}
+
+ 
+
+
+=head2 unpack_files
+
+  $out = $obj->unpack_files($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a reference to a list where each element is a DataFileUtil.UnpackFilesParams
+$out is a reference to a list where each element is a DataFileUtil.UnpackFilesResult
+UnpackFilesParams is a reference to a hash where the following keys are defined:
+	file_path has a value which is a string
+	unpack has a value which is a string
+UnpackFilesResult is a reference to a hash where the following keys are defined:
+	file_path has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a reference to a list where each element is a DataFileUtil.UnpackFilesParams
+$out is a reference to a list where each element is a DataFileUtil.UnpackFilesResult
+UnpackFilesParams is a reference to a hash where the following keys are defined:
+	file_path has a value which is a string
+	unpack has a value which is a string
+UnpackFilesResult is a reference to a hash where the following keys are defined:
+	file_path has a value which is a string
+
+
+=end text
+
+=item Description
+
+Using the same logic as unpacking a Shock file, this method will cause
+any bzip or gzip files to be uncompressed, and then unpack tar and zip
+archive files (uncompressing gzipped or bzipped archive files if 
+necessary). If the file is an archive, it will be unbundled into the 
+directory containing the original output file.
+
+The ordering of the input and output files is preserved in the input and output lists.
+
+=back
+
+=cut
+
+sub unpack_files
+{
+    my($self, @args) = @_;
+    my $job_id = $self->_unpack_files_submit(@args);
+    my $async_job_check_time = $self->{async_job_check_time};
+    while (1) {
+        Time::HiRes::sleep($async_job_check_time);
+        $async_job_check_time *= $self->{async_job_check_time_scale_percent} / 100.0;
+        if ($async_job_check_time > $self->{async_job_check_max_time}) {
+            $async_job_check_time = $self->{async_job_check_max_time};
+        }
+        my $job_state_ref = $self->_check_job($job_id);
+        if ($job_state_ref->{"finished"} != 0) {
+            if (!exists $job_state_ref->{"result"}) {
+                $job_state_ref->{"result"} = [];
+            }
+            return wantarray ? @{$job_state_ref->{"result"}} : $job_state_ref->{"result"}->[0];
+        }
+    }
+}
+
+sub _unpack_files_submit {
+    my($self, @args) = @_;
+# Authentication: required
+    if ((my $n = @args) != 1) {
+        Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+                                   "Invalid argument count for function _unpack_files_submit (received $n, expecting 1)");
+    }
+    {
+        my($params) = @args;
+        my @_bad_arguments;
+        (ref($params) eq 'ARRAY') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+            my $msg = "Invalid arguments passed to _unpack_files_submit:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+            Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+                                   method_name => '_unpack_files_submit');
+        }
+    }
+    my $context = undef;
+    if ($self->{service_version}) {
+        $context = {'service_ver' => $self->{service_version}};
+    }
+    my $result = $self->{client}->call($self->{url}, $self->{headers}, {
+        method => "DataFileUtil._unpack_files_submit",
+        params => \@args, context => $context});
+    if ($result) {
+        if ($result->is_error) {
+            Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+                           code => $result->content->{error}->{code},
+                           method_name => '_unpack_files_submit',
+                           data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+            );
+        } else {
+            return $result->result->[0];  # job_id
+        }
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method _unpack_files_submit",
+                        status_line => $self->{client}->status_line,
+                        method_name => '_unpack_files_submit');
     }
 }
 
@@ -1402,6 +1516,7 @@ ObjectSaveData is a reference to a hash where the following keys are defined:
 	objid has a value which is an int
 	meta has a value which is a reference to a hash where the key is a string and the value is a string
 	hidden has a value which is a DataFileUtil.boolean
+	extra_provenance_input_refs has a value which is a reference to a list where each element is a string
 boolean is an int
 object_info is a reference to a list containing 11 items:
 	0: (objid) an int
@@ -1434,6 +1549,7 @@ ObjectSaveData is a reference to a hash where the following keys are defined:
 	objid has a value which is an int
 	meta has a value which is a reference to a hash where the key is a string and the value is a string
 	hidden has a value which is a DataFileUtil.boolean
+	extra_provenance_input_refs has a value which is a reference to a list where each element is a string
 boolean is an int
 object_info is a reference to a list containing 11 items:
 	0: (objid) an int
@@ -1453,8 +1569,16 @@ object_info is a reference to a list containing 11 items:
 
 =item Description
 
-Save objects to the workspace. Saving over a deleted object undeletes
-it.
+Save objects to the workspace.
+
+The objects will be sorted prior to saving to avoid the Workspace sort memory limit.
+Note that if the object contains workspace object refs in mapping keys that may cause
+the Workspace to resort the data. To avoid this, convert any refs in mapping keys to UPA
+format (e.g. #/#/#, where # is a positive integer).
+
+If the data is very large, using the WSLargeDataIO SDK module is advised.
+
+Saving over a deleted object undeletes it.
 
 =back
 
@@ -2064,10 +2188,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for DataFileUtil::DataFileUtilClient\n";
+        warn "New client version available for installed_clients::DataFileUtilClient\n";
     }
     if ($sMajor == 0) {
-        warn "DataFileUtil::DataFileUtilClient version is $svr_version. API subject to change.\n";
+        warn "installed_clients::DataFileUtilClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -2286,8 +2410,9 @@ file_path - the location of the file (or directory if using the
     pack parameter) to load to Shock.
 
 Optional parameters:
-attributes - user-specified attributes to save to the Shock node along
-    with the file.
+attributes - DEPRECATED: attributes are currently ignored by the upload function and
+    will be removed entirely in a future version. User-specified attributes to save to the
+    Shock node along with the file.
 make_handle - make a Handle Service handle for the shock node. Default
     false.
 pack - compress a file or archive a directory before loading to Shock.
@@ -2444,6 +2569,104 @@ file_path has a value which is a string
 
 
 
+=head2 UnpackFilesParams
+
+=over 4
+
+
+
+=item Description
+
+Input parameters for the unpack_files function.
+
+Required parameter:
+    file_path - the path to the file to unpack. The file will be unpacked into the file's
+        parent directory.
+Optional parameter:
+    unpack - either 'uncompress' or 'unpack'. 'uncompress' will cause
+       any bzip or gzip files to be uncompressed. 'unpack' will behave the
+       same way, but it will also unpack tar and zip archive files
+       (uncompressing gzipped or bzipped archive files if necessary). If
+       'uncompress' is specified and an archive file is encountered, an
+       error will be thrown. If the file is an archive, it will be
+       unbundled into the directory containing the original output file.
+       
+       Defaults to 'unpack'.
+       
+       Note that if the file name (either as provided by the user or by
+       Shock) without the a decompression extension (e.g. .gz, .zip or
+       .tgz -> .tar) points to an existing file and unpack is specified,
+       that file will be overwritten by the decompressed Shock file.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+file_path has a value which is a string
+unpack has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+file_path has a value which is a string
+unpack has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 UnpackFilesResult
+
+=over 4
+
+
+
+=item Description
+
+Output parameters for the unpack_files function.
+
+file_path - the path to either
+    a) the unpacked file or
+    b) in the case of archive files, the path to the original archive file, possibly
+        uncompressed, or
+    c) in the case of regular files that don't need processing, the path to the input
+        file.
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+file_path has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+file_path has a value which is a string
+
+
+=end text
+
+=back
+
+
+
 =head2 PackFileParams
 
 =over 4
@@ -2562,8 +2785,9 @@ ws_ref - list of references to workspace objects which will be used to
     by file_path (or folder containing file pointed by file_path if 
     it's not folder).
 Optional parameters:
-attributes - user-specified attributes to save to the Shock node along
-    with the file.
+attributes - DEPRECATED: attributes are currently ignored by the upload function and
+    will be removed entirely in a future version. User-specified attributes to save to the
+    Shock node along with the file.
 
 
 =item Definition
@@ -2888,13 +3112,11 @@ An object and associated data required for saving.
         information to use the latest version.
     data - the object data.
     
-    Optional parameters:
-    One of an object name or id. If no name or id is provided the name
-        will be set to 'auto' with the object id appended as a string,
-        possibly with -\d+ appended if that object id already exists as a
-        name.
+    One of an object name or id:
     name - the name of the object.
     objid - the id of the object to save over.
+
+    Optional parameters:
     meta - arbitrary user-supplied metadata for the object,
         not to exceed 16kb; if the object type specifies automatic
         metadata extraction with the 'meta ws' annotation, and your
@@ -2902,6 +3124,20 @@ An object and associated data required for saving.
         overwritten.
     hidden - true if this object should not be listed when listing
         workspace objects.
+    extra_provenance_input_refs - (optional) if set, these refs will
+        be appended to the primary ProveanceAction input_ws_objects
+        reference list. In general, if the input WS object ref was
+        passed in from a narrative App, this will be set for you.
+        However, there are cases where the object ref passed to
+        the App is a container, and you are operating on a member
+        or subobject of the container, in which case to maintain
+        that direct mapping to those subobjects in the provenance
+        of new objects, you can provide additional object refs
+        here. For example, if the input is a ReadsSet, and your
+        App creates a new WS object for each read library in the
+        set, you may want a direct reference from each new WS
+        object not only to the set, but also to the individual
+        read library.
 
 
 =item Definition
@@ -2916,6 +3152,7 @@ name has a value which is a string
 objid has a value which is an int
 meta has a value which is a reference to a hash where the key is a string and the value is a string
 hidden has a value which is a DataFileUtil.boolean
+extra_provenance_input_refs has a value which is a reference to a list where each element is a string
 
 </pre>
 
@@ -2930,6 +3167,7 @@ name has a value which is a string
 objid has a value which is an int
 meta has a value which is a reference to a hash where the key is a string and the value is a string
 hidden has a value which is a DataFileUtil.boolean
+extra_provenance_input_refs has a value which is a reference to a list where each element is a string
 
 
 =end text
@@ -2996,6 +3234,12 @@ Input parameters for the "get_objects" function.
         the workspace name or id, Y is the object name or id, and Z is the
         (optional) object version. In general, always use ids rather than
         names if possible to avoid race conditions.
+        A reference path may be specified by separating references by a semicolon, e.g.
+        4/5/6;5/7/2;8/9/4 specifies that the user wishes to retrieve the fourth version of
+        the object with id 9 in workspace 8, and that there exists a reference path from
+        the sixth version of the object with id 5 in workspace 4, to which the user has access.
+        The user may or may not have access to workspaces 5 and 8.
+        
     
     Optional parameters:
     ignore_errors - ignore any errors that occur when fetching an object
@@ -3265,7 +3509,7 @@ copy_file_path has a value which is a string
 
 =cut
 
-package DataFileUtil::DataFileUtilClient::RpcClient;
+package installed_clients::DataFileUtilClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;

@@ -34,8 +34,8 @@ sub data_file_client {
 		refresh => 0
 	});
 	if ($parameters->{refresh} == 1 || !defined($data_file_client)) {
-		require "DataFileUtil/DataFileUtilClient.pm";
-		$data_file_client = new DataFileUtil::DataFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"));
+		require "installed_clients/DataFileUtilClient.pm";
+		$data_file_client = new installed_clients::DataFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"));
 	}
 	return $data_file_client;
 }
@@ -59,8 +59,8 @@ sub create_report {
 			$KBaseReport::KBaseReportServer::CallContext = Bio::KBase::utilities::context();
 		}
 	} else {
-		require "KBaseReport/KBaseReportClient.pm";
-		$kr = KBaseReport::KBaseReportClient->new(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+		require "installed_clients/KBaseReportClient.pm";
+		$kr = installed_clients::KBaseReportClient->new(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	if (defined(Bio::KBase::utilities::utilconf("debugging")) && Bio::KBase::utilities::utilconf("debugging") == 1) {
 		Bio::KBase::utilities::add_report_file({
@@ -133,8 +133,8 @@ sub ga_client {
 		refresh => 0
 	});
 	if ($parameters->{refresh} == 1 || !defined($ga_client)) {
-		require "GenomeAnnotationAPI/GenomeAnnotationAPIClient.pm";
-		$ga_client = new GenomeAnnotationAPI::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+		require "installed_clients/GenomeAnnotationAPIClient.pm";
+		$ga_client = new installed_clients::GenomeAnnotationAPIClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ga_client;
 }
@@ -145,8 +145,8 @@ sub sdkrast_client {
 		refresh => 0
 	});
 	if ($parameters->{refresh} == 1 || !defined($rastsdk_client)) {
-		require "RAST_SDK/RAST_SDKClient.pm";
-		$rastsdk_client = new RAST_SDK::RAST_SDKClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+		require "installed_clients/RAST_SDKClient.pm";
+		$rastsdk_client = new installed_clients::RAST_SDKClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $rastsdk_client;
 }
@@ -169,8 +169,8 @@ sub ac_client {
 		refresh => 0
 	});
 	if ($parameters->{refresh} == 1 || !defined($ac_client)) {
-		require "AssemblyUtil/AssemblyUtilClient.pm";
-		$ac_client = new AssemblyUtil::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+		require "installed_clients/AssemblyUtilClient.pm";
+		$ac_client = new installed_clients::AssemblyUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $ac_client;
 }
@@ -181,8 +181,8 @@ sub gfu_client {
 		refresh => 0
 	});
 	if ($parameters->{refresh} == 1 || !defined($gfu_client)) {
-		require "GenomeFileUtil/GenomeFileUtilClient.pm";
-		$gfu_client = new GenomeFileUtil::GenomeFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+		require "installed_clients/GenomeFileUtilClient.pm";
+		$gfu_client = new installed_clients::GenomeFileUtilClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $gfu_client;
 }
@@ -193,8 +193,8 @@ sub readmapper_client {
 		refresh => 0
 	});
 	if ($parameters->{refresh} == 1 || !defined($readmapper_client)) {
-		require "kb_readmapper/kb_readmapperClient.pm";
-		$readmapper_client = new kb_readmapper::kb_readmapperClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
+		require "installed_clients/kb_readmapperClient.pm";
+		$readmapper_client = new installed_clients::kb_readmapperClient(Bio::KBase::utilities::utilconf("call_back_url"),token => Bio::KBase::utilities::token());
 	}
 	return $readmapper_client;
 }

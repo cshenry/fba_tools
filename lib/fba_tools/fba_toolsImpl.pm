@@ -25,7 +25,7 @@ use Bio::KBase::ObjectAPI::KBaseStore;
 use Bio::KBase::ObjectAPI::functions;
 use Bio::KBase::utilities;
 use Bio::KBase::kbaseenv;
-use DataFileUtil::DataFileUtilClient;
+use installed_clients::DataFileUtilClient;
 use Bio::KBase::HandleService;
 use Archive::Zip;
 use Data::Dumper;

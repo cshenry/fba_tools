@@ -1,4 +1,4 @@
-package MetagenomeUtils::MetagenomeUtilsClient;
+package installed_clients::MetagenomeUtilsClient;
 
 use JSON::RPC::Client;
 use POSIX;
@@ -22,7 +22,7 @@ our $VERSION = "0.1.0";
 
 =head1 NAME
 
-MetagenomeUtils::MetagenomeUtilsClient
+installed_clients::MetagenomeUtilsClient
 
 =head1 DESCRIPTION
 
@@ -38,7 +38,7 @@ sub new
     
 
     my $self = {
-	client => MetagenomeUtils::MetagenomeUtilsClient::RpcClient->new,
+	client => installed_clients::MetagenomeUtilsClient::RpcClient->new,
 	url => $url,
 	headers => [],
     };
@@ -1274,10 +1274,10 @@ sub _validate_version {
         );
     }
     if ($sMinor > $cMinor) {
-        warn "New client version available for MetagenomeUtils::MetagenomeUtilsClient\n";
+        warn "New client version available for installed_clients::MetagenomeUtilsClient\n";
     }
     if ($sMajor == 0) {
-        warn "MetagenomeUtils::MetagenomeUtilsClient version is $svr_version. API subject to change.\n";
+        warn "installed_clients::MetagenomeUtilsClient version is $svr_version. API subject to change.\n";
     }
 }
 
@@ -1913,7 +1913,7 @@ report_ref has a value which is a string
 
 =cut
 
-package MetagenomeUtils::MetagenomeUtilsClient::RpcClient;
+package installed_clients::MetagenomeUtilsClient::RpcClient;
 use base 'JSON::RPC::Client';
 use POSIX;
 use strict;

@@ -1,0 +1,37 @@
+[ {
+  "module_name" : "AssemblyUtil",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "cb_annotation_ontology_api",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "DataFileUtil",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "GenomeAnnotationAPI",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "GenomeFileUtil",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "kb_readmapper",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "KBaseReport",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "MetagenomeUtils",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
+  "module_name" : "RAST_SDK",
+  "type" : "sdk",
+  "version_tag" : "release"
+} ]
