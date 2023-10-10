@@ -2268,7 +2268,7 @@ sub merge_models {
 		if ($i == 0) {
 			$self->genome_ref($model->genome_ref());
 		} else {
-			$self->other_genome_refs()->[$i-1] = $model->_wswsid()."/".$model->_wsobjid()."/".$model->_wsversion().";".$model->genome_ref();
+			$self->other_genome_refs()->[$i-1] = $model->genome_ref();#$model->_wswsid()."/".$model->_wsobjid()."/".$model->_wsversion().";".
 		}
 		$self->template_refs()->[$i] = $model->template_ref();
 		#Adding compartments to community model
