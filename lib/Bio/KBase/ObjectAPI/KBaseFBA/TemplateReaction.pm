@@ -63,6 +63,9 @@ sub _buildmsid {
 sub _buildmsname {
 	my ($self) = @_;
 	my $array = [split(/_/,$self->name())];
+	if (!defined($array->[0])) {
+		return $self->id();
+	}
 	return $array->[0];
 }
 sub _buildmsabbreviation {
