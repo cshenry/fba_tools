@@ -1980,6 +1980,15 @@ sub createJobDirectory {
 		push(@{$mediaData},$newLine);
 	}
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."media.tbl",$mediaData);
+	#Adding drain fluxes for model to exchange flux structure
+	foreach my $cpdid (keys(%{$model->drain_list()})) {
+		if !defined($exchangehash->{$cpdid}) {
+			if ($id =~ /(.+)_([a-z]+)(\d+)/) {
+				$exchangehash->{$cpdid}->{$3} = [-1*$model->drain_list()->{$cpdid}->[1],-1*$model->drain_list()->{$cpdid}->[0]]
+			}	
+		}
+	}
+	#Dealing with regulation
 	my $genereg = {};
 	if (defined($self->regulome_ref())) {
 		my $rmodel = $self->regulome();
