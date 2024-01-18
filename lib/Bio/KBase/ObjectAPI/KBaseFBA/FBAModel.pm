@@ -2267,8 +2267,34 @@ sub merge_models {
 		}
 		if ($i == 0) {
 			$self->genome_ref($model->genome_ref());
+			my $list = [split(/;/,$model->genome_ref())];
+			print("genome_ref:".$model->genome_ref()."|".$self->genome_ref()."\n");
+			my $newref = "";
+			my $first = $list->[0];
+			for (my $j=1; $j < @{$list}; $j++) {
+				if ($list->[$j] != $first) {
+					if (length($newref) > 0) {
+						$newref .= ";";
+					}
+					$newref .= $list->[$j];
+				}
+			}
+			$self->genome_ref($newref);
 		} else {
 			$self->other_genome_refs()->[$i-1] = $model->genome_ref();#$model->_wswsid()."/".$model->_wsobjid()."/".$model->_wsversion().";".
+			my $list = [split(/;/,$model->genome_ref())];
+			print("other_genome_refs:".$model->genome_ref()."|".$self->genome_ref()."\n");
+			my $newref = "";
+			my $first = $list->[0];
+			for (my $j=1; $j < @{$list}; $j++) {
+				if ($list->[$j] != $first) {
+					if (length($newref) > 0) {
+						$newref .= ";";
+					}
+					$newref .= $list->[$j];
+				}
+			}
+			$self->other_genome_refs()->[$i-1] = $newref;
 		}
 		$self->template_refs()->[$i] = $model->template_ref();
 		#Adding compartments to community model
