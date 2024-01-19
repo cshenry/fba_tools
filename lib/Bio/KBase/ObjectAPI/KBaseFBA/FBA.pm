@@ -1982,8 +1982,8 @@ sub createJobDirectory {
 	Bio::KBase::ObjectAPI::utilities::PRINTFILE($directory."media.tbl",$mediaData);
 	#Adding drain fluxes for model to exchange flux structure
 	foreach my $cpdid (keys(%{$model->drain_list()})) {
-		if !defined($exchangehash->{$cpdid}) {
-			if ($id =~ /(.+)_([a-z]+)(\d+)/) {
+		if (!defined($exchangehash->{$cpdid})) {
+			if ($cpdid =~ /(.+)_([a-z]+)(\d+)/) {
 				$exchangehash->{$cpdid}->{$3} = [-1*$model->drain_list()->{$cpdid}->[1],-1*$model->drain_list()->{$cpdid}->[0]]
 			}	
 		}
