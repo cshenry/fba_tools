@@ -1,6 +1,9 @@
 
 ###Release Notes
 
+**2.2.0**
+Implementing support for drain flux list. Fixing bug in model merging code and in metagenome modeling pipeline.
+
 **2.1.0**
 Improving fba_tools to ensure MS2 models will run properly. Adding messages to build model and gapfill apps indicating they are obsolete. Fixing problem in reference chains in an ID contains a /.
 
