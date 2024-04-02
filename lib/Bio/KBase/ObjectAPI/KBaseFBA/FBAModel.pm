@@ -2272,7 +2272,7 @@ sub merge_models {
 			my $newref = "";
 			my $first = $list->[0];
 			for (my $j=1; $j < @{$list}; $j++) {
-				if ($list->[$j] != $first) {
+				if ($list->[$j] ne $first) {
 					if (length($newref) > 0) {
 						$newref .= ";";
 					}
@@ -2287,7 +2287,7 @@ sub merge_models {
 			my $newref = "";
 			my $first = $list->[0];
 			for (my $j=1; $j < @{$list}; $j++) {
-				if ($list->[$j] != $first) {
+				if ($list->[$j] ne $first) {
 					if (length($newref) > 0) {
 						$newref .= ";";
 					}
