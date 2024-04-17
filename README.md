@@ -10,6 +10,9 @@ for an overview on the module structure and help getting started.
 
 ## Release notes
 ------------------------------------------
+### VERSION: 2.2.1 (Released 4/17/2024)
+- Fixing bug in community model merge app.
+
 ### VERSION: 2.0.0 (Released 2/12/2021)
 - Further improving model reconstruction and gapfilling to prevent overproduction ATP
 - Adding support for building models from multiple annotation sources (with LLNL team)

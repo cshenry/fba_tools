@@ -1,6 +1,9 @@
 
 ###Release Notes
 
+**2.2.1**
+Fixing bug in community model merging app.
+
 **2.2.0**
 Implementing support for drain flux list. Fixing bug in model merging code and in metagenome modeling pipeline.
 
