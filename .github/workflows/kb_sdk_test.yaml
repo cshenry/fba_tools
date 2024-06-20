@@ -1,0 +1,54 @@
+name: KBase SDK Tests
+
+on:
+  [push, pull_request]
+
+jobs:
+
+  sdk_tests:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Check out GitHub repo
+      if: "!contains(github.event.head_commit.message, 'skip ci')"
+      uses: actions/checkout@v2
+
+    - name: Check out Actions CI files
+      if: "!contains(github.event.head_commit.message, 'skip ci')"
+      uses: actions/checkout@v2
+      with:
+        repository: 'kbaseapps/kb_sdk_actions'
+        path: 'kb_sdk_actions'
+
+
+    - name: Set up test environment
+      if: "!contains(github.event.head_commit.message, 'skip ci')"
+      shell: bash
+      env:
+        KBASE_TEST_TOKEN: ${{ secrets.KBASE_TEST_TOKEN }}
+      run: |
+        # Verify kb_sdk_actions clone worked
+        test -f "$HOME/kb_sdk_actions/bin/kb-sdk" && echo "CI files cloned"
+        # Pull kb-sdk & create startup script
+        docker pull kbase/kb-sdk
+       
+        sh $GITHUB_WORKSPACE/kb_sdk_actions/bin/make_testdir && echo "Created test_local"
+        test -f "test_local/test.cfg" && echo "Confirmed config exists"
+
+    - name: Configure authentication
+      if: "!contains(github.event.head_commit.message, 'skip ci')"
+      shell: bash
+      env:
+        KBASE_TEST_TOKEN: ${{ secrets.KBASE_TEST_TOKEN }}
+      run: |
+        # Add token to config
+        sed -ie "s/^test_token=.*$/&$KBASE_TEST_TOKEN/g" ./test_local/test.cfg
+
+    - name: Run tests
+      if: "!contains(github.event.head_commit.message, 'skip ci')"
+      shell: bash
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      run: |
+        sh $GITHUB_WORKSPACE/kb_sdk_actions/bin/kb-sdk test
+        bash <(curl -s https://codecov.io/bash)
