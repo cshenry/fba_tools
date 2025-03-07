@@ -193,14 +193,14 @@ description : |
 
     <p>KBase offers several ways to load metabolic models into your Narrative so that they can be used as one of the required inputs for this and other Apps:
     <ol>
-      <li>Upload your own data in either SBML (systems biology markup language) or TSV (tab-separated values) format from your local machine. See the <a href=”http://kbase.us/data-upload-download-guide/fba-model/”>FBA Model section of the Data Upload and Download Guide</a> for instructions.</li>
+      <li>Upload your own data in either SBML (systems biology markup language) or TSV (tab-separated values) format from your local machine. See the <a href=”https://docs.kbase.us/data/upload-download-guide/fba-model”>FBA Model section of the Data Upload and Download Guide</a> for instructions.</li>
       <li>Search for and add to your Narrative an FBA model from KBase’s reference data collection.</li>
       <li>Use example data from the Data Browser slideout.</li>
       <li>Use an FBA model that you worked with in another Narrative or that another user has shared with you.</li>
     </ol>
     </p>
 
-    <p>For more help with running FBA, check out this <a href="http://kbase.us/run-flux-balance-analysis-method/" target="_blank">Narrative Tutorial</a>.</p>
+    <p>For more help with running FBA, check out this <a href="https://narrative.kbase.us/narrative/18302" target="_blank">Narrative Tutorial</a>.</p>
 
     <p><strong>Reactions to Maximize</strong><br>By default, the App is attempting to maximize the biomass function or the total growth rate on the selected media. If instead you want to maximize the flux through a particular reaction, then you may use the “Reaction to maximize” parameter. This allows you to select one or more reactions from your model to maximize the amount of flux driven through while still allowing for growth. You may select multiple reactions, and they may be part of the same pathway or independent of each other.</p>
 
@@ -213,11 +213,11 @@ description : |
       <li><u>Exchange fluxes:</u> this tab displays exchange fluxes that describe the rates at which nutrients are taken in and byproducts are secreted. Positive exchange flux values represent the uptake of compounds, and negative exchange flux values represent the excretion of compounds.</li>
       <li><u>Genes:</u> this tab displays the gene knockout information, if any. When using a wildtype strain, no gene knockout information will be available to display.</li>
       <li><u>Biomass:</u> this tab displays the biomass composition of the model. Typically, biomass is represented in the model as an equation where biomass compounds and ATP would make 1 gram of biomass. After clicking on the Biomass tab, the coefficients of each biomass component are listed in the Coefficient column. Negative coefficients represent the compounds on the left side of the biomass equation, and positive coefficients represent the compounds on the right side of the equation.</li>
-      <li><u>Pathways:</u> this tab displays KEGG maps that represent the metabolic network of the model. Click on the name of a map (e.g., TCA cycle) to see the presence or absence of reactions (blue) and fluxes (positive fluxes are shades of red; negative fluxes are shades of green).</li>
+      <li><u>Pathways:</u> this tab displays KEGG maps that represent the metabolic network of the model. Click on the name of a map (e.g., TCA cycle) to see the presence or absence of reactions (blue) and fluxes (positive fluxes are shades of green; negative fluxes are shades of red).</li>
     </ul>
     </p>
 
-    <p>For additional information about metabolic modeling, visit the <a href="https://kbase.us/metabolic-modeling-faq/">Metabolic Modeling in KBase FAQ</a>.<p>
+    <p>For additional information about metabolic modeling, visit the <a href="https://docs.kbase.us/workflows/metabolic-models/faq-metabolic-modeling">Metabolic Modeling in KBase FAQ</a>.<p>
 
     <p><strong>Team members who developed & deployed algorithm in KBase:</strong>
     Chris Henry, Janaka Edirisinghe, Sam Seaver, and Neal Conrad. For questions, please <a href="https://www.kbase.us/support/">contact us</a>.</p>

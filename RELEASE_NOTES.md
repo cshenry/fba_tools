@@ -1,6 +1,9 @@
 
 ###Release Notes
 
+**2.2.2**
+Updates to docs to fix broken links and incorrect flux.
+
 **2.2.1**
 Fixing bug in community model merging app.
 
