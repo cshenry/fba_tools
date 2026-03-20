@@ -1,6 +1,9 @@
 
 ###Release Notes
 
+**2.2.2**
+Fixing bug in compare models
+
 **2.2.1**
 Fixing bug in community model merging app.
 
